@@ -1,0 +1,592 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: конфигурационный файл                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $title = текст заголовка страницы                                             |
+    $item = запись о конфигурационных настройках                                  |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $files_host_suffix = файлов.суффикс магазина (среди нескольких на един.движке)|
+    $from_page = адрес страницы возврата после операции                           |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $Token = аутентификатор операции                                              |
+    $settings = объект настроек сайта                                             |
+    $config = объект конфигурационных настроек сайта                              |
+    $admin_folder = имя папки админпанели                                         |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$temp_module = $smarty.const.CONFIGFILE_MODULELINK_POINTER|default:''}
+    {$temp_param = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+
+
+
+    {* <!-- подключаем модуль закладок --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.CONFIGFILE_MODULETAB_TEXT|default:''
+             me_pointer = $temp_module
+             me_menupath = $smarty.const.CONFIGFILE_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- формируем URL-ы страницы --> *}
+    {$temp_url_main = (($site|default:'')|cat:($admin_folder|default:'')|cat:'/')}
+    {$temp_url_script = $temp_url_main|cat:'index.php'}
+    {$temp_url_images = ($temp_url_main|escape)|cat:'design/'|cat:($settings->admin_theme|default:''|escape)|cat:'/images/'}
+    {$temp_url_form = $temp_url_script|cat:'?'|cat:$temp_param|cat:'='|cat:$temp_module}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок содержимого --> *}
+        <h1>
+            <div class="path">
+                <a href="{$temp_url_main|escape}">
+                    Главная
+                </a> → Конфигурация
+            </div>
+            {$title|default:'Конфигурационный файл'}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- функция создания контента кнопки Сохранить --> *}
+        {function name = 'configfilepage_submit_content'
+                  colspan = 1}
+
+            {* <!-- кнопка Сохранить --> *}
+            <td class="value_box" {($colspan|string_format:'%d' > 1) ? ('colspan="'|cat:($colspan|string_format:'%d')|cat:'"') : ''}>
+                <input class="submit" type="submit" value="Сохранить" onclick="javascript: return confirm('Подтвердите свое желание сохранить изменения в этом файле!');" />
+            </td>
+        {/function}
+
+
+
+        {* <!-- форма --> *}
+        <form action="{$temp_url_form|escape}" id="items_form" method="post">
+
+
+
+            {* <!-- имя используемого файла --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+                <tr>
+                    <td class="param_short">
+                        Файл:
+                    </td>
+
+                    <td class="value value_sheet" title="Имя используемого конфигурационного файла" width="100%">
+                        <input class="edit bright-checkbox" readonly type="text" value="{$site|default:''|escape}Config{($files_host_suffix|default:'' != '') ? ($files_host_suffix|escape) : '.class'}.php" />
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    {configfilepage_submit_content colspan = 1}
+                </tr>
+
+            </table>
+
+
+
+            {* <!-- функция создания контента поля ввода имени --> *}
+            {function name = 'configfilepage_name_input_content'
+                      field = ''
+                      value = ''
+                      param = ''}
+                <input class="edit" name="{$param}_name['{$field|escape}']" maxlength="35" type="text" value="{$value|escape}" />
+            {/function}
+
+
+
+            {* <!-- функция создания контента поля ввода значения --> *}
+            {function name = 'configfilepage_input_content'
+                      field = ''
+                      value = ''
+                      param = ''}
+                {is_xml_name item = $value assign = 'temp'}
+                {if $temp}
+                    {get_xml_name item = $value assign = 'temp'}
+                {else}
+                    {$temp = $value}
+                {/if}
+                <input class="edit" name="{$param}['{$field|escape}']" type="text" value="{$temp|escape}" />
+            {/function}
+
+
+
+            {* <!-- функция создания контента поля выбора типа --> *}
+            {function name = 'configfilepage_type_select_content'
+                      field = ''
+                      value = ''
+                      param = ''}
+                <select name="{$param}_type['{$field|escape}']">
+                    {is_xml_name item = $value assign = 'temp'}
+                    <option value="1" {(is_bool($value)) ? "selected" : ''}>Булевое</option>
+                    <option value="2" {(is_string($value) && !$temp) ? "selected" : ''}>Строка</option>
+                    <option value="3" {(is_int($value)) ? "selected" : ''}>Целое число</option>
+                    <option value="4" {(is_float($value)) ? "selected" : ''}>Вещественное число</option>
+                    <option value="5" {($temp) ? "selected" : ''}>XML файл</option>
+                </select>
+            {/function}
+
+
+
+            {* <!-- функция создания контента поля булевого выбора --> *}
+            {function name = 'configfilepage_bool_select_content'
+                      field = ''
+                      value = false
+                      param = ''}
+                <select name="{$param}['{$field|escape}']">
+                    <option value="1" {($value) ? "selected" : ''}>да</option>
+                    <option value="0" {(!$value) ? "selected" : ''}>нет</option>
+                </select>
+            {/function}
+
+
+
+            {* <!-- функция создания контента строки таблицы --> *}
+            {function name = 'configfilepage_tr_content'
+                      required = false
+                      field_input_boxed = false
+                      field_input = ''
+                      value_input = ''
+                      type_input = ''
+                      hint = ''
+                      index = 0
+                      field = ''
+                      param = ''}
+
+                {* <!-- признак Автосоздания поля при отсутствии --> *}
+                <td class="param_short" title="Признак обязательной настройки (создается ли автоматически при отсутствии)">
+                    <img class="icon16x16 icon16x16-key{if !$required} icon16x16-key-off{/if}" src="{$temp_url_images}icon_required{if !$required}_off{/if}_16x16.png" />
+                </td>
+
+                {* <!-- имя настройки --> *}
+                <td class="{($field_input_boxed) ? 'value value_sheet' : 'param_short'}" title="Системное имя настройки">
+                    {$field_input}
+                </td>
+
+                {* <!-- поле ввода значения настройки --> *}
+                <td class="value value_sheet" width="30%" title="Поле ввода значения настройки">
+                    {$value_input}
+                </td>
+
+                {* <!-- поле выбора типа значения --> *}
+                <td class="value value_sheet" width="20%" title="Тип значения настройки">
+                    {$type_input}
+                </td>
+
+                {* <!-- подсказка --> *}
+                <td class="param_short" colspan="2" width="40%" title="Подсказка о назначении настройки">
+                    {$hint}
+                </td>
+
+                {* <!-- флажок Используется --> *}
+                <td class="param_short" title="Использовать ли эту настройку">
+                    <input class="checkbox hidden-checkbox" checked id="fields_{$index}_used" name="{$param}_used['{$field|escape}']" type="checkbox" value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);" />
+
+                    <span onclick="javascript: Toggle_PageCheckbox('fields_{$index}_used');">
+                        <img class="icon16x16 icon16x16-key" src="{$temp_url_images}icon_done_16x16.png" />
+                    </span>
+                </td>
+            {/function}
+
+
+
+            {* <!-- настройки из файла --> *}
+            <table align="center" cellpadding="0" cellspacing="20" class="white">
+
+                {$temp_param = $smarty.const.CONFIGFILE_SMARTYVAR_ITEM|default:''|escape}
+                {$temp_index = 0}
+                {if isset($item) && is_object($item)}
+                    {foreach $item as $temp_field => $temp_value}
+                        {is_xml_name item = $temp_value assign = 'temp'}
+                        {if $temp || is_bool($temp_value) || is_string($temp_value) || is_int($temp_value) || is_float($temp_value)}
+                            {$temp_field = $temp_field|regex_replace:'/^[\s\t\r\n]+/':''|regex_replace:'/[\s\t\r\n]+$/':''}
+                            {if $temp_field != ''}
+
+                                {$temp_required = false}
+                                {if $temp}
+                                    {$temp_hint = 'структура параметров из XML файла'}
+                                {else}
+                                    {$temp_hint = '&nbsp;'}
+                                {/if}
+
+                                {configfilepage_input_content field = $temp_field
+                                                              value = $temp_value
+                                                              param = $temp_param
+                                                              assign = 'temp_input'}
+
+                                {configfilepage_type_select_content field = $temp_field
+                                                                    value = $temp_value
+                                                                    param = $temp_param
+                                                                    assign = 'temp_type'}
+
+
+
+                                {if $temp_field == 'only_remote_images'}
+                                    {$temp_hint = 'не закачивать внешние фотофайлы'}
+                                    {configfilepage_bool_select_content field = $temp_field
+                                                                        value = $temp_value
+                                                                        param = $temp_param
+                                                                        assign = 'temp_input'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+
+
+
+                                {elseif $temp_field == 'dbname'}
+                                    {$temp_required = true}
+                                    {$temp_hint = 'имя используемой базы данных'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+                                    {if $config->demo|default:false}
+                                        {$temp_value = $temp_value|regex_replace:'/./u':'*'}
+                                        {configfilepage_input_content field = $temp_field
+                                                                      value = $temp_value
+                                                                      param = $temp_param
+                                                                      assign = 'temp_input'}
+                                    {/if}
+
+
+
+                                {elseif $temp_field == 'dbhost'}
+                                    {$temp_required = true}
+                                    {$temp_hint = 'адрес хоста сервера баз данных'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+
+
+
+                                {elseif $temp_field == 'dbuser'}
+                                    {$temp_required = true}
+                                    {$temp_hint = 'имя пользователя базы данных'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+                                    {if $config->demo|default:false}
+                                        {$temp_value = $temp_value|regex_replace:'/./u':'*'}
+                                        {configfilepage_input_content field = $temp_field
+                                                                      value = $temp_value
+                                                                      param = $temp_param
+                                                                      assign = 'temp_input'}
+                                    {/if}
+
+
+
+                                {elseif $temp_field == 'dbpass'}
+                                    {$temp_required = true}
+                                    {$temp_hint = 'пароль к базе данных'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+                                    {if $config->demo|default:false}
+                                        {configfilepage_input_content field = $temp_field
+                                                                      value = '************'
+                                                                      param = $temp_param
+                                                                      assign = 'temp_input'}
+                                    {/if}
+
+
+
+                                {elseif $temp_field == 'lang'}
+                                    {$temp_required = true}
+                                    {$temp_hint = 'язык интерфейса админпанели'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+
+
+
+                                {elseif $temp_field == 'debug'}
+                                    {$temp_required = true}
+                                    {$temp_hint = 'включить отладочный трассировщик'}
+                                    {configfilepage_bool_select_content field = $temp_field
+                                                                        value = $temp_value
+                                                                        param = $temp_param
+                                                                        assign = 'temp_input'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+
+
+
+                                {elseif $temp_field == 'debug_on_admin_exist'}
+                                    {$temp_required = true}
+                                    {$temp_hint = 'трассировщик не виден клиентам'}
+                                    {configfilepage_bool_select_content field = $temp_field
+                                                                        value = $temp_value
+                                                                        param = $temp_param
+                                                                        assign = 'temp_input'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+
+
+
+                                {elseif $temp_field == 'demo'}
+                                    {$temp_required = true}
+                                    {$temp_hint = 'движок работает в демо режиме'}
+                                    {configfilepage_bool_select_content field = $temp_field
+                                                                        value = $temp_value
+                                                                        param = $temp_param
+                                                                        assign = 'temp_input'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+
+
+
+                                {elseif $temp_field == 'smsDnevnik_disabled'}
+                                    {$temp_hint = 'отключить СМС дневник'}
+                                    {configfilepage_bool_select_content field = $temp_field
+                                                                        value = $temp_value
+                                                                        param = $temp_param
+                                                                        assign = 'temp_input'}
+                                    {$temp_type = $temp_type|regex_replace:"/^<select /":'<select disabled '}
+                                {/if}
+
+
+
+                                {* <!-- строка таблицы --> *}
+                                <tr>
+                                    {configfilepage_tr_content required = $temp_required
+                                                               field_input_boxed = false
+                                                               field_input = $temp_field
+                                                               value_input = $temp_input
+                                                               type_input = $temp_type
+                                                               hint = $temp_hint
+                                                               index = $temp_index
+                                                               field = $temp_field
+                                                               param = $temp_param}
+                                </tr>
+
+
+
+                                {$temp_index = $temp_index + 1}
+                            {/if}
+                        {/if}
+                    {/foreach}
+                {/if}
+
+
+
+                {* <!-- кнопка Добавить настройку --> *}
+                <tr>
+                    <td class="param_short" colspan="5" width="100%">
+                        <a href="{$temp_url_main|escape}" title="Добавить настройку" onclick="javascript: return Append_ConfigTableRow(this);">
+                            добавить
+                        </a>
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    {configfilepage_submit_content colspan = 2}
+                </tr>
+            </table>
+
+
+
+            <script language="JavaScript" type="text/javascript">
+
+                {* // добавление строки конфигурационной настройки в таблицу настроек *}
+                {* //   object = любой опорный объект, размещенный в любой ячейке таблицы *}
+
+                function Append_ConfigTableRow ( object ) {
+
+                    {* // по опорному объекту выходим на объект таблицы (то есть [объект] -> [родительский TD] -> [родительский TR] -> [родительский TABLE]) *}
+                    var table = jQuery(object).parent().parent().parent();
+                    if ((typeof(table) == 'object') && (table != null) && (table.length == 1)) {
+
+
+
+                        {* // получаем все объекты строк в этой таблице *}
+                        var tr = jQuery(table).find('tr');
+                        var num = tr.length;
+                        if (num > 0) {
+                            if (num <= 500) {
+
+
+
+                                {* // запоминаем контент последней строки таблицы (это кнопка "Добавить") *}
+                                var last_html = tr[num - 1].innerHTML;
+
+
+
+                                {* // готовим контент строки таблицы *}
+                                {configfilepage_name_input_content field = '[__field__]'
+                                                                   value = ''
+                                                                   param = $temp_param
+                                                                   assign = 'temp_field'}
+                                {configfilepage_input_content field = '[__field__]'
+                                                              value = ''
+                                                              param = $temp_param
+                                                              assign = 'temp_input'}
+                                {configfilepage_type_select_content field = '[__field__]'
+                                                                    value = ''
+                                                                    param = $temp_param
+                                                                    assign = 'temp_type'}
+                                {configfilepage_tr_content required = false
+                                                           field_input_boxed = true
+                                                           field_input = $temp_field
+                                                           value_input = $temp_input
+                                                           type_input = $temp_type
+                                                           hint = '&nbsp;'
+                                                           index = '[__index__]'
+                                                           field = '[__field__]'
+                                                           param = $temp_param
+                                                           assign = 'temp'}
+                                var html = '{$temp|replace:'\\':'\\\\'|replace:'\'':'\\\''}';
+                                var prev = '';
+                                while (prev != html) {
+                                    prev = html;
+                                    html = html.replace(/\[__index__\]/, num);
+                                }
+                                prev = '';
+                                while (prev != html) {
+                                    prev = html;
+                                    html = html.replace(/\[__field__\]/, 'new____________________' + num);
+                                }
+
+
+
+                                {* // вставляем контент новой строки в таблицу перед строкой кнопки "Добавить" *}
+                                tr[num - 1].innerHTML = html;
+                                jQuery(table).append('<tr>' + last_html + '</tr>');
+
+
+
+                            } else {
+                                alert('Добавление новой настройки отклонено, так как это превысит лимит их допустимого количества!');
+                            }
+                        }
+                    }
+
+
+
+                    {* // возвращаем FALSE (для вызывающих функцию из обработчика события OnClick элемента <a>) *}
+                    return false;
+                }
+            </script>
+
+
+
+            {* <!-- адрес страницы возврата после операции --> *}
+            {if $from_page|default:'' != ''}
+                <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|default:''|escape}" type="hidden" value="{$from_page|escape}">
+            {/if}
+
+
+
+            {* <!-- признак наличия данных об изменениях --> *}
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|default:''|escape}" type="hidden" value="1" />
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''|escape}" type="hidden" value="{$Token|default:''|escape}" />
+
+
+
+        </form>
+        <br>
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+
+
+
+            <div class="title">
+                Справка
+            </div>
+
+
+
+            <div>
+                Данная страница предназначена для формирования списка конфигурационных настроек. Существует несколько предопределенных, {**}
+                используемых системой и контролируемых так, что при их удалении, эти настройки будут созданы автоматически с дефолтными {**}
+                значениями. Остальные настройки можете создать на свое усмотрение. Такие настройки общие для клиентской стороны и админпанели, {**}
+                и могут быть использованы в шаблонах обеих сторон магазина, обратившись к объекту <i>$config</i> изнутри шаблона. {**}
+                Например, чтобы получить значение воображаемой настройки <i>ExampleTitle</i>, надо обратиться к <i>$config-&gt;ExampleTitle</i>. {**}
+                Обратиться к той же настройке изнутри PHP-модуля можно через <i>$this-&gt;config-&gt;ExampleTitle</i>.
+            </div>
+
+
+
+            <div>
+                <u>Важно</u>: Внимательно отнеситесь к изменению настроек <i>dbhost</i>, <i>dbname</i>, <i>dbuser</i> и <i>dbpass</i>. {**}
+                В случае недействительных значений в этих авторизационных параметрах дальнейшее перемещение по страницам {**}
+                админпанели будет невозможным. Придется в указанный выше конфигурационный файл через FTP вручную вносить {**}
+                действительные значения этих параметров.
+            </div>
+
+
+
+            <div>
+                <u>Важно</u>: При создании новой настройки учтите, что ее имя может содержать только английские буквы, цифры и знаки {**}
+                подчеркивания. Любые другие символы будут просто изъяты из имени. Причем имя настройки не может начинаться с цифры {**}
+                или знака подчеркивания. Эти ведущие цифры и ведущие или замыкающие подчеркивания также будут изъяты.
+            </div>
+
+
+
+            <div>
+                <u>Важно</u>: Сохраненные изменения конфигурационных настроек начинают действовать лишь со следующего действия на сайте. {**}
+                То есть в момент выдачи уведомления о сохранении настроек страница админпанели на самом деле отрисована еще на основе {**}
+                прежних настроек.
+            </div>
+
+
+
+            <div>
+                <b>XML файл</b>. Настройка такого типа означает, что в нее будет загружена структура параметров из указанного XML-файла. {**}
+                Фактически настройка превратится в объект класса SimpleXMLElement, а при отсутствии файла, неверном указании его {**}
+                имени (путь и имя задаем относительно корневой папки магазина) или некорректном содержимом - в пустой объект того же класса.
+            </div>
+
+
+
+        </div>
+
+
+
+    </div>
+
+{/strip}

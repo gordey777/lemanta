@@ -1,0 +1,581 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка учащихся.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о учащихся;
+    $schools = дерево записей о учебных заведениях;
+    $lessons = массив записей о предметах учебных заведений;
+    $classes = массив записей о классах учебных заведений;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    countries = true - вывести эту кнопку
+    regions = true - вывести эту кнопку
+    towns = true - вывести эту кнопку
+    schools = true - вывести эту кнопку
+    schools_types = true - вывести эту кнопку
+    schools_lessons = true - вывести эту кнопку
+    schools_classes = true - вывести эту кнопку
+    schools_learners = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "schools_learners"
+           main = true
+           countries = true
+           regions = true
+           towns = true
+           schools = true
+           schools_types = true
+           schools_lessons = true
+           schools_classes = true
+           schools_learners = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Учащиеся
+      </div>
+      Учащиеся
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SchoolsLearner&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить учащегося">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SchoolsLearners" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <!-- Фильтр -->
+      <table align="center" cellpadding="0" cellspacing="8" class="white">
+        <tr>
+
+          <!-- поле Страна -->
+          <td class="param_short">
+            Страна
+          </td>
+          <td class="value" width="33%" title="Фильтр: только из такой страны">
+
+            <!-- Создаем селектор стран -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY|escape}" onchange="javascript: Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}'); Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN|escape}'); Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL|escape}'); Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_CLASS|escape}'); Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              {foreach item=r from=$schools}
+                {strip}
+                  <option value="{$r->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:"" == $r->id} selected{/if}>
+                    {$r->name|escape}
+                  </option>
+                {/strip}
+              {/foreach}
+            </select>
+          </td>
+
+          <!-- поле Область -->
+          <td class="param_short">
+            Область
+          </td>
+          <td class="value" width="33%" title="Фильтр: только из такой области">
+
+            <!-- Создаем селектор областей -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}" onchange="javascript: Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN|escape}'); Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL|escape}'); Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_CLASS|escape}'); Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              {foreach item=r from=$schools}
+                {strip}
+                  {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && isset($r->items) && !empty($r->items)}
+                    {foreach item=r2 from=$r->items}
+                      <option value="{$r2->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:"" == $r2->id} selected{/if}>
+                        {$r2->name|escape}
+                      </option>
+                    {/foreach}
+                  {/if}
+                {/strip}
+              {/foreach}
+            </select>
+          </td>
+
+          <!-- поле Город -->
+          <td class="param_short">
+            Город
+          </td>
+          <td class="value" width="33%" title="Фильтр: только из такого города">
+
+            <!-- Создаем селектор городов -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN|escape}" onchange="javascript: Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL|escape}'); Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_CLASS|escape}'); Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              {foreach item=r from=$schools}
+                {strip}
+                  {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && isset($r->items) && !empty($r->items)}
+                    {foreach item=r2 from=$r->items}
+                      {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && isset($r2->items) && !empty($r2->items)}
+                        {foreach item=r3 from=$r2->items}
+                          <option value="{$r3->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN]|default:"" == $r3->id} selected{/if}>
+                            {$r3->name|escape}
+                          </option>
+                        {/foreach}
+                      {/if}
+                    {/foreach}
+                  {/if}
+                {/strip}
+              {/foreach}
+            </select>
+          </td>
+
+        </tr>
+        <tr>
+
+          <!-- поле Учебное заведение -->
+          <td class="param_short">
+            Заведение
+          </td>
+          <td class="value" width="33%" title="Фильтр: только принадлежащие такому учебному заведению">
+
+            <!-- Создаем селектор учебных заведений -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL|escape}" onchange="javascript: Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_CLASS|escape}'); Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              {foreach item=r from=$schools}
+                {strip}
+                  {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && isset($r->items) && !empty($r->items)}
+                    {foreach item=r2 from=$r->items}
+                      {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && isset($r2->items) && !empty($r2->items)}
+                        {foreach item=r3 from=$r2->items}
+                          {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN]|default:'' == $r3->id) && isset($r3->items) && !empty($r3->items)}
+                            {foreach item=r4 from=$r3->items}
+                              <option value="{$r4->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL]|default:"" == $r4->id} selected{/if}>
+                                {$r4->name|escape}
+                              </option>
+                            {/foreach}
+                          {/if}
+                        {/foreach}
+                      {/if}
+                    {/foreach}
+                  {/if}
+                {/strip}
+              {/foreach}
+            </select>
+          </td>
+
+          <!-- поле Класс учебного заведения -->
+          <td class="param_short">
+            Класс
+          </td>
+          <td class="value" width="33%" title="Фильтр: только принадлежащие такому классу учебного заведения">
+
+            <!-- Создаем селектор классов учебных заведений -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_CLASS|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_CLASS|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              {foreach item=r from=$schools}
+                {strip}
+                  {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && isset($r->items) && !empty($r->items)}
+                    {foreach item=r2 from=$r->items}
+                      {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && isset($r2->items) && !empty($r2->items)}
+                        {foreach item=r3 from=$r2->items}
+                          {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN]|default:'' == $r3->id) && isset($r3->items) && !empty($r3->items)}
+                            {foreach item=r4 from=$r3->items}
+                              {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN]|default:'' == $r3->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL]|default:'' == $r4->id) && isset($r4->classes_ids) && !empty($r4->classes_ids)}
+                                {foreach item=r5 from=$r4->classes_ids}
+                                  <option value="{$r5|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_CLASS]|default:"" == $r5} selected{/if}>
+                                    {if isset($classes) && !empty($classes)}
+                                      {foreach item=c from=$classes}
+                                        {if $c->class_id == $r5}
+                                          {$c->name|escape}
+                                        {/if}
+                                      {/foreach}
+                                    {else}
+                                      название недоступно
+                                    {/if}
+                                  </option>
+                                {/foreach}
+                              {/if}
+                            {/foreach}
+                          {/if}
+                        {/foreach}
+                      {/if}
+                    {/foreach}
+                  {/if}
+                {/strip}
+              {/foreach}
+            </select>
+          </td>
+
+          <!-- поле Предмет учебного заведения -->
+          <td class="param_short">
+            Предмет
+          </td>
+          <td class="value" width="33%" title="Фильтр: только такой предмет">
+
+            <!-- Создаем селектор классов учебных заведений -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_LESSON|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_LESSON|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              {foreach item=r from=$schools}
+                {strip}
+                  {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && isset($r->items) && !empty($r->items)}
+                    {foreach item=r2 from=$r->items}
+                      {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && isset($r2->items) && !empty($r2->items)}
+                        {foreach item=r3 from=$r2->items}
+                          {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN]|default:'' == $r3->id) && isset($r3->items) && !empty($r3->items)}
+                            {foreach item=r4 from=$r3->items}
+                              {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:'' == $r2->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN]|default:'' == $r3->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL]|default:'' == $r4->id) && isset($r4->classes_ids) && !empty($r4->classes_ids)}
+                                {foreach item=r5 from=$r4->lessons_ids}
+                                  <option value="{$r5|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_LESSON]|default:"" == $r5} selected{/if}>
+                                    {if isset($lessons) && !empty($lessons)}
+                                      {foreach item=c from=$lessons}
+                                        {if $c->lesson_id == $r5}
+                                          {$c->name|escape}
+                                        {/if}
+                                      {/foreach}
+                                    {else}
+                                      название недоступно
+                                    {/if}
+                                  </option>
+                                {/foreach}
+                              {/if}
+                            {/foreach}
+                          {/if}
+                        {/foreach}
+                      {/if}
+                    {/foreach}
+                  {/if}
+                {/strip}
+              {/foreach}
+            </select>
+          </td>
+
+        </tr>
+      </table>
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить&nbsp;
+          </td>
+
+          <!-- флажок Направление сортировки -->
+          <td class="param_short" title="Включить обратный порядок сортировки">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png">
+            </span>
+          </td>
+
+          <!-- флажок Лаконичный режим -->
+          <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Способ сортировки -->
+          <td class="value" width="40%" title="Способ сортировки учащихся в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_USERS_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+            </select>
+          </td>
+
+          <!-- поле Режим отображения -->
+          <td class="value" width="35%" title="Насколько полно выводить информацию о учащихся в списке">
+
+            <!-- Создаем селектор режимов отображения и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.VIEW_MODE_COMPACT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_COMPACT)} selected{/if}>компактно</option>
+              <option value="{$smarty.const.VIEW_MODE_STANDARD|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD)} selected{/if}>стандартно</option>
+              <option value="{$smarty.const.VIEW_MODE_FULL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)} selected{/if}>подробно</option>
+            </select>
+          </td>
+
+          <!-- поле Месяц -->
+          <td class="param_short">
+            оценки за
+          </td>
+          <td class="value" width="15%" title="За какой месяц выводить оценки">
+
+            <!-- Создаем селектор месяцев -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="1"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 1)} selected{/if}>январь</option>
+              <option value="2"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 2)} selected{/if}>февраль</option>
+              <option value="3"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 3)} selected{/if}>март</option>
+              <option value="4"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 4)} selected{/if}>апрель</option>
+              <option value="5"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 5)} selected{/if}>май</option>
+              <option value="6"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 6)} selected{/if}>июнь</option>
+              <option value="7"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 7)} selected{/if}>июль</option>
+              <option value="8"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 8)} selected{/if}>август</option>
+              <option value="9"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 9)} selected{/if}>сентябрь</option>
+              <option value="10"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 10)} selected{/if}>октябрь</option>
+              <option value="11"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 11)} selected{/if}>ноябрь</option>
+              <option value="12"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH] == 12)} selected{/if}>декабрь</option>
+            </select>
+          </td>
+
+          <!-- поле Год -->
+          <td class="value" width="10%" title="За какой год выводить оценки">
+
+            <!-- Создаем селектор годов -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_YEAR|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              {section name="years" start=2000 loop=2051 step=1}
+                <option value="{$smarty.section.years.index}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_YEAR]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_YEAR] == $smarty.section.years.index)} selected{/if}>{$smarty.section.years.index}</option>
+              {/section}
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения и полноты вывода)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {assign var="now_country" value=false}
+        {assign var="now_region" value=false}
+        {assign var="now_town" value=false}
+        {assign var="now_school" value=false}
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <!-- Визуальное выделение принадлежности к стране -->
+            {if $now_country !== $c->country}
+              {assign var="now_country" value=$c->country}
+              {assign var="now_region" value=false}
+              {assign var="now_town" value=false}
+              {assign var="now_school" value=false}
+              <li class="head_divider">
+                <div>
+                  {if $c->country != ""}
+                    {$c->country|escape}
+                  {else}
+                    Вне любой страны
+                  {/if}
+                </div>
+              </li>
+            {/if}
+
+            <!-- Визуальное выделение принадлежности к области -->
+            {if $now_region !== $c->region}
+              {assign var="now_region" value=$c->region}
+              {assign var="now_town" value=false}
+              {assign var="now_school" value=false}
+              <li class="divider">
+                <div>
+                  {if $c->region != ""}
+                    {$c->region|escape}
+                  {else}
+                    Без области
+                  {/if}
+                </div>
+              </li>
+            {/if}
+
+            <!-- Визуальное выделение принадлежности к городу -->
+            {if $now_town !== $c->town}
+              {assign var="now_town" value=$c->town}
+              {assign var="now_school" value=false}
+              <li class="divider" style="padding-left: 20px;">
+                <div>
+                  {if $c->town != ""}
+                    {$c->town|escape}
+                  {else}
+                    Без города
+                  {/if}
+                </div>
+              </li>
+            {/if}
+
+            <!-- Визуальное выделение принадлежности к учебному заведению -->
+            {if $now_school !== $c->school}
+              {assign var="now_school" value=$c->school}
+              <li class="divider" style="padding-left: 40px;">
+                <div>
+                  {if $c->school != ""}
+                    {$c->school|escape}
+                  {else}
+                    Без учебного заведения
+                  {/if}
+                </div>
+              </li>
+            {/if}
+
+            <li class="flatlist" style="padding-top: 10px; padding-bottom: 10px;">
+              <div class="onerow">
+
+                <!-- {* В переменной $id запоминаем идентификатор текущей записи *} -->
+                {assign var="id" value=$c->user_id}
+
+                <!-- Микро кнопки справа от названия -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                  <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                </a>
+
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                {if !empty($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_LESSON]) && !empty($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_CLASS]) && !empty($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SCHOOL]) && !empty($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN]) && !empty($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]) && !empty($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY])}
+                  {assign var="month" value=$smarty.const.REQUEST_PARAM_NAME_FILTER_MONTH}
+                  {assign var="month" value=$inputs[$month]}
+                  {assign var="year" value=$smarty.const.REQUEST_PARAM_NAME_FILTER_YEAR}
+                  {assign var="year" value=$inputs[$year]}
+                  {assign var="lesson_id" value=$smarty.const.REQUEST_PARAM_NAME_FILTER_LESSON}
+                  {assign var="lesson_id" value=$inputs[$lesson_id]}
+                  {assign var="days_count" value=$smarty.const.REQUEST_PARAM_NAME_FILTER_DAY}
+                  {assign var="days_count" value=$inputs[$days_count]}
+                  {assign var="week_day" value="week_day"}
+                  {assign var="week_day2" value=$inputs[$week_day]}
+                  {assign var="week_day" value=$week_day2-1}
+                  {assign var="week_day2" value=$week_day2+$days_count}
+                  {section name="grades" loop=$days_count step=-1}
+                    {assign var="day" value=$smarty.section.grades.index+1}
+                    <div class="order_edit" title="Оценка за {$day} число ({if $week_day2%7 == 1}воскресенье{elseif $week_day2%7 == 2}понедельник{elseif $week_day2%7 == 3}вторник{elseif $week_day2%7 == 4}среда{elseif $week_day2%7 == 5}четверг{elseif $week_day2%7 == 6}пятница{elseif $week_day2%7 == 0}суббота{/if})" style="{if (($smarty.section.grades.index + $week_day) % 7 == 6) || (($smarty.section.grades.index + $week_day) % 7 == -1)}background-color: #FFD0D0; border: #E0A0A0 1px solid; {else}{if !$smarty.section.grades.first}border-right: 0px solid; {/if}{/if}margin: 0px; padding: 0px 2px 0px 3px; width: 13px;">
+                      {if $smarty.foreach.items.first}
+                        <div style="color: #B0B0B0; font-size: 6pt; margin: -18px 0px 0px 0px; padding: 0px; position: absolute;">
+                          {$day}
+                        </div>
+                      {/if}
+                      <input name="grades[{$id|escape}][{$lesson_id|escape}][{$year|escape}][{$month|escape}][{$day}]" type="text" style="{if (($smarty.section.grades.index + $week_day) % 7 == 6) || (($smarty.section.grades.index + $week_day) % 7 == -1)}background-color: #FFD0D0; {/if}text-align: center;" value="{$c->grades[$lesson_id][$year][$month][$day]|default:''|escape}" onchange="javascript: Show_AcceptChanges_Button();">
+                    </div>
+                    {assign var="week_day2" value=$week_day2-1}
+                  {/section}
+                {/if}
+
+                <!-- Нумерация -->
+                <span class="topic" style="display: inline;">
+                  {if isset($CurrentPage)}
+                    {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                  {else}
+                    {$smarty.foreach.items.iteration}.
+                  {/if}
+                </span>
+
+                <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+                <input name="name[{$id}]" type="hidden" value="{$c->name|escape|default:''}">
+                <input name="name2[{$id}]" type="hidden" value="{$c->name2|escape|default:''}">
+                <input name="name3[{$id}]" type="hidden" value="{$c->name3|escape|default:''}">
+
+                <!-- Имя -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->compound_name|escape}"{if $c->enabled != 1} class="disabled_item"{/if}>
+                  {$c->compound_name|escape}
+                </a>
+
+              </div>
+
+              <!-- Краткая информация -->
+
+              <!-- {* Если включен полный вывод информации о записях *} -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)}
+
+                <!-- телефон -->
+                {if isset($c->phone) && ($c->phone != "")}
+                  <div class="line" title="Телефон: {$c->phone|escape}">
+                    <span>
+                      телефон:
+                    </span>
+                    {$c->phone|escape}
+                  </div>
+                {/if}
+
+              {/if}
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено учащихся{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} (режим: лаконичный){/if}.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка учащихся по конкретным параметрам.
+        Поля фильтра можно сочетать произвольно, они объединены функцией И.
+      </div>
+    </div>
+
+  </div>

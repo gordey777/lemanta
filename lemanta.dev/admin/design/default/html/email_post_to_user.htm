@@ -1,0 +1,136 @@
+<!-- {*
+  Impera CMS: шаблон письма пользователю о новом сообщении (отзыве, комментарии, объявлении).
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Используется в момент принятия от кого-либо ответного сообщения
+  на дискуссию, в которой участвовал пользователь. Содержимое шаблона
+  передается электронным письмом на емейл пользователя.
+
+  Принимает во входных переменных:
+    $post - запись о сообщении;
+    $root_url - безпротокольный адрес корня сайта.
+
+  ============================================================================
+
+  В письме мы не можем использовать внешнюю таблицу стилей, поэтому
+  просто прикрепляем ее прямо в тело письма. *} -->
+
+  {literal}
+    <style>
+
+      /* Вид заголовка письма */
+      h1       {border:           0px solid;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        13pt;
+                font-weight:      bold;
+                margin:           10px;
+                padding:          0px;
+                text-align:       left;
+                text-indent:      0px;}
+
+      /* Вид строки текста в письме */
+      p        {border:           0px solid;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           10px;
+                padding:          0px;
+                text-align:       left;
+                text-indent:      0px;}
+
+      /* Вид ссылок в письме */
+      a        {color:           #0080FF;
+                text-decoration: none;}
+
+      /* Вид ссылок при наведении мышки */
+      a:hover  {color:           #C00000;
+                text-decoration: underline;}
+
+      /* Вид таблицы в письме */
+      table    {border:        #E0E0E0 3px solid;
+                border-right:  #E0E0E0 2px solid;
+                border-bottom: #E0E0E0 2px solid;
+                font-family:   Verdana, Tahoma, Arial;
+                font-size:     10pt;
+                font-weight:   normal;
+                margin:        10px;
+                padding:       0px;}
+
+      /* Вид заголовочных ячеек таблицы (это ячейки слева) */
+      td       {background-color: #F0F0F0;
+                border:           #E0E0E0 0px solid;
+                border-right:     #E0E0E0 1px solid;
+                border-bottom:    #E0E0E0 1px solid;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          10px;
+                text-align:       left;
+                vertical-align:   top;
+                width:            80px;}
+
+      /* Вид информационных ячеек таблицы (это ячейки справа) */
+      td.info  {background-color: #FFFFFF;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          10px;
+                text-align:       left;
+                vertical-align:   top;
+                width:            400px;}
+    </style>
+  {/literal}
+
+  <!-- Выводим заголовок -->
+  <h1>
+    Новое сообщение на сайте
+  </h1>
+  <p>
+    В обсуждении, в котором Вы участвовали на нашем сайте, появилось новое сообщение.<br>
+    Оно представлено Вашему вниманию ниже. Если Вы заинтересованы в дальнейшем обсуждении,<br>
+    можете сделать это на страницах сайта.
+  </p>
+
+  <!-- Выводим информационную таблицу -->
+  <table border="0" cellpadding="0" cellspacing="0">
+
+    <!-- поле Имя писавшего -->
+    <tr>
+      <td>
+        Имя:
+      </td>
+      <td class="info">
+        {$post->name|escape}
+      </td>
+    </tr>
+
+    <!-- поле Дата -->
+    <tr>
+      <td>
+        Дата:
+      </td>
+      <td class="info">
+        {$post->date|escape}
+      </td>
+    </tr>
+
+    <!-- поле Текст сообщения -->
+    <tr>
+      <td>Сообщение:</td>
+      <td class="info">
+        {$post->message|default:$post->comment|strip_tags|escape|nl2br}
+      </td>
+    </tr>
+
+  </table>
+
+  <!-- {* Выводим ссылку на сайт, с которого пришло письмо *} -->
+  <p>
+    Это письмо поступило с сайта
+    <a href="http://{$root_url|escape}/" target="_blank">
+      {$root_url|escape}
+    </a>
+  </p>

@@ -1,0 +1,285 @@
+{* <!--
+  Impera CMS: шаблон админ модуля резервных копий.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о резервных копиях;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    imports = true - вывести эту кнопку
+    export = true - вывести эту кнопку
+    backup = true - вывести эту кнопку
+    redirects = true - вывести эту кнопку
+    mailer = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "backup"
+           main = true
+           imports = true
+           export = true
+           backup = true
+           redirects = true
+           mailer = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Бекап
+      </div>
+      Резервные копии
+    </h1>
+
+    <!-- Часть страницы, показываемая после старта восстановления или создания резервной копии -->
+    <div class="box_part" id="backup_start_box" style="display: none;">
+      <div class="toolkey">
+        &nbsp;
+      </div>
+      <div class="message">
+        Выполняется указанное Вами действие.<br>
+        Пожалуйста подождите.
+      </div>
+    </div>
+
+    <!-- Изначально видимая часть страницы, скрываемая после старта восстановления или создания резервной копии -->
+    <div class="box_part" id="backup_list_box">
+
+      <!-- Выводим инструментальные ссылки -->
+      <div class="toolkey">
+        {strip}
+          <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+            справка
+          </a>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Backup&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DOWNLOAD|escape}&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape|default:''}" title="Загрузить резервную копию" onclick="javascript: return Start_Popup('popupDOWNLOAD', null);">
+            загрузить
+          </a>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Backup&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_CREATE|escape}&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape|default:''}" title="Создать резервную копию" onclick="javascript: return Start_Popup('popupCREATE', null);">
+            создать
+          </a>
+        {/strip}
+      </div>
+
+      {* <!-- Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. --> *}
+      {if isset($message) && ($message != "")}
+        <div class="message">
+          {$message}
+        </div>
+      {/if}
+
+      {* <!-- Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. --> *}
+      {if isset($error) && ($error != "")}
+        <div class="error">
+          <b>Ошибка:</b> {$error}
+        </div>
+      {/if}
+
+      <!-- Форма со списком записей -->
+      <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Backup" enctype="multipart/form-data" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+        <!-- Фильтр -->
+
+        <!-- Сортировщик -->
+
+        <!-- Кнопка сброса фильтра --> 
+        <div class="toolkey">
+          {strip}
+            &nbsp;
+          {/strip}
+        </div>
+
+        <!-- {* Выпадающая панель выбора файла для загрузки *} -->
+        {strip}
+          <div class="popup" id="popupDOWNLOAD">
+            <div class="popup_content">
+              <div class="title">
+                <div class="close">
+                  <a href="#" onclick="javascript: return Hide_Popup('popupDOWNLOAD');" title="Закрыть">
+                    x
+                  </a>
+                </div>
+                Загрузка резервной копии
+              </div>
+              <div class="cell">
+                файл zip-архива:
+                <div class="input">
+                  <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.BACKUP_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                  <input class="input" disabled id="popupDOWNLOADfile" name="backup" type="file" title="Какой файл требуется взять с Вашего компьютера (объем файла не более {($smarty.const.BACKUP_UPLOAD_MAXIMAL_FILESIZE/1024/1024)|string_format:"%d"|escape} Мбайт)">
+                </div>
+              </div>
+              <div class="cell">
+                описание:
+                <div class="input">
+                  <textarea class="input" disabled id="popupDOWNLOADdescription" name="{$smarty.const.REQUEST_PARAM_NAME_DESCRIPTION|escape}" style="height: 128px;" title="Произвольное описание загружаемой резервной копии"></textarea>
+                </div>
+              </div>
+              <div class="submit">
+                <input class="submit" type="submit" value="Начать" onclick="javascript: return Submit_Popup('?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Backup&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DOWNLOAD|escape}', 'backup');">
+              </div>
+            </div>
+          </div>
+        {/strip}
+
+        <!-- {* Выпадающая панель создания резервной копии *} -->
+        {strip}
+          <div class="popup" id="popupCREATE">
+            <div class="popup_content">
+              <div class="title">
+                <div class="close">
+                  <a href="#" onclick="javascript: return Hide_Popup('popupCREATE');" title="Закрыть">
+                    x
+                  </a>
+                </div>
+                Создание резервной копии
+              </div>
+              <div class="cell">
+                описание:
+                <div class="input">
+                  <textarea class="input" disabled id="popupCREATEdescription" name="{$smarty.const.REQUEST_PARAM_NAME_DESCRIPTION|escape}" style="height: 128px;" title="Произвольное описание создаваемой резервной копии"></textarea>
+                </div>
+              </div>
+              <div class="submit">
+                <input class="submit" type="submit" value="Начать" onclick="javascript: return Submit_Popup('?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Backup&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_CREATE|escape}', 'backup');">
+              </div>
+            </div>
+          </div>
+        {/strip}
+
+        {if isset($items) && !empty($items)}
+
+          {foreach name=items item=c from=$items}
+            {strip}
+
+              <li class="flatlist">
+                <div class="onerow">
+
+                  <!-- Микро кнопки справа от названия -->
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данный файл будет удален с сайта. Вы подтверждаете такую операцию?');">
+                    <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                  </a>
+
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/backups{$files_host_suffix|escape}/{$c->file|strip_tags|escape}" title="Скачать файл">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_filed_16x16.png">
+                  </a>
+
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                  <!-- Нумерация -->
+                  <span class="topic" style="display: inline;">
+                    {$smarty.foreach.items.iteration}.
+                  </span>
+
+                  <!-- Дата -->
+                  {if $c->date|truncate:10:"":true != "0000-00-00"}
+                    <span class="date" title="Дата создания: {$c->date|escape}">
+                      {$c->date|truncate:10:"":true|escape}
+                    </span>
+                  {else}
+                    <span class="date">
+                      нет даты
+                    </span>
+                  {/if}
+
+                  <!-- Размер файла -->
+                  <span class="rating" title="Размер файла">
+                    {if $c->size > 1024*1024}
+                      {($c->size/1024/1024)|string_format:"%1.2f"|replace:",":"."} Мб
+                    {else}
+                      {($c->size/1024)|string_format:"%1.2f"|replace:",":"."} Кб
+                    {/if}
+                  </span>
+
+                  <!-- Название -->
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->restore_get|escape}" title="Восстановить из этой резервной копии" onclick="javascript: return Start_Popup('popupRESTORE{$smarty.foreach.items.iteration}', null);">
+                    {$c->file|strip_tags|escape}
+                  </a>
+
+                </div>
+
+                <!-- {* Выпадающая панель восстановления резервной копии *} -->
+                {strip}
+                  <div class="popup" id="popupRESTORE{$smarty.foreach.items.iteration}">
+                    <div class="popup_content">
+                      <div class="title">
+                        <div class="close">
+                          <a href="#" onclick="javascript: return Hide_Popup('popupRESTORE{$smarty.foreach.items.iteration}');" title="Закрыть">
+                            x
+                          </a>
+                        </div>
+                        Восстановление из резервной копии
+                      </div>
+                      <div class="cell">
+                        <input class="checkbox" id="items_form_popupRESTORE{$smarty.foreach.items.iteration}_ignore_files" name="ignore_files[{$c->file|strip_tags|escape}]" type="checkbox" value="1">
+                        <span onclick="javascript: Toggle_PageCheckbox('items_form_popupRESTORE{$smarty.foreach.items.iteration}_ignore_files');">
+                          пропустить восстановление картинок
+                        </span><br><br>
+                      </div>
+                      <div class="cell">
+                        <input class="checkbox" id="items_form_popupRESTORE{$smarty.foreach.items.iteration}_ignore_database" name="ignore_database[{$c->file|strip_tags|escape}]" type="checkbox" value="1">
+                        <span onclick="javascript: Toggle_PageCheckbox('items_form_popupRESTORE{$smarty.foreach.items.iteration}_ignore_database');">
+                          пропустить восстановление базы данных
+                        </span><br><br>
+                      </div>
+                      <div class="submit">
+                        <input class="submit" type="submit" value="Начать" onclick="javascript: return Submit_Popup('{$c->restore_get|escape}', 'backup');">
+                      </div>
+                    </div>
+                  </div>
+                {/strip}
+
+                <!-- Краткая информация -->
+
+                <!-- описание -->
+                {if isset($c->description) && ($c->description|strip_tags|replace:"&nbsp;":" "|strip != "")}
+                  <div class="line" title="{$c->description|strip_tags|replace:"&nbsp;":" "|escape}">
+                    <span>
+                      описание:
+                    </span>
+                    {$c->description|strip_tags|replace:"&nbsp;":" "|escape}
+                  </div>
+                {/if}
+
+              </li>
+            {/strip}
+          {/foreach}
+
+        {else}
+          <div class="noitems">
+            Не найдено резервных копий.
+          </div>
+        {/if}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape|default:''}">
+
+      </form>
+
+    </div>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        &nbsp;
+      </div>
+    </div>
+
+  </div>

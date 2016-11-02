@@ -1,0 +1,1406 @@
+{* <!--
+  Impera CMS: шаблон админ модуля страницы заказа.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о заказе;
+    $orders_phases = массив с записями о стадиях заказа;
+    $all_users = массив с записями о пользователях;
+    $deliveries = массив с записями о способах доставки;
+    $deliveries_types = массив с записями о типах доставки;
+    $payments = массив с записями о способах оплаты;
+    $catalog = массив с записями каталога товаров;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    orders = true - вывести эту кнопку
+    card_orders = true - вывести эту кнопку
+    orders_phases = true - вывести эту кнопку
+    payments_history = true - вывести эту кнопку
+    credit_programs = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           orders = true
+           card_orders = true
+           orders_phases = true
+           payments_history = true
+           credit_programs = true}
+
+  {* <!-- В переменную $id заносим идентификатор заказа или 0 при его отсутствии. --> *}
+  {assign var="id" value=$item->order_id|default:0|escape}
+
+  <!-- Подключаем скрипт и файл стилей календаря -->
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.js" type="text/javascript"></script>
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendas.js" type="text/javascript"></script>
+  <link href="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.css" rel="stylesheet" type="text/css">
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Orders" title="Перейти на страницу заказов в админпанели">Заказы</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id)}
+        Заказ №{$item->order_id|escape}
+      {else}
+        Новый заказ
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        {if !empty($id) && isset($item->code) && ($item->code != "") && empty($error)}
+          <a href="http://{$root_url|escape}/order/{$item->code|escape}" title="Перейти на страницу заказа в клиентской части сайта">
+            http://{$root_url|escape}/order/{$item->code|escape}
+          </a>
+        {else}
+          &nbsp;
+        {/if}
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных записи -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Order" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о покупателе -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Фамилия -->
+        <tr>
+          <td class="param">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Feedback" title="Перейти на страницу переписки в админпанели">
+                Ф.И.О.
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" width="40%" title="Фамилия покупателя">
+            <input class="edit" id="item_form_name" name="name[{$id}]" type="text" value="{$item->name|default:''|escape}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_name', 'item_form_name3');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <!-- поле Имя -->
+          <td class="value" width="40%" title="Имя покупателя">
+            <input class="edit" id="item_form_name3" name="name3[{$id}]" type="text" value="{$item->name3|default:''|escape}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_name3', 'item_form_name2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <!-- поле Отчество -->
+          <td class="value" width="20%" title="Отчество покупателя">
+            <input class="edit" id="item_form_name2" name="name2[{$id}]" type="text" value="{$item->name2|default:''|escape}">
+          </td>
+
+          <!-- кнопка Применить -->
+          <td class="value_box" width="1%" title="Сохранить изменения и остаться на этой же странице">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_ACCEPT|escape}" type="submit" value="Применить">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box" title="Сохранить изменения и перейти в список">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+
+        <!-- флаг Протестировать уведомление -->
+        <tr>
+          <td class="param" colspan="3">
+            &nbsp;
+          </td>
+          <td class="param_short" title="Показать уведомление на экране вместо его отправки">
+            <input class="checkbox" id="item_form_inform_testing" name="inform_testing[{$id}]" type="checkbox" value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_inform_testing');">
+              тестировать уведомление
+            </span>
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <!-- флаг Уведомить администратора -->
+          <td class="param_short" colspan="2" title="Информировать ли администратора по емейлу об изменениях в заказе">
+            <input class="checkbox" name="inform_admin_sms[{$id}]" type="checkbox" value="1" title="Информировать ли администратора по SMS об изменениях в заказе">
+            <input class="checkbox" id="item_form_inform_admin" name="inform_admin[{$id}]" type="checkbox" value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_inform_admin');">
+              уведомить админа о правках
+            </span>
+          </td>
+
+          <!-- флаг Уведомить покупателя -->
+          <td class="param_short" colspan="2" title="Информировать ли покупателя по емейлу об изменениях в заказе">
+            <input class="checkbox" name="inform_user_sms[{$id}]" type="checkbox" value="1" title="Информировать ли покупателя по SMS об изменениях в заказе">
+            <input class="checkbox" id="item_form_inform_user" name="inform_user[{$id}]" type="checkbox" value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_inform_user');">
+              и клиента
+            </span>
+          </td>
+        </tr>
+
+        <!-- поле Телефоны -->
+        <tr>
+          <td class="param">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=CallMe" title="Перейти на страницу запросов связи в админпанели">
+                Телефон
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" width="33%" title="Телефон 1 покупателя">
+            <input class="edit" id="item_form_phone" name="phone[{$id}]" type="text" value="{$item->phone|default:''|escape}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_phone', 'item_form_phone2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <td class="value" width="33%" title="Телефон 2 покупателя">
+            <input class="edit" id="item_form_phone2" name="phone2[{$id}]" type="text" value="{$item->phone2|default:''|escape}">
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <!-- поле Пользователь -->
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Users" title="Перейти на страницу клиентов в админпанели">
+                Пользователь
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" colspan="2" width="100%" title="Кто это из зарегистрированных пользователей">
+            <select name="user_id[{$id}]">
+              <option value="0"></option>
+
+              <!-- {*
+              Подключаем субшаблон списка клиентов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список клиентов
+                currents = идентификатор выбранного клиента (модификатор "|default:0" добавлен для обработки отсутствия выбора)
+                selector = true - это будет селектор, а не список клиентов *} -->
+
+              {include file = "../../common_parts/users.htm"
+                       items = $all_users
+                       currents = $item->user_id|default:0
+                       selector = true}
+            </select>
+          </td>
+        </tr>
+
+        <!-- поле Емейлы -->
+        <tr>
+          <td class="param">
+            Емейл:
+          </td>
+          <td class="value" width="33%" title="Емейл 1 покупателя">
+            <input class="edit" id="item_form_email" name="email[{$id}]" type="text" value="{$item->email|default:''|escape}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_email', 'item_form_email2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <td class="value" width="33%" title="Емейл 2 покупателя">
+            <input class="edit" id="item_form_email2" name="email2[{$id}]" type="text" value="{$item->email2|default:''|escape}">
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <!-- поле Дата заказа -->
+          <td class="param_short">
+            Дата заказа:
+          </td>
+          <td class="value" title="Дата оформления заказа (формат ГГГГ-ММ-ДД)">
+            <script language="JavaScript" type="text/javascript">
+              <!--
+              var xcDateFormat = 'yyyy-mm-dd';
+              // -->
+            </script>
+            <input class="edit" maxlength="10" name="date_date[{$id}]" type="text" value="{if isset($item->date_date) && ($item->date_date != '0000-00-00')}{$item->date_date|escape}{else}{$smarty.now|date_format:'%Y-%m-%d'}{/if}" onfocus="javascript: showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+          <td class="value" title="Время оформления заказа (формат ЧЧ:ММ:СС)">
+            <input class="edit" maxlength="8" name="date_time[{$id}]" type="text" value="{if isset($item->date_time) && ($item->date_time != '00:00:00')}{$item->date_time|escape}{else}{$smarty.now|date_format:'%H:%M:%S'}{/if}">
+          </td>
+        </tr>
+
+        <!-- поле Номера ICQ -->
+        <tr>
+          <td class="param">
+            Номер ICQ:
+          </td>
+          <td class="value" width="33%" title="Номер 1 ICQ покупателя">
+            <input class="edit" id="item_form_icq" name="icq[{$id}]" type="text" value="{$item->icq|default:''|escape}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_icq', 'item_form_icq2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <td class="value" width="33%" title="Номер 2 ICQ покупателя">
+            <input class="edit" id="item_form_icq2" name="icq2[{$id}]" type="text" value="{$item->icq2|default:''|escape}">
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <!-- поле Состояние -->
+          <td class="param_short">
+            Состояние:
+          </td>
+          <td class="value" colspan="2" width="100%" title="Состояние заказа">
+            <select name="status[{$id}]">
+              <option value="{$smarty.const.ORDER_STATUS_NEW|escape}"{if isset($item->status) && ($item->status == $smarty.const.ORDER_STATUS_NEW)} selected{/if}>Новый</option>
+              <option value="{$smarty.const.ORDER_STATUS_PROCESS|escape}"{if isset($item->status) && ($item->status == $smarty.const.ORDER_STATUS_PROCESS)} selected{/if}>В обработке</option>
+              <option value="{$smarty.const.ORDER_STATUS_DONE|escape}"{if isset($item->status) && ($item->status == $smarty.const.ORDER_STATUS_DONE)} selected{/if}>Выполнен</option>
+              <option value="{$smarty.const.ORDER_STATUS_CANCEL|escape}"{if isset($item->status) && ($item->status == $smarty.const.ORDER_STATUS_CANCEL)} selected{/if}>Аннулирован</option>
+            </select>
+          </td>
+        </tr>
+
+        <!-- поле Skype имена -->
+        <tr>
+          <td class="param">
+            Skype имя:
+          </td>
+          <td class="value" width="33%" title="Skype имя 1 покупателя">
+            <input class="edit" id="item_form_skype" name="skype[{$id}]" type="text" value="{$item->skype|default:''|escape}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_skype', 'item_form_skype2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <td class="value" width="33%" title="Skype имя 2 покупателя">
+            <input class="edit" id="item_form_skype2" name="skype2[{$id}]" type="text" value="{$item->skype2|default:''|escape}">
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <!-- поле Стадия состояния -->
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=OrdersPhases" title="Перейти на страницу стадий заказа в админпанели">
+                стадия
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" colspan="2" width="100%" title="Стадия состояния">
+
+            <!-- Создаем селектор стадий заказа -->
+            <select name="state[{$id}]">
+              <option value="0"></option>
+              {if isset($orders_phases) && !empty($orders_phases)}
+                {foreach item=r from=$orders_phases}
+                  <option value="{$r->phase_id|escape}"{if $r->phase_id == $item->state|default:0} selected{/if}>
+                    {$r->name|strip_tags|escape}
+                  </option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+        </tr>
+
+        <!-- поле Адрес 1 -->
+        <tr>
+          <td class="param">
+            Адрес доставки:
+          </td>
+          <td class="value" colspan="3" title="Адрес 1 доставки">
+
+            <!-- выпадающая панель с полями адреса 1 -->
+            <div class="popup_in_cell">
+              <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                  <td class="param_short">
+                    Страна:
+                  </td>
+                  <td class="value" colspan="7" width="100%" title="Страна">
+                    <input class="edit panel_address_field_1" name="address[{$id}]" type="text" value="{$item->address|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Область:
+                  </td>
+                  <td class="value" colspan="7" width="100%" title="Область">
+                    <input class="edit panel_address_field_2" name="address_2[{$id}]" type="text" value="{$item->address_2|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Город:
+                  </td>
+                  <td class="value" colspan="5" width="100%" title="Город">
+                    <input class="edit panel_address_field_3" name="address_3[{$id}]" type="text" value="{$item->address_3|default:''|escape}">
+                  </td>
+                  <td class="param_short">
+                    Индекс:
+                  </td>
+                  <td class="value" title="Почтовый индекс">
+                    <input class="edit panel_address_field_10" name="address_10[{$id}]" size="4" style="width: auto;" type="text" value="{$item->address_10|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Улица:
+                  </td>
+                  <td class="value" colspan="7" width="100%" title="Улица">
+                    <input class="edit panel_address_field_4" name="address_4[{$id}]" type="text" value="{$item->address_4|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Дом:
+                  </td>
+                  <td class="value" title="Дом">
+                    <input class="edit panel_address_field_5" name="address_5[{$id}]" size="4" style="width: auto;" type="text" value="{$item->address_5|default:''|escape}">
+                  </td>
+                  <td class="param_short">
+                    Корпус:
+                  </td>
+                  <td class="value" title="Корпус">
+                    <input class="edit panel_address_field_6" name="address_6[{$id}]" size="2" style="width: auto;" type="text" value="{$item->address_6|default:''|escape}">
+                  </td>
+                  <td class="param_short">
+                    Подъезд:
+                  </td>
+                  <td class="value" title="Подъезд">
+                    <input class="edit panel_address_field_7" name="address_7[{$id}]" size="2" style="width: auto;" type="text" value="{$item->address_7|default:''|escape}">
+                  </td>
+                  <td class="param_short">
+                    Код:
+                  </td>
+                  <td class="value" title="Код на двери подъезда">
+                    <input class="edit panel_address_field_8" name="address_8[{$id}]" size="4" style="width: auto;" type="text" value="{$item->address_8|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Квартира:
+                  </td>
+                  <td class="value" title="Квартира">
+                    <input class="edit panel_address_field_9" name="address_9[{$id}]" size="5" style="width: auto;" type="text" value="{$item->address_9|default:''|escape}">
+                  </td>
+                  <td class="param_short" colspan="4" width="100%">
+                    &nbsp;
+                  </td>
+                  <td class="value_box" colspan="2" title="Закрыть это окно">
+                    <input class="submit panel_ok_button" type="button" value="Ok" onclick="javascript: return Hide_Popup_Address(this);">
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- Скрипт обработки выпадающей панели адреса -->
+            {literal}
+              <script language="JavaScript" type="text/javascript">
+                <!--
+
+                // открытие выпадающей панели
+                //   link_object = кликабельный объект в ячейке таблицы, инициировавший открытие панели
+
+                function Show_Popup_Address (link_object) {
+                  jQuery('div.popup_in_cell').find('input.panel_ok_button').click();
+                  var panel = jQuery(link_object).parent().find('div.popup_in_cell');
+                  if ((typeof(panel) == 'object') && (panel != null) && ('length' in panel) && (panel.length > 0)) {
+                    panel = panel[0];
+                    if ((typeof(panel) == 'object') && (panel != null)) {
+                      jQuery(panel).show();
+                      jQuery(panel).find(':input:first').focus();
+                    }
+                  }
+                  return false;
+                }
+
+                // закрытие выпадающей панели
+                //   link_object = кликабельный объект в панели, инициировавший ее закрытие
+
+                function Hide_Popup_Address (link_object) {
+                  var panel = jQuery(link_object).closest('div.popup_in_cell').hide();
+                  if ((typeof(panel) == 'object') && (panel != null) && ('length' in panel) && (panel.length > 0)) {
+                    panel = panel[0];
+                    if ((typeof(panel) == 'object') && (panel != null)) {
+                      var result = jQuery.trim(jQuery(panel).find('input.panel_address_field_10').val());
+                      var value = jQuery.trim(jQuery(panel).find('input.panel_address_field_1').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += value;
+                      }
+                      value = jQuery.trim(jQuery(panel).find('input.panel_address_field_2').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += value;
+                      }
+                      value = jQuery.trim(jQuery(panel).find('input.panel_address_field_3').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += value;
+                      }
+                      value = jQuery.trim(jQuery(panel).find('input.panel_address_field_4').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += value;
+                      }
+                      value = jQuery.trim(jQuery(panel).find('input.panel_address_field_5').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += 'дом ' + value;
+                      }
+                      value = jQuery.trim(jQuery(panel).find('input.panel_address_field_6').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += 'корпус ' + value;
+                      }
+                      value = jQuery.trim(jQuery(panel).find('input.panel_address_field_7').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += 'подъезд ' + value;
+                      }
+                      value = jQuery.trim(jQuery(panel).find('input.panel_address_field_8').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += 'код ' + value;
+                      }
+                      value = jQuery.trim(jQuery(panel).find('input.panel_address_field_9').val());
+                      if (value != '') {
+                        if (result != '') result += ', ';
+                        result += 'квартира ' + value;
+                      }
+                      jQuery(panel).parent().find(':input:last').val(result);
+                    }
+                  }
+                  return false;
+                }
+                // -->
+              </script>
+            {/literal}
+
+            <!-- нередактируемое поле составного адреса -->
+            <input class="edit" name="compound_address[{$id}]" readonly type="text" value="{$item->compound_address|default:''|escape}" onfocus="javascript: return Show_Popup_Address(this);">
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <!-- поле Комментарий администратора -->
+          <td class="value" colspan="3" rowspan="2" title="Комментарий администратора к заказу">
+            <textarea name="comment_status[{$id}]" style="height: 48px;">{$item->comment_status|default:''|escape}</textarea>
+          </td>
+        </tr>
+
+        <!-- поле Адрес 2 -->
+        <tr>
+          <td class="param">
+            Адрес 2:
+          </td>
+          <td class="value" colspan="3" title="Адрес 2 доставки">
+
+            <!-- выпадающая панель с полями адреса 2 -->
+            <div class="popup_in_cell">
+              <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                  <td class="param_short">
+                    Страна:
+                  </td>
+                  <td class="value" colspan="7" width="100%" title="Страна">
+                    <input class="edit panel_address_field_1" name="address2[{$id}]" type="text" value="{$item->address2|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Область:
+                  </td>
+                  <td class="value" colspan="7" width="100%" title="Область">
+                    <input class="edit panel_address_field_2" name="address2_2[{$id}]" type="text" value="{$item->address2_2|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Город:
+                  </td>
+                  <td class="value" colspan="5" width="100%" title="Город">
+                    <input class="edit panel_address_field_3" name="address2_3[{$id}]" type="text" value="{$item->address2_3|default:''|escape}">
+                  </td>
+                  <td class="param_short">
+                    Индекс:
+                  </td>
+                  <td class="value" title="Почтовый индекс">
+                    <input class="edit panel_address_field_10" name="address2_10[{$id}]" size="4" style="width: auto;" type="text" value="{$item->address2_10|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Улица:
+                  </td>
+                  <td class="value" colspan="7" width="100%" title="Улица">
+                    <input class="edit panel_address_field_4" name="address2_4[{$id}]" type="text" value="{$item->address2_4|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Дом:
+                  </td>
+                  <td class="value" title="Дом">
+                    <input class="edit panel_address_field_5" name="address2_5[{$id}]" size="4" style="width: auto;" type="text" value="{$item->address2_5|default:''|escape}">
+                  </td>
+                  <td class="param_short">
+                    Корпус:
+                  </td>
+                  <td class="value" title="Корпус">
+                    <input class="edit panel_address_field_6" name="address2_6[{$id}]" size="2" style="width: auto;" type="text" value="{$item->address2_6|default:''|escape}">
+                  </td>
+                  <td class="param_short">
+                    Подъезд:
+                  </td>
+                  <td class="value" title="Подъезд">
+                    <input class="edit panel_address_field_7" name="address2_7[{$id}]" size="2" style="width: auto;" type="text" value="{$item->address2_7|default:''|escape}">
+                  </td>
+                  <td class="param_short">
+                    Код:
+                  </td>
+                  <td class="value" title="Код на двери подъезда">
+                    <input class="edit panel_address_field_8" name="address2_8[{$id}]" size="4" style="width: auto;" type="text" value="{$item->address2_8|default:''|escape}">
+                  </td>
+                </tr>
+                <tr>
+                  <td class="param_short">
+                    Квартира:
+                  </td>
+                  <td class="value" title="Квартира">
+                    <input class="edit panel_address_field_9" name="address2_9[{$id}]" size="5" style="width: auto;" type="text" value="{$item->address2_9|default:''|escape}">
+                  </td>
+                  <td class="param_short" colspan="4" width="100%">
+                    &nbsp;
+                  </td>
+                  <td class="value_box" colspan="2" title="Закрыть это окно">
+                    <input class="submit panel_ok_button" type="button" value="Ok" onclick="javascript: return Hide_Popup_Address(this);">
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- нередактируемое поле составного адреса -->
+            <input class="edit" name="compound_address2[{$id}]" readonly type="text" value="{$item->compound_address2|default:''|escape}" onfocus="javascript: return Show_Popup_Address(this);">
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+        </tr>
+
+        <!-- поле Тип доставки -->
+        <tr>
+          <td class="param">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=DeliveriesTypes" title="Перейти на страницу типов доставки в админпанели">
+                Тип доставки
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" colspan="3" title="Тип доставки">
+
+            <!-- Создаем селектор типов доставки -->
+            <select name="delivery_type[{$id}]">
+              <option value="0"></option>
+              {foreach item=r from=$deliveries_types}
+                <option value="{$r->type_id|escape}"{if $r->type_id == $item->delivery_type} selected{/if}>
+                  {$r->name|strip_tags|escape}
+                </option>
+              {/foreach}
+            </select>
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <!-- поле Дата оплаты (с флажком Оплачен) -->
+          <td class="param_short" title="Оплачен ли заказ">
+            <input class="checkbox" id="item_form_payment_status" name="payment_status[{$id}]" type="checkbox"{if isset($item->payment_status) && ($item->payment_status == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_payment_status');">
+              Оплачен:
+            </span>
+          </td>
+          <td class="value" title="Дата оплаты заказа (формат ГГГГ-ММ-ДД)">
+            <script language="JavaScript" type="text/javascript">
+              <!--
+              var xcDateFormat = 'yyyy-mm-dd';
+              // -->
+            </script>
+            <input class="edit" maxlength="10" name="payment_date_date[{$id}]" type="text" value="{if isset($item->payment_date_date) && ($item->payment_date_date != '0000-00-00')}{$item->payment_date_date|escape}{/if}" onfocus="javascript: showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+          <td class="value" title="Время оплаты заказа (формат ЧЧ:ММ:СС)">
+            <input class="edit" maxlength="8" name="payment_date_time[{$id}]" type="text" value="{if isset($item->payment_date_time) && ($item->payment_date_time != '00:00:00')}{$item->payment_date_time|escape}{/if}">
+          </td>
+        </tr>
+
+        <!-- поле Комментарий покупателя -->
+        <tr>
+          <td class="param_high" rowspan="4">
+            Комментарий:
+          </td>
+          <td class="value" colspan="3" rowspan="4" title="Комментарий покупателя к заказу">
+            <textarea name="comment[{$id}]" style="height: 112px;">{$item->comment|default:''|escape}</textarea>
+          </td>
+          <td class="param_short" rowspan="4">
+            &nbsp;
+          </td>
+
+          <!-- поле Способ оплаты -->
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Payments" title="Перейти на страницу способов оплаты в админпанели">
+                Способ оплаты
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" colspan="2" width="100%" title="Каким способом был оплачен заказ (если был желавшийся покупателем способ, он выделяется красным цветом)">
+            <select name="payment_method_id[{$id}]">
+              <option value="0"></option>
+              {if isset($payments) && !empty($payments)}
+                {foreach item=r from=$payments}
+                  <option value="{$r->payment_method_id|escape}"{if ($r->payment_method_id == $item->payment_method_id|default:0) || ((!isset($item->payment_method_id) || empty($item->payment_method_id)) && ($r->payment_method_id == $item->desire_payment_id|default:0))} selected{/if}{if $r->payment_method_id == $item->desire_payment_id|default:0} style="color: #C00000;"{/if}>
+                    {$r->name|escape}
+                  </option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+        </tr>
+
+        <!-- поле Партнер -->
+        <tr>
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Users" title="Перейти на страницу клиентов в админпанели">
+                Партнер
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" colspan="2" width="100%" title="С участием какого партнера был сделан этот заказ">
+            <select name="affiliate_id[{$id}]">
+              <option value="0"></option>
+
+              <!-- {*
+              Подключаем субшаблон списка клиентов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список клиентов
+                currents = идентификатор выбранного клиента (модификатор "|default:0" добавлен для обработки отсутствия выбора)
+                selector = true - это будет селектор, а не список клиентов *} -->
+
+              {include file = "../../common_parts/users.htm"
+                       items = $all_users
+                       currents = $item->affiliate_id|default:0
+                       selector = true}
+            </select>
+          </td>
+        </tr>
+
+        <!-- поле Желаемая дата доставки -->
+        <tr>
+          <td class="param_short">
+            Желает к дате:
+          </td>
+          <td class="value" colspan="2" width="100%" title="Желаемая дата доставки">
+            <input class="edit" name="to_date[{$id}]" type="text" value="{$item->to_date|default:''|escape}">
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            ко времени:
+          </td>
+          <td class="value" colspan="2" width="100%" title="Желаемое время доставки">
+            <input class="edit" name="to_time[{$id}]" type="text" value="{$item->to_time|default:''|escape}">
+          </td>
+        </tr>
+      </table>
+
+      <h2>
+        Товары
+      </h2>
+ 
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        {if isset($item->products) && !empty($item->products)}
+          {foreach name=v item=r from=$item->products}
+            <tr>
+
+              <!-- нумерация -->
+              <td class="param_short" style="height: 10px; vertical-align: bottom;">
+                {$smarty.foreach.v.iteration}.
+              </td>
+
+              <!-- поле Название товара -->
+              <td class="param_text" colspan="2" rowspan="2" width="75%" title="Название товара">
+
+                {assign var="image" value=""}
+                {if isset($r->small_image)}
+                  {assign var="image" value=$r->small_image|default:""}
+                {/if}
+                {if ($image == "") && isset($r->large_image)}
+                  {assign var="image" value=$r->large_image|default:""}
+                {/if}
+                {if ($image == "") && isset($r->fotos) && !empty($r->fotos)}
+                  {foreach item=f from=$r->fotos}
+                    {if $image == ""}
+                      {assign var="image" value=$f->filename|default:""}
+                    {/if}
+                  {/foreach}
+                {/if}
+
+                {if $image == ""}
+                  {assign var="description" value=$r->description|default:""}
+                  {assign var="image" value=$description|regex_replace:"'^.*?<img[^>]+?src=([^>\s]+).+$'is":"\\1"}
+                  {if $image == $description}
+                    {assign var="description" value=$r->body|default:""}
+                    {assign var="image" value=$description|regex_replace:"'^.*?<img[^>]+?src=([^>\s]+).+$'is":"\\1"}
+                    {if $image == $description}
+                      {assign var="image" value=""}
+                    {/if}
+                  {/if}
+                  {if $image == ""}
+                    {capture assign="image"}"http://{$root_url|escape}/design/{$settings->theme|escape}/images/no_foto.jpg"{/capture}
+                  {/if}
+                {else}
+                  {capture assign="image"}"{if $image|truncate:7:'':true|lower != 'http://'}http://{$root_url|escape}/{/if}{$image|escape}"{/capture}
+                {/if}
+
+                <!-- изображение -->
+                {strip}
+                <a class="image{if $r->model == ""} image_no_product{/if}" href="http://{$root_url|escape}/{if $r->url_special != 1}products/{/if}{$r->url|escape}" title="{if !isset($settings->product_category_show) || ($settings->product_category_show == 1)}{$r->category|strip_tags|escape} {/if}{if !isset($settings->product_brand_show) || ($settings->product_brand_show == 1)}{$r->brand|strip_tags|escape} {/if}{$r->model|strip_tags|escape}">
+                  <div class="image{if $r->model == ""} image_no_product" title="Этого товара уже нет в каталоге сайта{/if}">
+                    <img src={$image}>
+                  </div>
+                </a>
+                {/strip}
+
+                <a href="http://{$root_url|escape}/{if $r->url_special != 1}products/{/if}{$r->url|escape}">
+                  <span class="text">{$r->product_name|strip_tags|default:''|escape}</span>
+                </a>
+                {if ($r->variant_name|strip_tags|strip != "") && ($r->variant_name|strip_tags|strip != $r->product_name|strip_tags|strip)}
+                  <span class="subtext">{$r->variant_name|strip_tags|escape}</span>
+                {/if}
+                {if $r->name_properties|strip_tags|strip != ""}
+                  <span class="subinfo">{$r->name_properties|strip_tags|escape}</span>
+                {/if}
+                <input name="orderitem_id[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{if !isset($r->virtual)}{$r->orderitem_id|escape|default:0}{else}0{/if}">
+                <input name="orderitem_product_id[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$r->product_id|escape|default:0}">
+                <input name="orderitem_variant_id[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$r->variant_id|escape|default:0}">
+                <input name="orderitem_product_name[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$r->product_name|default:''|escape}">
+                <input name="orderitem_variant_name[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$r->variant_name|default:''|escape}">
+                <input name="orderitem_name_properties[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$r->name_properties|default:''|escape}">
+              </td>
+
+              <!-- поле Цена -->
+              <td class="value" title="Цена товара">
+                <input class="edit" id="orderitem_price_{$id}_{$smarty.foreach.v.iteration}" name="orderitem_price[{$id}][{$smarty.foreach.v.iteration}]" size="10" style="width: auto;" type="text" value="{(($r->real_price|default:0) * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'}" onkeyup="javascript: return Change_OrderItem_Price(event, this, '{$id}', '{$smarty.foreach.v.iteration}', '', true);">
+              </td>
+              <td class="param_short">
+                {strip}
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currencies" title="Перейти на страницу валют в админпанели">
+                    {$currency->sign|default:''|escape}
+                  </a>
+                {/strip}
+              </td>
+
+              <!-- поле Количество -->
+              <td class="value" title="Количество товара (отрицательное число обозначает продажу под заказ)">
+                <input class="edit" id="orderitem_quantity_{$id}_{$smarty.foreach.v.iteration}" name="orderitem_quantity[{$id}][{$smarty.foreach.v.iteration}]" size="5" style="width: auto;" type="text" value="{$r->quantity|escape|default:0}" onkeyup="javascript: return Change_OrderItem_Quantity(event, this, '{$id}', '{$smarty.foreach.v.iteration}', true);">
+                <input name="orderitem_quantity_previous[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$r->quantity|escape|default:0}">
+              </td>
+              <td class="param_short">
+                шт.
+              </td>
+
+              <!-- поле Скидка -->
+              <td class="value" title="Использовать скидку">
+                <input class="edit" id="orderitem_discount_{$id}_{$smarty.foreach.v.iteration}" name="orderitem_discount[{$id}][{$smarty.foreach.v.iteration}]" size="5" style="width: auto;" type="text" value="{if $r->discount|string_format:'%1.2f'|replace:',':'.' != '0.00'}{$r->discount|string_format:'%1.2f'|replace:',':'.'|escape}{/if}" onkeyup="javascript: return Change_OrderItem_Discount(event, this, '{$id}', '{$smarty.foreach.v.iteration}', true);">
+              </td>
+              <td class="param_short">
+                {strip}
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Groups" title="Перейти на страницу групповых скидок в админпанели">
+                    %
+                  </a>
+                {/strip}
+              </td>
+
+              <!-- окончательная цена позиции -->
+              {assign var="quantity" value=$r->quantity}
+              {if $r->quantity < 0}
+                {assign var="quantity" value=$r->quantity*-1}
+              {/if}
+              <td class="param_short" id="orderitem_total_{$id}_{$smarty.foreach.v.iteration}" old_value="{(($r->price|default:0) * $quantity * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'|escape}" style="text-align: right;">
+                {(($r->price|default:0) * $quantity * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."|escape} {$currency->sign|default:''|escape}
+              </td>
+
+              <!-- флажок Используется -->
+              <td class="param_short" title="Действительна ли эта товарная позиция (позиции со снятым флажком будут удалены)">
+                <input class="checkbox" id="orderitem_used_{$id}_{$smarty.foreach.v.iteration}" name="orderitem_used[{$id}][{$smarty.foreach.v.iteration}]" type="checkbox" checked value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);">
+              </td>
+            </tr>
+            <tr>
+              <td>&nbsp;</td>
+              <td colspan="4">&nbsp;</td>
+            </tr>
+          {/foreach}
+        {/if}
+
+        <!-- Доставка -->
+        <tr>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <!-- поле Способ доставки -->
+          <td class="param_text">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Deliveries" title="Перейти на страницу способов доставки в админпанели">
+                Способ&nbsp;доставки
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" width="75%" title="Способ доставки">
+            <select name="delivery_method_id[{$id}]" onchange="javascript: Change_Delivery_Method(this.value);">
+              <option value="0"></option>
+              {if isset($deliveries) && !empty($deliveries)}
+                {foreach item=r from=$deliveries}
+                  <option value="{$r->delivery_method_id|escape}"{if $r->delivery_method_id == $item->delivery_method_id|default:0} selected{/if}>
+                    {$r->name|escape} [{if $r->discount|string_format:"%1.2f"|replace:",":"." >= 0}скидка {$r->discount|string_format:"%1.2f"|replace:",":"."}%, {/if}цена {(($r->price|default:0) * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."} {$currency->sign|default:''|escape}{if $r->free_from|string_format:"%1.2f"|replace:",":"." > 0}, бесплатно от {($r->free_from * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."} {$currency->sign|default:''|escape}{/if}]
+                  </option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+
+          <!-- поле Цена доставки -->
+          <td class="value" title="Цена доставки">
+            <input class="edit" id="delivery_{$id}" name="delivery_price[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->delivery_price|default:0 > 0}{($item->delivery_price * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'|escape}{else}0.00{/if}" onkeyup="javascript: return Change_OrderItem_Price(event, this, '{$id}', 'delivery', '', true);">
+          </td>
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currencies" title="Перейти на страницу валют в админпанели">
+                {$currency->sign|default:''|escape}
+              </a>
+            {/strip}
+          </td>
+
+          <!-- поле Трекинг посылки -->
+          <td class="value" colspan="3" title="Код отслеживания груза (выдается службой доставки)">
+            <input class="edit" name="delivery_tracking[{$id}]" type="text" value="{$item->delivery_tracking|default:''|escape}">
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <td class="param_short" id="orderitem_total_{$id}_delivery" old_value="{if $item->delivery_price|default:0 > 0}{($item->delivery_price * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'|escape}{else}0.00{/if}" style="text-align: right;">
+            {if $item->delivery_price|default:0 > 0}{($item->delivery_price * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."|escape}{else}0.00{/if} {$currency->sign|default:''|escape}
+          </td>
+
+          <td class="param_short">
+            &nbsp;
+          </td>
+        </tr>
+
+        <!-- Дополнительная скидка -->
+        <tr>
+          <td class="param_short">
+            &nbsp;
+          </td>
+
+          <td class="param_text" colspan="2" width="75%">
+            Дополнительная скидка
+          </td>
+
+          <!-- поле Сумма дополнительной скидки -->
+          <td class="value" title="Сумма дополнительной скидки">
+            <input class="edit" id="discount_sum_{$id}" name="discount_sum[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->discount_sum|default:0 > 0}{($item->discount_sum * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'|escape}{else}0.00{/if}" onkeyup="javascript: return Change_OrderItem_Price(event, this, '{$id}', 'discount', '-', true);">
+          </td>
+          <td class="param_short" colspan="3">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currencies" title="Перейти на страницу валют в админпанели">
+                {$currency->sign|default:''|escape}
+              </a>
+            {/strip}
+          </td>
+
+          <!-- поле Процент дополнительной скидки -->
+          <td class="value" title="Сумма дополнительной скидки, выраженная в процентах">
+            {assign var="temp" value=$item->amount|default:0}
+            {assign var="temp" value=$temp+$item->discount_sum|default:0}
+            {assign var="temp" value=$temp+$item->delivery_price|default:0}
+            {if $temp == 0}{assign var="temp" value=1}{/if}
+            <input class="edit" id="discount_percent_{$id}" size="5" style="width: auto;" type="text" value="{if $item->discount_sum|default:0 > 0}{($item->discount_sum*100/$temp)|string_format:'%1.2f'|replace:',':'.'|escape}{else}0.00{/if}" onkeyup="javascript: return Change_Order_DiscountPercent(event, this, '{$id}', '-', true);">
+          </td>
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Groups" title="Перейти на страницу групповых скидок в админпанели">
+                %
+              </a>
+            {/strip}
+          </td>
+
+          <td class="param_short" id="orderitem_total_{$id}_discount" old_value="-{if $item->discount_sum|default:0 > 0}{($item->discount_sum * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'|escape}{else}0.00{/if}" style="text-align: right;">
+            -{if $item->discount_sum|default:0 > 0}{($item->discount_sum * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."|escape}{else}0.00{/if} {$currency->sign|default:''|escape}
+          </td>
+
+          <td class="param_short">
+            &nbsp;
+          </td>
+        </tr>
+
+        <!-- кнопка Добавить товарную позицию -->
+        <tr>
+          <td class="param_short" colspan="5">
+            <a href="#" id="item_form_add_key" title="Добавить товарную позицию" onclick="javascript: return Show_PageElements('catalog');">
+              добавить
+            </a>
+          </td>
+
+          <!-- итого товаров -->
+          <td class="param_short" id="orderitem_total_{$id}_order_quantity" old_value="{$item->total_quantity|default:0|escape}" style="color: #000000; text-align: right;" title="Количество товаров в заказе">
+            {$item->total_quantity|default:0|escape}
+          </td>
+          <td class="param_short" colspan="3">
+            шт.
+          </td>
+
+          <!-- итого сумма -->
+          <td class="param_short" id="orderitem_total_{$id}_order_sum" old_value="{if $item->total_amount|default:0 != 0}{($item->total_amount * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'|escape}{else}0.00{/if}" style="color: #000000; text-align: right; min-width: 120px;" title="Полная сумма заказа">
+            {if $item->total_amount|default:0 != 0}{($item->total_amount * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."|escape}{else}0.00{/if} {$currency->sign|default:''|escape}
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+        </tr>
+      </table>
+
+      {literal}
+        <script language="JavaScript" type="text/javascript">
+          <!--
+
+          // перечень цен на доставку
+
+          {/literal}
+            var order_amount = {if $item->amount|default:0 != 0}{($item->amount * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'}{else}0.00{/if};
+            var order_undiscount_amount = {assign var=temp value=$item->amount|default:0}{assign var=temp value=$temp+$item->discount_sum|default:0}{($temp * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'};
+            var delivery_prices = new Array();
+            var delivery_free_from = new Array();
+            var delivery_discounts = new Array();
+            delivery_prices[0] = 0.00;
+            delivery_free_from[0] = 0.00;
+            delivery_discounts[0] = 0.00;
+            {if isset($deliveries) && !empty($deliveries)}
+              {foreach item=r from=$deliveries}
+                delivery_prices[{$r->delivery_method_id|escape}] = {($r->price * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'};
+                delivery_free_from[{$r->delivery_method_id|escape}] = {($r->free_from * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'};
+                delivery_discounts[{$r->delivery_method_id|escape}] = {$r->discount|string_format:'%1.2f'|replace:',':'.'};
+              {/foreach}
+            {/if}
+          {literal}
+
+          // обработка смены способа доставки
+
+          function Change_Delivery_Method (id) {
+
+            // находим объект поля ввода цены доставки на странице
+            var object = document.getElementById('delivery_{/literal}{$id}{literal}');
+            if ((typeof(object) == 'object') && (object != null) && ('value' in object)) {
+
+              // передаем цену способа доставки
+              var price = (order_amount < delivery_free_from[id]) || (delivery_free_from[id] <= 0) ? delivery_prices[id] : 0;
+              object.value = price.toFixed(2);
+
+              // если у объекта есть обработчик события OnKeyUp, вызываем обработчик
+              if (object.onkeyup) object.onkeyup();
+
+              // если у способа доставки есть своя скидка на заказ
+              if (delivery_discounts[id] >= 0) {
+                var object = document.getElementById('discount_sum_{/literal}{$id}{literal}');
+                if ((typeof(object) == 'object') && (object != null) && ('value' in object)) {
+
+                  // вычисляем скидку в виде суммы и передаем ее в поле ввода
+                  price = delivery_discounts[id] * order_undiscount_amount / 100;
+                  object.value = price.toFixed(2);
+
+                  // если у поля ввода есть обработчик события OnKeyUp, вызываем обработчик
+                  if (object.onkeyup) object.onkeyup();
+                }
+              }
+            }
+          }
+
+          // добавление строки товарной позиции в таблицу товаров заказа
+          //   object_id = идентификатор любого опорного объекта, размещенного в любой ячейке таблицы
+          //   product_link_object = объект ссылки добавляемого товара
+          //   product_id = идентификатор добавляемого товара
+          //   variant_id = идентификатор варианта товара
+
+          function Append_ProductTableRow (object_id, product_link_object, product_id, variant_id) {
+
+            // находим опорный объект на странице
+            var object = document.getElementById(object_id);
+            if ((typeof(object) == 'object') && (object != null)) {
+
+              // если существует опорный объект ссылки добавляемого товара
+              if ((typeof(product_link_object) == 'object') && (product_link_object != null) && ('innerHTML' in product_link_object)) {
+
+                // берем данные о товаре
+                product_id = htmlspecialchars(product_id, 'ENT_QUOTES');
+                variant_id = htmlspecialchars(variant_id, 'ENT_QUOTES');
+                var product_name = htmlspecialchars(product_link_object.innerHTML, 'ENT_QUOTES');
+                var childs = product_link_object.parentNode.childNodes;
+                if (childs && childs.length > 3) {
+                  var variant_name = '';
+                  var variant_price = '';
+                  if (childs[1] && ('innerHTML' in childs[1])) variant_price = htmlspecialchars(childs[1].innerHTML, 'ENT_QUOTES');
+                  if (childs[4] && ('innerHTML' in childs[4])) variant_name = htmlspecialchars(childs[4].innerHTML, 'ENT_QUOTES');
+                }
+
+                // по опорному объекту выходим на объект таблицы (то есть [объект] -> [родительский TD] -> [родительский TR] -> [родительский TABLE])
+                var table = jQuery(object).parent().parent().parent();
+                if ((typeof(table) == 'object') && (table != null) && (table.length == 1)) {
+
+                  // получаем все объекты строк в этой таблице
+                  var tr = jQuery(table).find('tr');
+                  var num = tr.length;
+                  if (num > 0) {
+                    if (num <= 1000) {
+
+                      // запоминаем контент последней строки таблицы (это кнопка "Добавить")
+                      var last_html = tr[num - 1].innerHTML;
+
+                      // формируем контент новой строки таблицы
+                      var id = {/literal}{$id}{literal};
+                      num = (num - 3) / 2 + 1;
+                      var html = '<td class="param_short" style="height: 10px; vertical-align: bottom;">' +
+                                   num + '.' +
+                                 '</td>' +
+                                 '<td class="param_text" colspan="2" rowspan="2" width="75%" title="Название товара">' +
+                                   '<a href="{/literal}http://{$root_url|escape}/products/' + product_id + '{literal}">' +
+                                     '<span class="text">' + product_name + '</span>' +
+                                   '</a>' +
+                                   ((variant_name != '') ? '<span class="subtext">' + variant_name + '</span>' : '') +
+                                   '<input name="orderitem_id[' + id + '][' + num + ']" type="hidden" value="0">' +
+                                   '<input name="orderitem_product_id[' + id + '][' + num + ']" type="hidden" value="' + product_id + '">' +
+                                   '<input name="orderitem_variant_id[' + id + '][' + num + ']" type="hidden" value="' + variant_id + '">' +
+                                   '<input name="orderitem_product_name[' + id + '][' + num + ']" type="hidden" value="' + product_name + '">' +
+                                   '<input name="orderitem_variant_name[' + id + '][' + num + ']" type="hidden" value="' + variant_name + '">' +
+                                   '<input name="orderitem_name_properties[' + id + '][' + num + ']" type="hidden" value="">' +
+                                 '</td>' +
+                                 '<td class="value" title="Цена товара">' +
+                                   '<input class="edit" id="orderitem_price_' + id + '_' + num + '" name="orderitem_price[' + id + '][' + num + ']" size="10" style="width: auto;" type="text" value="' + variant_price + '" onkeyup="javascript: return Change_OrderItem_Price(event, this, \'' + id + '\', \'' + num + '\', \'\', true);">' +
+                                 '</td>' +
+                                 '<td class="param_short">' +
+                                   '<a href="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currencies{literal}" title="Перейти на страницу валют в админпанели">' +
+                                     '{/literal}{$currency->sign|default:''|escape}{literal}' +
+                                   '</a>' +
+                                 '</td>' +
+                                 '<td class="value" title="Количество товара (отрицательное число обозначает продажу под заказ)">' +
+                                   '<input class="edit" id="orderitem_quantity_' + id + '_' + num + '" name="orderitem_quantity[' + id + '][' + num + ']" size="5" style="width: auto;" type="text" value="1" old_value="0" onkeyup="javascript: return Change_OrderItem_Quantity(event, this, \'' + id + '\', \'' + num + '\', true);">' +
+                                   '<input name="orderitem_quantity_previous[' + id + '][' + num + ']" type="hidden" value="0">' +
+                                 '</td>' +
+                                 '<td class="param_short">' +
+                                    'шт.' +
+                                 '</td>' +
+                                 '<td class="value" title="Использовать скидку">' +
+                                   '<input class="edit" id="orderitem_discount_' + id + '_' + num + '" name="orderitem_discount[' + id + '][' + num + ']" size="5" style="width: auto;" type="text" value="" onkeyup="javascript: return Change_OrderItem_Discount(event, this, \'' + id + '\', \'' + num + '\', true);">' +
+                                 '</td>' +
+                                 '<td class="param_short">' +
+                                   '<a href="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Groups{literal}" title="Перейти на страницу групповых скидок в админпанели">' +
+                                     '%' +
+                                   '</a>'+
+                                 '</td>' +
+                                 '<td class="param_short" id="orderitem_total_' + id + '_' + num + '" old_value="0.00" style="text-align: right;">' +
+                                   variant_price + ' {/literal}{$currency->sign|default:''|escape}{literal}' +
+                                 '</td>' +
+                                 '<td class="param_short" title="Действительна ли эта товарная позиция (позиции со снятым флажком будут удалены)">' +
+                                   '<input class="checkbox" id="orderitem_used_' + id + '_' + num + '" name="orderitem_used[' + id + '][' + num + ']" type="checkbox" checked value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);">' +
+                                 '</td>';
+
+                      // вставляем контент новой строки в таблицу перед строкой кнопки "Добавить"
+                      tr[(num - 1) * 2 + 3 - 1].innerHTML = html;
+                      html = '<tr>' +
+                               '<td>&nbsp;</td>' +
+                               '<td colspan="4">&nbsp;</td>' +
+                             '</tr>';
+                      jQuery(table).append(html);
+                      jQuery(table).append('<tr>' + last_html + '</tr>');
+
+                      // имитируем попытку изменения цены (для просчета итоговой суммы заказа)
+                      Change_OrderItem_Price (null, null, id, num, '', false);
+
+                    } else {
+                      alert('Добавление новой товарной позиции отклонено, так как это превысит лимит их допустимого количества в заказе!');
+                    }
+                  }
+                }
+              }
+            }
+
+            // скрываем каталог товаров
+            Switch_PageElements('catalog');
+
+            // возвращаем FALSE (для вызывающих функцию из обработчика события OnClick элемента <a>)
+            return false;
+          }
+          // -->
+        </script>
+      {/literal}
+
+      <!-- Адрес страницы -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+
+        <!-- поле URL -->
+        <tr>
+          <td class="param">
+            URL:
+          </td>
+          <td class="param_short" width="1%">
+            http://сайт/orders/
+          </td>
+          <td class="value" width="100%" title="Окончание адреса страницы заказа">
+            <input class="edit" name="code[{$id}]" readonly type="text" value="{$item->code|default:''|escape}">
+          </td>
+
+          <!-- флажок Скрыт -->
+          <td class="param_short" title="Будет ли заказ скрыт от чужих">
+            <input class="checkbox" id="item_form_hidden" name="hidden[{$id}]" type="checkbox"{if isset($item->hidden) && ($item->hidden == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_hidden');">
+              Скрыт
+            </span>
+          </td>
+
+          <!-- кнопка Применить -->
+          <td class="value_box" width="1%" title="Сохранить изменения и остаться на этой же странице">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_ACCEPT|escape}" type="submit" value="Применить">
+          </td>
+        </tr>
+
+        <!-- поле IP-адрес -->
+        <tr>
+          <td class="param">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banneds" title="Перейти на страницу запретов доступа в админпанели">
+                IP-адрес
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" title="IP-адрес оформившего заказ">
+            <input class="edit" name="ip[{$id}]" readonly type="text" value="{$item->ip|default:''|escape}">
+          </td>
+          <td class="value" width="100%" title="Имя хоста оформившего заказ">
+            <input class="edit" name="host[{$id}]" readonly type="text" value="{$item->host|default:''|escape}">
+          </td>
+
+          <!-- ссылка Где это -->
+          <td class="param_short" title="Узнать географическое местоположение компьютера с таким IP-адресом">
+            {strip}
+              <a href="http://www.ip-adress.com/ip_tracer/{$item->ip|default:''|escape}" target="_blank">
+                где это?
+              </a>
+            {/strip}
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box" title="Сохранить изменения и перейти в список">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      {* <!-- Если этот заказ оформляется в кредит --> *}
+      {if isset($item->credit_id) && !empty($item->credit_id)
+      && isset($item->credit_details) && !empty($item->credit_details)}
+
+        <h2>
+          Данные о кредите:
+          {$item->credit_name|default:"неизвестный"|escape}
+          <span class="path">
+            срок кредитования {$item->credit_term|default:0|string_format:"%d"} месяцев,
+            процентная ставка {$item->credit_percent|default:0|string_format:"%1.2f"|replace:",":"."}%
+          </span>
+        </h2>
+ 
+        <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+          {* <!-- Перебираем кредитные поля (только заполненные) --> *}
+          {foreach item=r from=$item->credit_details}
+            {if isset($r.value)}
+
+              {* <!-- название поля --> *}
+              <tr>
+                <td class="param" style="max-width: 33%; min-width: 33%; width: 33%;">
+                  {$r.label|strip_tags|escape}
+                </td>
+
+                {* <!-- значение поля --> *}
+                <td class="value">
+                  {if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_FILE)}
+                    <a href="{if $r.value|truncate:7:'':true|lower != 'http://'}http://{$root_url|escape}/{/if}{$r.value|strip_tags|escape}" target="_blank">
+                      <img src="{if $r.value|truncate:7:'':true|lower != 'http://'}http://{$root_url|escape}/{/if}{$r.value|strip_tags|escape}" style="max-height: 200px; max-width: 200px;">
+                    </a>
+                  {else}
+                    {$r.value|strip_tags|escape|default:'&nbsp;'}
+                  {/if}
+                </td>
+              </tr>
+
+            {else}
+
+              {* <!-- заголовок раздела полей --> *}
+              <tr>
+                <td class="value value_prioritydiscount" colspan="2">
+                  {$r.label|strip_tags|escape}
+                </td>
+              </tr>
+            {/if}
+          {/foreach}
+
+        </table>
+      {/if}
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && ($from_page != "")}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Окно выпадающего каталога товаров -->
+    <div class="catalog" id="catalog">
+      <div class="catalog_content">
+
+        {strip}
+          <span>
+            <a href="#" onclick="javascript: return Switch_PageElements('catalog');">
+              закрыть
+            </a>
+          </span>
+        {/strip}
+        Выберите нужный товар:
+        &nbsp;
+        <b style="font-weight: normal;">найти по артикулу</b> <input class="search-code" type="text" value="" onkeypress="javascript: if ((event.keyCode == 13) || (event.keyCode == 10)) Search_Products_By_Code(this, this.value, 'sku-marker-');">
+        <b style="font-weight: normal;">&nbsp;по коду</b> <input class="search-code" type="text" value="" onkeypress="javascript: if ((event.keyCode == 13) || (event.keyCode == 10)) Search_Products_By_Code(this, this.value, 'pcode-marker-');">
+        <b style="font-weight: normal;">&nbsp;по модели</b> <input class="search-text" type="text" value="" onkeypress="javascript: if ((event.keyCode == 13) || (event.keyCode == 10)) Search_Products_By_Text(this, this.value);">
+
+        <div class="catalog_body">
+          {if isset($catalog) && !empty($catalog)}
+            {function name="products_tree"}
+
+              <!-- Ветка категории -->
+              {foreach item=c from=$cats}
+                {if !isset($c->products_count) || ($c->products_count > 0)}
+                  <ul class="categories{if $level > 1} nested-item" style="display: none;{/if}">
+                    {strip}
+                      <li title="Свернуть / развернуть категорию {$c->name|strip_tags|escape}" onclick="javascript: Switch_List_UL_Branch(this); event.cancelBubble = true; return false;">
+                        <span>{$c->products_count|default:0|escape} позиций</span>
+                        <span class="topic">{$number}.</span>{$c->name|strip_tags|escape}
+                        {assign var="number" value=$number+1}
+                      </li>
+                    {/strip}
+                    {if isset($c->subcategories) && !empty($c->subcategories)}
+                      {products_tree cats=$c->subcategories level=$level+1 number=1}
+                    {/if}
+
+                    <!-- Товары категории -->
+                    {if isset($c->products) && !empty($c->products)}
+                      {assign var="subnumber" value=1}
+                      <ul class="products nested-item" style="display: none;">
+                        {foreach item=r from=$c->products}
+                          {if isset($r->variants) && !empty($r->variants)}
+                            {foreach item=v from=$r->variants}
+
+                              {strip}
+                                <li {if ($v->sku|default:"" != "")
+                                    || ($r->pcode|default:"" != "")}
+                                      class="{if $v->sku|default:"" != ""}sku-marker-{$v->sku|lower|escape} {/if}{if $r->pcode|default:"" != ""}pcode-marker-{$r->pcode|lower|escape}{/if}"
+                                    {/if}>
+                                  <span>{$v->stock|escape} шт.</span>
+                                  <span class="price">{($v->discount_price * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."|escape}</span>
+                                  <span class="topic">{$subnumber}.</span>
+                                  <a href="#" title="Выбрать товар {if !isset($settings->product_category_show) || ($settings->product_category_show == 1)}{$r->category|strip_tags|escape} {/if}{if !isset($settings->product_brand_show) || ($settings->product_brand_show == 1)}{$r->brand|strip_tags|escape} {/if}{$r->model|strip_tags|escape}{if ($v->name != '') && ($v->name != $r->model)} {$v->name|strip_tags|escape}{/if}" onclick="javascript: return Append_ProductTableRow('item_form_add_key', this, '{$r->product_id|escape}', '{$v->variant_id|escape}');">
+                                    {if !isset($settings->product_category_show) || ($settings->product_category_show == 1)}{$r->category|strip_tags|escape} {/if}
+                                    {if !isset($settings->product_brand_show) || ($settings->product_brand_show == 1)}{$r->brand|strip_tags|escape} {/if}
+                                    {$r->model|strip_tags|escape}
+                                  </a>
+                                  {if ($v->name != "") && ($v->name != $r->model)}<span class="variant">{$v->name|strip_tags|escape}</span>{/if}
+                                </li>
+                              {/strip}
+
+                            {/foreach}
+                            {assign var="subnumber" value=$subnumber+1}
+                          {/if}
+                        {/foreach}
+                      </ul>
+                    {/if}
+
+                  </ul>
+                {/if}
+              {/foreach}
+
+            {/function}
+
+            {products_tree cats=$catalog level=1 number=1}
+          {/if}
+        </div>
+      </div>
+    </div>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>

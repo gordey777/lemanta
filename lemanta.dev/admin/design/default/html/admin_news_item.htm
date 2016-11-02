@@ -1,0 +1,553 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля страницы новости.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о новости;
+    $categories = массив с записями о категориях;
+    $all_brands = массив с записями о брендах;
+    $all_users = массив с записями о пользователях;
+    $menus = массив с записями о меню сайта;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "card" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    pages = true - вывести эту кнопку
+    news = true - вывести эту кнопку
+    card_news = true - вывести эту кнопку
+    articles = true - вывести эту кнопку
+    banners = true - вывести эту кнопку
+    files = true - вывести эту кнопку
+    menus = true - вывести эту кнопку
+    modules = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           pages = true
+           news = true
+           card_news = true
+           articles = true
+           banners = true
+           files = true
+           menus = true
+           modules = true}
+
+  <!-- {* В переменную $id заносим идентификатор новости или 0 при ее отсутствии. *} -->
+  {assign var="id" value=$item->news_id|escape|default:0}
+
+  <!-- Подключаем скрипт и файл стилей календаря -->
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.js" type="text/javascript"></script>
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendas.js" type="text/javascript"></script>
+  <link href="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.css" rel="stylesheet" type="text/css">
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=News" title="Перейти на страницу новостей в админпанели">Новости</a>
+        → {if !empty($id)}Редактирование{else}Новая{/if}
+      </div>
+      {if !empty($id)}
+        {$item->header|escape|default:"&nbsp;"}
+      {else}
+        Новая новость
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        {if !empty($id) && isset($item->url) && !empty($item->url) && empty($error)}
+          <a href="http://{$root_url|escape}/{$item->url_path|escape}{$item->url|escape}" title="Перейти на страницу новости в клиентской части магазина">
+            http://{$root_url|escape}/{$item->url_path|escape}{$item->url|escape}
+          </a>
+        {else}
+          &nbsp;
+        {/if}
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о новости -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=NewsItem" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о заголовке -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param">
+            Заголовок:
+          </td>
+          <td class="value" width="100%" title="Заголовок новости">
+            <input class="edit" id="item_form_name_{$id}" name="header[{$id}]" type="text" value="{$item->header|escape|default:''}">
+          </td>
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Meta информация -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+        <tr>
+          <td class="param">
+            URL:
+          </td>
+          <td class="param_short" width="1%">
+            http://сайт/<span id="item_form_url_path"{if isset($item->url_special) && ($item->url_special == 1)} style="display: none;"{/if}>news/</span>
+          </td>
+          <td class="value" width="100%" title="Окончание адреса страницы новости">
+            <input class="edit" id="item_form_url_{$id}" name="url[{$id}]" type="text" value="{$item->url|escape|default:''}">
+          </td>
+          <td class="param_short" title="Будет ли URL без news/ в начале">
+            <input class="checkbox" id="item_form_url_special" name="url_special[{$id}]" type="checkbox"{if isset($item->url_special) && ($item->url_special == 1)} checked{/if} value="1" onchange="javascript: var object = document.getElementById('item_form_url_path'); if ((typeof(object) == 'object') && (object != null)) object.style.display = this.checked ? 'none' : '';">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_url_special');">
+              Особый
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_high" rowspan="2">
+            Meta Keywords:
+          </td>
+          <td class="value" colspan="2" rowspan="2" title="Какой текст разместить в мета теге &lt;meta name=keywords ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_keywords_{$id}" name="meta_keywords[{$id}]" style="height: 32px;">{$item->meta_keywords|escape|default:''}</textarea>
+          </td>
+          <td class="param_short" title="Запрещена ли демонстрация новости в RSS">
+            <input class="checkbox" id="item_form_rss_disabled" name="rss_disabled[{$id}]" type="checkbox"{if isset($item->rss_disabled) && ($item->rss_disabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_rss_disabled');">
+              Не для RSS
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" title="Запрещена ли демонстрация новости в информерах на внешних сайтах">
+            <input class="checkbox" id="item_form_export_disabled" name="export_disabled[{$id}]" type="checkbox"{if isset($item->export_disabled) && ($item->export_disabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_export_disabled');">
+              Не экспорт
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_high">
+            Meta Description:
+          </td>
+          <td class="value" colspan="3" title="Какой текст разместить в мета теге &lt;meta name=description ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_description_{$id}" name="meta_description[{$id}]" style="height: 48px;">{$item->meta_description|escape|default:''}</textarea>
+          </td>
+        </tr>
+        <tr>
+          <td class="param" title="Какой текст разместить в теге &lt;title&gt; заголовка страницы">
+            Meta Title:
+          </td>
+          <td class="value" colspan="2" width="100%">
+            <input class="edit" id="item_form_meta_title_{$id}" name="meta_title[{$id}]" type="text" value="{$item->meta_title|escape|default:''}">
+          </td>
+          <td class="value_box" width="1%">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Аннотация -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Аннотация:
+          </td>
+          <td class="{if $settings->news_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" id="item_form_description_{$id}" name="annotation[{$id}]">{$item->annotation|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Полный текст -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Полный текст:
+          </td>
+          <td class="{if $settings->news_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_big" name="body[{$id}]" style="height: 400px;">{$item->body|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Теги -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Теги -->
+        <tr>
+          <td class="param">
+            Теги:
+          </td>
+          <td class="value" width="100%" title="Ассоциируемые с этой записью теги (перечисляются через запятую)">
+            <input class="edit" name="tags[{$id}]" type="text" value="{$item->tags|escape|default:''}">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- SEO текст -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            SEO текст:
+          </td>
+          <td class="{if $settings->news_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" name="seo_description[{$id}]" style="height: 150px;">{$item->seo_description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация о прикреплениях и разрешениях -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+        <tr>
+          <td class="param">
+            Автор:
+          </td>
+          <td class="value" colspan="3" width="100%" title="Кого считать автором публикации">
+
+            <!-- Создаем селектор пользователей -->
+            <select name="user_id[{$id}]">
+              <option value="0">Администратор</option>
+
+              <!-- {*
+              Подключаем субшаблон списка клиентов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список клиентов
+                currents = идентификатор выбранного клиента (модификатор "|default:0" добавлен для обработки отсутствия выбора)
+                selector = true - это будет селектор, а не список клиентов *} -->
+
+              {include file = "../../common_parts/users.htm"
+                       items = $all_users
+                       currents = $item->user_id|default:0
+                       selector = true}
+            </select>
+          </td>
+          <td class="param_short">
+            Рейтинг:
+          </td>
+          <td class="value" title="Рейтинг новости">
+            <input class="edit" name="rating[{$id}]" size="5" style="width: auto;" type="text" value="{if isset($item->votes) && ($item->votes != 0)}{$item->rating/$item->votes|default:0|string_format:'%1.2f'|replace:',':'.'}{else}{$item->rating|default:0|string_format:'%1.2f'|replace:',':'.'}{/if}">
+          </td>
+          <td class="param_short">
+            Дата:
+          </td>
+          <td class="value" title="Видимая всем дата публикации (формат ГГГГ-ММ-ДД ЧЧ:ММ)">
+            <script language="JavaScript" type="text/javascript">
+              <!--
+              var xcDateFormat = 'yyyy-mm-dd {$smarty.now|date_format:"%H:%M"}';
+              // -->
+            </script>
+            <input class="edit" name="date[{$id}]" size="10" style="width: auto;" type="text" value="{$item->date|truncate:16:'':true|escape|default:'0000-00-00 00:00'}" onfocus="javascript: showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+
+          <!-- флажок Скрыта от чужих -->
+          <td class="param_short" title="Будет ли новость скрыта от незарегистрированных пользователей">
+            <input class="checkbox" id="item_form_hidden" name="hidden[{$id}]" type="checkbox"{if isset($item->hidden) && ($item->hidden == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_hidden');">
+              Скрыта
+            </span>
+          </td>
+
+          <!-- флажок Выделена визуально -->
+          <td class="param_short" title="Будет ли новость выделена визуально в списке">
+            <input class="checkbox" id="item_form_highlighted" name="highlighted[{$id}]" type="checkbox"{if isset($item->highlighted) && ($item->highlighted == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_highlighted');">
+              Выделена
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="param">
+            Категория:
+          </td>
+          <td class="value" colspan="3" width="100%" title="К какой категории принадлежит новость">
+            <select name="category_id[{$id}]">
+              <option value="0">Нет</option>
+
+              <!-- {*
+              Подключаем субшаблон списка категорий. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список категорий
+                currents = идентификатор выбранной категории (модификатор "|default:0" добавлен для обработки и новой записи)
+                ncounter = true - выводить у категорий количество новостей в них
+                selector = true - это будет селектор, а не список категорий *} -->
+
+              {include file = "../../common_parts/categories.htm"
+                       items = $categories
+                       currents = $item->category_id|default:0
+                       ncounter = true
+                       selector = true}
+            </select>
+          </td>
+          <td class="param_short">
+            Голосов:
+          </td>
+          <td class="value" title="Количество голосов, участвовавших в рейтинге новости">
+            <input class="edit" name="votes[{$id}]" size="5" style="width: auto;" type="text" value="{$item->votes|escape|default:0}">
+          </td>
+          <td class="param_short">
+            Вес:
+          </td>
+          <td class="value" title="Число определяет положение новости выше других с меньшим весом в той же категории">
+            <input class="edit" name="order_num[{$id}]" size="10" style="width: auto;" type="text" value="{$item->order_num|escape|default:''}">
+          </td>
+          <td class="param_short" colspan="2" title="Разрешено ли пользователям сайта комментировать новость">
+            <input class="checkbox" id="item_form_commented" name="commented[{$id}]" type="checkbox"{if isset($item->commented) && ($item->commented == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_commented');">
+              Обсуждают
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="param">
+            Бренд:
+          </td>
+          <td class="value" colspan="5" width="100%" title="К какому бренду принадлежит новость">
+            <select name="brand_id[{$id}]">
+              <option value="0">Нет</option>
+
+              <!-- {*
+              Подключаем субшаблон списка брендов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список брендов
+                currents = идентификатор выбранного бренда (модификатор "|default:0" добавлен для обработки и новой записи)
+                ncounter = true - выводить у брендов количество новостей в них
+                selector = true - это будет селектор, а не список брендов *} -->
+
+              {include file = "../../common_parts/brands.htm"
+                       items = $all_brands
+                       currents = $item->brand_id|default:0
+                       ncounter = true
+                       selector = true}
+            </select>
+          </td>
+          <td class="param_short">
+            Просмотры:
+          </td>
+          <td class="value" title="Счетчик визитов на страницу новости">
+            <input class="edit" name="browsed[{$id}]" size="10" style="width: auto;" type="text" value="{$item->browsed|escape|default:''}">
+          </td>
+          <td class="param_short" colspan="2" title="Будет ли видна новость в анонсовых списках или только на странице списка новостей">
+            <input class="checkbox" id="item_form_listed" name="listed[{$id}]" type="checkbox"{if isset($item->listed) && ($item->listed == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_listed');">
+              В анонсах
+            </span>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="param">
+            Раздел:
+          </td>
+          <td class="value" width="50%" title="К какому разделу сайта принадлежит новость">
+            <select name="section_field[{$id}]">
+              <option value="1">Основной</option>
+            </select>
+          </td>
+          <td class="param_short" width="1%">
+            Меню:
+          </td>
+          <td class="value" colspan="3" width="50%" title="В какое меню входит новость">
+
+            <!-- Селектор выбора меню сайта -->
+            <select name="menu_id[{$id}]">
+              <option value="0"></option>
+              {if isset($menus)}
+                {foreach item=c from=$menus}
+                  <option value="{$c->menu_id|escape}"{if isset($item->menu_id) && ($item->menu_id == $c->menu_id)} selected{/if}>{$c->name|escape}</option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+          <td class="param_short">
+            Плагины:
+          </td>
+          <td class="value" title="Какие динамические плагины подключить на страницу новости (список классов модулей через запятую)">
+            <input class="edit" name="objects[{$id}]" size="10" style="width: auto;" type="text" value="{$item->objects|escape|default:''}">
+          </td>
+          <td class="param_short" colspan="2" title="Разрешена ли новость к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешена
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация по изображениям -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Изображения:
+            {if isset($item->images) && !empty($item->images)}
+              {strip}
+                <br><br>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=NewsItem&{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}=*&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}={$id}&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DELETEIMAGE|escape}" onclick="javascript: if (confirm('Это действие удалит все изображения новости. Вы подтверждаете такую операцию?')) Delete_PageRecordImage('item_form', '*'); return false;" title="Удалить загруженные в новость изображения">
+                  удалить все
+                </a>
+              {/strip}
+            {/if}
+          </td>
+          <td class="value_box">
+            {if !empty($id)}
+              {if isset($item->images) && !empty($item->images)}
+                {foreach name="images" item=image from=$item->images}
+                  <div class="image">
+                    {strip}
+                      <input class="checkbox" name="imageview[{$id}][{$smarty.foreach.images.iteration}]" type="checkbox"{if isset($item->images_view[$smarty.foreach.images.index]) && ($item->images_view[$smarty.foreach.images.index] == 1)} checked{/if} value="1" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+                      <span>{$smarty.foreach.images.iteration}.</span>
+                      <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=NewsItem&{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}={$smarty.foreach.images.iteration}&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}={$id}&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DELETEIMAGE|escape}" onclick="javascript: if (confirm('Это действие удалит указанное изображение новости. Вы подтверждаете такую операцию?')) Delete_PageRecordImage('item_form', {$smarty.foreach.images.iteration}); return false;">
+                        удалить
+                      </a>
+                      <br>
+                      <a href="http://{$root_url|escape}/{$settings->news_files_folder_prefix|escape}{$smarty.const.ADMIN_NEWS_CLASS_UPLOAD_FOLDER|escape}{$image|escape}" target="_blank"{if isset($item->images_alts[$smarty.foreach.images.index])} title="{$item->images_alts[$smarty.foreach.images.index]|escape}"{/if}>
+                        <img src="http://{$root_url|escape}/{$settings->news_files_folder_prefix|escape}{$smarty.const.ADMIN_NEWS_CLASS_UPLOAD_FOLDER|escape}{if isset($item->images_thumbs[$smarty.foreach.images.index])}{$item->images_thumbs[$smarty.foreach.images.index]|escape}{else}{$image|escape}{/if}">
+                      </a>
+                    {/strip}
+                    <div>
+                      <input name="image[{$id}][{$smarty.foreach.images.iteration}]" type="hidden" value="{$image|escape}">
+                      заголовок (alt):<br>
+                      <input name="imagealt[{$id}][{$smarty.foreach.images.iteration}]" type="text" value="{if isset($item->images_alts[$smarty.foreach.images.index])}{$item->images_alts[$smarty.foreach.images.index]|escape}{/if}" title="Заголовок (всплывающая подсказка) этого изображения"><br>
+                      описание:<br>
+                      <textarea name="imagetext[{$id}][{$smarty.foreach.images.iteration}]" title="Описание этого изображения">{if isset($item->images_texts[$smarty.foreach.images.index])}{$item->images_texts[$smarty.foreach.images.index]|escape}{/if}</textarea>
+                    </div>
+                  </div>
+                {/foreach}
+              {/if}
+              <div style="clear: both;">
+                <div class="newimage">
+                  новое изображение (объемом не более {($smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт):<br>
+                  <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                  <input class="edit" name="new_image[{$id}]" type="file" title="Какой файл изображения требуется взять с Вашего компьютера (объем файла не более {($smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт)"><br><br>
+                  или из удаленного источника:<br>
+                  <input class="edit" name="new_image_url[{$id}]" type="text" value="http://" title="Какой файл изображения требуется взять с другого сайта в Интернете"><br><br>
+                  дать файлу имя:<br>
+                  <input class="edit" id="item_form_filename_{$id}" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEFILENAME|escape}" type="text" value="" title="Какой сделать начальную часть имени файла нового изображения на сайте (файл будет размещен в папке http://{$root_url|escape}/{$settings->news_files_folder_prefix|escape}{$smarty.const.ADMIN_NEWS_CLASS_UPLOAD_FOLDER|escape})"><br><br>
+                  <input class="checkbox" id="item_form_imageview" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEVIEW|escape}" type="checkbox" checked value="1" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+                  <span onclick="javascript: Toggle_PageCheckbox('item_form_imageview');" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+                    использовать в слайдере
+                  </span>
+                  <input class="submit" type="submit" value="Сохранить">
+                </div>
+                <div class="newimage_options">
+                  заголовок (alt) изображения:<br>
+                  <input class="edit" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEALT|escape}" type="text" value="" title="Какой заголовок (всплывающую подсказку) дать новому изображению"><br>
+                  описание:<br>
+                  <textarea name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGETEXT|escape}" style="height: 105px;" title="Какое описание дать новому изображению"></textarea>
+                </div>
+              </div>
+            {else}
+              <div class="hint">
+                Управление изображениями станет доступным, когда эта новость будет создана.
+              </div>
+            {/if}
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && !empty($from_page)}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем пустой указатель номера изображения -->
+      <input id="item_form_{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}" type="hidden" value="">
+
+      <!-- Добавляем случайный аутентификатор изображения -->
+      <input name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGETOKEN|escape}" type="hidden" value="{math equation='rand(1, 100000000)'}">
+
+      <!-- Добавляем пустой указатель требуемой команды -->
+      <input id="item_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <div class="help">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Особый URL</b>. Любому виду URL разрешено включать в себя путевую структуру, то есть отделять части пути слешем /. Особый URL
+        отличается отсутствием в начале адреса специального включения, идентифицирующего принадлежность адреса к разновидности контента - новости.
+        Особым URL допустимо перекрываться с особыми URL других разновидностей контента сайта. В этом случае установлен следующий приоритет
+        владения конфликтующим адресом: специальная страница, товар, категория, бренд, статья, новость.
+      </div>
+      <div>
+        <b>Мета</b>. Эта информация используется в заголовке html-страницы новости. Подобно полю URL, мета информация при ее пустых полях
+        автоматически заполняется из полей заголовка и аннотации к новости, если это разрешено в соответствующих настройках сайта
+        (изменить их можно на странице новостей в админпанели).
+      </div>
+      <div>
+        <b>Плагины</b>. Если при просмотре пользователем страницы этой новости должно происходить подключение расширяющих функционал плагинов,
+        необходимо выше в соответствующем поле перечислить через запятую классы их модулей (например: MyBanner, SubscribeForm). Тогда перед
+        открытием страницы новости управление сначала будет передаваться плагинам в порядке их перечисления. Плагину разрешено выполнять
+        любые действия, но результатом он возвращает либо замещающий новость текст, либо каким фрагментом дополнить страницу этой новости.
+      </div>
+      <div>
+        <b>Изображения</b>. В новость допустимо загружать произвольное количество картинок. Они могут быть вставлены в текст новости, а могут
+        просто располагаться на сайте для иных целей, например фотогалерея. Изображения могут быть загружены с локального компьютера или из
+        удаленного источника (другого сайта). Каждому новому изображению возможно задать его заголовок (alt) - всплывающий текст при наведении
+        курсора на картинку, описание - информирующий текст (может использоваться во вьюверах на клиентской стороне), имя файла - по умолчанию
+        равно транслитерации заголовка новости. Имя файла нужно указывать без расширения, справа к имени автоматически добавится цифровой
+        идентификатор и расширение. Если имя файла вообще не указано, оно генерируется системой.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- {*
+  Подключаем субшаблон редактора TinyMCE. В субшаблон передаем атрибуты:
+    disabled_state = из какой переменной брать признак отмены редактора *} -->
+
+  {include file = "../../common_parts/tinymce.htm"
+           disabled_state = $settings->news_wysiwyg_disabled}
+
+  <!-- {*
+  Подключаем субшаблон генератора Meta информации. В субшаблон передаем атрибуты:
+    form_id = какой идентификатор у формы, в которой редактируется запись
+    item_id = из какой переменной брать идентификатор записи
+    autofill = из какой переменной брать признак автозаполнения пустых полей мета информации *} -->
+
+  {include file = "../../common_parts/meta.htm"
+           form_id = "item_form"
+           item_id = $id
+           autofill = $settings->news_meta_autofill}

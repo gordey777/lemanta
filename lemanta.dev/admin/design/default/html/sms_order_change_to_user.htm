@@ -1,0 +1,43 @@
+{* <!--
+  Impera CMS: шаблон SMS-уведомления пользователю о изменении в заказе.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Используется в момент принятия изменений в заказе из админпанели. Этот файл
+  шаблона используется, если не найден файл с таким же именем в папке текущего
+  дизайна клиентской стороны сайта (то есть в http://сайт/design/выбранный_дизайн/html).
+
+  SMS-уведомление не отправляется, если шаблон возвращает пустой или пробельный текст.
+  Из всякого текста SMS-уведомлений перед отправкой обязательно удаляются теги html-разметки.
+
+  Принимает во входных переменных:
+    $post = запись о заказе;
+    $settings = настройки сайта;
+    $root_url = безпротокольный адрес корня сайта;
+    $admin_folder = имя папки админпанели.
+
+  ============================================================================ --> *}
+
+{strip}
+  {if isset($post) && !empty($post)}
+    Ваш заказ №{$post->order_id|default:0|escape}
+    {if $post->status == $smarty.const.ORDER_STATUS_PROCESS} поступил в обработку
+    {elseif $post->status == $smarty.const.ORDER_STATUS_DONE} выполнен
+    {elseif $post->status == $smarty.const.ORDER_STATUS_CANCEL} отменен
+    {/if}
+
+    {if isset($post->orders_phase) && ($post->orders_phase != "")}
+      , {$post->orders_phase|escape}
+    {/if}
+
+    {if $post->status != $smarty.const.ORDER_STATUS_CANCEL}
+      {if $post->payment_status == 1}
+        , оплачен
+      {/if}
+    {/if}
+
+    . {if isset($post->delivery_tracking) && ($post->delivery_tracking != "")}
+        Номер декларации {$post->delivery_tracking|escape}.
+      {/if} Интернет-магазин {$root_url|escape}
+  {/if}
+{/strip}

@@ -1,0 +1,155 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля страницы класса учебного заведения.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о классе учебного заведения;
+    $lessons = массив записей о предметах учебных заведений;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    countries = true - вывести эту кнопку
+    regions = true - вывести эту кнопку
+    towns = true - вывести эту кнопку
+    schools = true - вывести эту кнопку
+    schools_types = true - вывести эту кнопку
+    schools_lessons = true - вывести эту кнопку
+    schools_classes = true - вывести эту кнопку
+    card_schools_classes = true - вывести эту кнопку
+    schools_learners = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           countries = true
+           regions = true
+           towns = true
+           schools = true
+           schools_types = true
+           schools_lessons = true
+           schools_classes = true
+           card_schools_classes = true
+           schools_learners = true}
+
+  <!-- {* В переменную $id заносим идентификатор класса учебного заведения или 0 при его отсутствии. *} -->
+  {assign var="id" value=$item->class_id|escape|default:0}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SchoolsClasses" title="Перейти на страницу классов учебных заведений в админпанели">Классы</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id) || (isset($item->name) && ($item->name != ""))}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новый класс учебного заведения
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о классе учебного заведения -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SchoolsClass" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Название -->
+        <tr>
+          <td class="param">
+            Название:
+          </td>
+          <td class="value" width="100%" title="Название класса учебного заведения">
+            <input class="edit" name="name[{$id}]" type="text" value="{$item->name|escape|default:''}">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- поле Преподаваемые предметы -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Предметы:
+          </td>
+          <td class="value" width="100%" title="Список преподаваемых в классе предметов (несколько выбираются с помощью клавиш Shift и Ctrl)">
+ 
+            <!-- фиктивный элемент на случай не выбора предметов -->
+            <input name="lessons[{$id}]" type="hidden" value="">
+
+            <select multiple name="lessons[{$id}][]" size="10">
+              {if isset($lessons) && !empty($lessons)}
+                {foreach item=r from=$lessons}
+                  {strip}
+                    <option value="{$r->lesson_id|escape}"{if in_array($r->lesson_id, $item->lessons_ids)} selected{/if}>
+                      {$r->name|escape}
+                    </option>
+                  {/strip}
+                {/foreach}
+              {else}
+                <option value=""></option>
+              {/if}
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && ($from_page != "")}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>

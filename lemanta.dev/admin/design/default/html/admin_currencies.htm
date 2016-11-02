@@ -1,0 +1,415 @@
+{* <!--
+  Impera CMS: шаблон админ модуля списка валют.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о валютах;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    setup = true - вывести эту кнопку
+    currencies = true - вывести эту кнопку
+    deliveries = true - вывести эту кнопку
+    deliveries_types = true - вывести эту кнопку
+    shippings_terms = true - вывести эту кнопку
+    payments = true - вывести эту кнопку
+    sms = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "currencies"
+           main = true
+           setup = true
+           currencies = true
+           deliveries = true
+           deliveries_types = true
+           shippings_terms = true
+           payments = true
+           sms = true}
+
+  {* <!-- В переменной $sort_as_is запоминаем значение дефолтного режима сортировки --> *}
+  {assign var="sort_as_is" value=$smarty.const.SORT_CURRENCIES_MODE_AS_IS}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Валюты
+      </div>
+      Валюты сайта
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="{siteAdmin}?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currency&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить валюту">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    {* <!-- Если во входной переменной $message есть текст информационного сообщения --> *}
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    {* <!-- Если во входной переменной $error есть текст сообщения об ошибке --> *}
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="{siteAdmin}?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currencies" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <!-- Фильтр -->
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить&nbsp;
+          </td>
+
+          <!-- флажок Направление сортировки -->
+          <td class="param_short" title="Включить обратный порядок сортировки (игнорируется при упорядочении 'Как расставлены')">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+              <img class="icon16x16" src="{themeAdmin}images/icon_descending_16x16.png">
+            </span>
+          </td>
+
+          <!-- флажок Лаконичный режим -->
+          <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+              <img class="icon16x16" src="{themeAdmin}images/icon_laconical_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Способ сортировки -->
+          <td class="value" width="60%" title="Способ сортировки валют в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_CURRENCIES_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CURRENCIES_MODE_AS_IS)} selected{/if}>как расставлены</option>
+              <option value="{$smarty.const.SORT_CURRENCIES_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CURRENCIES_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_CURRENCIES_MODE_BY_ISOCODE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CURRENCIES_MODE_BY_ISOCODE)} selected{/if}>по коду ISO</option>
+              <option value="{$smarty.const.SORT_CURRENCIES_MODE_BY_CREATED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CURRENCIES_MODE_BY_CREATED)} selected{/if}>по дате добавления</option>
+              <option value="{$smarty.const.SORT_CURRENCIES_MODE_BY_MODIFIED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CURRENCIES_MODE_BY_MODIFIED)} selected{/if}>по дате исправления</option>
+            </select>
+          </td>
+
+          <!-- поле Режим отображения -->
+          <td class="value" width="40%" title="Насколько полно выводить информацию о валютах в списке">
+
+            <!-- Создаем селектор режимов отображения и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.VIEW_MODE_COMPACT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_COMPACT)} selected{/if}>компактно</option>
+              <option value="{$smarty.const.VIEW_MODE_FULL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)} selected{/if}>подробно</option>
+            </select>
+          </td>
+
+          <!-- флажок Разрешена -->
+          <td class="param_short" title="Фильтр: только разрешенные к показу на сайте">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+              разрешена
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения и полноты вывода)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {* <!-- Определяем переменную тега, закрывающего контейнер перетаскиваемых элементов --> *}
+        {assign var="items_container_close_tag" value=""}
+
+        {* <!-- Если выбрана сортировка "как расставлены" --> *}
+        {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+
+          <!-- Заключаем перетаскиваемые элементы списка в контейнер -->
+          <div id="items_container">
+
+          {* <!-- Назначаем тег, закрывающий контейнер перетаскиваемых элементов --> *}
+          {assign var="items_container_close_tag" value="</div>"}
+        {/if}
+
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            {* <!-- В переменной $id запоминаем идентификатор текущей записи --> *}
+            {assign var="id" value=$c->currency_id}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки справа от названия -->
+                <input class="checkbox" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="javascript: Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();">
+                <a href="{siteAdmin}{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                  <img class="microkey_right" src="{themeAdmin}images/icon_delete_16x16.png">
+                </a>
+                <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+
+                  <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                  {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                    <div class="order_edit" title="Текущий вес">
+                      <input id="order_num" name="order_num[{$id|escape}]" type="text" value="{$c->order_num|escape}" onchange="javascript: Show_AcceptChanges_Button();">
+                    </div>
+
+                  {else}
+
+                    <!-- Добавляем скрытое поле порядкового номера текущей записи -->
+                    <input id="order_num" name="order_num[{$id|escape}]" type="hidden" value="{$c->order_num|escape}">
+
+                    <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                    <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+                  {/if}
+
+                  <a href="{siteAdmin}{$c->move_first_get|escape}" title="Поставить первой (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="{themeAdmin}images/icon_move_first_16x16.png">
+                  </a>
+                  <a href="{siteAdmin}{$c->move_up_get|escape}" title="Поднять выше (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="{themeAdmin}images/icon_move_up_16x16.png">
+                  </a>
+                  <a href="{siteAdmin}{$c->move_down_get|escape}" title="Опустить ниже (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="{themeAdmin}images/icon_move_down_16x16.png">
+                  </a>
+                  <a href="{siteAdmin}{$c->move_last_get|escape}" title="Поставить последней (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="{themeAdmin}images/icon_move_last_16x16.png">
+                  </a>
+                  <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Вес.                                               |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <span class="browsed zero" title="Вес валюты">
+                                {echoVar from='c->order_num'}
+                            </span>
+                {/if}
+
+                {* <!-- Если включен стандартный или полный вывод информации о записях --> *}
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                  <input class="checkbox gray" name="enabled[{$id|escape}]"{if $c->enabled == 1} checked{/if} title="Пометить как разрешенную к показу на сайте" type="checkbox" value="1" onchange="javascript: Show_AcceptChanges_Button();">
+
+                {/if}
+
+                <a href="{siteAdmin}{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="{themeAdmin}images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+
+                <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                <a href="{siteAdmin}{$c->ymarket_get|escape}" title="Считать выбранной для Яндекс.Маркет">
+                  <img class="microkey_left" src="{themeAdmin}images/icon_ymarket{if $c->ymarket != 1}_off{/if}_16x16.png">
+                </a>
+
+                <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                <a href="{siteAdmin}{$c->defaulta_get|escape}" title="Считать выбранной по умолчанию для админпанели">
+                  <img class="microkey_left" src="{themeAdmin}images/icon_magnet{if $c->defa != 1}_off{/if}_16x16.png">
+                </a>
+                <a href="{siteAdmin}{$c->main_get|escape}" title="Считать базовой">
+                  <img class="microkey_left" src="{themeAdmin}images/icon_main{if $c->main != 1}_off{/if}_16x16.png">
+                </a>
+                <a href="{siteAdmin}{$c->default_get|escape}" title="Считать выбранной по умолчанию для клиентской стороны">
+                  <img class="microkey_left" src="{themeAdmin}images/icon_magnet{if $c->def != 1}_off{/if}_16x16.png">
+                </a>
+
+                <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                <!-- Нумерация -->
+                <span class="topic" style="display: inline;">
+                  {if isset($CurrentPage)}
+                    {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                  {else}
+                    {$smarty.foreach.items.iteration}.
+                  {/if}
+                </span>
+
+                <!-- Код ISO -->
+                <span class="date" title="Код ISO">
+                  {$c->code|escape}
+                </span>
+
+                <!-- Знак -->
+                <span class="date" title="Знак">
+                  {$c->sign|escape}
+                </span>
+
+                <!-- Курс -->
+                <span class="votes" title="Курс">
+                   {$c->rate_from*1} {$c->sign|escape} = {$c->rate_to*1} {$MainCurrency->sign|escape}
+                </span>
+
+                {* <!-- Если включен стандартный или полный вывод информации о записях --> *}
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                  <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                  <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+
+                {/if}
+
+                <!-- Название -->
+                <a href="{siteAdmin}{$c->edit_get|escape}" title="{$c->name|strip_tags|escape}"{if $c->enabled != 1} class="disabled_item"{/if}>
+                  {$c->name|strip_tags|escape}
+                </a>
+
+              </div>
+
+              <!-- Краткая информация -->
+
+              {* <!-- Если включен стандартный или полный вывод информации о записях --> *}
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+
+              {/if}
+
+              {* <!-- Если включен полный вывод информации о записях --> *}
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)}
+
+                <!-- дата добавления -->
+                {if $c->created|truncate:10:"":true != "0000-00-00"}
+                  <div class="line">
+                    <span>
+                      добавлена:
+                    </span>
+                    {$c->created|escape}
+                  </div>
+                {/if}
+
+                <!-- дата исправления -->
+                {if ($c->modified|truncate:10:"":true != "0000-00-00") && ($c->modified != $c->created)}
+                  <div class="line">
+                    <span>
+                      исправлена:
+                    </span>
+                    {$c->modified|escape}
+                  </div>
+                {/if}
+
+              {/if}
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        {* <!-- Если выбрана сортировка "как расставлены", делаем элементы перетаскиваемыми в пределах контейнера --> *}
+        {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+          {$items_container_close_tag}
+
+          <!-- Запускаем скрипт передвигания элементов -->
+          {literal}
+            <script language="JavaScript" type="text/javascript">
+              <!--
+              Make_FormItems_Sortable();
+              // -->
+            </script>
+          {/literal}
+        {/if}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено валют{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} (режим: лаконичный){/if}.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        Маркером <b>базовая валюта</b> помечается валюта, в которой производятся все внутренние вычисления
+        на сайте. Цены товаров, суммы заказов, размеры скидок, комиссионных отчислений, состояния внутренних
+        счетов покупателей и другие подобные сведения хранятся в базе данных именно в формате этой валюты.
+      </div>
+      <div>
+        Существуют два вспомогательных маркера для <b>валюты по умолчанию</b> - один для клиентской стороны
+        сайта, другой для админпанели. Эти маркеры позволяют задать, в какой валюте будут выводиться цены
+        покупателю при посещении сайта и в какой администратору при входе в админпанель. В дополнение на
+        обеих сторонах сайта имеется выпадающий список валют, где человек на время сеанса может в случае
+        необходимости мгновенно сменить валюту.
+      </div>
+      <div>
+        Если на стороне покупателя смена валюты во время сеанса приводит только к изменению выводимых на экран
+        цен и сумм, то в админпанели под такую смену валюты подстраиваются и функции приёма вводимых данных.
+        Таким образом, администратор в принципе может вводить цены в любой из доступных валют.
+      </div>
+      <div>
+        Но поскольку ценовые сведения всё же хранятся в базе данных сайта в базовой валюте, причём с точностью
+        в 2 знака после запятой, во время редактирования цен в валюте, отличной от базовой, будет проявляться
+        эффект дискретности (некоторого шага между возможными значениями цен), то есть округления введённой
+        цены до ближайшей копейки базовой валюты согласно межвалютному курсу. Иными словами, редактируя цены
+        в не базовой валюте, не удастся ввести цену, которая оказалась бы "посреди" копейки базовой валюты.
+      </div>
+    </div>

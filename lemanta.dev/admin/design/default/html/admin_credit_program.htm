@@ -1,0 +1,377 @@
+{* <!--
+  Impera CMS: шаблон админ модуля страницы кредитной программы.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о кредитной программе;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    orders = true - вывести эту кнопку
+    orders_phases = true - вывести эту кнопку
+    payments_history = true - вывести эту кнопку
+    credit_programs = true - вывести эту кнопку
+    card_credit_programs = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           orders = true
+           orders_phases = true
+           payments_history = true
+           credit_programs = true
+           card_credit_programs = true}
+
+  {* <!-- В переменную $id заносим идентификатор кредитной программы или 0 при ее отсутствии. --> *}
+  {assign var="id" value=$item->credit_id|default:0|escape}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=CreditPrograms" title="Перейти на страницу кредитных программ в админпанели">Кредиты</a>
+        → {if !empty($id)}Редактирование{else}Новая{/if}
+      </div>
+      {if !empty($id) || (isset($item->name) && ($item->name != ""))}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новая кредитная программа
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о записи -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=CreditProgram" enctype="multipart/form-data" id="item_form" method="post">
+      <input name="deleted[{$id}]" type="hidden" value="{$item->deleted|default:0|escape}">
+
+      <!-- Информация о названии -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Название -->
+        <tr>
+          <td class="param">
+            Название:
+          </td>
+          <td class="value" colspan="6" width="100%" title="Название кредитной программы">
+            <input class="edit" name="name[{$id}]" type="text" value="{$item->name|default:''|escape}">
+          </td>
+
+          <!-- флажок Разрешена -->
+          <td class="param_short" title="Разрешена ли кредитная программа к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешена
+            </span>
+          </td>
+
+          <!-- кнопка Применить -->
+          <td class="value_box" title="Сохранить изменения и остаться на этой же странице">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_ACCEPT|escape}" type="submit" value="Применить">
+          </td>
+        </tr>
+
+        <!-- поле Срок кредитования -->
+        <tr>
+          <td class="param">
+            Срок кредитования:
+          </td>
+          <td class="value" title="Срок кредитования (число месяцев)">
+            <input class="edit" name="term[{$id}]" size="5" style="width: auto;" type="text" value="{$item->term|default:3|escape}">
+          </td>
+
+          <!-- поле Процентная ставка -->
+          <td class="param_short">
+            Ставка:
+          </td>
+          <td class="value" title="Процентная ставка">
+            <input class="edit" name="percent[{$id}]" size="6" style="width: auto;" type="text" value="{$item->percent|default:1|string_format:'%1.2f'|replace:',':'.'}">
+          </td>
+
+          <!-- поле Минимальная сумма -->
+          <td class="param_short">
+            Минимальная сумма заказа:
+          </td>
+          <td class="value" title="Минимальная сумма заказа">
+            <input class="edit" name="minimal_sum[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->minimal_sum|default:0|string_format:'%1.2f'|replace:',':'.' > 0}{($item->minimal_sum*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'}{/if}">
+          </td>
+
+          <!-- поле Максимальная сумма -->
+          <td class="param_short">
+            Максимальная:
+          </td>
+          <td class="value" title="Максимальная сумма заказа">
+            <input class="edit" name="maximal_sum[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->maximal_sum|default:0|string_format:'%1.2f'|replace:',':'.' > 0}{($item->maximal_sum*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'}{/if}">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Описание -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Описание:
+          </td>
+          <td class="{if isset($settings->creditprograms_wysiwyg_disabled) && ($settings->creditprograms_wysiwyg_disabled == 1)}value{else}value_box{/if}">
+            <textarea class="editor_small" id="item_form_description_{$id}" name="description[{$id}]">{$item->description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <h2>
+        Какие сведения запрашивать у пользователя
+      </h2>
+
+      <table align="center" cellpadding="0" cellspacing="20" class="white" id="form_fields">
+        {if isset($item->form_fields) && !empty($item->form_fields)}
+          {foreach name=fields item=r from=$item->form_fields}
+            <tr>
+
+              <!-- нумерация -->
+              <td class="param_short" title="Перетащить строку">
+                &#8226;
+              </td>
+
+              {if is_array($r) && isset($r.field) && isset($r.type) && isset($r.required)}
+
+                <!-- флажок Обязательно к заполнению -->
+                <td class="param_short" title="Обязательно ли поле к заполнению">
+                  <input class="checkbox hidden-checkbox" id="fields_{$smarty.foreach.fields.iteration}_required" name="form_fields[{$id}][{$smarty.foreach.fields.iteration}][required]" type="checkbox"{if $r.required} checked{/if} value="1" onchange="javascript: Toggle_CheckboxIcon(this, this.checked, 'required');">
+                  <span onclick="javascript: Toggle_PageCheckbox('fields_{$smarty.foreach.fields.iteration}_required');">
+                    <img class="icon16x16 icon16x16-key{if !$r.required} icon16x16-key-off{/if}" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_required{if !$r.required}_off{/if}_16x16.png">
+                  </span>
+                </td>
+
+                <!-- поле Тип значения -->
+                <td class="value value_sheet" width="20%" title="Тип вводимого значения">
+                  <select name="form_fields[{$id}][{$smarty.foreach.fields.iteration}][type]">
+                    <option value="{$smarty.const.FIELDTYPE_CREDITPROGRAMS_STRING|escape}"{if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_STRING)} selected{/if}>строка</option>
+                    <option value="{$smarty.const.FIELDTYPE_CREDITPROGRAMS_TEXT|escape}"{if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_TEXT)} selected{/if}>текст</option>
+                    <option value="{$smarty.const.FIELDTYPE_CREDITPROGRAMS_DATE|escape}"{if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_DATE)} selected{/if}>дата</option>
+                    <option value="{$smarty.const.FIELDTYPE_CREDITPROGRAMS_NUMBER|escape}"{if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_NUMBER)} selected{/if}>число</option>
+                    <option value="{$smarty.const.FIELDTYPE_CREDITPROGRAMS_PHONE|escape}"{if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_PHONE)} selected{/if}>телефон</option>
+                    <option value="{$smarty.const.FIELDTYPE_CREDITPROGRAMS_EMAIL|escape}"{if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_EMAIL)} selected{/if}>емейл</option>
+                    <option value="{$smarty.const.FIELDTYPE_CREDITPROGRAMS_URL|escape}"{if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_URL)} selected{/if}>url (адрес сайта)</option>
+                    <option value="{$smarty.const.FIELDTYPE_CREDITPROGRAMS_FILE|escape}"{if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_FILE)} selected{/if}>файл</option>
+                  </select>
+                </td>
+
+                <!-- поле Название поля -->
+                <td class="value value_sheet" width="80%" title="Надпись к полю ввода">
+                  <input class="edit" name="form_fields[{$id}][{$smarty.foreach.fields.iteration}][field]" type="text" value="{$r.field|default:''|escape}">
+                </td>
+
+              {elseif !is_array($r) && ($r|strip_tags|strip != "")}
+
+                <!-- поле Название подраздела -->
+                <td class="value value_header" colspan="3" width="100%" title="Название раздела">
+                  <input class="edit" name="form_fields[{$id}][{$smarty.foreach.fields.iteration}]" type="text" value="{$r|default:''|escape}">
+                </td>
+              {/if}
+
+              <!-- флажок Используется -->
+              <td class="param_short" title="Использовать ли это поле">
+                <input class="checkbox hidden-checkbox" checked id="fields_{$smarty.foreach.fields.iteration}_used" name="form_fields_used[{$id}][{$smarty.foreach.fields.iteration}]" type="checkbox" value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);">
+                <span onclick="javascript: Toggle_PageCheckbox('fields_{$smarty.foreach.fields.iteration}_used');">
+                  <img class="icon16x16 icon16x16-key" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_done_16x16.png">
+                </span>
+              </td>
+            </tr>
+          {/foreach}
+        {/if}
+      </table>
+
+      <!-- кнопка Добавить поле -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_short">
+            <a href="#" title="Добавить поле" onclick="javascript: return Append_FieldTableRow('form_fields', true);">
+              добавить поле
+            </a>
+          </td>
+          <td class="param_short">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          </td>
+
+          <!-- кнопка Добавить раздел -->
+          <td class="param_short" width="100%">
+            <a href="#" title="Добавить раздел" onclick="javascript: return Append_FieldTableRow('form_fields', false);">
+              добавить раздел
+            </a>
+          </td>
+
+          <!-- кнопка Применить -->
+          <td class="value_box" title="Сохранить изменения и остаться на этой же странице">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_ACCEPT|escape}" type="submit" value="Применить">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Запускаем скрипт передвигания элементов -->
+      {literal}
+        <script language="JavaScript" type="text/javascript">
+          <!--
+          Make_TableRows_Sortable('form_fields');
+
+          function Toggle_CheckboxIcon (object, checked, icon) {
+            var url = '{/literal}http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_' +
+                      icon +
+                      (checked ? '' : '_off') +
+                      '_16x16.png{literal}';
+            object = jQuery(object).parent().find('span').find('img');
+            if ((typeof(object) == 'object') && (object != null) && ('length' in object) && (object.length > 0)) object = object[0];
+            if ((typeof(object) == 'object') && (object != null) && ('src' in object)) {
+              object.src = url;
+              if (checked) {
+                jQuery(object).removeClass('icon16x16-key-off');
+              } else {
+                jQuery(object).addClass('icon16x16-key-off');
+              }
+            }
+          }
+
+          // добавление строки поля в таблицу запрашиваемых полей
+          //   table_id = идентификатор таблицы
+          //   as_field = булевой признак "добавить строку для поля", иначе "добавить строку для раздела"
+
+          function Append_FieldTableRow (table_id, as_field) {
+
+            // находим таблицу на странице
+            var object = document.getElementById(table_id);
+            if ((typeof(object) == 'object') && (object != null)) {
+
+              // получаем все объекты строк в этой таблице
+              var tr = jQuery(object).find('tr');
+              var num = tr.length;
+              if (num >= 0) {
+                num++;
+                if (num <= 100) {
+
+                  // формируем контент новой строки таблицы
+                  var id = {/literal}{$id}{literal};
+                  var html = '<td class="param_short" title="Перетащить строку">' +
+                               '&#8226;' +
+                             '</td>' +
+
+                             (as_field
+
+                             ? '<td class="param_short" title="Обязательно ли поле к заполнению">' +
+                                 '<input class="checkbox hidden-checkbox" id="fields_' + num + '_required" name="form_fields[' + id + '][' + num + '][required]" type="checkbox" value="1" onchange="javascript: Toggle_CheckboxIcon(this, this.checked, \'required\');">' +
+                                 '<span onclick="javascript: Toggle_PageCheckbox(\'fields_' + num + '_required\');">' +
+                                   '<img class="icon16x16 icon16x16-key icon16x16-key-off" src="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_required_off_16x16.png{literal}">' +
+                                 '</span>' +
+                               '</td>' +
+                               '<td class="value value_sheet" width="20%" title="Тип вводимого значения">' +
+                                 '<select name="form_fields[' + id + '][' + num + '][type]">' +
+                                   '<option value="{/literal}{$smarty.const.FIELDTYPE_CREDITPROGRAMS_STRING|escape}{literal}">строка</option>' +
+                                   '<option value="{/literal}{$smarty.const.FIELDTYPE_CREDITPROGRAMS_TEXT|escape}{literal}">текст</option>' +
+                                   '<option value="{/literal}{$smarty.const.FIELDTYPE_CREDITPROGRAMS_DATE|escape}{literal}">дата</option>' +
+                                   '<option value="{/literal}{$smarty.const.FIELDTYPE_CREDITPROGRAMS_NUMBER|escape}{literal}">число</option>' +
+                                   '<option value="{/literal}{$smarty.const.FIELDTYPE_CREDITPROGRAMS_PHONE|escape}{literal}">телефон</option>' +
+                                   '<option value="{/literal}{$smarty.const.FIELDTYPE_CREDITPROGRAMS_EMAIL|escape}{literal}">емейл</option>' +
+                                   '<option value="{/literal}{$smarty.const.FIELDTYPE_CREDITPROGRAMS_URL|escape}{literal}">url (адрес сайта)</option>' +
+                                   '<option value="{/literal}{$smarty.const.FIELDTYPE_CREDITPROGRAMS_FILE|escape}{literal}">файл</option>' +
+                                 '</select>' +
+                               '</td>' +
+                               '<td class="value value_sheet" width="80%" title="Надпись к полю ввода">' +
+                                 '<input class="edit" name="form_fields[' + id + '][' + num + '][field]" type="text" value="">' +
+                               '</td>'
+
+                             : '<td class="value value_header" colspan="3" width="100%" title="Название раздела">' +
+                                 '<input class="edit" name="form_fields[' + id + '][' + num + ']" type="text" value="">' +
+                               '</td>'
+                             ) +
+
+                             '<td class="param_short" title="Использовать ли это поле">' +
+                               '<input class="checkbox hidden-checkbox" checked id="fields_' + num + '_used" name="form_fields_used[' + id + '][' + num + ']" type="checkbox" value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);">' +
+                               '<span onclick="javascript: Toggle_PageCheckbox(\'fields_' + num + '_used\');">' +
+                                 '<img class="icon16x16 icon16x16-key" src="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_done_16x16.png{literal}">'+
+                               '</span>' +
+                             '</td>';
+
+                  // добавляем контент новой строки в таблицу
+                  jQuery(object).append('<tr>' + html + '</tr>');
+
+                } else {
+                  alert('Добавление нового поля отклонено, так как это превысит лимит их допустимого количества в кредитной программе!');
+                }
+              }
+            }
+
+            // возвращаем FALSE (для вызывающих функцию из обработчика события OnClick элемента <a>)
+            return false;
+          }
+          // -->
+        </script>
+      {/literal}
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && ($from_page != "")}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>
+
+  <!-- {*
+  Подключаем субшаблон редактора TinyMCE. В субшаблон передаем атрибуты:
+    disabled_state = из какой переменной брать признак отмены редактора *} -->
+
+  {include file = "../../common_parts/tinymce.htm"
+           disabled_state = $settings->creditprograms_wysiwyg_disabled|default:0}

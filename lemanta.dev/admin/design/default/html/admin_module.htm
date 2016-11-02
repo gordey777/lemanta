@@ -1,0 +1,202 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля страницы зарегистрированного модуля.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о зарегистрированном модуле;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "card" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    pages = true - вывести эту кнопку
+    news = true - вывести эту кнопку
+    articles = true - вывести эту кнопку
+    banners = true - вывести эту кнопку
+    files = true - вывести эту кнопку
+    menus = true - вывести эту кнопку
+    modules = true - вывести эту кнопку
+    card_modules = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           pages = true
+           news = true
+           articles = true
+           banners = true
+           files = true
+           menus = true
+           modules = true
+           card_modules = true}
+
+  <!-- {* В переменную $id заносим идентификатор зарегистрированного модуля или 0 при его отсутствии. *} -->
+
+  {assign var="id" value=$item->module_id|escape|default:0}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Modules" title="Перейти на страницу зарегистрированных модулей в админпанели">Модули</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id)}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новый модуль
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+
+    {if isset($message) && !empty($message)}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+
+    {if isset($error) && !empty($error)}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о зарегистрированном модуле -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Module" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии и разрешениях -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Название -->
+        <tr>
+          <td class="param">
+            Название:
+          </td>
+          <td class="value" colspan="2" width="100%" title="Как называть модуль">
+            <input class="edit" name="name[{$id}]" type="text" value="{$item->name|escape|default:''}">
+          </td>
+
+          <!-- флажок Разрешен -->
+          <td class="param_short" title="Разрешен ли модуль к использованию">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешен
+            </span>
+          </td>
+        </tr>
+
+        <!-- поле Класс -->
+        <tr>
+          <td class="param">
+            Класс:
+          </td>
+          <td class="value" colspan="2" width="100%" title="Какому классу принадлежит модуль">
+            <input class="edit" name="class[{$id}]" type="text" value="{$item->class|escape|default:''}">
+          </td>
+
+          <!-- флажок Плагин -->
+          <td class="param_short" title="Будет ли использоваться как плагин">
+            <input class="checkbox" id="item_form_plugin" name="plugin[{$id}]" type="checkbox"{if isset($item->plugin) && ($item->plugin == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_plugin');">
+              Плагин
+            </span>
+          </td>
+        </tr>
+
+        <!-- поле Имя файла -->
+        <tr>
+          <td class="param">
+            Имя файла:
+          </td>
+          <td class="value" width="100%" title="В каком PHP-файле описан класс модуля">
+            <input class="edit" name="filename[{$id}]" type="text" value="{$item->filename|escape|default:''}">
+          </td>
+
+          <!-- флажок Для специальных страниц -->
+          <td class="param_short" title="Разрешен ли для специальных страниц">
+            <input class="checkbox" id="item_form_valuable" name="valuable[{$id}]" type="checkbox"{if isset($item->valuable) && ($item->valuable == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_valuable');">
+              Для специальных страниц
+            </span>
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+
+        <!-- поле Описание -->
+        <tr>
+          <td class="param_high">
+            Описание:
+          </td>
+          <td class="value" colspan="3" width="100%" title="Справочная информация о назначении модуля">
+            <textarea class="editor_small" name="description[{$id}]" style="height: 100px;">{$item->description|default:''}</textarea>
+          </td>
+        </tr>
+
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && !empty($from_page)}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <div class="help">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        Всякая страница клиентской стороны сайта, будь она специальной или предопределенной, обслуживается каким-нибудь модулем. Он получает
+        от страницы данные, обрабатывает их и возвращает ответный контент в тело страницы. Физически модуль являет собой PHP-файл, в котором
+        объявлен некоторый класс с описанием выполняемых модулем действий. Потому при добавлении (регистрации) очередного модуля на сайт
+        необходимо указать, как минимум, название его класса.
+      </div>
+      <div>
+        Обычно в одном файле располагается один модуль, и для удобства имя класса совпадает с именем файла, например класс Login и файл Login.php.
+        Тогда имя файла задавать не обязательно, сайт найдет файл модуля сам. Не воспрещена ситуация, когда в одном файле размещены несколько
+        модулей, то есть в файле объявлены разные классы. Здесь требуется указать имя файла.
+      </div>
+      <div>
+        Если модуль имеет признак "<u>Плагин</u>", он будет использован только при подключении как динамического плагина на страницу статьи,
+        новости, товара и так далее. Технически между модулем и плагином нет разницы, отличается способ вызова. Модуль обслуживает страницу
+        клиентской стороны целиком. Плагин вызывается во время обслуживания для дополнения страницы.
+      </div>
+      <div>
+        Признак "<u>Для&nbsp;специальных&nbsp;страниц</u>" обозначает модуль, который может быть использован в том числе и для обслуживания
+        специальных страниц. То есть такой модуль появляется в списке "Тип&nbsp;контента:" при редактировании специальной страницы.
+      </div>
+    </div>
+
+  </div>

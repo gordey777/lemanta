@@ -1,0 +1,748 @@
+{* <!--
+  Impera CMS: шаблон админ модуля страницы комплекта товаров.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о комплекте товаров;
+    $catalog = массив с записями каталога товаров;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    products = true - вывести эту кнопку
+    products_kits = true - вывести эту кнопку
+    card_products_kits = true - вывести эту кнопку
+    categories = true - вывести эту кнопку
+    brands = true - вывести эту кнопку
+    properties = true - вывести эту кнопку
+    stocks = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           products = true
+           products_kits = true
+           card_products_kits = true
+           categories = true
+           brands = true
+           properties = true
+           stocks = true}
+
+  {* <!-- В переменную $id заносим идентификатор комплекта товаров или 0 при его отсутствии. --> *}
+  {assign var="id" value=$item->kit_id|escape|default:0}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=ProductsKits" title="Перейти на страницу комплектов товаров в админпанели">Комплекты</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id) || (isset($item->name) && !empty($item->name))}
+        {$item->name|strip_tags|escape|default:"&nbsp;"}
+      {else}
+        Новый комплект товаров
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        {if !empty($id) && isset($item->url) && ($item->url != "") && empty($error)}
+          <a href="http://{$root_url|escape}/{$item->url_path|escape}{$item->url|escape}" title="Перейти на страницу комплекта товаров в клиентской части сайта">
+            http://{$root_url|escape}/{$item->url_path|escape}{$item->url|escape}
+          </a>
+        {else}
+          &nbsp;
+        {/if}
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных записи -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=ProductsKit" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Название -->
+        <tr>
+          <td class="param">
+            Название:
+          </td>
+          <td class="value" width="100%" title="Название комплекта товаров">
+            <input class="edit" id="item_form_name_{$id}" name="name[{$id}]" type="text" value="{$item->name|escape|default:''}">
+          </td>
+
+          <!-- кнопка Применить -->
+          <td class="value_box" title="Сохранить изменения и остаться на этой же странице">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_ACCEPT|escape}" type="submit" value="Применить">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box" title="Сохранить изменения и перейти в список">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <h2>
+        Товары
+      </h2>
+ 
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        {assign var="total_amount" value=0}
+        {if isset($item->products) && !empty($item->products)}
+          {foreach name=v item=r from=$item->products}
+            <tr>
+
+              <!-- нумерация -->
+              <td class="param_short" style="height: 10px; vertical-align: bottom;">
+                {$smarty.foreach.v.iteration}.
+              </td>
+
+              <!-- поле Название товара -->
+              <td class="param_text" colspan="2" rowspan="2" width="75%" title="Название товара">
+
+                {assign var="image" value=""}
+                {if isset($r->small_image)}
+                  {assign var="image" value=$r->small_image|default:""}
+                {/if}
+                {if ($image == "") && isset($r->large_image)}
+                  {assign var="image" value=$r->large_image|default:""}
+                {/if}
+                {if ($image == "") && isset($r->fotos) && !empty($r->fotos)}
+                  {foreach item=f from=$r->fotos}
+                    {if $image == ""}
+                      {assign var="image" value=$f->filename|default:""}
+                    {/if}
+                  {/foreach}
+                {/if}
+
+                {if $image == ""}
+                  {assign var="description" value=$r->description|default:""}
+                  {assign var="image" value=$description|regex_replace:"'^.*?<img[^>]+?src=([^>\s]+).+$'is":"\\1"}
+                  {if $image == $description}
+                    {assign var="description" value=$r->body|default:""}
+                    {assign var="image" value=$description|regex_replace:"'^.*?<img[^>]+?src=([^>\s]+).+$'is":"\\1"}
+                    {if $image == $description}
+                      {assign var="image" value=""}
+                    {/if}
+                  {/if}
+                  {if $image == ""}
+                    {capture assign="image"}"http://{$root_url|escape}/design/{$settings->theme|escape}/images/no_foto.jpg"{/capture}
+                  {/if}
+                {else}
+                  {capture assign="image"}"{if $image|truncate:7:'':true|lower != 'http://'}http://{$root_url|escape}/{/if}{$image|escape}"{/capture}
+                {/if}
+
+                <!-- изображение -->
+                {strip}
+                  <a class="image" href="http://{$root_url|escape}/{if $r->url_special != 1}products/{/if}{$r->url|escape}" title="{if !isset($settings->product_category_show) || ($settings->product_category_show == 1)}{$r->category|strip_tags|escape} {/if}{if !isset($settings->product_brand_show) || ($settings->product_brand_show == 1)}{$r->brand|strip_tags|escape} {/if}{$r->model|strip_tags|escape}">
+                    <div class="image">
+                      <img src={$image}>
+                    </div>
+                  </a>
+                {/strip}
+
+                <a href="http://{$root_url|escape}/{if $r->url_special != 1}products/{/if}{$r->url|escape}">
+                  <span class="text">
+                    {if !isset($settings->product_category_show) || ($settings->product_category_show == 1)}{$r->category|strip_tags|escape} {/if}
+                    {if !isset($settings->product_brand_show) || ($settings->product_brand_show == 1)}{$r->brand|strip_tags|escape} {/if}
+                    {$r->model|strip_tags|escape|default:""}
+                  </span>
+                </a>
+
+                {if ($r->variant_name|default:""|strip_tags|strip != "") && ($r->variant_name|strip_tags|strip != $r->model|strip_tags|strip)}
+                  <span class="subtext">{$r->variant_name|strip_tags|escape}</span>
+                {/if}
+
+                {if $r->name_properties|default:""|strip_tags|strip != ""}
+                  <span class="subinfo">{$r->name_properties|strip_tags|escape}</span>
+                {/if}
+
+                <input name="kititem_id[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{if !isset($r->virtual)}{$r->kititem_id|escape|default:0}{else}0{/if}">
+                <input name="kititem_product_id[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$r->product_id|escape|default:0}">
+                <input name="kititem_variant_id[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$r->variant_id|escape|default:0}">
+              </td>
+
+              <!-- поле Цена -->
+              <td class="value" title="Цена товара">
+                <input class="edit" readonly id="orderitem_price_{$id}_{$smarty.foreach.v.iteration}" size="10" style="width: auto;" type="text" value="{($r->discount_price * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'}">
+              </td>
+              <td class="param_short">
+                {strip}
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currencies" title="Перейти на страницу валют в админпанели">
+                    {$currency->sign|default:''|escape}
+                  </a>
+                {/strip}
+              </td>
+
+              <!-- поле Количество -->
+              <td class="value" title="Количество товара">
+                <input class="edit" id="orderitem_quantity_{$id}_{$smarty.foreach.v.iteration}" name="kititem_quantity[{$id}][{$smarty.foreach.v.iteration}]" size="5" style="width: auto;" type="text" value="{if $r->quantity >= 1}{$r->quantity|string_format:'%d'}{else}1{/if}" onkeyup="javascript: return Change_OrderItem_Quantity(event, this, '{$id}', '{$smarty.foreach.v.iteration}', true);">
+                <input name="kititem_quantity_previous[{$id}][{$smarty.foreach.v.iteration}]" type="hidden" value="{if $r->quantity >= 1}{$r->quantity|string_format:'%d'}{else}1{/if}">
+              </td>
+              <td class="param_short">
+                шт.
+              </td>
+
+              <!-- поле Скидка -->
+              <td class="value" title="Использовать скидку (пустое поле означает использовать текущую скидку покупателя)">
+                <input class="edit" id="orderitem_discount_{$id}_{$smarty.foreach.v.iteration}" name="kititem_discount[{$id}][{$smarty.foreach.v.iteration}]" size="5" style="width: auto;" type="text" value="{if $r->discount|string_format:'%1.2f'|replace:',':'.' >= 0}{$r->discount|string_format:'%1.2f'|replace:',':'.'|escape}{/if}" onkeyup="javascript: return Change_OrderItem_Discount(event, this, '{$id}', '{$smarty.foreach.v.iteration}', true);">
+              </td>
+              <td class="param_short">
+                {strip}
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Groups" title="Перейти на страницу групповых скидок в админпанели">
+                    %
+                  </a>
+                {/strip}
+              </td>
+
+              <!-- окончательная цена позиции -->
+              {assign var="quantity" value=$r->quantity}
+              {if $r->quantity < 0}
+                {assign var="quantity" value=$r->quantity*-1}
+              {/if}
+              <td class="param_short" id="orderitem_total_{$id}_{$smarty.foreach.v.iteration}" old_value="{($r->discount_price * $quantity * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'|escape}" style="text-align: right;">
+                {($r->discount_price * $quantity * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."|escape} {$currency->sign|default:''|escape}
+                {assign var="total_amount" value=$total_amount+$r->discount_price*$quantity}
+              </td>
+
+              <!-- флажок Используется -->
+              <td class="param_short" title="Действительна ли эта товарная позиция (позиции со снятым флажком будут удалены)">
+                <input class="checkbox" id="orderitem_used_{$id}_{$smarty.foreach.v.iteration}" name="kititem_used[{$id}][{$smarty.foreach.v.iteration}]" type="checkbox" checked value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);">
+              </td>
+            </tr>
+            <tr>
+              <td>&nbsp;</td>
+              <td colspan="4">&nbsp;</td>
+            </tr>
+          {/foreach}
+        {/if}
+
+        <!-- кнопка Добавить товар -->
+        <tr>
+          <td class="param_short" colspan="5" width="75%">
+            <a href="#" id="item_form_add_key" title="Добавить товар" onclick="javascript: return Show_PageElements('catalog');">
+              добавить
+            </a>
+          </td>
+
+          <!-- итого товаров -->
+          <td class="param_short" id="orderitem_total_{$id}_order_quantity" old_value="{$item->total_quantity|default:0|escape}" style="color: #000000; text-align: right;" title="Количество товаров в комплекте">
+            {$item->total_quantity|default:0|escape}
+          </td>
+          <td class="param_short" colspan="3">
+            шт.
+          </td>
+
+          <!-- итого сумма -->
+          <td class="param_short" id="orderitem_total_{$id}_order_sum" old_value="{($total_amount * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'|escape}" style="color: #000000; text-align: right; min-width: 120px;" title="Полная сумма комплекта">
+            {($total_amount * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."|escape} {$currency->sign|default:''|escape}
+          </td>
+          <td class="param_short">
+            &nbsp;
+          </td>
+        </tr>
+      </table>
+
+      {literal}
+        <script language="JavaScript" type="text/javascript">
+          <!--
+
+          // добавление строки товара в таблицу товаров комплекта
+          //   object_id = идентификатор любого опорного объекта, размещенного в любой ячейке таблицы
+          //   product_link_object = объект ссылки добавляемого товара
+          //   product_id = идентификатор добавляемого товара
+          //   variant_id = идентификатор варианта товара
+
+          function Append_ProductTableRow (object_id, product_link_object, product_id, variant_id) {
+
+            // находим опорный объект на странице
+            var object = document.getElementById(object_id);
+            if ((typeof(object) == 'object') && (object != null)) {
+
+              // если существует опорный объект ссылки добавляемого товара
+              if ((typeof(product_link_object) == 'object') && (product_link_object != null) && ('innerHTML' in product_link_object)) {
+
+                // берем данные о товаре
+                product_id = htmlspecialchars(product_id, 'ENT_QUOTES');
+                variant_id = htmlspecialchars(variant_id, 'ENT_QUOTES');
+                var product_name = htmlspecialchars(product_link_object.innerHTML, 'ENT_QUOTES');
+                var childs = product_link_object.parentNode.childNodes;
+                if (childs && childs.length > 3) {
+                  var variant_name = '';
+                  var variant_price = '';
+                  if (childs[1] && ('innerHTML' in childs[1])) variant_price = htmlspecialchars(childs[1].innerHTML, 'ENT_QUOTES');
+                  if (childs[4] && ('innerHTML' in childs[4])) variant_name = htmlspecialchars(childs[4].innerHTML, 'ENT_QUOTES');
+                }
+
+                // по опорному объекту выходим на объект таблицы (то есть [объект] -> [родительский TD] -> [родительский TR] -> [родительский TABLE])
+                var table = jQuery(object).parent().parent().parent();
+                if ((typeof(table) == 'object') && (table != null) && (table.length == 1)) {
+
+                  // получаем все объекты строк в этой таблице
+                  var tr = jQuery(table).find('tr');
+                  var num = tr.length;
+                  if (num > 0) {
+                    if (num <= 1000) {
+
+                      // запоминаем контент последней строки таблицы (это кнопка "Добавить")
+                      var last_html = tr[num - 1].innerHTML;
+
+                      // формируем контент новой строки таблицы
+                      var id = {/literal}{$id}{literal};
+                      num = (num - 1) / 2 + 1;
+                      var html = '<td class="param_short" style="height: 10px; vertical-align: bottom;">' +
+                                   num + '.' +
+                                 '</td>' +
+                                 '<td class="param_text" colspan="2" rowspan="2" width="75%" title="Название товара">' +
+                                   '<a href="{/literal}http://{$root_url|escape}/products/' + product_id + '{literal}">' +
+                                     '<span class="text">' + product_name + '</span>' +
+                                   '</a>' +
+                                   ((variant_name != '') ? '<span class="subtext">' + variant_name + '</span>' : '') +
+                                   '<input name="kititem_id[' + id + '][' + num + ']" type="hidden" value="0">' +
+                                   '<input name="kititem_product_id[' + id + '][' + num + ']" type="hidden" value="' + product_id + '">' +
+                                   '<input name="kititem_variant_id[' + id + '][' + num + ']" type="hidden" value="' + variant_id + '">' +
+                                 '</td>' +
+                                 '<td class="value" title="Цена товара">' +
+                                   '<input class="edit" readonly id="orderitem_price_' + id + '_' + num + '" size="10" style="width: auto;" type="text" value="' + variant_price + '">' +
+                                 '</td>' +
+                                 '<td class="param_short">' +
+                                   '<a href="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currencies{literal}" title="Перейти на страницу валют в админпанели">' +
+                                     '{/literal}{$currency->sign|default:''|escape}{literal}' +
+                                   '</a>' +
+                                 '</td>' +
+                                 '<td class="value" title="Количество товара">' +
+                                   '<input class="edit" id="orderitem_quantity_' + id + '_' + num + '" name="kititem_quantity[' + id + '][' + num + ']" size="5" style="width: auto;" type="text" value="1" old_value="0" onkeyup="javascript: return Change_OrderItem_Quantity(event, this, \'' + id + '\', \'' + num + '\', true);">' +
+                                   '<input name="kititem_quantity_previous[' + id + '][' + num + ']" type="hidden" value="0">' +
+                                 '</td>' +
+                                 '<td class="param_short">' +
+                                    'шт.' +
+                                 '</td>' +
+                                 '<td class="value" title="Использовать скидку (пустое поле означает использовать текущую скидку покупателя)">' +
+                                   '<input class="edit" id="orderitem_discount_' + id + '_' + num + '" name="kititem_discount[' + id + '][' + num + ']" size="5" style="width: auto;" type="text" value="" onkeyup="javascript: return Change_OrderItem_Discount(event, this, \'' + id + '\', \'' + num + '\', true);">' +
+                                 '</td>' +
+                                 '<td class="param_short">' +
+                                   '<a href="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Groups{literal}" title="Перейти на страницу групповых скидок в админпанели">' +
+                                     '%' +
+                                   '</a>'+
+                                 '</td>' +
+                                 '<td class="param_short" id="orderitem_total_' + id + '_' + num + '" old_value="0.00" style="text-align: right;">' +
+                                   variant_price + ' {/literal}{$currency->sign|default:''|escape}{literal}' +
+                                 '</td>' +
+                                 '<td class="param_short" title="Действительна ли эта товарная позиция (позиции со снятым флажком будут удалены)">' +
+                                   '<input class="checkbox" id="orderitem_used_' + id + '_' + num + '" name="kititem_used[' + id + '][' + num + ']" type="checkbox" checked value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);">' +
+                                 '</td>';
+
+                      // вставляем контент новой строки в таблицу перед строкой кнопки "Добавить"
+                      tr[(num - 1) * 2 + 1 - 1].innerHTML = html;
+                      html = '<tr>' +
+                               '<td>&nbsp;</td>' +
+                               '<td colspan="4">&nbsp;</td>' +
+                             '</tr>';
+                      jQuery(table).append(html);
+                      jQuery(table).append('<tr>' + last_html + '</tr>');
+
+                      // имитируем попытку изменения цены (для просчета итоговой суммы комплекта)
+                      Change_OrderItem_Price (null, null, id, num, '', false);
+
+                    } else {
+                      alert('Добавление новой товарной позиции отклонено, так как это превысит лимит их допустимого количества в комплекте!');
+                    }
+                  }
+                }
+              }
+            }
+
+            // скрываем каталог товаров
+            Switch_PageElements('catalog');
+
+            // возвращаем FALSE (для вызывающих функцию из обработчика события OnClick элемента <a>)
+            return false;
+          }
+          // -->
+        </script>
+      {/literal}
+
+      <h2 style="margin-bottom: 20px;">
+        Мета информация
+      </h2>
+ 
+      <!-- Meta информация -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+
+        <!-- поле URL -->
+        <tr>
+          <td class="param">
+            URL:
+          </td>
+          <td class="param_short" width="1%">
+            http://сайт/<span id="item_form_url_path"{if isset($item->url_special) && ($item->url_special == 1)} style="display: none;"{/if}>kits/</span>
+          </td>
+          <td class="value" width="100%" title="Окончание адреса страницы комплекта товаров">
+            <input class="edit" id="item_form_url_{$id}" name="url[{$id}]" type="text" value="{$item->url|escape|default:''}">
+          </td>
+
+          <!-- флажок Особый -->
+          <td class="param_short" title="Будет ли URL без kits/ в начале">
+            <input class="checkbox" id="item_form_url_special" name="url_special[{$id}]" type="checkbox"{if isset($item->url_special) && ($item->url_special == 1)} checked{/if} value="1" onchange="javascript: var object = document.getElementById('item_form_url_path'); if ((typeof(object) == 'object') && (object != null)) object.style.display = this.checked ? 'none' : '';">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_url_special');">
+              Особый
+            </span>
+          </td>
+        </tr>
+
+        <!-- поле Meta Keywords -->
+        <tr>
+          <td class="param_high" rowspan="3">
+            Meta Keywords:
+          </td>
+          <td class="value" colspan="2" rowspan="3" title="Какой текст разместить в мета теге &lt;meta name=keywords ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_keywords_{$id}" name="meta_keywords[{$id}]" style="height: 64px;">{$item->meta_keywords|escape|default:''}</textarea>
+          </td>
+
+          <!-- флажок Не для RSS -->
+          <td class="param_short" title="Запрещена ли демонстрация комплекта товаров в RSS">
+            <input class="checkbox" id="item_form_rss_disabled" name="rss_disabled[{$id}]" type="checkbox"{if isset($item->rss_disabled) && ($item->rss_disabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_rss_disabled');">
+              Не для RSS
+            </span>
+          </td>
+        </tr>
+
+        <!-- флажок Не экспорт -->
+        <tr>
+          <td class="param_short" title="Запрещена ли демонстрация комплекта товаров в информерах на внешних сайтах">
+            <input class="checkbox" id="item_form_export_disabled" name="export_disabled[{$id}]" type="checkbox"{if isset($item->export_disabled) && ($item->export_disabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_export_disabled');">
+              Не экспорт
+            </span>
+          </td>
+        </tr>
+
+        <!-- поле В каких прайсах -->
+        <tr>
+          <td class="value" rowspan="3" title="В каких прайсах используется комплект товаров (несколько выбираются с помощью клавиш Shift и Ctrl)">
+            <select multiple name="in_prices[{$id}][]" size="5" style="font-size: 8pt; height: 128px; width: 92px;">
+              {section name="prices" start=0 loop=8 step=1}
+                {assign var="c" value=$smarty.section.prices.index}
+                <option value="{$c}"{if isset($item->in_prices.$c) && ($item->in_prices.$c == 1)} selected{/if}>прайс {$smarty.section.prices.iteration}</option>
+              {/section}
+            </select>
+          </td>
+        </tr>
+
+        <!-- поле Meta Description -->
+        <tr>
+          <td class="param">
+            Meta Description:
+          </td>
+          <td class="value" colspan="2" title="Какой текст разместить в мета теге &lt;meta name=description ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_description_{$id}" name="meta_description[{$id}]" style="height: 64px;">{$item->meta_description|escape|default:''}</textarea>
+          </td>
+        </tr>
+
+        <!-- поле Meta Title -->
+        <tr>
+          <td class="param">
+            Meta Title:
+          </td>
+          <td class="value" colspan="2" width="100%" title="Какой текст разместить в теге &lt;title&gt; заголовка страницы">
+            <input class="edit" id="item_form_meta_title_{$id}" name="meta_title[{$id}]" type="text" value="{$item->meta_title|escape|default:''}">
+          </td>
+        </tr>
+      </table>
+
+      <h2>
+        Описание
+      </h2>
+ 
+      <!-- Аннотация -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Аннотация -->
+        <tr>
+          <td class="param_high">
+            Аннотация:
+          </td>
+          <td class="{if $settings->productskits_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" id="item_form_description_{$id}" name="description[{$id}]">{$item->description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Полный текст -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Полный текст -->
+        <tr>
+          <td class="param_high">
+            Полный текст:
+          </td>
+          <td class="{if $settings->productskits_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_big" name="body[{$id}]" style="height: 400px;">{$item->body|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Теги -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Теги -->
+        <tr>
+          <td class="param">
+            Теги:
+          </td>
+          <td class="value" width="100%" title="Ассоциируемые с этой записью теги (перечисляются через запятую)">
+            <input class="edit" name="tags[{$id}]" type="text" value="{$item->tags|escape|default:''}">
+          </td>
+
+          <!-- кнопка Применить -->
+          <td class="value_box" title="Сохранить изменения и остаться на этой же странице">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_ACCEPT|escape}" type="submit" value="Применить">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box" title="Сохранить изменения и перейти в список">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация о разрешениях -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+
+        <!-- поле Просмотры -->
+        <tr>
+          <td class="param_short">
+            Просмотры:
+          </td>
+          <td class="value" title="Счетчик визитов на страницу комплекта товаров">
+            <input class="edit" name="browsed[{$id}]" size="6" style="width: auto;" type="text" value="{$item->browsed|escape|default:''}">
+          </td>
+
+          <!-- поле Вес -->
+          <td class="param_short">
+            Вес:
+          </td>
+          <td class="value" title="Число определяет положение комплекта товаров выше других с меньшим весом">
+            <input class="edit" name="order_num[{$id}]" size="6" style="width: auto;" type="text" value="{$item->order_num|escape|default:''}">
+          </td>
+
+          <!-- флажок Экспорт Яндекс.Маркет -->
+          <td class="param_short" colspan="2" title="Разрешен ли экспорт комплекта товаров в Яндекс.Маркет">
+            <input class="checkbox" id="item_form_ymarket" name="ymarket[{$id}]" type="checkbox"{if isset($item->ymarket) && ($item->ymarket == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_ymarket');">
+              Яндекс.Маркет
+            </span>
+          </td>
+
+          <!-- флажок Экспорт ВКонтакте -->
+          <td class="param_short" colspan="2" title="Разрешен ли экспорт комплекта товаров в ВКонтакте">
+            <input class="checkbox" id="item_form_vkontakte" name="vkontakte[{$id}]" type="checkbox"{if isset($item->vkontakte) && ($item->vkontakte == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_vkontakte');">
+              Экспорт ВКонтакте
+            </span>
+          </td>
+
+          <!-- флажок Скрыт -->
+          <td class="param_short" title="Будет ли комплект товара скрыт от незарегистрированных пользователей">
+            <input class="checkbox" id="item_form_hidden" name="hidden[{$id}]" type="checkbox"{if isset($item->hidden) && ($item->hidden == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_hidden');">
+              Скрыт
+            </span>
+          </td>
+
+          <!-- флажок Выделен визуально -->
+          <td class="param_short" title="Будет ли комплект товара выделен визуально в списках">
+            <input class="checkbox" id="item_form_highlighted" name="highlighted[{$id}]" type="checkbox"{if isset($item->highlighted) && ($item->highlighted == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_highlighted');">
+              Выделен
+            </span>
+          </td>
+
+          <!-- флажок Разрешен -->
+          <td class="param_short" title="Разрешен ли комплект товаров к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешен
+            </span>
+          </td>
+
+          <!-- флажок Не в кредит -->
+          <td class="param_short" title="Запрещена ли продажа в кредит">
+            <input class="checkbox" id="item_form_noncreditable" name="non_creditable[{$id}]" type="checkbox"{if isset($item->non_creditable) && ($item->non_creditable == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_noncreditable');">
+              Не в кредит
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- SEO текст -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле SEO текст -->
+        <tr>
+          <td class="param_high">
+            SEO текст:
+          </td>
+          <td class="{if $settings->productskits_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" name="seo_description[{$id}]" style="height: 150px;">{$item->seo_description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && ($from_page != "")}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем пустой указатель требуемой команды -->
+      <input id="item_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Окно выпадающего каталога товаров -->
+    <div class="catalog" id="catalog" style="top: 940px;">
+      <div class="catalog_content">
+
+        {strip}
+          <span>
+            <a href="#" onclick="javascript: return Switch_PageElements('catalog');">
+              закрыть
+            </a>
+          </span>
+        {/strip}
+        Выберите нужный товар:
+        &nbsp;
+        <b style="font-weight: normal;">найти по артикулу</b> <input class="search-code" type="text" value="" onkeypress="javascript: if ((event.keyCode == 13) || (event.keyCode == 10)) Search_Products_By_Code(this, this.value, 'sku-marker-');">
+        <b style="font-weight: normal;">&nbsp;по коду</b> <input class="search-code" type="text" value="" onkeypress="javascript: if ((event.keyCode == 13) || (event.keyCode == 10)) Search_Products_By_Code(this, this.value, 'pcode-marker-');">
+        <b style="font-weight: normal;">&nbsp;по модели</b> <input class="search-text" type="text" value="" onkeypress="javascript: if ((event.keyCode == 13) || (event.keyCode == 10)) Search_Products_By_Text(this, this.value);">
+
+        <div class="catalog_body">
+          {if isset($catalog) && !empty($catalog)}
+            {function name="products_tree"}
+
+              <!-- Ветка категории -->
+              {foreach item=c from=$cats}
+                {if !isset($c->products_count) || ($c->products_count > 0)}
+                  <ul class="categories{if $level > 1} nested-item" style="display: none;{/if}">
+                    {strip}
+                      <li title="Свернуть / развернуть категорию {$c->name|strip_tags|escape}" onclick="javascript: Switch_List_UL_Branch(this); event.cancelBubble = true; return false;">
+                        <span>{$c->products_count|escape} позиций</span>
+                        <span class="topic">{$number}.</span>{$c->name|strip_tags|escape}
+                        {assign var="number" value=$number+1}
+                      </li>
+                    {/strip}
+                    {if isset($c->subcategories) && !empty($c->subcategories)}
+                      {products_tree cats=$c->subcategories level=$level+1 number=1}
+                    {/if}
+
+                    <!-- Товары категории -->
+                    {if isset($c->products) && !empty($c->products)}
+                      {assign var="subnumber" value=1}
+                      <ul class="products nested-item" style="display: none;">
+                        {foreach item=r from=$c->products}
+                          {if isset($r->variants) && !empty($r->variants)}
+                            {foreach item=v from=$r->variants}
+
+                              {strip}
+                                <li {if ($v->sku|default:"" != "")
+                                    || ($r->pcode|default:"" != "")}
+                                      class="{if $v->sku|default:"" != ""}sku-marker-{$v->sku|lower|escape} {/if}{if $r->pcode|default:"" != ""}pcode-marker-{$r->pcode|lower|escape}{/if}"
+                                    {/if}>
+                                  <span>{$v->stock|escape} шт.</span>
+                                  <span class="price">{(($v->discount_price|default:0) * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:"%1.2f"|replace:",":"."|escape}</span>
+                                  <span class="topic">{$subnumber}.</span>
+                                  <a href="#" title="Выбрать товар {if !isset($settings->product_category_show) || ($settings->product_category_show == 1)}{$r->category|strip_tags|escape} {/if}{if !isset($settings->product_brand_show) || ($settings->product_brand_show == 1)}{$r->brand|strip_tags|escape} {/if}{$r->model|strip_tags|escape}{if ($v->name != '') && ($v->name != $r->model)} {$v->name|strip_tags|escape}{/if}" onclick="javascript: return Append_ProductTableRow('item_form_add_key', this, '{$r->product_id|escape}', '{$v->variant_id|escape}');">
+                                    {if !isset($settings->product_category_show) || ($settings->product_category_show == 1)}{$r->category|strip_tags|escape} {/if}
+                                    {if !isset($settings->product_brand_show) || ($settings->product_brand_show == 1)}{$r->brand|strip_tags|escape} {/if}
+                                    {$r->model|strip_tags|escape}
+                                  </a>
+                                  {if ($v->name != "") && ($v->name != $r->model)}<span class="variant">{$v->name|strip_tags|escape}</span>{/if}
+                                </li>
+                              {/strip}
+
+                            {/foreach}
+                            {assign var="subnumber" value=$subnumber+1}
+                          {/if}
+                        {/foreach}
+                      </ul>
+                    {/if}
+
+                  </ul>
+                {/if}
+              {/foreach}
+
+            {/function}
+
+            {* <!-- запускаем исполнение объявленной выше функции products_tree,
+                    передавая ей в качестве параметра массив каталога товаров $catalog --> *}
+            {products_tree cats=$catalog level=1 number=1}
+          {/if}
+        </div>
+      </div>
+    </div>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>
+
+  <!-- {*
+  Подключаем субшаблон редактора TinyMCE. В субшаблон передаем атрибуты:
+    disabled_state = из какой переменной брать признак отмены редактора *} -->
+
+  {include file = "../../common_parts/tinymce.htm"
+           disabled_state = $settings->productskits_wysiwyg_disabled}
+
+  <!-- {*
+  Подключаем субшаблон генератора Meta информации. В субшаблон передаем атрибуты:
+    form_id = какой идентификатор у формы, в которой редактируется запись
+    item_id = из какой переменной брать идентификатор записи
+    autofill = из какой переменной брать признак автозаполнения пустых полей мета информации *} -->
+
+  {include file = "../../common_parts/meta.htm"
+           form_id = "item_form"
+           item_id = $id
+           autofill = $settings->productskits_meta_autofill}

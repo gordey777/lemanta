@@ -1,0 +1,984 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля страницы клиента.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификационный идентификатор;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "card" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    users = true - вывести эту кнопку
+    groups = true - вывести эту кнопку
+    banneds = true - вывести эту кнопку
+    card = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           users = true
+           groups = true
+           banneds = true
+           card = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?section=Users">Клиенты</a>
+        → {if $User->user_id}{$User->compound_name|escape|default:"&nbsp;"}{else}Новый{/if}
+      </div>
+      {if $User->user_id}
+        {$User->compound_name|escape|default:"&nbsp;"}
+      {else}
+        Новый клиент
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        &nbsp;
+      {/strip}
+    </div>
+
+    <!-- {*
+    Если во входной переменной $error есть текст сообщения об ошибке,
+    выводим это сообщение. *} -->
+
+    {if !empty($error)}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+  {literal}
+    <style>
+      .select2, .input3, .editor_small {color: #000000; font-family: Verdana, Tahoma, Arail; font-size: 10pt;}
+      .table_info          {border: #E0E0E0 1px solid; border-bottom: 0px solid; margin: 0px; padding: 0px;}
+      .cell_info_title     {background-color: #E8E8E8; border: 0px solid; color: #808080; font-family: Verdana, Tahoma, Arial; font-size: 7pt; margin: 0px; padding: 5px; text-align: center; white-space: nowrap;}
+      .cell_info_num       {background-color: #FCFCFC; border: 0px solid; border-bottom: #E0E0E0 1px solid; border-right: #E0E0E0 1px solid; color: #808080; font-family: Verdana, Tahoma, Arial; font-size: 7pt; margin: 0px; padding: 5px; text-align: right; white-space: nowrap;}
+      .cell_info_date,
+      .cell_info_sum,
+      .cell_info_id        {border: 0px solid; border-bottom: #E0E0E0 1px solid; border-right: #E0E0E0 1px solid; font-family: Verdana, Tahoma, Arial; font-size: 8pt; margin: 0px; padding: 5px; text-align: right; white-space: nowrap;}
+      .cell_info_rem       {border: 0px solid; border-bottom: #E0E0E0 1px solid; font-family: Verdana, Tahoma, Arial; font-size: 7pt; margin: 0px; padding: 5px; text-align: left;}
+      .cell_info_total     {background-color: #F8F8F8; border: 0px solid; border-bottom: #E0E0E0 1px solid; border-right: #E0E0E0 1px solid; font-family: Verdana, Tahoma, Arial; font-size: 7pt; margin: 0px; padding: 5px; text-align: right; white-space: nowrap;}
+      .cell_info_total_sum {background-color: #F0F0F0; border: 0px solid; border-bottom: #E0E0E0 1px solid; font-family: Verdana, Tahoma, Arial; font-size: 8pt; margin: 0px; padding: 5px; text-align: right; white-space: nowrap;}
+    </style>
+  {/literal}
+
+          <form name="user" method="post">
+            <div id="over">
+              <div id="over_left" style="width: 97%;">
+                <table align="center" border="0" cellpadding="0" cellspacing="20" width="100%">
+                  <tr>
+                    <td class="model">
+                      Фамилия&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="name" style="width: 100%;" type="text" value="{$User->name|escape}" {literal}pattern=".{1,}"{/literal} notice="Введите фамилию">
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;Email&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="email" style="width: 100%;" type="text" value="{$User->email|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;имя&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="name3" style="width: 100%;" type="text" value="{$User->name3|escape}" {literal}pattern=".{1,}"{/literal} notice="Введите имя">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;другой&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="email2" style="width: 100%;" type="text" value="{$User->email2|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;отчество&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="name2" style="width: 100%;" type="text" value="{$User->name2|escape}" {literal}pattern=".{1,}"{/literal} notice="Введите отчество">
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;Телефон&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="phone" style="width: 100%;" type="text" value="{$User->phone|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      Приведён&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <select class="select2" name="affiliate_id" style="width: 100%;">
+                          <option value="0">
+                            &nbsp;
+                          </option>
+                          {foreach $all_users as $item}
+                            {if $User->user_id != $item->user_id}
+                              <option value="{$item->user_id}"{if $User->affiliate_id == $item->user_id} selected{/if}>
+                                {$item->compound_name|escape}, &nbsp;&nbsp; №{$item->user_id|escape}, &nbsp;&nbsp; {$item->email|default:$item->email2|escape}
+                              </option>
+                            {/if}
+                          {/foreach}
+                        </select>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        кем был приведён покупатель
+                      </div>
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;другой&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="phone2" style="width: 100%;" type="text" value="{$User->phone2|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        основной и дополнит. емейлы и телефоны
+                      </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      Карточка&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" id="card_num" name="card_num" style="width: 100%;" type="text" value="{$User->card_num|escape}">
+                      <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                          <td width="100%">
+                            <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                              номер карточки покупателя в картотеке магазина
+                            </div>
+                          </td>
+                          <td nowrap>
+                            <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                              <a href="#" onclick="javascript: var object = document.getElementById('card_num'); if ((typeof(object) == 'object') && (object != null)) object.value = '{$User->user_id|escape}'; return false;" title="Установить номер карточки равным идентификатору покупателя в базе данных сайта">
+                                взять ID
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;На счёте&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="cash_info" readonly style="width: 100%;" type="text" value="{($User->cash*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'} {$currency->sign|escape}">
+                      <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+                        <tr>
+                          <td width="100%">
+                            <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                              сколько средств имеет на внутреннем счёте
+                            </div>
+                          </td>
+                          <td nowrap>
+                            <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                              <a href="#" onclick="javascript: var object = document.getElementById('cash_charge'); if ((typeof(object) == 'object') && (object != null)) object.style.display = ''; return false;" title="Пополнить или вычесть сумму с внутреннего счёта покупателя">
+                                пополнить
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      </table>
+                      <table align="center" border="0" cellpadding="0" cellspacing="5" id="cash_charge" style="display: none;" width="100%">
+                        <tr>
+                          <td nowrap style="font-size: 10pt; font-weight: bold;">
+                            На сумму:
+                          </td>
+                          <td width="100%">
+                              <input class="input3" name="cash_charge_sum" style="width: 100%;" type="text" value="">
+                          </td>
+                        </tr>
+                        <tr>
+                          <td nowrap style="font-size: 10pt; font-weight: bold;">
+                            Комментарий:
+                          </td>
+                          <td width="100%">
+                              <input class="input3" name="cash_charge_comment" style="width: 100%;" type="text" value="">
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      Адрес&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_10" style="width: 100%;" type="text" value="{$User->address_10|escape}">
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;Ещё&nbsp;адрес&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_10" style="width: 100%;" type="text" value="{$User->address2_10|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;страна&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address" style="width: 100%;" type="text" value="{$User->address|escape}">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;страна&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2" style="width: 100%;" type="text" value="{$User->address2|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;область&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_2" style="width: 100%;" type="text" value="{$User->address_2|escape}">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;область&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_2" style="width: 100%;" type="text" value="{$User->address2_2|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;город&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_3" style="width: 100%;" type="text" value="{$User->address_3|escape}">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;город&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_3" style="width: 100%;" type="text" value="{$User->address2_3|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;улица&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_4" style="width: 100%;" type="text" value="{$User->address_4|escape}">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;улица&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_4" style="width: 100%;" type="text" value="{$User->address2_4|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дом&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_5" style="width: 100%;" type="text" value="{$User->address_5|escape}">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;дом&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_5" style="width: 100%;" type="text" value="{$User->address2_5|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;корпус&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_6" style="width: 100%;" type="text" value="{$User->address_6|escape}">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;корпус&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_6" style="width: 100%;" type="text" value="{$User->address2_6|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;подъезд&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_7" style="width: 100%;" type="text" value="{$User->address_7|escape}">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;подъезд&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_7" style="width: 100%;" type="text" value="{$User->address2_7|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;код&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_8" style="width: 100%;" type="text" value="{$User->address_8|escape}">
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;код&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_8" style="width: 100%;" type="text" value="{$User->address2_8|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;квартира&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="address_9" style="width: 100%;" type="text" value="{$User->address_9|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        основной адрес доставки товаров
+                      </div>
+                    </td>
+                    <td class="model" style="font-size: 10pt;">
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;квартира&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="address2_9" style="width: 100%;" type="text" value="{$User->address2_9|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        дополнительный адрес доставки
+                      </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      &nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <nobr>
+                          <input class="checkbox" name="enabled" style="width: 20px;" type="checkbox"{if $User->enabled} checked{/if} value="1">
+                          <span class="akt">
+                            Разрешён вход на сайт
+                          </span>
+                        </nobr>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        иначе не сможет войти на сайт как зарегистрированный
+                      </div>
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;Группа&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <select class="select2" name="group_id" style="width: 100%;">
+                          <option value=""{if $User->group_id|default:0 == 0} selected{/if}>
+                            Не определена
+                          </option>
+                          {foreach item=group from=$Groups}
+                            <option value="{$group->group_id|escape}"{if $User->group_id == $group->group_id} selected{/if}>
+                              {$group->name|escape}
+                            </option>
+                          {/foreach}
+                        </select>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        к какой группе скидок принадлежит покупатель
+                      </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      &nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        &nbsp;
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;Тип цен&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <select class="select2" name="price_id" style="width: 100%;">
+                            {section name = 'items'
+                                     start = 1
+                                     loop = $smarty.const.PRICE_TYPES_MAXCOUNT|default:10 + 1}
+                                {$temp_index = $smarty.section.items.index}
+                                {$temp_param = 'price_type'|cat:$temp_index}
+                                <option value="{$temp_index - 1}"{if $User->price_id|default:0 == $temp_index - 1} selected{/if}>
+                                    {$temp_ok = false}
+                                    {foreach $settings as $temp_field => $temp_value}
+                                        {if $temp_field == $temp_param}
+                                            {$temp_ok = true}
+                                            {break}
+                                        {/if}
+                                    {/foreach}
+                                    {$temp_value = ($temp_ok) ? ($temp_value|regex_replace:'/[\s\t\r\n]+/u':' '|regex_replace:'/^[\s\t\r\n]+/u':''|regex_replace:'/[\s\t\r\n]+$/u':'') : ''}
+                                    {($temp_value == '') ? ('Без названия (тип '|cat:$temp_index|cat:')') : $temp_value}
+                                </option>
+                            {/section}
+                        </select>
+                        <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                            к какой группе цен принадлежит покупатель
+                        </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" colspan="6">
+                      <p>
+                        <input class="submit" style="width: 20%;" type="submit" value="&nbsp;Сохранить&nbsp;">
+                      </p>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      Примечание&nbsp;
+                    </td>
+                    <td class="m_t" colspan="5" width="100%">
+                        <textarea class="editor_small" name="remark" style="width: 100%;">{$User->remark|escape}</textarea>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        заметки о покупателе для внутреннего использования
+                      </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      &nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <nobr>
+                          <input class="checkbox" name="juridical" style="width: 20px;" type="checkbox"{if $User->juridical} checked{/if} value="1">
+                          <span class="akt">
+                            Это юридическое лицо
+                          </span>
+                        </nobr>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        иначе покупатель считается физическим лицом
+                      </div>
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;ИНН&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="fiscalnum" style="width: 100%;" type="text" value="{$User->fiscalnum|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        индивидуальный налоговый номер покупателя
+                      </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      Р/счёт&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="bankaccount" style="width: 100%;" type="text" value="{$User->bankaccount|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        номер расчётного счета покупателя
+                      </div>
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;Банк&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="bank" style="width: 100%;" type="text" value="{$User->bank|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        в каком банке
+                      </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      Адрес&nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <input class="input3" name="juridicaladdress" style="width: 100%;" type="text" value="{$User->juridicaladdress|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        юридический адрес покупателя
+                      </div>
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;МФО&nbsp;
+                    </td>
+                    <td class="m_t" width="25%">
+                        <input class="input3" name="bankmfo" style="width: 100%;" type="text" value="{$User->bankmfo|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        реквизиты банка
+                      </div>
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;ОКПО&nbsp;
+                    </td>
+                    <td class="m_t" width="20%">
+                        <input class="input3" name="bankokpo" style="width: 100%;" type="text" value="{$User->bankokpo|escape}">
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" colspan="6">
+                      <p>
+                        <input class="submit" style="width: 20%;" type="submit" value="&nbsp;Сохранить&nbsp;">
+                      </p>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      Контент субдомена&nbsp;
+                    </td>
+                    <td class="m_t" colspan="5" width="100%">
+                        <textarea class="editor_small" name="subdomain_html" style="width: 100%;">{$User->subdomain_html|escape}</textarea>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        полный текст html-страницы субдомена (из текста будут удалены все скрипты и объекты, способные угрожать безопасности сайта)
+                      </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model">
+                      &nbsp;
+                    </td>
+                    <td class="m_t" width="50%">
+                        <nobr>
+                          <input class="checkbox" name="subdomain_enabled" style="width: 20px;" type="checkbox"{if $User->subdomain_enabled} checked{/if} value="1">
+                          <span class="akt">
+                            Разрешён личный субдомен
+                          </span>
+                        </nobr>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        иначе субдомен пользователя не будет обслуживаться
+                      </div>
+                    </td>
+                    <td class="model">
+                      &nbsp;&nbsp;Субдомен&nbsp;
+                    </td>
+                    <td class="m_t" colspan="3" width="50%">
+                        <input class="input3" name="subdomain" style="width: 100%;" type="text" value="{$User->subdomain|escape}">
+                      <div style="color: #C0C0C0; font-size: 8pt; padding: 0px; padding-top: 5px;">
+                        только левая часть (точка и домен магазина добавятся справа неявно)
+                      </div>
+                    </td>
+                  </tr>
+
+
+
+                  <tr>
+                    <td class="model" colspan="6">
+                      <p>
+                        <input class="submit" style="width: 20%;" type="submit" value="&nbsp;Сохранить&nbsp;">
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </form>
+
+
+
+          <div>
+            <span class="akt" style="font-size: 18pt;">
+              Реферальная активность
+            </span>
+          </div>
+
+
+
+          <table align="center" border="0" cellpadding="0" cellspacing="5" width="97%">
+            <tr>
+              <td style="border-top: #F0F0F0 1px solid; border-right: #F0F0F0 1px solid; padding: 10px;" width="50%">
+                <div style="padding-bottom: 15px;">
+                  <span class="akt">
+                    Вознаграждения и комиссионные отчисления
+                  </span>
+                </div>
+                {if $User->commissions}
+                  {assign var="month_sum" value=0}
+                  {foreach name=commission item=item from=$User->commissions}
+                    {assign var="month_sum" value=$month_sum+$item[1]}
+                  {/foreach}
+                  <table align="center" border="0" cellpadding="0" cellspacing="0" class="table_info" width="100%">
+                    <tr>
+                      <td class="cell_info_title">№</td>
+                      <td class="cell_info_title">дата</td>
+                      <td class="cell_info_title">заказ</td>
+                      <td class="cell_info_title">сумма</td>
+                      <td class="cell_info_title">комиссия</td>
+                      <td class="cell_info_title" width="100%">описание</td>
+                    </tr>
+                    <tr>
+                      <td class="cell_info_total" colspan="4">итого по состоянию на сегодня:</td>
+                      <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                    {assign var="year_num" value=""}
+                    {assign var="year_sum" value=0}
+                    {assign var="month_num" value=""}
+                    {assign var="month_sum" value=0}
+                    {foreach name=commission item=item from=$User->commissions}
+                      {if ($month_num != $item[0]|date_format:"%m") || ($year_num != $item[0]|date_format:"%Y")}
+                        {if $month_sum != 0}
+                          <tr>
+                            <td class="cell_info_total" colspan="4">итого за месяц:</td>
+                            <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                            <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                          </tr>
+                          {assign var="month_sum" value=0}
+                        {/if}
+                        {assign var="month_num" value=$item[0]|date_format:"%m"}
+                        {if $year_num != $item[0]|date_format:"%Y"}
+                          {if $year_sum != 0}
+                            <tr>
+                              <td class="cell_info_total" colspan="4">итого за {$year_num} год:</td>
+                              <td class="cell_info_total_sum">{$year_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                              <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                            </tr>
+                            {assign var="year_sum" value=0}
+                          {/if}
+                          {assign var="year_num" value=$item[0]|date_format:"%Y"}
+                        {/if}
+                      {/if}
+                      {assign var="month_sum" value=$month_sum+$item[1]}
+                      {assign var="year_sum" value=$year_sum+$item[1]}
+                      <tr>
+                        <td class="cell_info_num">{$smarty.foreach.commission.index+1}</td>
+                        <td class="cell_info_date">{$item[0]|date_format:"%d-%m-%Y %H:%M:%S"}</td>
+                        <td class="cell_info_id"><a href="index.php?section=Order&order_id={$item[2]|escape}&token={$Token|escape}">{$item[2]|escape}</a></td>
+                        <td class="cell_info_sum">{($item[3]*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</td>
+                        <td class="cell_info_sum">{$item[1]*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                        <td class="cell_info_rem" width="100%">{$item[4]|escape}</td>
+                      </tr>
+                    {/foreach}
+                    <tr>
+                      <td class="cell_info_total" colspan="4">итого за месяц:</td>
+                      <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="cell_info_total" colspan="4">итого за {$year_num} год:</td>
+                      <td class="cell_info_total_sum">{$year_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                  </table>
+                {else}
+                  <p style="font-size: 10pt;">
+                    Нет данных о таких операциях.
+                  </p>
+                {/if}
+              </td>
+              <td style="border-top: #F0F0F0 1px solid; padding: 10px;" width="50%">
+                <div style="padding-bottom: 15px;">
+                  <span class="akt">
+                    Прочая активность внутреннего счёта
+                  </span>
+                </div>
+                {if $User->charges}
+                  {assign var="month_sum" value=0}
+                  {foreach name=charge item=item from=$User->charges}
+                    {assign var="month_sum" value=$month_sum+$item[1]}
+                  {/foreach}
+                  <table align="center" border="0" cellpadding="0" cellspacing="0" class="table_info" width="100%">
+                    <tr>
+                      <td class="cell_info_title">№</td>
+                      <td class="cell_info_title">дата</td>
+                      <td class="cell_info_title">сумма</td>
+                      <td class="cell_info_title" width="100%">комментарий</td>
+                    </tr>
+                    <tr>
+                      <td class="cell_info_total" colspan="2">итого на сегодня:</td>
+                      <td class="cell_info_total_sum">{($month_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                    {assign var="year_num" value=""}
+                    {assign var="year_sum" value=0}
+                    {assign var="month_num" value=""}
+                    {assign var="month_sum" value=0}
+                    {foreach name=charge item=item from=$User->charges}
+                      {if ($month_num != $item[0]|date_format:"%m") || ($year_num != $item[0]|date_format:"%Y")}
+                        {if $month_sum != 0}
+                          <tr>
+                            <td class="cell_info_total" colspan="2">итого за месяц:</td>
+                            <td class="cell_info_total_sum">{($month_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</td>
+                            <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                          </tr>
+                          {assign var="month_sum" value=0}
+                        {/if}
+                        {assign var="month_num" value=$item[0]|date_format:"%m"}
+                        {if $year_num != $item[0]|date_format:"%Y"}
+                          {if $year_sum != 0}
+                            <tr>
+                              <td class="cell_info_total" colspan="2">итого за {$year_num} год:</td>
+                              <td class="cell_info_total_sum">{($year_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</td>
+                              <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                            </tr>
+                            {assign var="year_sum" value=0}
+                          {/if}
+                          {assign var="year_num" value=$item[0]|date_format:"%Y"}
+                        {/if}
+                      {/if}
+                      {assign var="month_sum" value=$month_sum+$item[1]}
+                      {assign var="year_sum" value=$year_sum+$item[1]}
+                      <tr>
+                        <td class="cell_info_num">{$smarty.foreach.charge.index+1}</td>
+                        <td class="cell_info_date">{$item[0]|date_format:"%d-%m-%Y %H:%M:%S"}</td>
+                        <td class="cell_info_sum">{($item[1]*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</td>
+                        <td class="cell_info_rem" width="100%">{$item[2]|escape}</td>
+                      </tr>
+                    {/foreach}
+                    <tr>
+                      <td class="cell_info_total" colspan="2">итого за месяц:</td>
+                      <td class="cell_info_total_sum">{($month_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="cell_info_total" colspan="2">итого за {$year_num} год:</td>
+                      <td class="cell_info_total_sum">{($year_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                  </table>
+                {else}
+                  <p style="font-size: 10pt;">
+                    Нет данных о таких операциях.
+                  </p>
+                {/if}
+                <div style="padding-top: 15px; padding-bottom: 15px;">
+                  <span class="akt">
+                    Регистрация приведённых покупателей
+                  </span>
+                </div>
+                {if $User->regs}
+                  {assign var="month_sum" value=0}
+                  {foreach name=reg item=item from=$User->regs}
+                    {assign var="month_sum" value=$month_sum+$item[1]}
+                  {/foreach}
+                  <table align="center" border="0" cellpadding="0" cellspacing="0" class="table_info" width="100%">
+                    <tr>
+                      <td class="cell_info_title">№</td>
+                      <td class="cell_info_title">дата</td>
+                      <td class="cell_info_title">сумма</td>
+                      <td class="cell_info_title" width="100%">приведённый</td>
+                    </tr>
+                    <tr>
+                      <td class="cell_info_total" colspan="2">итого на сегодня:</td>
+                      <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                    {assign var="year_num" value=""}
+                    {assign var="year_sum" value=0}
+                    {assign var="month_num" value=""}
+                    {assign var="month_sum" value=0}
+                    {foreach name=reg item=item from=$User->regs}
+                      {if ($month_num != $item[0]|date_format:"%m") || ($year_num != $item[0]|date_format:"%Y")}
+                        {if $month_sum != 0}
+                          <tr>
+                            <td class="cell_info_total" colspan="2">итого за месяц:</td>
+                            <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                            <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                          </tr>
+                          {assign var="month_sum" value=0}
+                        {/if}
+                        {assign var="month_num" value=$item[0]|date_format:"%m"}
+                        {if $year_num != $item[0]|date_format:"%Y"}
+                          {if $year_sum != 0}
+                            <tr>
+                              <td class="cell_info_total" colspan="2">итого за {$year_num} год:</td>
+                              <td class="cell_info_total_sum">{$year_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                              <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                            </tr>
+                            {assign var="year_sum" value=0}
+                          {/if}
+                          {assign var="year_num" value=$item[0]|date_format:"%Y"}
+                        {/if}
+                      {/if}
+                      {assign var="month_sum" value=$month_sum+$item[1]}
+                      {assign var="year_sum" value=$year_sum+$item[1]}
+                      <tr>
+                        <td class="cell_info_num">{$smarty.foreach.reg.index+1}</td>
+                        <td class="cell_info_date">{$item[0]|date_format:"%d-%m-%Y %H:%M:%S"}</td>
+                        <td class="cell_info_sum">{$item[1]*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                        {$this_user = ''}
+                        {foreach $all_users as $user_item}
+                            {if $item[3] == $user_item->user_id}
+                                {$this_user = $user_item}
+                            {/if}
+                        {/foreach}
+                        <td class="cell_info_rem" width="100%"><a href="index.php?section=User&user_id={$item[3]|escape}&token={$Token|escape}">{if $this_user}{$this_user->name|escape}{else}{$item[3]|escape}{/if}</a></td>
+                      </tr>
+                    {/foreach}
+                    <tr>
+                      <td class="cell_info_total" colspan="2">итого за месяц:</td>
+                      <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="cell_info_total" colspan="2">итого за {$year_num} год:</td>
+                      <td class="cell_info_total_sum">{$year_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                  </table>
+                {else}
+                  <p style="font-size: 10pt;">
+                    Нет данных о таких операциях.
+                  </p>
+                {/if}
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2" style="border-top: #F0F0F0 1px solid; padding: 10px;">
+                <div style="padding-bottom: 15px;">
+                  <span class="akt">
+                    Привод на сайт по реферальным ссылкам
+                  </span>
+                </div>
+                {if $User->referals}
+                  {assign var="month_sum" value=0}
+                  {foreach name=referal item=item from=$User->referals}
+                    {assign var="month_sum" value=$month_sum+$item[1]}
+                  {/foreach}
+                  <table align="center" border="0" cellpadding="0" cellspacing="0" class="table_info" width="100%">
+                    <tr>
+                      <td class="cell_info_title">№</td>
+                      <td class="cell_info_title">дата</td>
+                      <td class="cell_info_title">ip</td>
+                      <td class="cell_info_title">сумма</td>
+                      <td class="cell_info_title" width="100%">со страницы</td>
+                    </tr>
+                    <tr>
+                      <td class="cell_info_total" colspan="3">итого по состоянию на сегодня:</td>
+                      <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                    {assign var="year_num" value=""}
+                    {assign var="year_sum" value=0}
+                    {assign var="month_num" value=""}
+                    {assign var="month_sum" value=0}
+                    {foreach name=referal item=item from=$User->referals}
+                      {if ($month_num != $item[0]|date_format:"%m") || ($year_num != $item[0]|date_format:"%Y")}
+                        {if $month_sum != 0}
+                          <tr>
+                            <td class="cell_info_total" colspan="3">итого за месяц:</td>
+                            <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                            <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                          </tr>
+                          {assign var="month_sum" value=0}
+                        {/if}
+                        {assign var="month_num" value=$item[0]|date_format:"%m"}
+                        {if $year_num != $item[0]|date_format:"%Y"}
+                          {if $year_sum != 0}
+                            <tr>
+                              <td class="cell_info_total" colspan="3">итого за {$year_num} год:</td>
+                              <td class="cell_info_total_sum">{$year_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                              <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                            </tr>
+                            {assign var="year_sum" value=0}
+                          {/if}
+                          {assign var="year_num" value=$item[0]|date_format:"%Y"}
+                        {/if}
+                      {/if}
+                      {assign var="month_sum" value=$month_sum+$item[1]}
+                      {assign var="year_sum" value=$year_sum+$item[1]}
+                      <tr>
+                        <td class="cell_info_num">{$smarty.foreach.referal.index+1}</td>
+                        <td class="cell_info_date">{$item[0]|date_format:"%d-%m-%Y %H:%M:%S"}</td>
+                        <td class="cell_info_date">{$item[2]|escape}</td>
+                        <td class="cell_info_sum">{$item[1]*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                        <td class="cell_info_rem" width="100%"><a href="{$item[3]|escape}" target="_blank">{$item[3]|escape}</a></td>
+                      </tr>
+                    {/foreach}
+                    <tr>
+                      <td class="cell_info_total" colspan="3">итого за месяц:</td>
+                      <td class="cell_info_total_sum">{$month_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="cell_info_total" colspan="3">итого за {$year_num} год:</td>
+                      <td class="cell_info_total_sum">{$year_sum*$currency->rate_from/$currency->rate_to|string_format:"%1.4f"|replace:",":"."} {$currency->sign|escape}</td>
+                      <td class="cell_info_total_sum" width="100%">&nbsp;</td>
+                    </tr>
+                  </table>
+                {else}
+                  <p style="font-size: 10pt;">
+                    Нет данных о таких операциях.
+                  </p>
+                {/if}
+              </td>
+            </tr>
+          </table>
+  </div>

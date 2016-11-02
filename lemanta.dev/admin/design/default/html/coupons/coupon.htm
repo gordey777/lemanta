@@ -1,0 +1,872 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница купона                                                         |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $item = запись о купоне                                                       |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $groups = массив записей о группах скидок                                     |
+    $group_ids = массив ИДов (индексирован ИДами) задействованных групп скидок    |
+    $price_ids = массив ИДов (индексирован ИДами) задействованных ценовых групп   |
+    $all_users = массив записей о пользователях                                   |
+    $user_ids = массив ИДов (индексирован ИДами) задействованных пользователей    |
+    $affiliate_ids = массив ИДов (индексирован ИДами) задействованных партнеров   |
+    $printer_ids = массив ИДов (индексирован ИДами) задействованных печатных форм |
+    $from_page = адрес страницы возврата после операции                           |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $Token = аутентификатор операции                                              |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.COUPON_MODULELINK_POINTER|default:''}
+        {$list_module_pointer = $smarty.const.COUPONS_MODULELINK_POINTER|default:''}
+        {$list_module_tabtext = $smarty.const.COUPONS_MODULETAB_TEXT|default:''}
+    {$section_paramname = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$token_paramname = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+
+
+
+    {* <!-- подключаем модуль закладок --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             card = true
+             me = [$list_module_tabtext,
+                   $smarty.const.COUPON_MODULETAB_TEXT|default:'']
+             me_pointer = [$list_module_pointer,
+                           $module_pointer]
+             me_menupath = [$smarty.const.COUPONS_MODULEMENU_PATH|default:'',
+                            $smarty.const.COUPON_MODULEMENU_PATH|default:'']
+             select = 'card'}
+
+
+
+    {* <!-- формируем URL-ы страницы --> *}
+    {$url_main = ($site|default:'')|cat:($admin_folder|default:'')|cat:'/'}
+    {$url_script = $url_main|cat:'index.php'}
+        {* <!-- эти уже с экранированием --> *}
+        {$url_form = ($url_script|escape)|cat:'?'|cat:($section_paramname|escape)|cat:'='|cat:($module_pointer|escape)}
+        {$url_images = ($url_main|escape)|cat:'design/'|cat:(($settings->admin_theme|default:'')|escape)|cat:'/images/'}
+        {* <!-- эти с экранированием и предполагают подстановку справа имени модуля --> *}
+        {$url_goto = ($url_script|escape)|cat:'?'|cat:($section_paramname|escape)|cat:'='}
+        {$url_request = ($url_script|escape)|cat:'?'|cat:($token_paramname|escape)|cat:'='|cat:(($Token|default:'')|escape)|cat:'&'|cat:($section_paramname|escape)|cat:'='}
+
+
+
+    {* <!-- запоминаем идентификатор записи или 0 при ее отсутствии --> *}
+    {$id = ($item->coupon_id|default:0)|escape}
+
+
+
+    {* <!-- скрипт и файл стилей календаря --> *}
+    <script language="JavaScript" src="{$url_main|escape}js/calendar/calendar.js" type="text/javascript"></script>
+    <script language="JavaScript" src="{$url_main|escape}js/calendar/calendas.js" type="text/javascript"></script>
+    <link href="{$url_main|escape}js/calendar/calendar.css" rel="stylesheet" type="text/css" />
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$url_main|escape}">
+                    Главная
+                </a> → {**}
+
+                <a href="{$url_goto}{$list_module_pointer|escape}" title="Перейти на страницу купонов в админпанели">
+                    {$list_module_tabtext|capitalize:false:false}
+                </a> → {**}
+
+                {if !empty($id)}
+                    Редактирование
+                {else}
+                    Новый
+                {/if}
+            </div>
+
+            {if !empty($id) || ($item->code|default:'' != '')}
+                {$item->code|default:'&nbsp;'}
+            {else}
+                Новый купон
+            {/if}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма записи --> *}
+        <form action="{$url_form}" id="item_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+
+
+                <table align="center" cellpadding="0" cellspacing="10" class="white">
+                    <tr>
+
+
+
+                        {* <!-- поле Контрольный код --> *}
+                        <td class="param_short">
+                            Код купона:
+                        </td>
+                        <td class="value value_sheet" colspan="3" title="Контрольный код">
+                            <input class="edit" id="item_form_code_{$id}" name="code[{$id}]" maxlength="32" size="32" style="width: auto;" type="text" value="{$item->code|default:''|escape}" />
+                        </td>
+
+
+
+                        {* <!-- поле Название --> *}
+                        <td class="param_short">
+                            Название:
+                        </td>
+                        <td class="value value_sheet" colspan="3" width="100%" title="Название купона (используется в справочных целях, может в распечатке)">
+                            {$max = $smarty.const.DATABASE_FIELDSIZE_NAME|default:256}
+                            <input class="edit" name="name[{$id}]" maxlength="{$max|escape}" type="text" value="{$item->name|default:''|escape}" />
+                        </td>
+
+
+
+                        {* <!-- кнопка Применить --> *}
+                        <td class="value_box" title="Сохранить изменения и остаться на этой же странице">
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_POST_AS_ACCEPT|default:''}
+                            <input class="submit" name="{$param|escape}" type="submit" value="Применить" />
+                        </td>
+
+
+
+                        {* <!-- кнопка Сохранить --> *}
+                        <td class="value_box" title="Сохранить изменения и перейти в список">
+                            <input class="submit" type="submit" value="Сохранить" />
+                        </td>
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Группа скидок --> *}
+                        <td class="param_short">
+                            <a href="{$url_goto}Groups" title="Перейти на страницу групп скидок в админпанели">
+                                Группа
+                            </a>
+                            :
+                        </td>
+                        <td class="value value_sheet" colspan="3" title="Назначаемая группа скидок, когда покупатель применяет купон во время регистрации">
+                            <select name="group_id[{$id}]">
+                                <option value="0"></option>
+
+                                {if isset($groups) && is_array($groups) && !empty($groups)}
+                                    {foreach $groups as $r}
+                                        {$value = $r->group_id|default:''}
+                                        {$class = (!isset($group_ids[$value])) ? 'class="no_references"' : ''}
+                                        {$selected = ($item->group_id|default:false == $r->group_id|default:0) ? 'selected' : ''}
+
+                                        <option value="{$r->group_id|default:''|escape}" {$selected} {$class}>
+                                            {$r->name|default:'Без названия!'}
+
+                                            {if isset($group_ids[$value])}
+                                                {**} &nbsp; &nbsp; [{$group_ids[$value]->count|default:0} шт.]
+                                            {/if}
+                                        </option>
+                                    {/foreach}
+                                {/if}
+                            </select>
+                        </td>
+
+
+
+                        {* <!-- поле Ценовая группа --> *}
+                        <td class="param_short">
+                            <a href="{$url_goto}PriceGroups" title="Перейти на страницу ценовых групп в админпанели">
+                                Ценовая
+                            </a>
+                            :
+                        </td>
+                        <td class="value value_sheet" colspan="3" width="100%" title="Назначаемая ценовая группа, когда покупатель применяет купон во время регистрации">
+                            <select name="price_id[{$id}]">
+                                <option value="0"></option>
+
+                                {section name = 'items' start = 2 loop = $smarty.const.PRICE_TYPES_MAXCOUNT|default:10 + 1}
+                                    {$index = $smarty.section.items.index}
+                                    {$field = 'price_type'|cat:$index}
+
+                                    {$ok = false}
+                                    {foreach $settings as $key => $value}
+                                        {if $key == $field}
+                                            {$ok = true}
+                                            {break}
+                                        {/if}
+                                    {/foreach}
+                                    {$value = ($ok) ? ($value|regex_replace:'/[\s\t\r\n]+/u':' '|regex_replace:'/^[\s\t\r\n]+/u':''|regex_replace:'/[\s\t\r\n]+$/u':'') : ''}
+                                    {$value = ($value == '') ? ('Без названия (тип '|cat:$index|cat:')') : $value}
+
+                                    {$class = (!isset($price_ids[$index - 1])) ? 'class="no_references"' : ''}
+                                    {$selected = ($item->price_id|default:false == $index - 1) ? 'selected' : ''}
+
+                                    <option value="{$index - 1}" {$selected} {$class}>
+                                        {$value}
+
+                                        {if isset($price_ids[$index - 1])}
+                                            {**} &nbsp; &nbsp; [{$price_ids[$index - 1]->count|default:0} шт.]
+                                        {/if}
+                                    </option>
+                                {/section}
+                            </select>
+                        </td>
+
+
+
+                        {* <!-- поле Разовая скидка --> *}
+                        <td class="param_short">
+                            Разовая скидка:
+                        </td>
+                        <td class="value value_sheet" title="Разовая скидка (в процентах), если покупатель применяет купон в корзине, не авторизовавшись на сайте">
+                            {$value = ($item->discount|default:0)|string_format:'%1.2f'|replace:',':'.'}
+                            <input class="edit" name="discount[{$id}]" maxlength="6" type="text" value="{($value > 0) ? $value : ''}" />
+                        </td>
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Партнер --> *}
+                        <td class="param_short">
+                            <a href="{$url_goto}Users" title="Перейти на страницу зарегистрированных пользователей в админпанели">
+                                Партнер
+                            </a>
+                            :
+                        </td>
+                        <td class="value value_sheet" colspan="3" title="Назначаемый партнер, когда покупатель применяет купон">
+                            <select name="affiliate_id[{$id}]">
+                                <option value="0"></option>
+
+                                {if isset($all_users) && is_array($all_users) && !empty($all_users)}
+                                    {foreach $all_users as $r}
+                                        {$value = $r->user_id|default:''}
+                                        {$class = (!isset($affiliate_ids[$value])) ? 'class="no_references"' : ''}
+                                        {$selected = ($item->affiliate_id|default:false == $r->user_id|default:0) ? 'selected' : ''}
+
+                                        <option value="{$r->user_id|default:''|escape}" {$selected} {$class}>
+                                            {$r->compound_name|default:'Без имени!'}
+
+                                            {if isset($affiliate_ids[$value])}
+                                                {**} &nbsp; &nbsp; [{$affiliate_ids[$value]->count|default:0} шт.]
+                                            {/if}
+                                        </option>
+                                    {/foreach}
+                                {/if}
+                            </select>
+                        </td>
+
+
+
+                        {* <!-- поле Ценовая группа --> *}
+                        <td class="param_short">
+                            <a href="{$url_goto}Users" title="Перейти на страницу зарегистрированных пользователей в админпанели">
+                                Пользователь
+                            </a>
+                            :
+                        </td>
+                        <td class="value" colspan="3" width="100%" title="Кто последний раз погасил купон">
+                            <select name="user_id[{$id}]">
+                                <option value="0"></option>
+
+                                {if isset($all_users) && is_array($all_users) && !empty($all_users)}
+                                    {foreach $all_users as $r}
+                                        {$selected = ($item->user_id|default:false == $r->user_id|default:0) ? 'selected' : ''}
+
+                                        <option value="{$r->user_id|default:''|escape}" {$selected}>
+                                            {$r->compound_name|default:'Без имени!'}
+                                        </option>
+                                    {/foreach}
+                                {/if}
+                            </select>
+                        </td>
+
+
+
+                        {* <!-- поле Остаток разов использования--> *}
+                        <td class="param_short">
+                            Остаток разов:
+                        </td>
+                        <td class="value value_sheet" title="Остаток разов использования">
+                            {$value = ($item->count|default:0)|string_format:'%d'}
+                            <input class="edit" name="count[{$id}]" maxlength="10" type="text" value="{($value > 0) ? $value : 0}" />
+                        </td>
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Дата создания --> *}
+                        <td class="param_short">
+                            Создан:
+                        </td>
+                        <td class="value" title="Дата создания">
+                            <input class="edit" readonly size="10" style="width: auto;" type="text" value="{($item->created|default:'')|truncate:10:'':true|escape}" />
+                        </td>
+
+
+
+                        {* <!-- поле Срок действия --> *}
+                        <td class="param_short">
+                            Срок:
+                        </td>
+                        <td class="value value_sheet" title="Срок действия с момента создания">
+                            <select name="lifetime[{$id}]">
+                                {$value = ($item->lifetime|default:0)|string_format:'%d'}
+                                {$day = 3600 * 24}
+
+                                {$left = 0}
+                                {$right = $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    сутки
+                                </option>
+
+                                {$left = $right}
+                                {$right = 2 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    2 дня
+                                </option>
+
+                                {$left = $right}
+                                {$right = 3 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    3 дня
+                                </option>
+
+                                {$left = $right}
+                                {$right = 4 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    4 дня
+                                </option>
+
+                                {$left = $right}
+                                {$right = 5 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    5 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 7 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    неделя
+                                </option>
+
+                                {$left = $right}
+                                {$right = 10 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    10 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 14 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    2 недели
+                                </option>
+
+                                {$left = $right}
+                                {$right = 15 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    15 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 30 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    30 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 45 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    45 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 60 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    60 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 90 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    90 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 120 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    120 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 160 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    160 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 180 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    180 дней
+                                </option>
+
+                                {$left = $right}
+                                {$right = 183 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    полгода
+                                </option>
+
+                                {$left = $right}
+                                {$right = 365 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    год
+                                </option>
+
+                                {$left = $right}
+                                {$right = 2 * 365 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    2 года
+                                </option>
+
+                                {$left = $right}
+                                {$right = 3 * 365 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    3 года
+                                </option>
+
+                                {$left = $right}
+                                {$right = 4 * 365 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    4 года
+                                </option>
+
+                                {$left = $right}
+                                {$right = 5 * 365 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    5 лет
+                                </option>
+
+                                {$left = $right}
+                                {$right = 100 * 365 * $day}
+                                <option value="{$right}" {if ($value > $left) && ($value <= $right)} selected {/if}>
+                                    100 лет
+                                </option>
+                            </select>
+                        </td>
+
+
+
+                        {* <!-- поле Дата погашения --> *}
+                        <td class="param_short">
+                            Погашен:
+                        </td>
+                        <td class="value" title="Дата последнего погашения">
+                            {$value = $item->discharged|default:''}
+                            {$value = ($value != '0000-00-00 00:00:00') ? $value : ''}
+                            <input class="edit" name="discharged[{$id}]" size="10" style="width: auto;" type="text" value="{$value|escape}" onfocus="javascript: xcDateFormat = 'yyyy-mm-dd';
+                                                                                                                                                                 var prev_value = this.value;
+                                                                                                                                                                 this.value = prev_value.substr(0, 10);
+                                                                                                                                                                 var set_to = this;
+                                                                                                                                                                 var get_from = this;
+                                                                                                                                                                 var default_date = '';
+                                                                                                                                                                 var anchor_object_id = '';
+                                                                                                                                                                 var x_offset = 5;
+                                                                                                                                                                 var y_offset = 5;
+                                                                                                                                                                 var auto_hide = 1;
+                                                                                                                                                                 showCalendar('', set_to, get_from, default_date, anchor_object_id, x_offset, y_offset, auto_hide);
+                                                                                                                                                                 this.value = prev_value;" />
+                        </td>
+
+
+
+                        {* <!-- поле Заказ --> *}
+                        <td class="param_short">
+                            Заказ:
+                        </td>
+                        <td class="value" title="Номер погасившего заказа">
+                            {$value = $item->order_id|default:''}
+                            {$value = ($value != 0) ? $value : ''}
+                            <input class="edit" name="order_id[{$id}]" maxlength="32" size="10" style="width: auto;" type="text" value="{$value|escape}" />
+                        </td>
+
+
+
+                        {* <!-- поле Печатная форма --> *}
+                        <td class="param_short">
+                            Печатная форма:
+                        </td>
+                        <td class="value value_sheet" title="Печатная форма, используемая при распечатке купона">
+                            <select name="printer[{$id}]">
+                                {section name = 'items' start = 1 loop = 11}
+                                    {$value = $smarty.section.items.iteration}
+                                    {$selected = ($item->printer|default:1 == $value) ? 'selected' : ''}
+
+                                    <option value="{$value}" {$selected}>
+                                        принтер {$value}
+                                    </option>
+                                {/section}
+                            </select>
+                        </td>
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Емейл --> *}
+                        <td class="param_short">
+                            Емейл:
+                        </td>
+                        <td class="value value_sheet" colspan="3" title="На какой емейл уведомлять об активности по купону">
+                            <input class="edit" name="email[{$id}]" maxlength="64" size="32" style="width: auto;" type="text" value="{$item->email|default:''|escape}" />
+                        </td>
+
+
+
+                        {* <!-- поле Телефон --> *}
+                        <td class="param_short">
+                            Телефон:
+                        </td>
+                        <td class="value value_sheet" colspan="3" width="100%" title="На какой телефон отправлять SMS об активности по купону">
+                            <input class="edit" name="phone[{$id}]" maxlength="64" type="text" value="{$item->phone|default:''|escape}" />
+                        </td>
+
+
+
+                        {* <!-- флажок Разрешен --> *}
+                        <td class="param_short" title="Разрешен ли купон к использованию">
+
+                            {$param = 'enabled'}
+                            {$value = $item->enabled|default:false}
+                            <input class="checkbox" id="item_form_{$param|escape}" name="{$param|escape}[{$id}]" type="checkbox" value="1" {($value) ? "checked" : ''} />
+
+                            <span onclick="javascript: Toggle_PageCheckbox('item_form_{$param|escape}');">
+                                &nbsp;
+                                Разрешен
+                            </span>
+                        </td>
+
+
+
+                        {* <!-- флажок Удален --> *}
+                        <td class="param_short" title="Удален ли купон">
+
+                            {$param = 'deleted'}
+                            {$value = $item->deleted|default:false}
+                            <input class="checkbox" id="item_form_{$param|escape}" name="{$param|escape}[{$id}]" type="checkbox" value="1" {($value) ? "checked" : ''} />
+
+                            <span onclick="javascript: Toggle_PageCheckbox('item_form_{$param|escape}');">
+                                &nbsp;
+                                Удален
+                            </span>
+                        </td>
+
+
+
+                    </tr>
+                </table>
+
+
+
+                {* <!-- адрес страницы возврата после операции --> *}
+                {if $from_page|default:'' != ''}
+                    <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|default:''|escape}" type="hidden" value="{$from_page|escape}" />
+                {/if}
+
+
+
+                {* <!-- признак наличия данных об изменениях конкретной записи --> *}
+                <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|default:''|escape}[{$id}]" type="hidden" value="" />
+
+
+
+                {* <!-- идентификатор оперируемой записи --> *}
+                <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|default:''|escape}" type="hidden" value="{$id}" />
+
+
+
+                {* <!-- пустой указатель номера изображения (для модулей, работающих с выкачкой изображений на сервер) --> *}
+                {$param = $smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|default:''}
+                <input id="item_form_{$param|escape}" name="{$param|escape}" type="hidden" value="" />
+
+
+
+                {* <!-- случайный аутентификатор изображения (для модулей, работающих с выкачкой изображений на сервер) --> *}
+                <input name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGETOKEN|default:''|escape}" type="hidden" value="{math equation = 'rand(1, 100000000)'}" />
+
+
+
+                {* <!-- пустой указатель номера файла (для модулей, работающих с выкачкой файлов на сервер) --> *}
+                {$param = $smarty.const.ACTION_REQUEST_PARAM_NAME_FILENUMBER|default:''}
+                <input id="item_form_{$param|escape}" name="{$param|escape}" type="hidden" value="" />
+
+
+
+                {* <!-- случайный аутентификатор файла (для модулей, работающих с выкачкой файлов на сервер) --> *}
+                <input name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_FILETOKEN|default:''|escape}" type="hidden" value="{math equation = 'rand(1, 100000000)'}" />
+
+
+
+                {* <!-- пустой указатель требуемой команды --> *}
+                {$param = $smarty.const.REQUEST_PARAM_NAME_ACTION|default:''}
+                <input id="item_form_{$param|escape}" name="{$param|escape}" type="hidden" value="" />
+
+
+
+                {* <!-- аутентификатор операции --> *}
+                <input name="{$token_paramname|escape}" type="hidden" value="{$Token|default:''|escape}" />
+
+
+
+        </form>
+
+
+
+        {* <!-- шаблон генерации кода --> *}
+        {$code_pattern = $settings->coupons_code_pattern|default:'**** **** **** ****'}
+        <li class="head_divider">
+            <div>
+                Текущий шаблон генерации контрольного кода: {$code_pattern}
+
+                <a href="{$url_script|escape}" style="float: right;" title="Сгенерировать другой код и вставить в поле выше" onclick="javascript: jQuery('#item_form_code_{$id}').val(generate_coupon_code()); return false;">
+                    сгенерировать код заново
+                </a>
+            </div>
+        </li>
+        <br />
+
+
+
+        {* <!-- скрипт генерации кода --> *}
+        <script language="JavaScript" type="text/javascript">
+
+
+
+            function generate_coupon_code () {
+
+                {* // берем шаблон кода из настроек сайта *}
+                var pattern = '{($settings->coupons_code_pattern|default:'')|replace:'\\':'\\\\'|replace:'\'':'\\\''}';
+                if ((pattern == '') || (pattern.indexOf('*') === -1)
+                                    && (pattern.indexOf('#') === -1)
+                                    && (pattern.indexOf('&') === -1)) pattern = '**** **** **** ****';
+
+
+
+                {* // генерируем код *}
+                var result = '';
+                var char = '';
+                var digit = 0;
+                while (pattern != '') {
+
+                    {* // отрезаем из шаблона по символу *}
+                    char = pattern.substr(0, 1);
+                    pattern = pattern.substr(1);
+
+
+
+                    {* // в шаблоне символы *, #, & имеют особое значение (буква или число, число, буква) *}
+                    digit = Math.round(Math.random()) == 1;
+                    if ((char == '#') || (char == '*') && digit) char = String.fromCharCode(48 + Math.round(Math.random() * 9));
+                    else if ((char == '&') || (char == '*') && !digit) char = String.fromCharCode(65 + Math.round(Math.random() * 25));
+
+
+
+                    {* // клеим в код преобразованный символ *}
+                    result += char;
+                }
+
+
+
+                {* // возвращаем сгенерированный код *}
+                return result;
+            }
+
+
+
+        </script>
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+
+
+
+            <div class="title">
+                Справка
+            </div>
+
+
+
+            <div>
+                <b>Код купона</b>. Набор символов, которые покупатель будет вводить в корзине или форме регистрации. {**}
+                Код выдумывается автоматически на основе шаблона генерации, заданного в настройках модуля, и может {**}
+                быть скорректирован вручную. Под формой ввода справа расположена ссылка для мгновенной генерации {**}
+                другого кода.
+            </div>
+
+
+
+            <div>
+                <b>Название</b>. Произвольный текст, предназначен для справки администратору о назначении купона. {**}
+                В принципе может использоваться в формах печати купонов.
+            </div>
+
+
+
+            <div>
+                <b>Группа</b>. Отдельному купону можно указать группу скидок, которая будет назначена покупателю {**}
+                во время его регистрации на сайте, если при заполнении регистрационной формы он вводит код этого {**}
+                купона. Данная опция распространяется только на регистрацию.
+            </div>
+
+
+
+            <div>
+                <b>Ценовая группа</b>. Аналогично для купона можно определить ценовую группу. Действие этой опции {**}
+                тоже распространяется только на регистрацию покупателя на сайте, и позволяет сразу назначить ему {**}
+                конкретную группу цен.
+            </div>
+
+
+
+            <div>
+                <b>Разовая скидка</b>. Какую скидку дать покупателю, если он применяет купон при оформлении заказа {**}
+                (на странице корзины) как простой, неавторизованный покупатель. Скидка действует подобно внегрупповой, {**}
+                поэтому на авторизовавшихся покупателей данная опция не распространяется.
+            </div>
+
+
+
+            <div>
+                <b>Партнер</b>. Задает того из зарегистрированных пользователей сайта, кто будет считаться приведшим {**}
+                посетителя с таким купоном. Аналогия с партнерской программой - кто привел этого покупателя и будет {**}
+                получать на свой внутренний счет комиссию с его покупок.
+            </div>
+
+
+
+            <div>
+                <b>Пользователь</b>. Поле не предполагается к редактированию, поскольку автоматически заполняется системой, {**}
+                как только авторизованный покупатель применит данный купон. Назначение поля - сообщить менеджеру, кто {**}
+                из пользователей последний раз погасил (применил) этот купон. Так как купоны могут быть многоразового {**}
+                использования, доступна информация лишь о последнем погашении.
+            </div>
+
+
+
+            <div>
+                <b>Остаток разов</b>. Сколько еще раз этот купон может быть применен. Предполагаем, что один купон {**}
+                позволено распечатать во множестве копий, и он роздан в руки разных людей. Так называемый многоразовый {**}
+                купон. Одним кодом может воспользоваться несколько человек или один человек несколько раз.
+            </div>
+
+
+
+            <div>
+                <b>Создан</b>. Нередактируемое поле. Сообщает дату, когда купон создан. Срок действия купона исчисляется {**}
+                от этой даты.
+            </div>
+
+
+
+            <div>
+                <b>Срок</b>. Определяет срок действия купона. После истечения этого количества времени отклоняется любая {**}
+                попытка применить купон, даже если у него остались неиспользованные разы. Ранее назначенные по нему группы {**}
+                или партнеры продолжают действовать.
+            </div>
+
+
+
+            <div>
+                <b>Погашен</b> и <b>Заказ</b>. Аналогично полю <u>Пользователь</u>, эти поля автоматически заполняются {**}
+                системой и не предполагаются к редактированию. Содержат соответственно дату последнего погашения и номер {**}
+                заказа, если купон последний раз использовался именно при оформлении заказа, а не в форме регистрации.
+            </div>
+
+
+
+            <div>
+                <b>Печатная форма</b>. Указывает, с помощью какого штампа хотелось бы печатать конкретно этот купон. {**}
+                Печатный шаблон (файл) один, внутри же него происходит условное деление купонов на воображаемые формы. {**}
+                В шаблоне возможно создать произвольное количество визуальных представлений купона, и это поле помогает {**}
+                определить, в каком представлении его печатать.
+            </div>
+
+
+
+            <div>
+                <b>Емейл</b> и <b>Телефон</b>. Поля для указания контакта, куда отправляются емейл или SMS-уведомления {**}
+                в случае активности по данному купону. Подразумеваем, что купоны распространяются заинтересованными {**}
+                лицами, желающими осведомленности о результативности раздачи.
+            </div>
+
+
+
+            <div>
+                <b>Разрешен</b> и <b>Удален</b>. Флажки состояния записи о купоне.
+            </div>
+
+
+
+        </div>
+
+
+
+    </div>
+
+{/strip}

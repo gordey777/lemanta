@@ -1,0 +1,353 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка запретов доступа.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о запретах доступа;
+    $subitems = массив с записями о запретах доступа, сделанных инспектором DDoS-атак;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "banneds" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    users = true - вывести эту кнопку
+    groups = true - вывести эту кнопку
+    banneds = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "banneds"
+           main = true
+           users = true
+           groups = true
+           banneds = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Запреты
+      </div>
+      Запреты доступа
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banned&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить запрет">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banneds" id="items_form" method="post">
+
+      <!-- Сортировщик и фильтр -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить
+          </td>
+          <td class="value" width="100%" title="Способ сортировки запретов доступа в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_BANNEDS_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_BANNEDS_MODE_AS_IS)} selected{/if}>как добавлялись</option>
+              <option value="{$smarty.const.SORT_BANNEDS_MODE_BY_IP|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_BANNEDS_MODE_BY_IP)} selected{/if}>по IP-адресу</option>
+              <option value="{$smarty.const.SORT_BANNEDS_MODE_BY_MODIFIED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_BANNEDS_MODE_BY_MODIFIED)} selected{/if}>по дате исправления</option>
+              <option value="{$smarty.const.SORT_BANNEDS_MODE_BY_ATTEMPTS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_BANNEDS_MODE_BY_ATTEMPTS)} selected{/if}>по числу попыток доступа</option>
+              <option value="{$smarty.const.SORT_BANNEDS_MODE_BY_ATTEMPTS_DATE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_BANNEDS_MODE_BY_ATTEMPTS_DATE)} selected{/if}>по дате попытки доступа</option>
+            </select>
+          </td>
+
+          <!-- Флажки фильтра -->
+          <td class="param_short" title="Фильтр: только с запретом доступа к клиентской стороне сайта">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOACCESS|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOACCESS|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOACCESS]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOACCESS] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOACCESS|escape}');">
+              нет доступа
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с запретом регистрации">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOREGISTER|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOREGISTER|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOREGISTER]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOREGISTER] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOREGISTER|escape}');">
+              нет регистрации
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с запретом комментариев">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCOMMENT|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCOMMENT|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCOMMENT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCOMMENT] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCOMMENT|escape}');">
+              нет постов
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с запретом запросов связи">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCALLME|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCALLME|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCALLME]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCALLME] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOCALLME|escape}');">
+              нет связи
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с запретом доступа к админпанели">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOADMIN|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOADMIN|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOADMIN]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOADMIN] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOADMIN|escape}');">
+              нет админа
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только разрешенные к использованию">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+              разрешен
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только выполнявшие попытки доступа">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ATTEMPTED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ATTEMPTED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ATTEMPTED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ATTEMPTED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ATTEMPTED|escape}');">
+              пытавшиеся
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <li class="flatlist">
+
+              <!-- Микро кнопки справа от IP-адреса -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данный запрет доступа будет удален с сайта. Вы подтверждаете такую операцию?');">
+                <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить использование">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->no_admin_get|escape}" title="Включить / выключить блокировку доступа к админпанели">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_noadmin{if $c->no_admin != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->no_register_get|escape}" title="Включить / выключить блокировку регистраций">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_noregister{if $c->no_register != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->no_comment_get|escape}" title="Включить / выключить блокировку комментариев">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_nocomment{if $c->no_comment != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->no_callme_get|escape}" title="Включить / выключить блокировку запросов связи">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_nocallme{if $c->no_callme != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->no_access_get|escape}" title="Включить / выключить блокировку доступа к клиентской стороне">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_noaccess{if $c->no_access != 1}_off{/if}_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              <!-- Нумерация -->
+              <span class="topic" style="display: inline;">
+                {if isset($CurrentPage)}
+                  {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                {else}
+                  {$smarty.foreach.items.iteration}.
+                {/if}
+              </span>
+
+              <!-- Дата попытки доступа -->
+              {if $c->attempts_date|truncate:10:"":true != "0000-00-00"}
+                <span class="date" title="Дата попытки доступа: {$c->attempts_date|escape}">
+                  {$c->attempts_date|truncate:10:"":true|escape}
+                </span>
+              {else}
+                <span class="date">
+                  нет даты
+                </span>
+              {/if}
+
+              <!-- Количество попыток доступа -->
+              <span class="browsed" title="Количество попыток доступа: {$c->attempts|escape}">
+                {$c->attempts|escape}
+              </span>
+
+              <!-- IP-адрес -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}">
+                {$c->ip|escape}
+              </a>
+
+              <!-- Краткая информация -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_BANNEDS_MODE_BY_CREATED) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_BANNEDS_MODE_AS_IS))}
+                <div class="line">
+                  <span>
+                    добавлен:
+                  </span>
+                  {$c->created|escape}
+                </div>
+              {/if}
+
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_BANNEDS_MODE_BY_MODIFIED)}
+                {if $c->created != $c->modified}
+                  <div class="line">
+                    <span>
+                      исправлен:
+                    </span>
+                    {$c->modified|escape}
+                  </div>
+                {/if}
+              {/if}
+
+              {if ($c->begin_date|truncate:10:"":true != "0000-00-00") || ($c->end_date|truncate:10:"":true != "0000-00-00")}
+                <div class="line">
+                  <span>
+                    действует:
+                  </span>
+                  {if $c->begin_date|truncate:10:"":true != "0000-00-00"}
+                    начиная с {$c->begin_date|escape}&nbsp;&nbsp;
+                  {/if}
+                  {if $c->end_date|truncate:10:"":true != "0000-00-00"}
+                    до {$c->end_date|escape}
+                  {/if}
+                </div>
+              {/if}
+
+              {if ($c->remark|strip_tags|strip != "")}
+                <div class="line" title="{$c->remark|strip_tags|escape}">
+                  <span>
+                    заметки:
+                  </span>
+                  {$c->remark|strip_tags|escape}
+                </div>
+              {/if}
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено запретов доступа.
+        </div>
+      {/if}
+
+      <!-- Выводим список блокировок инспектора DDoS-атак -->
+      <li class="head_divider">
+        <div>
+          Запреты инспектора DDoS-атак
+          <span class="path">
+            эти запреты имеют высший приоритет
+          </span>
+        </div>
+      </li>
+
+      <!-- {* Если доступен список заблокированного инспектором DDoS-атак *} -->
+      {if isset($subitems) && !empty($subitems)}
+      {else}
+        <div class="noitems">
+          Сейчас нет запретов.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Что это?</b> Каким прекрасным не было бы отношение пользователей к сайту, в определенный момент находится посетитель
+        с чертами вредителя. Обычно вредительство заключается в спаме страниц сайта комментариями и назойливом использовании страницы
+        обратной связи. Грубые формы состоят в множественных фиктивных регистрациях пользователя, атаках на админпанель и другом.
+        Так как большинство пользователей интернета имеют подключение со статическим (неизменным) адресом компьютера в сети, закономерно
+        наличие на сайте системы блокировки доступа по конкретном сетевому адресу.
+      </div>
+      <div>
+        Данная страница - полный список запретов доступа - как раз предназначена для организации такой системы защиты. Здесь перечисляются
+        все сетевые адреса (IP-адреса) вредоносных компьютеров с набором флажков, что конкретно запрещается этому компьютеру. Возможные
+        варианты: <u>нет&nbsp;доступа</u> - блокирует взаимодействие с любой страницей клиентской стороны сайта, <u>нет&nbsp;регистрации</u>
+        - запрещает взаимодействие со страницей регистрации пользователя, <u>нет&nbsp;постов</u> - отвергает прием комментариев к товарам,
+        статьям, новостям, а также сообщений со страницы обратной связи, <u>нет&nbsp;связи</u> - отвергает прием запросов связи (функция
+        "Перезвоните мне"), <u>нет&nbsp;админа</u> - блокирует взаимодействие с любой страницей админпанели.
+      </div>
+      <div>
+        Важно понимать последствия блокировки доступа в админпанель. Если по какой-то причине нужно запретить доступ туда с компьютера
+        Вашего сотрудника, смотрите внимательно, чтобы случайно не указать IP-адрес своего компьютера, ведь потом Вы не сможете попасть
+        в админпанель. Разблокировка возможна только сторонними скриптами работы с базой данных, например phpMyAdmin.
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка запреты доступа
+        по конкретным параметрам. Поля фильтра можно сочетать произвольно, они объединены функцией И. Поле фильтра <u>пытавшиеся</u>
+        дает возможность выделить записи, по которым хотя бы раз была зафиксирована попытка доступа к сайту с такого IP-адреса.
+      </div>
+      <div>
+        <b>Упорядочение</b>. По умолчанию способ сортировки запретов доступа в списке на данной странице равен "<u>по&nbsp;IP-адресу</u>".
+        Способ упорядочения "<u>как&nbsp;добавлялись</u>" отключает сортировку и располагает запреты доступа в порядке их ввода
+        на сайт. В случае смены способа сортировки он запоминается на время текущего сеанса.
+      </div>
+      <div>
+        Среди способов упорядочения есть "<u>по&nbsp;числу&nbsp;попыток&nbsp;доступа</u>" и "<u>по&nbsp;дате&nbsp;попытки&nbsp;доступа</u>".
+        Они дают общее представление о степени активности вредоносных компьютеров и какие из них атаковали сайт в последнее время, что
+        может оказаться полезным для принятия решения о наложении более строгого варианта запрета доступа.
+      </div>
+      <div>
+        <b>Обратите внимание!</b> Система поставляется вместе с инспектором DDoS-атак - он отслеживает распределенные атаки "Отказ
+        в обслуживании", когда сайт атакуют с разных компьютеров с помощью большого количества загрузок его страниц. Этот инспектор
+        снабжен своим механизмом полной блокировки атакующих, причем запреты доступа инспектора имеют приоритет выше, чем блокировки
+        данной страницы.
+      </div>
+    </div>
+
+  </div>

@@ -1,0 +1,116 @@
+{* <!-- левая колонка --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Убеждаемся что у нас есть прочитанное дерево категорий.                    |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$selectedId = $category->category_id|default:0}
+    {if TRUE || !isset($categories)}
+        {categories active=$selectedId sort=FALSE counters=TRUE assign=categories scope=global}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Выводим дерево категорий.                                                  |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$class = (!empty($doHidden)) ? 'hidden' : ''}
+
+    {$renames = [ 'Комбинезоны для девочек' => 'Комбинезоны',
+                  'Брюки для девочек' => 'Брюки',
+                  'Бриджи для девочек' => 'Бриджи',
+                  'Джинсы для девочек' => 'Джинсы',
+                  'Костюмы тройки для девочек' => 'Костюмы тройки',
+                  'Свитера и толстовки для девочек' => 'Свитера',
+                  'Куртки для девочек' => 'Куртки',
+                  'Костюмы тройки' => 'Костюмы',
+                  'Детские платья' => 'Платья',
+                  'Детские юбки' => 'Юбки',
+                  'Комбинезоны для мальчиков' => 'Комбинезоны',
+                  'Брюки для мальчиков' => 'Брюки',
+                  'Бриджи для мальчиков' => 'Бриджи',
+                  'Джинсы для мальчиков' => 'Джинсы',
+                  'Костюмы тройки для мальчиков' => 'Костюмы тройки',
+                  'Свитера для мальчиков' => 'Свитера',
+                  'Куртки для мальчиков' => 'Куртки' ]}
+
+    <div class="left {$class}">
+        <div class="title">Категории</div>
+        <div id="catalog_menu" class="left-menu">
+            {function showCategoriesTree needRename=0}
+                {if !empty($categories)}
+                    <ul>
+                        {foreach $categories as $item}
+                            {if !empty($item->enabled) && !empty($item->products_count)}
+                                {$id = $item->category_id|default:0}
+                                {flagClasses flags = [ 'active' => 'selected' ]
+                                             assign = class}
+                                {name assign=name}
+                                {if !empty($needRename)}
+                                    {if isset($renames[$name])}
+                                        {$name = $renames[$name]}
+                                    {/if}
+                                {/if}
+                                <li>
+                                    {if $id == $selectedId}
+                                        <a {$class} title="{$name}">
+                                            {$name}
+                                        </a>
+                                    {else}
+                                        <a href="{url}" title="{$name}">
+                                            {$name}
+                                        </a>
+                                    {/if}
+                                    {if !empty($item->subcategories) && (!empty($item->active) || $id == $selectedId)}
+                                        {showCategoriesTree categories=$item->subcategories
+                                                            needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
+                                    {/if}
+                                </li>
+                            {/if}
+                        {/foreach}
+                    </ul>
+                {/if}
+            {/function}
+            {showCategoriesTree}
+        </div>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Баннер.                                                                |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <div class="rasp">
+            <img src="{theme}images/rasp.png" alt="" />
+            <span href="catalog/rasprodazha">
+                Распродажа
+            </span>
+        </div>
+
+        <div class="banner">
+            <span href="catalog/odezhda_dlja_malchikov">
+                <img src="{theme}images/foto.png" alt="" />
+            </span>
+        </div>
+
+        <div class="title">Мы вКонтакте</div>
+        <div class="vk">
+            {if !empty($config->vk_group)}
+                <script src="//vk.com/js/api/openapi.js?105"></script>
+                <div id="vk_groups"></div>
+                <script>
+                    VK.Widgets.Group('vk_groups', { mode: 0,
+                                                    width: '220',
+                                                    height: '260',
+                                                    color1: 'FFFFFF',
+                                                    color2: 'BBBBBB',
+                                                    color3: '88BBEE' }, '{inputValue from='config->vk_group'}');
+                </script>
+            {/if}
+        </div>
+    </div>
+
+{/strip}

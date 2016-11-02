@@ -1,0 +1,66 @@
+{* <!-- список новостей --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Хлебные крошки.                                                            |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$mod = 'mod-breadcrumbs.htm'}
+    {if $emulator->existsModule($mod)}
+        {include "$mod"
+                  noCatalogLink = TRUE}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Левая колонка.                                                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {include 'common/left-column.htm'}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Список новостей.                                                           |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="right">
+        {if !empty($all_news)}
+            <div class="blog-page">
+                {foreach $all_news as $item}
+                    <div class="blog">
+                        <h3>
+                            <a href="{url}" title="{itemTitle}">
+                                {name}
+                            </a>
+                        </h3>
+
+                        <div class="text">
+                            {annotation}
+                        </div>
+
+                        <span class="date">
+                            {echoVar from='item->date_date'}
+                        </span>
+                        <div class="clr"></div>
+
+                        <a href="{url}" class="read">
+                            Читать далее
+                        </a>
+                        <div class="clr"></div>
+                    </div>
+                {/foreach}
+            </div>
+
+            <div>
+                {$PagesNavigation}
+            </div>
+
+        {else}
+            <p>Новости не найдены.</p>
+        {/if}
+    </div>
+
+{/strip}

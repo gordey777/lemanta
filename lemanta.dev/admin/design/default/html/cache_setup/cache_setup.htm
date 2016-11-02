@@ -1,0 +1,299 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: настройки memcache и htmcache                                           |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $memcache_supported = признак "MemCache поддерживается"                       |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.CACHESETUP_MODULELINK_POINTER|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.CACHESETUP_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.CACHESETUP_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    <style>
+        .standard-ul {
+            line-height: normal !important;
+            margin: 10px 0 0 0 !important;
+            padding: 0 !important;
+        }
+
+        .standard-ul li {
+            color: inherit !important;
+            display: list-item !important;
+            list-style: disc !important;
+            font-size: inherit !important;
+            line-height: normal !important;
+            margin: 5px 0 5px 60px !important;
+            padding: 0 !important;
+        }
+    </style>
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        {call main_title alt = 'Настройки MemCache и HtmCache'
+                         path = 'Кеш'}
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {call info_message}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {call error_message}
+
+
+
+        {* <!-- форма настроек --> *}
+        <form action="{$admin_goto}{$module_pointer|escape}" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+
+
+
+                    {* <!-- флажок Разрешен memcache --> *}
+                    <td class="param_short">
+                        MemCache:
+                    </td>
+                    {call settings_checkbox param = 'memcache_enabled'
+                                            image = ''
+                                            text = 'Включен для обеих сторон сайта'
+                                            title = 'Включить кеширование некоторых переменных движка'
+                                            width = '100%'
+                                            colspan = 1}
+
+
+
+                    {* <!-- поле Срок жизни memcache --> *}
+                    {$value = $settings->memcache_lifetime|default:900}
+                    {call settings_editbox param = 'memcache_lifetime'
+                                           text = 'Срок жизни:'
+                                           title = 'Срок жизни данных кеша (в секундах)'
+                                           value = $value
+                                           width = ''
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 10
+                                           flat = true
+                                           short = true
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    {call save_button width = '1%'}
+
+
+
+                    {* <!-- команды --> *}
+                    <td class="value" rowspan="3" title="Действия над кешем">
+                        <table align="center" cellpadding="0" cellspacing="10" class="white" style="width: 250px;">
+                            <tr>
+                                <td class="value value_sheet">
+                                    <select name="memcache">
+                                        <option value="clear">MemCache: очистить</option>
+                                        <option value="">MemCache: не трогать</option>
+                                    </select>
+                                </td>
+                                <td class="value_box" title="Выполнить выбранные действия над кешем">
+                                    {$param = $smarty.const.REQUEST_PARAM_NAME_START|default:''}
+                                    <input class="submit" name="{$param|escape}" style="width: auto; padding-left: 10px; padding-right: 10px;" type="submit" value="Старт" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="value value_sheet" colspan="2">
+                                    <select name="htmcache">
+                                        <option value="clear">HtmCache: очистить</option>
+                                        <option value="optimize">HtmCache: оптимизировать</option>
+                                        <option value="">HtmCache: не трогать</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- флажок Разрешен htmcache --> *}
+                    <td class="param_short">
+                        HtmCache:
+                    </td>
+                    {call settings_checkbox param = 'htmcache_enabled'
+                                            image = ''
+                                            text = 'Включен для клиентской стороны сайта'
+                                            title = 'Включить кеширование страниц клиентской стороны сайта'
+                                            width = '100%'
+                                            colspan = 1}
+
+
+
+                    {* <!-- поле Срок жизни htmcache --> *}
+                    {$value = $settings->htmcache_lifetime|default:900}
+                    {call settings_editbox param = 'htmcache_lifetime'
+                                           text = 'Срок жизни:'
+                                           title = 'Срок жизни файлов кеша (в секундах)'
+                                           value = $value
+                                           width = ''
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 10
+                                           flat = true
+                                           short = true
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+
+
+
+                    {* <!-- флажок Сжимать htmcache --> *}
+                    {call settings_checkbox param = 'htmcache_gzip'
+                                            image = ''
+                                            text = 'Сжимать'
+                                            title = 'Сжимать ли файлы кеша для снижения потребления дискового пространства сайта'
+                                            width = '1%'
+                                            colspan = 1}
+
+
+
+                </tr>
+                <tr>
+                    <td class="param_short">
+                        &nbsp;
+                    </td>
+                    {if !empty($memcache_supported)}
+                        <td class="param_short" colspan="4" style="color: #0a0;">
+                            На вашем сайте поддерживается MemCache!
+                        </td>
+                    {else}
+                        <td class="param_short" colspan="4" style="color: #c00;">
+                            В конфигурации PHP вашего сайта отсутствует поддержка MemCache!
+                        </td>
+                    {/if}
+                </tr>
+            </table>
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            {call hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                 id = false
+                                 value = $token}
+        </form>
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                MemCache - это кеш переменных в памяти. Как правило, отключен на хостингах {**}
+                и включается хостером по запросу. Эффективен при достаточно больших объемах {**}
+                RAM хостинга, удерживая в памяти редко изменяющиеся "тяжелые" данные из {**}
+                прошлых соединений.
+            </div>
+
+            <div>
+                HtmCache - это кеш сгенерированных страниц с хранением в дисковом пространстве {**}
+                сайта. Всегда доступен и не требует участия хостера. Эффективен при дисковой {**}
+                квоте хостинга, измеряемой в гигабайтах.
+            </div>
+
+
+
+            <br />
+
+
+
+            <div>
+                Команда <b>очистить</b> - удаляет из соответствующего кеша все данные. {**}
+                В отличии от нее, команда <b>оптимизировать</b> удаляет из кеша файлы, {**}
+                срок жизни которых истек, ведь htm-кеш пока не имеет функции самоочистки, {**}
+                а также не лимитирован по объему.
+            </div>
+
+
+
+            <br />
+
+
+
+            <div>
+                Кроме того, для админстратора (и только для него) действует несколько {**}
+                технических ссылок, используемых на клиентской стороне сайта и обозначающих {**}
+                следующее:
+
+                <ul class="standard-ul">
+                    <li>{$site}?memcache=clear - очистить кеш MemCache</li>
+                    <li>{$site}?htmcache=clear - очистить кеш HtmCache</li>
+                    <li>{$site}?htmcache=optimize - оптимизировать кеш HtmCache</li>
+                    <li>{$site}НЕКИЙ-URL?htmcache=refresh - стереть кеш HtmCache для страницы НЕКИЙ-URL</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+{/strip}

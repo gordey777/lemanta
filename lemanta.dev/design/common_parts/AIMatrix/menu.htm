@@ -1,0 +1,386 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Menu Box - блок меню                                                    |
+  Версия модуля: 1.2                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $items = массив записей о менюшках сайта                                      |
+    $menu_opentag = html-фрагмент открывающего тега контейнера меню               |
+                    (по умолчанию пустая строка)                                  |
+    $menu_closetag = html-фрагмент закрывающего тега контейнера меню              |
+                     (по умолчанию пустая строка)                                 |
+    $listing_opentag = html-фрагмент открывающего тега списка пунктов меню        |
+                       (по умолчанию пустая строка)                               |
+    $listing_closetag = html-фрагмент закрывающего тега списка пунктов меню       |
+                       (по умолчанию пустая строка)                               |
+    $link_opentag = html-фрагмент открывающего тега ссылки пункта меню            |
+                    (по умолчанию пустая строка)                                  |
+    $link_closetag = html-фрагмент закрывающего тега ссылки пункта меню           |
+                    (по умолчанию пустая строка)                                  |
+    $a_id = идентификатор A-элементов (по умолчанию пустая строка)                |
+    $a_class = класс A-элементов (по умолчанию пустая строка)                     |
+    $a_active_class = класс активного A-элемента (по умолчанию пустая строка)     |
+    $a_text_opentag = открывающий тег текста в A-элементе                         |
+        $a_text_maxsize = предельная длина текста в A-элементе (по умолчанию 256) |
+    $a_text_closetag = закрывающий тег текста в A-элементе                        |
+    $menu_leftname = начальное название искомых меню (по умолчан. "Нижнее меню ") |
+    $menu_name_numbering = булевой признак "названия искомых меню имеют числа     |
+                           в конце названия" (по умолчанию true)                  |
+    $menu_firstnum = порядковый номер первого отображаемого меню (по умолчанию 1) |
+    $menus_count = количество отображаемых меню (по умолчанию 1)                  |
+    $links_maxcount = предельное количество ссылок, выводимых из меню (по умол.5) |
+    $links_count_align = булевой признак "дополнить пустыми число ссылок до       |
+                         заданного количества при их недостаче в выводимом меню"  |
+                         (по умолчанию false)                                     |
+    $show_section_links = булевой признак "показывать ссылки на спецстраницы"(true|
+    $show_category_links = булевой признак "показывать ссылки на категории" (true)|
+    $show_brand_links = булевой признак "показывать ссылки на бренды" (true)      |
+    $show_product_links = булевой признак "показывать ссылки на товары" (true)    |
+    $show_article_links = булевой признак "показывать ссылки на статьи" (true)    |
+    $show_news_links = булевой признак "показывать ссылки на новости" (true)      |
+    $show_file_links = булевой признак "показывать ссылки на медиа файлы" (true)  |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $section = запись о текущей просматриваемой специальной странице, если есть   |
+    $category = запись о текущей просматриваемой категории товаров, если есть     |
+    $brand = запись о текущем просматриваемом бренде, если есть                   |
+    $product = запись о текущем просматриваемом товаре, если есть                 |
+    $article = запись о текущей просматриваемой статье, если есть                 |
+    $news_item = запись о текущей просматриваемой новости, если есть              |
+    $file = запись о текущем просматриваемом медиа файле, если есть               |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.session = массив сведений сеанса                                      |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/menu.htm'                        |
+             items = массив                                                       |
+             menu_leftname = строка                                               |
+             menu_name_numbering = true или false                                 |
+             menu_firstnum = число                                                |
+             menus_count = число                                                  |
+             links_maxcount = число                                               |
+             links_count_align = true или false                                   |
+             menu_opentag = строка                                                |
+                 listing_opentag = строка                                         |
+                     link_opentag = строка                                        |
+                         a_id = строка                                            |
+                         a_class = строка                                         |
+                         a_active_class = строка                                  |
+                         a_text_opentag = строка                                  |
+                             a_text_maxsize = число                               |
+                         a_text_closetag = строка                                 |
+                     link_closetag = строка                                       |
+                 listing_closetag = строка                                        |
+             menu_closetag = строка                                               |
+             show_section_links = true или false                                  |
+             show_category_links = true или false                                 |
+             show_brand_links = true или false                                    |
+             show_product_links = true или false                                  |
+             show_article_links = true или false                                  |
+             show_news_links = true или false                                     |
+             show_file_links = true или false}                                    |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+    {* <!-- обрабатываем входной параметр $a_id --> *}
+    {$temp_a_id = ($a_id|default:'')|regex_replace:'/[\s\t\r\n]+/':''}
+    {$temp_a_id = ($temp_a_id != '') ? ('id="'|cat:($temp_a_id|escape)|cat:'"') : ''}
+
+    {* <!-- обрабатываем входной параметр $a_class --> *}
+    {$temp_a_class = ($a_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+    {$temp_a_class = ($temp_a_class != '') ? ('class="'|cat:($temp_a_class|escape)|cat:'"') : ''}
+
+    {* <!-- обрабатываем входной параметр $a_active_class --> *}
+    {$temp_a_active_class = ($a_active_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+    {$temp_a_active_class = ($temp_a_active_class != '') ? ('class="'|cat:($temp_a_active_class|escape)|cat:'"') : ''}
+
+    {* <!-- обрабатываем входной параметр $a_text_maxsize --> *}
+    {$temp_maxsize = ($a_text_maxsize|default:256)|string_format:'%d'}
+    {$temp_maxsize = ($temp_maxsize >= 1) ? $temp_maxsize : 256}
+
+    {* <!-- обрабатываем входной параметр $menu_name_numbering --> *}
+    {$temp_numbering = !isset($menu_name_numbering) || $menu_name_numbering}
+
+    {* <!-- обрабатываем входной параметр $menu_leftname --> *}
+    {$temp_name = ($menu_leftname|default:'')|regex_replace:'/^[\s\t\r\n]+/':''|regex_replace:'/[\s\t\r\n]+/':' '}
+    {$temp_name = $temp_name|default:'Нижнее меню '}
+    {$temp_name = ($temp_numbering == false) ? ($temp_name|regex_replace:'/[\s\t\r\n]+$/':'') : $temp_name}
+
+    {* <!-- обрабатываем входной параметр $menu_firstnum --> *}
+    {$temp_number = ($menu_firstnum|default:1)|string_format:'%d'}
+    {$temp_number = ($temp_number >= 1) ? $temp_number : 1}
+
+    {* <!-- обрабатываем входной параметр $menus_count --> *}
+    {$temp_columns = ($menus_count|default:1)|string_format:'%d'}
+    {$temp_columns = ($temp_columns >= 1) ? $temp_columns : 1}
+
+    {* <!-- обрабатываем входной параметр $links_maxcount --> *}
+    {$temp_count = ($links_maxcount|default:5)|string_format:'%d'}
+    {$temp_count = ($temp_count >= 1) ? $temp_count : 5}
+
+
+
+    {* <!-- если на вход получен не пустой массив записей о меню --> *}
+    {if isset($items) && is_array($items) && !empty($items)}
+
+        {* <!-- выполняем проходы для нужного числа менюшек (Number = от $menu_firstnum до + $menus_count) --> *}
+        {section name = 'number'
+                 start = $temp_number
+                 loop = $temp_number+$temp_columns
+                 step=1}
+
+            {* <!-- выводим открывающий тег контейнера меню --> *}
+            {$menu_opentag|default:''}
+
+                {* <!-- выводим открывающий тег списка пунктов меню --> *}
+                {$listing_opentag|default:''}
+
+                    {* <!-- находим среди меню названное указанным именем [+ Number] --> *}
+                    {$temp = (($temp_numbering == true) ? ($temp_name|cat:$smarty.section.number.index) : $temp_name)|lower}
+                    {$temp_index = 0}
+                    {foreach $items as $m}
+
+                        {* <!-- если это нужное меню --> *}
+                        {if $m->name|default:''|lower === $temp}
+
+                            {* <!-- если разрешили, выводим прикрепленные к меню специальные страницы --> *}
+                            {if !isset($show_section_links) || $show_section_links}
+                                {if isset($m->sections) && is_array($m->sections) && !empty($m->sections)}
+                                    {foreach $m->sections as $r}
+                                        {if $temp_index < $temp_count}
+                                            {$temp_index = $temp_index + 1}
+                                            {$temp_admintools = ($smarty.session.admin|default:'' == 'admin') ? ('tooltip="section" section_id="'|cat:($r->section_id|default:''|escape)|cat:'"') : ''}
+                                            {$temp_active = ($section->section_id|default:'' === $r->section_id|default:0) ? $temp_a_active_class : $temp_a_class}
+                                            {$link_opentag|default:''}
+                                                <a {$temp_active} {$temp_a_id} href="{$site|default:''|escape}{if !$r->url_special|default:false}sections/{/if}{$r->url|default:''|escape}" title="{$r->name|default:'Без названия!'|escape}" {$temp_admintools}>
+                                                    {$a_text_opentag|default:''}
+                                                        {($r->name|default:''|strip_tags)|default:'Без названия!'|truncate:$temp_maxsize:'...':true}
+                                                    {$a_text_closetag|default:''}
+                                                </a>
+                                            {$link_closetag|default:''}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/if}
+
+                            {* <!-- если разрешили, выводим прикрепленные к меню категории --> *}
+                            {if !isset($show_category_links) || $show_category_links}
+                                {if isset($m->categories) && is_array($m->categories) && !empty($m->categories)}
+                                    {foreach $m->categories as $r}
+                                        {if $temp_index < $temp_count}
+                                            {$temp_index = $temp_index + 1}
+                                            {$temp_admintools = ($smarty.session.admin|default:'' == 'admin') ? ('tooltip="category" category_id="'|cat:($r->category_id|default:''|escape)|cat:'"') : ''}
+                                            {$temp_active = ($category->category_id|default:'' === $r->category_id|default:0) ? $temp_a_active_class : $temp_a_class}
+                                            {$link_opentag|default:''}
+                                                <a {$temp_active} {$temp_a_id} href="{$site|default:''|escape}{if !$r->url_special|default:false}catalog/{/if}{$r->url|default:''|escape}" title="{$r->name|default:'Без названия!'|escape}" {$temp_admintools}>
+                                                    {$a_text_opentag|default:''}
+                                                        {(($r->name|default:''|strip_tags)|default:($r->single_name|default:''|strip_tags))|default:'Без названия!'|truncate:$temp_maxsize:'...':true}
+                                                    {$a_text_closetag|default:''}
+                                                </a>
+                                            {$link_closetag|default:''}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/if}
+
+                            {* <!-- если разрешили, выводим прикрепленные к меню бренды --> *}
+                            {if !isset($show_brand_links) || $show_brand_links}
+                                {if isset($m->brands) && is_array($m->brands) && !empty($m->brands)}
+                                    {foreach $m->brands as $r}
+                                        {if $temp_index < $temp_count}
+                                            {$temp_index = $temp_index + 1}
+                                            {$temp_admintools = ($smarty.session.admin|default:'' == 'admin') ? ('tooltip="brand" brand_id="'|cat:($r->brand_id|default:''|escape)|cat:'"') : ''}
+                                            {$temp_active = ($brand->brand_id|default:'' === $r->brand_id|default:0) ? $temp_a_active_class : $temp_a_class}
+                                            {$link_opentag|default:''}
+                                                <a {$temp_active} {$temp_a_id} href="{$site|default:''|escape}{if !$r->url_special|default:false}brands/{/if}{$r->url|default:''|escape}" title="{$r->name|default:'Без названия!'|escape}" {$temp_admintools}>
+                                                    {$a_text_opentag|default:''}
+                                                        {($r->name|default:''|strip_tags)|default:'Без названия!'|truncate:$temp_maxsize:'...':true}
+                                                    {$a_text_closetag|default:''}
+                                                </a>
+                                            {$link_closetag|default:''}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/if}
+
+                            {* <!-- если разрешили, выводим прикрепленные к меню товары --> *}
+                            {if !isset($show_product_links) || $show_product_links}
+                                {if isset($m->products) && is_array($m->products) && !empty($m->products)}
+                                    {foreach $m->products as $r}
+                                        {if $temp_index < $temp_count}
+                                            {$temp_index = $temp_index + 1}
+                                            {$temp_admintools = ($smarty.session.admin|default:'' == 'admin') ? ('tooltip="product" product_id="'|cat:($r->product_id|default:''|escape)|cat:'"') : ''}
+                                            {$temp_active = ($product->product_id|default:'' === $r->product_id|default:0) ? $temp_a_active_class : $temp_a_class}
+                                            {$link_opentag|default:''}
+                                                {$temp_model = ((!isset($settings->product_category_show) || $settings->product_category_show) ? ($r->category|default:'') : '')|cat:' '}
+                                                {$temp_model = $temp_model|cat:((!isset($settings->product_brand_show) || $settings->product_brand_show) ? ($r->brand|default:'') : '')|cat:' '}
+                                                {$temp_model = ($temp_model|cat:($r->model|default:''))|regex_replace:'/^[\s\t\r\n]+/':''|regex_replace:'/[\s\t\r\n]+$/':''|regex_replace:'/[\s\t\r\n]+/':' '}
+                                                <a {$temp_active} {$temp_a_id} href="{$site|default:''|escape}{if !$r->url_special|default:false}products/{/if}{$r->url|default:''|escape}" title="{$temp_model|default:'Без названия!'|escape}" {$temp_admintools}>
+                                                    {$a_text_opentag|default:''}
+                                                        {($temp_model|strip_tags)|default:'Без названия!'|truncate:$temp_maxsize:'...':true}
+                                                    {$a_text_closetag|default:''}
+                                                </a>
+                                            {$link_closetag|default:''}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/if}
+
+                            {* <!-- если разрешили, выводим прикрепленные к меню статьи --> *}
+                            {if !isset($show_article_links) || $show_article_links}
+                                {if isset($m->articles) && is_array($m->articles) && !empty($m->articles)}
+                                    {foreach $m->articles as $r}
+                                        {if $temp_index < $temp_count}
+                                            {$temp_index = $temp_index + 1}
+                                            {$temp_admintools = ($smarty.session.admin|default:'' == 'admin') ? ('tooltip="article" article_id="'|cat:($r->article_id|default:''|escape)|cat:'"') : ''}
+                                            {$temp_active = ($article->article_id|default:'' === $r->article_id|default:0) ? $temp_a_active_class : $temp_a_class}
+                                            {$link_opentag|default:''}
+                                                <a {$temp_active} {$temp_a_id} href="{$site|default:''|escape}{if !$r->url_special|default:false}articles/{/if}{$r->url|default:''|escape}" title="{$r->header|default:'Без названия!'|escape}" {$temp_admintools}>
+                                                    {$a_text_opentag|default:''}
+                                                        {($r->header|default:''|strip_tags)|default:'Без названия!'|truncate:$temp_maxsize:'...':true}
+                                                    {$a_text_closetag|default:''}
+                                                </a>
+                                            {$link_closetag|default:''}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/if}
+
+                            {* <!-- если разрешили, выводим прикрепленные к меню новости --> *}
+                            {if !isset($show_news_links) || $show_news_links}
+                                {if isset($m->news) && is_array($m->news) && !empty($m->news)}
+                                    {foreach $m->news as $r}
+                                        {if $temp_index < $temp_count}
+                                            {$temp_index = $temp_index + 1}
+                                            {$temp_admintools = ($smarty.session.admin|default:'' == 'admin') ? ('tooltip="news" news_id="'|cat:($r->news_id|default:''|escape)|cat:'"') : ''}
+                                            {$temp_active = ($news_item->news_id|default:'' === $r->news_id|default:0) ? $temp_a_active_class : $temp_a_class}
+                                            {$link_opentag|default:''}
+                                                <a {$temp_active} {$temp_a_id} href="{$site|default:''|escape}{if !$r->url_special|default:false}news/{/if}{$r->url|default:''|escape}" title="{$r->header|default:'Без названия!'|escape}" {$temp_admintools}>
+                                                    {$a_text_opentag|default:''}
+                                                        {($r->header|default:''|strip_tags)|default:'Без названия!'|truncate:$temp_maxsize:'...':true}
+                                                    {$a_text_closetag|default:''}
+                                                </a>
+                                            {$link_closetag|default:''}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/if}
+
+                            {* <!-- если разрешили, выводим прикрепленные к меню медиа файлы --> *}
+                            {if !isset($show_file_links) || $show_file_links}
+                                {if isset($m->files) && is_array($m->files) && !empty($m->files)}
+                                    {foreach $m->files as $r}
+                                        {if $temp_index < $temp_count}
+                                            {$temp_index = $temp_index + 1}
+                                            {$temp_admintools = ($smarty.session.admin|default:'' == 'admin') ? ('tooltip="file" file_id="'|cat:($r->file_id|default:''|escape)|cat:'"') : ''}
+                                            {$temp_active = ($file->file_id|default:'' === $r->file_id|default:0) ? $temp_a_active_class : $temp_a_class}
+                                            {$link_opentag|default:''}
+                                                <a {$temp_active} {$temp_a_id} href="{$site|default:''|escape}media/{$r->url|default:''|escape}" title="{$r->header|default:'Без названия!'|escape}" {$temp_admintools}>
+                                                    {$a_text_opentag|default:''}
+                                                        {($r->header|default:''|strip_tags)|default:'Без названия!'|truncate:$temp_maxsize:'...':true}
+                                                    {$a_text_closetag|default:''}
+                                                </a>
+                                            {$link_closetag|default:''}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/if}
+
+                            {* <!-- запоминаем, что искать меню в этом цикле уже не надо --> *}
+                            {$temp = false}
+                        {/if}
+                    {/foreach}
+
+                    {* <!-- если такое меню не нашли --> *}
+                    {if $temp !== false}
+
+                        {* <!-- выводим уведомление --> *}
+                        {$link_opentag|default:''}
+                            <noindex>
+                                <a {$temp_a_class} {$temp_a_id} href="{$site|default:''|escape}" onclick="javascript: return false;">
+                                    Не найдено меню <b>{$temp_name|escape}{if $temp_numbering}{$smarty.section.number.index}{/if}</b> {**}
+                                    среди менюшек сайта. Создайте его в админпанели, прикрепите к нему {**}
+                                    до {$temp_count} желаемых специальных страниц, статей, новостей, {**}
+                                    товаров, категорий, брендов или медиа файлов.
+                                </a>
+                            </noindex>
+                        {$link_closetag|default:''}
+
+                    {* <!-- иначе такое меню нашли --> *}
+                    {else}
+
+                        {* <!-- если просили дополнить пустыми число ссылок до заданного количества при их недостаче в меню --> *}
+                        {if isset($links_count_align) && $links_count_align}
+                            {section name = 'aligning'
+                                     start = $temp_index
+                                     loop = $temp_count
+                                     step=1}
+                                {$link_opentag|default:''}
+                                    <a {$temp_a_class} {$temp_a_id} href="{$site|default:''|escape}" onclick="javascript: return false;" style="cursor: default;">
+                                        &nbsp;
+                                    </a>
+                                {$link_closetag|default:''}
+                            {/section}
+                        {/if}
+
+                    {/if}
+
+                {* <!-- выводим закрывающий тег списка пунктов меню --> *}
+                {$listing_closetag|default:''}
+
+            {* <!-- выводим закрывающий тег контейнера меню --> *}
+            {$menu_closetag|default:''}
+        {/section}
+
+
+
+    {* <!-- иначе список меню пустой --> *}
+    {else}
+
+        {* <!-- выполняем проходы для нужного числа менюшек (Number = от $menu_firstnum до + $menus_count) --> *}
+        {section name = 'number'
+                 start = $temp_number
+                 loop = $temp_number+$temp_columns
+                 step=1}
+
+            {* <!-- выводим открывающий тег контейнера меню --> *}
+            {$menu_opentag|default:''}
+
+                {* <!-- выводим открывающий тег списка пунктов меню --> *}
+                {$listing_opentag|default:''}
+
+                    {* <!-- выводим уведомление --> *}
+                    {$link_opentag|default:''}
+                        <noindex>
+                            <a {$temp_a_class} {$temp_a_id} href="{$site|default:''|escape}" onclick="javascript: return false;">
+                                Не найдено меню <b>{$temp_name|escape}{if $temp_numbering}{$smarty.section.number.index}{/if}</b> {**}
+                                среди менюшек сайта. Создайте его в админпанели, прикрепите к нему {**}
+                                до {$temp_count} желаемых специальных страниц, статей, новостей, {**}
+                                товаров, категорий, брендов или медиа файлов.
+                            </a>
+                        </noindex>
+                    {$link_closetag|default:''}
+
+                {* <!-- выводим закрывающий тег списка пунктов меню --> *}
+                {$listing_closetag|default:''}
+
+            {* <!-- выводим закрывающий тег контейнера меню --> *}
+            {$menu_closetag|default:''}
+        {/section}
+
+    {/if}
+
+{/strip}

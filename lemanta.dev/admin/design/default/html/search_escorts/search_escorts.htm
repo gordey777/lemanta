@@ -1,0 +1,1106 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: поисковое сопровождение                                                 |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $items = массив с записями о поисковых фразах                                 |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $PagesNavigation = html-контент навигатора страниц                            |
+    $CurrentPageMaxsize = максимальное количество записей на странице             |
+    $CurrentPage = индексный номер текущей страницы                               |
+    $total_items = количество записей на всех страницах                           |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.SEARCHESCORTS_MODULELINK_POINTER|default:''}
+    {$section_paramname = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$token_paramname = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.SEARCHESCORTS_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.SEARCHESCORTS_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- адрес корня домена --> *}
+    {$domain = $site|default:''}
+    {$domain = preg_replace('!^([a-z]+://[^/]+/).*$!i', '$1', $domain)}
+    {$domain = $domain|escape}
+
+
+
+    {* <!-- адрес корня админпанели --> *}
+    {$site = ($site|default:'')|escape}
+    {$admin_site = $site|cat:(($admin_folder|default:'')|escape)|cat:'/'}
+    {$admin_script = $admin_site|cat:'index.php'}
+
+
+
+    {* <!-- адрес для перехода в админпанели (ожидает справа имя модуля) --> *}
+    {$param = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$param = $param|regex_replace:'/[=\?#]/':''}
+    {$admin_goto = $admin_script|cat:'?'|cat:($param|escape)|cat:'='}
+
+
+
+    {* <!-- адрес корня текущего шаблона админпанели --> *}
+    {$param = $settings->admin_theme|default:''}
+    {$admin_theme = $admin_site|cat:'design/'|cat:($param|escape)|cat:'/'}
+    {$theme = ($theme|default:'')|escape}
+
+
+
+    {* <!-- часть get-запроса страницы для параметра token --> *}
+    {$param = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+    {$param = $param|regex_replace:'/[=\?#]/':''}
+    {$token = ($inputs[$param]|default:$Token)|default:''}
+    {$token_request = ($param|cat:'='|cat:$token)|escape}
+
+
+
+    {* <!-- скрипт и файл стилей календаря --> *}
+    <script language="JavaScript" src="{$admin_site}js/calendar/calendar.js" type="text/javascript"></script>
+    <script language="JavaScript" src="{$admin_site}js/calendar/calendas.js" type="text/javascript"></script>
+    <link href="{$admin_site}js/calendar/calendar.css" rel="stylesheet" type="text/css" />
+
+
+
+    {* <!-- filter_editbox(param) = генерация поля ввода для фильтра --> *}
+    {function name = 'filter_editbox'
+              param = ''}
+        {if $param != ''}
+            {if $param != ''}
+                {eval var = '{$smarty.const.'|cat:$param|cat:'|default:\'\'}'
+                      assign = 'param'}
+                {$id = $param|escape}
+                {$value = $inputs[$param]|default:''}
+
+                {* <!-- поле ввода --> *}
+                <input class="edit" id="items_form_{$id}" name="{$id}" type="text" value="{$value|escape}" />
+            {/if}
+        {/if}
+    {/function}
+
+
+
+    {* <!-- filter_checkbox(param, shadow, image, text, style, invertable) = генерация флажка для фильтра --> *}
+    {function name = 'filter_checkbox'
+              param = ''
+              shadow = false
+              image = ''
+              text = ''
+              style = ''
+              invertable = false}
+        {if $param != ''}
+            {eval var = '{$smarty.const.'|cat:$param|cat:'|default:\'\'}'
+                  assign = 'param'}
+            {if $param != ''}
+                {$id = $param|escape}
+
+                {* <!-- теневой флажок (для случая "не выбрано - это тоже состояние") --> *}
+                {if $shadow}
+                    <input name="{$id}" type="hidden" value="0" />
+                {/if}
+
+                {* <!-- флажок --> *}
+                {$value = $inputs[$param]|default:0}
+                {$checked = ($value != 0) ? 'checked' : ''}
+                <input class="checkbox" id="items_form_{$id}" name="{$id}" type="checkbox" {$checked} value="{($value != 0) ? ($value|escape) : 1}" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+
+                {* <!-- картинка и/или текст --> *}
+                {$style = ($style != '') ? ('style="'|cat:$style|cat:'"') : ''}
+                <span onclick="Toggle_PageCheckbox('items_form_{$id}');">
+                    {if $image != ''}
+                        <img class="icon16x16" src="{$admin_theme|default:''}images/{$image|escape}" {$style} />
+                    {/if}
+                    {if $text != ''}
+                        {$text|escape}
+                    {/if}
+
+                    {* <!-- если поддерживает инверсию действия --> *}
+                    {if $invertable}
+                        <div class="inverted">
+                            <span onclick="var el = document.getElementById('items_form_{$id}'); if (el) if (!el.checked) el.value = -1; else if (el.value != -1) { el.value = -1; el.checked = false; }">
+                                противоположный
+                            </span>
+                            <span onclick="var el = document.getElementById('items_form_{$id}'); if (el) if (!el.checked) el.value = 1; else if (el.value != 1) { el.value = 1; el.checked = false; }">
+                                обычный
+                            </span>
+                        </div>
+                    {/if}
+                </span>
+            {/if}
+        {/if}
+    {/function}
+
+
+
+    {* <!-- hidden_editbox(param, id, value) = генерация скрытого поля ввода --> *}
+    {function name = 'hidden_editbox'
+              param = ''
+              id = false
+              value = ''}
+        {if $param != ''}
+            {eval var = '{$smarty.const.'|cat:$param|cat:'|default:\'\'}'
+                  assign = 'param'}
+            {if $param != ''}
+                {$value = ($value === true) ? ($inputs[$param]|default:'') : $value}
+                {$param = $param|escape}
+                {$id = ($id) ? ('id="items_form_'|cat:$param|cat:'"') : ''}
+
+                {* <!-- поле ввода --> *}
+                <input {$id} name="{$param}" type="hidden" value="{$value|escape}" />
+            {/if}
+        {/if}
+    {/function}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$admin_site}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → Поиски
+            </div>
+
+            {($title|default:'Поисковое сопровождение')|escape}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            <a class="left" href="#settings" onclick="Show_PageElements('setup_form');" title="Показать настройки сайта, относящиеся к поисковому сопровождению">
+                настройки
+            </a>
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <a href="{$admin_goto}SearchEscort&{$token_request}" title="Добавить фразу">
+                добавить
+            </a>
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма со списком записей --> *}
+        <form action="{$admin_goto}{$module_pointer|escape}" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+
+
+            {* <!-- фильтр --> *}
+            <table align="center" cellpadding="0" cellspacing="8" class="white">
+                <tr>
+
+                    {* <!-- поле Искомая строка --> *}
+                    <td class="param_short">
+                        Поиск:
+                    </td>
+                    <td class="value" colspan="3" width="50%" title="Фильтр: с таким словом в поисковой фразе (не более 4 слов, слова менее 3 символов игнорируются)">
+                        {filter_editbox param = 'REQUEST_PARAM_NAME_FILTER_SEARCH'}
+
+                        {* <!-- варианты значения --> *}
+                        <div class="value-variants">
+                            <span onclick="jQuery(this).closest('.value').find('input').val('');">
+                                <span>текст = с таким словом в поисковой фразе</span>
+                            </span>
+
+                            {$param = ($smarty.const.SEARCH_SEARCHES_COMMAND_NAME|default:'')|escape}
+                            <span onclick="jQuery(this).closest('.value').find('input').val('{$param}');">
+                                {$param}<span>текст = точная фраза</span>
+                            </span>
+
+                            {$param = ($smarty.const.SEARCH_SEARCHES_COMMAND_ESCORT_URL|default:'')|escape}
+                            <span onclick="jQuery(this).closest('.value').find('input').val('{$param}');">
+                                {$param}<span>[url или *] = с таким сопровождаемым url</span>
+                            </span>
+
+                            {$param = ($smarty.const.SEARCH_SEARCHES_COMMAND_TARGET_URL|default:'')|escape}
+                            <span onclick="jQuery(this).closest('.value').find('input').val('{$param}');">
+                                {$param}<span>[url или *] = с таким предлагавшимся url</span>
+                            </span>
+
+                            {$param = ($smarty.const.SEARCH_SEARCHES_COMMAND_REFERER|default:'')|escape}
+                            <span onclick="jQuery(this).closest('.value').find('input').val('{$param}');">
+                                {$param}<span>[домен или *] = от такого источника трафика</span>
+                            </span>
+
+                            {$param = ($smarty.const.SEARCH_SEARCHES_COMMAND_ID|default:'')|escape}
+                            <span onclick="jQuery(this).closest('.value').find('input').val('{$param}');">
+                                {$param}<span>ид = фраза с таким идентификатором</span>
+                            </span>
+
+                            {$param = ($smarty.const.SEARCH_SEARCHES_COMMAND_MODIFIED_DATE|default:'')|escape}
+                            <span onclick="jQuery(this).closest('.value').find('input').val('{$param}');">
+                                {$param}<span>ГГГГ-ММ-ДД = измененные в такой день</span>
+                            </span>
+
+                            {$param = ($smarty.const.SEARCH_SEARCHES_COMMAND_CREATED_DATE|default:'')|escape}
+                            <span onclick="jQuery(this).closest('.value').find('input').val('{$param}');">
+                                {$param}<span>ГГГГ-ММ-ДД = созданные в такой день</span>
+                            </span>
+
+                            <span class="non-selectable last">
+                                <span>
+                                    В квадратных скобках указаны опциональные части,<br>
+                                    без них смысл равен "не заполненные".<br>
+                                </span>
+                                <span>
+                                    Знак * означает, что здесь с помощью символа звездочки<br>
+                                    можно найти все заполненные каким-либо значением.
+                                </span>
+                            </span>
+                        </div>
+                    </td>
+
+
+
+                    {* <!-- задаем формат даты календаря --> *}
+                    <script language="JavaScript" type="text/javascript">
+                        var xcDateFormat = 'yyyy-mm-dd';
+                    </script>
+
+
+
+                    {* <!-- поле Искомая дата --> *}
+                    <td class="param_short">
+                        Дата от:
+                    </td>
+                    <td class="value" width="16%" title="Фильтр: начиная с такой даты (формат даты ГГГГ-ММ-ДД)">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATEFROM|default:''}
+                        <input class="edit" id="items_form_{$param|escape}" name="{$param|escape}" type="text" value="{($inputs[$param]|default:'')|escape}" onfocus="javascript: xcDateFormat = 'yyyy-mm-dd';
+                                                                                                                                                                                  var set_to = this;
+                                                                                                                                                                                  var get_from = this;
+                                                                                                                                                                                  var default_date = '';
+                                                                                                                                                                                  var anchor_object_id = '';
+                                                                                                                                                                                  var x_offset = 5;
+                                                                                                                                                                                  var y_offset = 5;
+                                                                                                                                                                                  var auto_hide = 1;
+                                                                                                                                                                                  showCalendar('', set_to, get_from, default_date, anchor_object_id, x_offset, y_offset, auto_hide);" />
+                    </td>
+                    <td class="param_short">
+                        до:
+                    </td>
+                    <td class="value" width="16%" title="Фильтр: до такой даты включительно (формат даты ГГГГ-ММ-ДД)">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATETO|default:''}
+                        <input class="edit" id="items_form_{$param|escape}" name="{$param|escape}" type="text" value="{($inputs[$param]|default:'')|escape}" onfocus="javascript: xcDateFormat = 'yyyy-mm-dd';
+                                                                                                                                                                                  var set_to = this;
+                                                                                                                                                                                  var get_from = this;
+                                                                                                                                                                                  var default_date = '';
+                                                                                                                                                                                  var anchor_object_id = '';
+                                                                                                                                                                                  var x_offset = 5;
+                                                                                                                                                                                  var y_offset = 5;
+                                                                                                                                                                                  var auto_hide = 1;
+                                                                                                                                                                                  showCalendar('', set_to, get_from, default_date, anchor_object_id, x_offset, y_offset, auto_hide);" />
+                    </td>
+
+
+
+                    {* <!-- кнопка Найти --> *}
+                    <td class="value_box" title="Начать поиск фраз по условиям фильтра">
+                        <input class="submit" style="width: auto;" type="submit" value="&nbsp;Найти&nbsp;" />
+                    </td>
+
+
+
+                    {* <!-- флажок Фильтр запускать вручную --> *}
+                    <td class="param_short">
+                        &nbsp;
+                    </td>
+                    <td class="param_short" title="Включить срабатывание фильтра только по нажатию клавиши 'Найти'">
+                        {filter_checkbox param = 'REQUEST_PARAM_NAME_FILTER_MANUALLY'
+                                         shadow = true
+                                         image = 'icon_manually_16x16.png'
+                                         text = 'по кнопке'
+                                         style = ''
+                                         invertable = false}
+                    </td>
+                </tr>
+            </table>
+
+
+
+            {* <!-- сортировщик --> *}
+            <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+                <tr>
+                    <td class="param_short">
+                        упорядочить&nbsp;
+                    </td>
+
+
+
+                    {* <!-- флажок Направление сортировки --> *}
+                    <td class="param_short" title="Включить обратный порядок сортировки (игнорируется при упорядочении 'Как добавлялись')">
+                        {filter_checkbox param = 'REQUEST_PARAM_NAME_SORT_DIRECTION'
+                                         shadow = true
+                                         image = 'icon_descending_16x16.png'
+                                         text = ''
+                                         style = ''
+                                         invertable = false}
+                    </td>
+
+
+
+                    {* <!-- флажок Лаконичный режим --> *}
+                    <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+                        {filter_checkbox param = 'REQUEST_PARAM_NAME_SORT_LACONICAL'
+                                         shadow = true
+                                         image = 'icon_laconical_16x16.png'
+                                         text = ''
+                                         style = ''
+                                         invertable = false}
+                    </td>
+
+
+
+                    {* <!-- поле Способ сортировки --> *}
+                    <td class="value" width="40%" title="Способ сортировки товаров в нижеследующем списке">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                        {$now_value = $inputs[$param]|default:''}
+                        <select class="thin" name="{$param|escape}" onchange="Start_PageRecordsFilter('items_form');">
+
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_AS_IS|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                как добавлялись
+                            </option>
+
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_NAME|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                по алфавиту
+                            </option>
+
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_BROWSED|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                по числу запросов
+                            </option>
+
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_ESCORT_URL|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                по сопровождаемому url
+                            </option>
+
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_TARGET_URL|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                по предлагавшемуся url
+                            </option>
+
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_REFERER|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                по источнику трафика
+                            </option>
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_CREATED|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                по дате добавления
+                            </option>
+
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_MODIFIED|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                по дате исправления
+                            </option>
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Тип записей --> *}
+                    <td class="value" width="35%" title="С каким типом фраз производится работа">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_TYPE|default:''}
+                        {$now_value = $inputs[$param]|default:''}
+                        <select class="thin" name="{$param|escape}" onchange="Start_PageRecordsFilter('items_form');">
+
+                            {$value = $smarty.const.TYPE_SEARCHES_ANY|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                любые фразы
+                            </option>
+
+                            {$value = $smarty.const.TYPE_SEARCHES_NEW|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                новые фразы
+                            </option>
+
+                            {$value = $smarty.const.TYPE_SEARCHES_ESCORTING|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                сопровождаемые фразы
+                            </option>
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Режим отображения --> *}
+                    <td class="value" width="25%" title="Насколько полно выводить информацию о фразах в списке">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                        {$now_value = $inputs[$param]|default:''}
+                        <select class="thin" name="{$param|escape}" onchange="Start_PageRecordsFilter('items_form');">
+
+                            {$value = $smarty.const.VIEW_MODE_COMPACT|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                компактно
+                            </option>
+
+                            {$value = $smarty.const.VIEW_MODE_STANDARD|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                стандартно
+                            </option>
+
+                            {$value = $smarty.const.VIEW_MODE_FULL|default:''}
+                            <option value="{$value|escape}"{if $now_value == $value} selected{/if}>
+                                подробно
+                            </option>
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- флажок Разрешен --> *}
+                    <td class="param_short" title="Фильтр: только разрешенные к показу на сайте">
+                        {filter_checkbox param = 'REQUEST_PARAM_NAME_FILTER_ENABLED'
+                                         shadow = false
+                                         image = 'icon_enabled_gray_16x16.png'
+                                         text = 'разрешенные'
+                                         style = ''
+                                         invertable = true}
+                    </td>
+
+
+
+                    {* <!-- флажок Удален --> *}
+                    <td class="param_short" title="Фильтр: только удаленные">
+                        {filter_checkbox param = 'REQUEST_PARAM_NAME_FILTER_DELETED'
+                                         shadow = false
+                                         image = 'icon_deleted_gray_16x16.png'
+                                         text = 'удаленные'
+                                         style = ''
+                                         invertable = true}
+                    </td>
+                </tr>
+            </table>
+
+
+
+            {* <!-- кнопка сброса фильтра --> *}
+            <div class="toolkey">
+                <span>
+                    найдено <span>
+                                {($total_items|default:0)|string_format:'%d'} шт.
+                            </span>
+                </span>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                <a href="#" onclick="return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения, типа фраз и полноты вывода)">
+                    сбросить
+                </a>
+            </div>
+
+
+
+            {* <!-- если получен непустой массив записей --> *}
+            {if isset($items) && is_array($items) && !empty($items)}
+
+
+
+                {* <!-- навигатор страниц, только если есть несколько листаемых страниц --> *}
+                {if ($Pages|default:null)|@count > 1}
+                    {$PagesNavigation|default:''}
+                {/if}
+
+
+
+                {foreach name = items item = c from = $items}
+
+                    {* <!-- запоминаем идентификатор текущей записи --> *}
+                    {$id = $c->search_id|default:0}
+
+
+
+                    <li class="flatlist">
+
+
+
+                        {* <!-- флажки Пометить все на удаление / Снять все --> *}
+                        {if $smarty.foreach.items.iteration == 1}
+                            <a href="{$admin_script}" title="Пометить на удаление все на этой странице" onclick="jQuery(this).closest('form').find('li > div > input.delete_items').each(function () { if (!this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 882px; z-index: 1;">
+                                ↓
+                            </a>
+                            <a href="{$admin_script}" title="Снять пометки на удаление со всех на этой странице" onclick="jQuery(this).closest('form').find('li > div > input.delete_items').each(function () { if (this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 890px; z-index: 1;">
+                                ↑
+                            </a>
+
+
+
+                            {* <!-- флажки Пометить все разрешенными / Снять все --> *}
+                            {$value = 817}
+                            <a href="{$admin_script}" title="Пометить разрешенными все на этой странице" onclick="jQuery(this).closest('form').find('li > div > input.enable_items').each(function () { if (!this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px {$value}px; z-index: 1;">
+                                ↓
+                            </a>
+                            <a href="{$admin_script}" title="Снять пометки разрешенных со всех на этой странице" onclick="jQuery(this).closest('form').find('li > div > input.enable_items').each(function () { if (this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px {$value + 7}px; z-index: 1;">
+                                ↑
+                            </a>
+                        {/if}
+
+
+
+                        <div class="onerow">
+
+
+
+                            {* <!-- флажок Пометить на удаление --> *}
+                            <input class="checkbox delete_items" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();" />
+
+
+
+                            {* <!-- кнопка Удалить --> *}
+                            <a href="{$admin_script}{$c->delete_get|default:''|escape}" title="Удалить" onclick="return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                                <img class="microkey_right" src="{$admin_theme}images/icon_delete_16x16.png" />
+                            </a>
+
+
+
+                            <img class="microkey_left" src="{$admin_theme}images/placeholder.gif" />
+
+
+
+                            {* <!-- флажок Пометить разрешенным --> *}
+                            <input class="checkbox gray enable_items" name="enabled[{$id|escape}]"{if $c->enabled|default:false} checked{/if} title="Пометить как разрешенный к показу на сайте" type="checkbox" value="1" onchange="Show_AcceptChanges_Button();" />
+
+
+
+                            {* <!-- кнопка Разрешить --> *}
+                            <a href="{$admin_script}{$c->enable_get|default:''|escape}" title="Разрешить / запретить показ на сайте">
+                                <img class="microkey_left" src="{$admin_theme}images/icon_enabled{if !$c->enabled|default:false}_off{/if}_16x16.png" />
+                            </a>
+
+
+
+                            <img class="microkey_left" src="{$admin_theme}images/placeholder.gif" />
+
+
+
+                            {* <!-- кнопка Создать копию --> *}
+                            <a href="{$admin_script}{$c->copy_get|default:''|escape}" title="Создать и редактировать копию фразы">
+                                <img class="microkey_left" src="{$admin_theme}images/icon_edit_16x16.png" />
+                            </a>
+
+
+
+                            <img class="microkey_left" src="{$admin_theme}images/placeholder.gif" />
+
+
+
+                            {* <!-- нумерация --> *}
+                            <span class="topic" style="display: inline;">
+                                {if isset($CurrentPage)}
+                                    {$smarty.foreach.items.iteration + $CurrentPage * $CurrentPageMaxsize}.
+                                {else}
+                                    {$smarty.foreach.items.iteration}.
+                                {/if}
+                            </span>
+
+
+
+                            {* <!-- количество запросов --> *}
+                            {$value = ($c->browsed|default:0)|escape}
+                            <span class="browsed{if $value == 0} zero{/if}" title="Количество запросов по этой фразе: {$value}">
+                                {$value}
+                            </span>
+
+
+
+                            {* <!-- если включен стандартный или полный вывод информации о записях --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                            {$value = $smarty.const.VIEW_MODE_STANDARD|default:''}
+                            {$value2 = $smarty.const.VIEW_MODE_FULL|default:''}
+                            {if ($inputs[$param]|default:'' == $value) || ($inputs[$param]|default:'' == $value2)}
+
+                                {* <!-- скрытое постинговое идентифицирующее поле текущей записи --> *}
+                                {$param = $smarty.const.REQUEST_PARAM_NAME_POST|default:''}
+                                <input name="{$param|escape}[{$id|escape}]" type="hidden" value="" />
+
+
+                            {/if}
+
+
+
+                            {* <!-- значок сопровождаемой фразы --> *}
+                            {if $c->escort_url|default:'' != ''}
+                                <img class="icon16x16" src="{$admin_theme}images/icon_done_16x16.png" title="Это сопровождаемая фраза" />
+                            {/if}
+
+
+
+                            {* <!-- название (поисковая фраза) --> *}
+                            {$value = ($c->name|default:'не задана!')|escape}
+                            <a href="{$admin_script}{$c->edit_get|default:''|escape}" title="{$value}" {if !$c->enabled|default:false} class="disabled_item"{/if}>
+                                {$value}
+                            </a>
+
+                        </div>
+
+
+
+                        {* <!-- краткая информация --> *}
+
+
+
+                        {* <!-- если включен стандартный или полный вывод информации о записях --> *}
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                        {$value = $smarty.const.VIEW_MODE_STANDARD|default:''}
+                        {$value2 = $smarty.const.VIEW_MODE_FULL|default:''}
+                        {if ($inputs[$param]|default:'' == $value) || ($inputs[$param]|default:'' == $value2)}
+
+                            {* <!-- сопровождаемый url --> *}
+                            <div class="line" style="padding-top: 9px;">
+                                <span>
+                                    вести на:
+                                </span>
+                                <div class="url_edit" title="Сопровождаемый URL (относительно корня домена - {$domain})">
+                                    <input name="escort_url[{$id|escape}]" type="text" value="{($c->escort_url|default:'')|escape}" onkeyup="this.style.color = '#00f';" onchange="Show_AcceptChanges_Button();" />
+                                </div>
+
+                                {* <!-- кнопка Применить (сохранить конкретно эту запись, игнорируя изменения других записей на странице) --> *}
+                                {$param = $smarty.const.REQUEST_PARAM_NAME_POST_THISONE|default:''}
+                                <input class="submit" name="{$param|escape}[{$id|escape}]" type="submit" value="применить" title="Принять исправления только в этой фразе" onclick="return Prepare_PageThisOnePost('items_form');" />
+                            </div>
+
+                        {/if}
+
+
+
+                        {* <!-- если включен полный вывод информации о записях --> *}
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                        {$value = $smarty.const.VIEW_MODE_FULL|default:''}
+                        {if $inputs[$param]|default:'' == $value}
+
+                            {* <!-- предлагавшийся url --> *}
+                            {$value = ($c->target_url|default:'')|escape}
+                            {if $value != ''}
+                                <div class="line" title="Предлагавшийся адрес: {$domain}{$value}">
+                                    <span>
+                                        попадал:
+                                    </span>
+                                    {$domain}{$value}
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- источник трафика --> *}
+                            {$value = ($c->referer|default:'')|escape}
+                            {if $value != ''}
+                                <div class="line" title="Источник трафика: {$value}">
+                                    <span>
+                                        источник:
+                                    </span>
+                                    {$param = $smarty.const.SEARCH_SEARCHES_COMMAND_REFERER|default:''}
+                                    <a href="{$admin_script}" onclick="return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$value}');" title="Показать все фразы от такого источника трафика">
+                                        <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                    </a> &nbsp; {**}
+                                    {$value}
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- дата добавления --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_CREATED|default:''}
+                            {if $inputs[$param]|default:'' == $value}
+                                <div class="line">
+                                    <span>
+                                        добавлена:
+                                    </span>
+                                    {($c->created|default:'')|escape}
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- дата исправления --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                            {$value = $smarty.const.SORT_SEARCHES_MODE_BY_MODIFIED|default:''}
+                            {if $inputs[$param]|default:'' == $value}
+                                {if $c->created|default:'' != $c->modified|default:''}
+                                    <div class="line">
+                                        <span>
+                                            исправлена:
+                                        </span>
+                                        {($c->modified|default:'')|escape}
+                                    </div>
+                                {/if}
+                            {/if}
+
+                        {/if}
+
+                    </li>
+                {/foreach}
+
+
+
+                {* <!-- пустой указатель требуемой команды --> *}
+                {hidden_editbox param = 'REQUEST_PARAM_NAME_ACTION'
+                                id = true
+                                value = ''}
+
+
+
+                {* <!-- признак отмены постинга --> *}
+                {hidden_editbox param = 'REQUEST_PARAM_NAME_IGNORE_POST'
+                                id = true
+                                value = '1'}
+
+
+
+                {* <!-- признак мини постинга (без некоторых полей записи) --> *}
+                {hidden_editbox param = 'REQUEST_PARAM_NAME_POST_MINI'
+                                id = false
+                                value = '1'}
+
+
+
+                {* <!-- аутентификатор операции --> *}
+                {hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                id = false
+                                value = true}
+
+
+
+                {* <!-- навигатор страниц --> *}
+                {$PagesNavigation|default:''}
+
+
+
+            {* <!-- иначе массив записей пуст --> *}
+            {else}
+
+                {$param = $smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|default:''}
+                {$value = $inputs[$param]|default:false}
+                <div class="noitems">
+                    Не найдено поисковых фраз{if $value} (режим: лаконичный){/if}.
+                </div>
+            {/if}
+        </form>
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box" style="display: none;">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                Бывает так, что по каким-либо причинам поисковый сервер в своей базе {**}
+                сопоставил с отдельными страницами вашего сайта совсем не те поисковые {**}
+                фразы, которые точно идентифицируют контент страницы. Скажем, человек {**}
+                ввел на поисковом сервере фразу "BestFirm кружка C3-75", причем на вашем {**}
+                сайте есть именно такой товар, но поисковик почему-то вашу страницу {**}
+                списка товаров бренда "BestFirm" или страницу списка кружек посчитал {**}
+                более релевантными запросу, и в результате хоть и приводит человека на {**}
+                ваш сайт, только тому приходится совершать лишние действия в рамках {**}
+                интерфейса вашего сайта, чтобы наконец-таки попасть на конечную страницу {**}
+                товара.
+            </div>
+
+
+
+            <div>
+                Данная страница поискового сопровождения как раз помогает решать такие {**}
+                вопросы со стороны магазина. Здесь перечислены поисковые фразы, по которым {**}
+                посетители попадали на ваш сайт с указанием адресов этих страниц. Для {**}
+                каждой фразы вы можете скорректировать адрес, чтобы посетитель сразу {**}
+                попадал на нужную страницу.
+            </div>
+
+
+
+            <br />
+
+
+
+            <div>
+                <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает {**}
+                возможность выделить из общего списка поисковые фразы по конкретным {**}
+                параметрам. Поля фильтра можно сочетать произвольно, они объединены {**}
+                функцией И.
+            </div>
+
+
+
+            <div>
+                <b>Вести на</b>. Это поле доступно при стандартном или подробном {**}
+                отображении списка и позволяет тут же отредактировать сопровождаемый {**}
+                URL, то есть правильный адрес страницы на вашем сайте, куда нужно уводить {**}
+                посетителя, пришедшего по такой поисковой фразе. Обратите внимание, {**}
+                что этот URL задается относительно корня домена  - <i>{$domain}</i>.
+            </div>
+
+
+
+            <div>
+                <b>Попадал</b> и <b>Источник</b>. Эти сведения видны при подробном {**}
+                отображении списка. Указывают соответственно адрес страницы, куда {**}
+                поисковый сервер направлял посетителя по такой поисковой фразе, {**}
+                и имя направлявшего источника (обычно это сайт поискового сервера).
+            </div>
+
+
+
+            <div>
+                <b>Настройки</b> : <b>Список отслеживаемых</b>. Каждый источник {**}
+                трафика, который хотелось бы отслеживать, нужно задавать в этом {**}
+                поле отдельной строкой. Формат строки - НАЧАЛЬНАЯ ЧАСТЬ URL ИСТОЧНИКА {**}
+                (без http://www.), затем запятая и ИМЯ GET-ПАРАМЕТРА ПОИСКОВОЙ ФРАЗЫ. {**}
+                Ключевое слово [site] предназначено для указания на сайт вашего же {**}
+                магазина, скажем когда вам хочется отслеживать какой-нибудь GET- или {**}
+                POST-параметр, предположим keywords.
+            </div>
+
+
+
+            <div>
+                Пример: зайдите в желаемую поисковую систему, введите произвольную {**}
+                поисковую фразу и нажмите Найти. Теперь посмотрите в адресной строке {**}
+                браузера, как устроен получившийся поисковый URL. Извлеките из него {**}
+                начальную часть URL и имя GET-параметра, в котором содержится введенная {**}
+                вами поисковая фраза. Скажем если вы видите адрес вида <i>http://www.poiskovik.ru/results?query=моя-поисковая-фраза</i>, {**}
+                то должны задать строку <i>poiskovik.ru/results, query</i> - здесь мы {**}
+                выделили начальную часть URL и через запятую сообщили имя GET-параметра.
+            </div>
+
+
+
+            <div>
+                <b>Настройки</b> : <b>Антиспам пауза</b>. Дает возможность указать период {**}
+                времени, в течении которого игнорировать обработку повторных поисковых {**}
+                запросов (например со случайно меняющейся поисковой фразой) от того же {**}
+                пользователя, чтобы уберечь базу данных сайта от переполнения, или из сети {**}
+                зомбированных компьютеров, то есть когда атакуют одиночными запросами, но {**}
+                одновременно со множества компьютеров.
+            </div>
+
+
+
+            <br />
+
+
+
+            <div>
+                <u>Обратите внимание</u>: функция поискового сопровождения по принципу {**}
+                действия напоминает функцию <a href="{$admin_goto}Redirects">Редиректы страниц</a>, {**}
+                только контролирует не URL текущей страницы вашего сайта, на какую попал {**}
+                посетитель, а сам адрес Referer-страницы, откуда пришел посетитель, {**}
+                зависимо от чего уже делает редирект на нужную страницу.
+            </div>
+
+
+
+            <div>
+                <u>Обратите внимание</u>: некоторые поисковые серверы, например Google, {**}
+                согласно своей внутренней политике могут не сообщать поисковую фразу через {**}
+                Referer-страницу, если переход по такой фразе был из бесплатной области {**}
+                поисковой выдачи. При переходах из рекламной сети (например контекстная реклама) {**}
+                такая информация как правило доступна, так как за эти переходы вы уже платите {**}
+                рекламной сети.
+            </div>
+
+
+
+            <div>
+                <u>Обратите внимание</u>: в настройках браузера пользователи могут отключить {**}
+                отправку сведений о ссылающейся странице, в результате информация о {**}
+                Referer-страницах станет недоступной от таких посетителей, как следствие их {**}
+                поисковые переходы просто не будут учитываться, оставляя посетителя на той странице, {**}
+                куда он попал из поисковой системы.
+            </div>
+        </div>
+
+
+
+        {* <!-- форма настроек --> *}
+        <a name="settings"></a>
+
+        <form action="{$admin_goto}{$module_pointer|escape}" id="setup_form" method="post" {if $error|default:"" == ''} style="display: none;"{/if} onkeypress="return Ignore_KeypressSubmit(event);">
+
+            <br>
+            <h1>
+                Настройки
+            </h1>
+            <br>
+
+
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+
+
+
+                    {* <!-- поле Отслеживаемые источники --> *}
+                    <td class="param_short" colspan="2">
+                        Список отслеживаемых источников трафика:
+                    </td>
+                    <td class="value" rowspan="4" width="70%" title="Каждый источник на отдельной строке в формате &quot;URL_источника, имя_параметра&quot;, например example.com/search, text">
+                        <textarea name="searches_referers" style="height: 112px;">{($settings->searches_referers|default:'')|escape}</textarea>
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    <td class="value_box" width="1%">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_SETUP|default:''}
+                        <input class="submit" name="{$param|escape}" type="submit" value="Сохранить" />
+                    </td>
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Записей на странице --> *}
+                    <td class="param_short">
+                        Записей на странице админпанели:
+                    </td>
+                    <td class="value" title="Количество записей в списке админпанели (в пределах от {($smarty.const.ITEMS_PER_PAGE_MINIMAL_VALUE|default:1)|escape} до {($smarty.const.ITEMS_PER_PAGE_MAXIMAL_VALUE|default:500)|escape})">
+                        <input class="edit" name="searches_num_admin" size="15" style="width: auto;" type="text" value="{($settings->searches_num_admin|default:50)|escape}" />
+                    </td>
+
+
+
+                    <td class="param_short" title="Включена ли функция поискового сопровождения">
+                        <input class="checkbox" id="setup_form_enabled" name="searches_enabled" type="checkbox" {if $settings->searches_enabled|default:false} checked{/if} value="1" /> {**}
+                        <span onclick="Toggle_PageCheckbox('setup_form_enabled');">
+                            Включена
+                        </span>
+                    </td>
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Антиспам пауза --> *}
+                    <td class="param_short">
+                        Антиспам пауза между запросами:
+                    </td>
+                    <td class="value" title="Через какое время обслуживать запросы того же пользователя">
+                        <select name="searches_next_time">
+                            <option value="0">
+                                без паузы
+                            </option>
+                            {$param = $settings->searches_next_time|default:30}
+                            {$value = 0}
+                            {section name = count loop = 181 start = 5 step=5}
+                                <option value="{$smarty.section.count.index}" {if ($param > $value) && ($param <= $smarty.section.count.index)} selected{/if}>
+                                    {$smarty.section.count.index} секунд
+                                </option>
+                                {$value = $smarty.section.count.index}
+                            {/section}
+                        </select>
+                    </td>
+
+
+
+                    <td class="param_short">
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Антиспам пауза для зомбо-сети --> *}
+                    <td class="param_short">
+                        Антиспам пауза для зомбо-сети:
+                    </td>
+                    <td class="value" title="Через какое время обслуживать запросы из сети зомбированных компьютеров">
+                        <select name="searches_next_time_zombie">
+                            <option value="0">
+                                без паузы
+                            </option>
+                            {$param = $settings->searches_next_time_zombie|default:30}
+                            {$value = 0}
+                            {section name = count loop = 181 start = 5 step=5}
+                                <option value="{$smarty.section.count.index}" {if ($param > $value) && ($param <= $smarty.section.count.index)} selected{/if}>
+                                    {$smarty.section.count.index} секунд
+                                </option>
+                                {$value = $smarty.section.count.index}
+                            {/section}
+                        </select>
+                    </td>
+
+
+
+                    <td class="param_short">
+                        &nbsp;
+                    </td>
+                </tr>
+            </table>
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            {hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                            id = false
+                            value = true}
+        </form>
+
+    </div>
+
+{/strip}

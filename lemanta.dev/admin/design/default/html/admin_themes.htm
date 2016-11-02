@@ -1,0 +1,328 @@
+{* <!--
+  Impera CMS: шаблон админ модуля дизайна.
+  Copyright AIMatrix, 2011.
+  http://imperacms.ru
+
+  Принимает во входных переменных:
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификационный идентификатор;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+    Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+      select = "themes" - выбранной будет эта кнопка
+      main = true - вывести эту кнопку
+      themes = true - вывести эту кнопку
+      templates = true - вывести эту кнопку
+      styles = true - вывести эту кнопку
+      images = true - вывести эту кнопку --> *}
+
+    {include file = '../../common_parts/submenu.htm'
+             select = 'themes'
+             main = true
+             themes = true
+             templates = true
+             styles = true
+             images = true}
+
+    <div class="box">
+
+        {* <!-- заголовок содержимого --> *}
+        {strip}
+            <h1 id="client_themes">
+                <div class="path">
+                    <a href="{siteAdmin}">
+                        Главная
+                    </a> → Дизайн
+                </div>
+                Дизайны клиентской стороны: <a href="{siteAdmin}" style="font-size: 10pt; font-weight: normal; margin: 0px 0px 0px 40px;" title="Переместиться к блоку дизайнов админпанели" onclick="jQuery(document).scrollTop(jQuery('#adminpanel_themes').offset().top); return false;">
+                                                админпанели
+                                            </a>
+            </h1>
+        {/strip}
+
+        {* <!-- часть страницы, показываемая после старта загрузки файла --> *}
+        <div class="box_part" id="themes_start_box" style="display: none;">
+            <div class="toolkey">
+                &nbsp;
+            </div>
+            <div class="message">
+                Выполняется указанное Вами действие.<br>
+                Пожалуйста подождите.
+            </div>
+        </div>
+
+        {* <!-- изначально видимая часть страницы, скрываемая после старта загрузки файла --> *}
+        <div class="box_part" id="themes_list_box">
+
+            {* <!-- инструментальные ссылки --> *}
+            <div class="toolkey">
+                {strip}
+                    &nbsp;
+                    <a href="http://imperacms.ru/impera-cms-modules.htm" target="_blank" title="Скачать еще внешние модули с официального сайта">
+                        скачать еще модули
+                    </a>
+
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="http://imperacms.ru/impera-cms-templates.htm" target="_blank" title="Скачать еще шаблоны с официального сайта">
+                        скачать еще шаблоны
+                    </a>
+
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="{siteAdmin}?section=Themes&act=upload&token={token}" title="Загрузить файл в дизайны клиентской стороны" onclick="var object = jQuery('#client_themes');
+                                                                                                                                               if (typeof(object) == 'object' && object != null && 'length' in object && object.length > 0) {
+                                                                                                                                                   object = object[0];
+                                                                                                                                               } else {
+                                                                                                                                                   object = null;
+                                                                                                                                               }
+                                                                                                                                               jQuery('#popupUPLOAD').find('input[name=adminpanel]').val('0');
+                                                                                                                                               return Start_Popup('popupUPLOAD', object);">
+                        загрузить
+                    </a>
+                {/strip}
+            </div>
+
+            {* <!-- если есть информационное сообщение --> *}
+            {if $message|default:'' != ''}
+                <div class="message">
+                    {$message}
+                </div>
+            {/if}
+
+            {* <!-- если есть сообщение об ошибке --> *}
+            {if $error|default:'' != ''}
+                <div class="error">
+                    <b>Ошибка:</b> {$error}
+                </div>
+            {/if}
+
+            {* <!-- выпадающая панель выбора файла для загрузки --> *}
+            {strip}
+                <div class="popup" id="popupUPLOAD">
+                    <div class="popup_content">
+                        <div class="title">
+                            <div class="close">
+                                <a href="#" onclick="return Hide_Popup('popupUPLOAD');" title="Закрыть">
+                                    x
+                                </a>
+                            </div>
+                            Загрузка шаблона
+                        </div>
+                        <form action="{siteAdmin}?section=Themes" enctype="multipart/form-data" id="items_form" method="post">
+                            <div class="cell">
+                                zip-архив шаблона:
+                                <div class="input">
+                                    <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.ZIP_TEMPLATES_UPLOAD_MAXIMAL_FILESIZE|default:0|string_format:'%d'|escape}" />  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                                    <input class="input" disabled id="popupUPLOADfile" name="theme" type="file" title="Какой файл требуется взять с Вашего компьютера (объем файла не более {(($smarty.const.ZIP_TEMPLATES_UPLOAD_MAXIMAL_FILESIZE|default:0) / 1024)|string_format:'%d'|escape} Кбайт)" />
+                                </div>
+                            </div>
+                            <div class="cell">
+                                или из веб адреса:
+                                <div class="input">
+                                    <input class="input" disabled id="popupUPLOADlink" name="theme_url" type="text" title="Адрес файла в интернете" value="{$smarty.post.theme_url|default:'http://'|escape}" />
+                                </div>
+                            </div>
+                            <div class="cell" title="Загрузка нового шаблона, но отказать если такой уже есть">
+                                <br />
+                                <input class="checkbox" id="items_form_popupUPLOAD_update_mode1" name="update_mode" type="radio" value="if_not_exist" /> {**}
+                                <span onclick="Toggle_PageCheckbox('items_form_popupUPLOAD_update_mode1');">только если такого ещё нет</span>
+                            </div>
+                            <div class="cell" title="Перезагрузка существующего шаблона или загрузка нового">
+                                <input class="checkbox" id="items_form_popupUPLOAD_update_mode2" name="update_mode" type="radio" value="clear_before" checked /> {**}
+                                <span onclick="Toggle_PageCheckbox('items_form_popupUPLOAD_update_mode2');">с удалением старого, если был</span>
+                            </div>
+                            <div class="cell" title="Модификация шаблона - дозагрузка новых или изменившихся файлов">
+                                <input class="checkbox" id="items_form_popupUPLOAD_update_mode3" name="update_mode" type="radio" value="merge" /> {**}
+                                <span onclick="Toggle_PageCheckbox('items_form_popupUPLOAD_update_mode3');">поверх существующего</span><br /><br />
+                            </div>
+                            <div class="cell">
+                                назначить имя:
+                                <div class="input">
+                                    <input class="input" disabled id="popupUPLOADname" name="other_name" type="text" title="Дать шаблону другое имя, если нужно чтобы отличалось от имени загружаемого файла" value="{$smarty.post.other_name|default:''|escape}" />
+                                </div>
+                            </div>
+                            <div class="submit">
+                                <input name="adminpanel" type="hidden" value="0" />
+                                <input name="token" type="hidden" value="{token}" />
+                                <input class="submit" type="submit" value="Начать" onclick="return Submit_Popup('?section=Themes&act=upload', 'themes');" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            {/strip}
+
+            {* <!-- шаблоны клиентской стороны --> *}
+            {if isset($items) && is_array($items) && !empty($items)}
+                {foreach name = 'items' from = $items item = c}
+                    {$temp_selected = $settings->theme|default:'' == $c->dir|default:$c->name|default:''}
+
+                    <li class="flatlist">
+                        <div class="onerow">
+
+                            {* <!-- иконка Удалить --> *}
+                            <a href="{siteAdmin}{$c->delete_get|default:''|escape}" title="Удалить" onclick="return confirm('Данный шаблон будет удален с сайта. Вы подтверждаете такую операцию?');">
+                                <img class="microkey_right" src="{themeAdmin}images/icon_delete_16x16.png">
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- иконка Создать копию --> *}
+                            <a href="{siteAdmin}{$c->copy_get|default:''|escape}" title="Создать копию">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_edit_16x16.png">
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- иконка Скачать --> *}
+                            <a href="{siteAdmin}{$c->download_get|default:''|escape}" title="Скачать шаблон в виде архива">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_filed_16x16.png">
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- иконка Выбрать (активировать) --> *}
+                            <a href="{siteAdmin}{$c->activate_get|default:''|escape}" title="Выбрать этот шаблон">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_done{if !$temp_selected}_off{/if}_16x16.png">
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- нумерация --> *}
+                            <span class="topic" style="display: inline;">
+                                {$smarty.foreach.items.iteration}.
+                            </span>
+
+                            {* <!-- название --> *}
+                            <a href="{siteAdmin}{$c->activate_get|default:''|escape}" title="Выбрать этот шаблон"{if isset($c->enabled) && !$c->enabled} class="disabled_item"{/if}>
+                                {if $temp_selected}<b>{/if}
+                                    {$c->name|default:'Нет названия!'}
+                                {if $temp_selected}</b>{/if}
+                            </a>
+                        </div>
+
+                        {* <!-- изображение --> *}
+                        <img class="thumb thumb_leftshift" src="{site}design/{$c->dir|default:$c->name|default:''|escape}/images/thumbnail.jpg" />
+
+                        {* <!-- описание --> *}
+                        <div class="line" style="padding-top: 9px;" title="{($c->description|default:'')|strip_tags|replace:'&nbsp;':' '|escape}">
+                            <span>
+                                описание:
+                            </span>
+                            {($c->description|default:'')|strip_tags|replace:'&nbsp;':' '|escape}
+                        </div>
+                    </li>
+                {/foreach}
+            {else}
+                <div class="noitems">
+                    Не найдено дизайнов для клиентской стороны сайта.
+                </div>
+            {/if}
+
+            <br /><br /><br /><br />
+
+            {* <!-- заголовок содержимого --> *}
+            {strip}
+                <h1 id="adminpanel_themes">
+                    <div class="path">
+                        <a href="{$site|default:''|escape}{$admin_folder|default:''|escape}/">
+                            Главная
+                        </a> → Дизайн
+                    </div>
+                    Дизайны админпанели: <a href="{siteAdmin}" style="font-size: 10pt; font-weight: normal; margin: 0px 0px 0px 40px;" title="Переместиться к блоку дизайнов клиентской стороны" onclick="jQuery(document).scrollTop(0); return false;">
+                                             клиентской стороны
+                                         </a>
+                </h1>
+            {/strip}
+
+            {* <!-- инструментальные ссылки --> *}
+            <div class="toolkey">
+                {strip}
+                    &nbsp;
+                    <a href="http://imperacms.ru/impera-cms-modules.htm" target="_blank" title="Скачать еще внешние модули с официального сайта">
+                        скачать еще модули
+                    </a>
+
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="http://imperacms.ru/impera-cms-templates.htm" target="_blank" title="Скачать еще шаблоны с официального сайта">
+                        скачать еще шаблоны
+                    </a>
+
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <a href="{siteAdmin}?section=Themes&act=upload&token={token}&adminpanel=1" title="Загрузить файл в дизайны админпанели" onclick="var object = jQuery('#adminpanel_themes');
+                                                                                                                                                     if (typeof(object) == 'object' && object != null && 'length' in object && object.length > 0) {
+                                                                                                                                                         object = object[0];
+                                                                                                                                                     } else {
+                                                                                                                                                         object = null;
+                                                                                                                                                     }
+                                                                                                                                                     jQuery('#popupUPLOAD').find('input[name=adminpanel]').val('1');
+                                                                                                                                                     return Start_Popup('popupUPLOAD', object);">
+                        загрузить
+                    </a>
+                {/strip}
+            </div>
+
+            {* <!-- шаблоны админпанели --> *}
+            {if isset($themes) && is_array($themes) && !empty($themes)}
+                {foreach name = 'items' from = $themes item = c}
+                    {$temp_selected = $settings->admin_theme|default:'' == $c->dir|default:$c->name|default:''}
+
+                    <li class="flatlist">
+                        <div class="onerow">
+
+                            {* <!-- иконка Удалить --> *}
+                            <a href="{siteAdmin}{$c->delete_get|default:''|escape}" title="Удалить" onclick="return confirm('Данный шаблон будет удален с сайта. Вы подтверждаете такую операцию?');">
+                                <img class="microkey_right" src="{themeAdmin}images/icon_delete_16x16.png">
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- иконка Создать копию --> *}
+                            <a href="{siteAdmin}{$c->copy_get|default:''|escape}" title="Создать копию">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_edit_16x16.png">
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- иконка Скачать --> *}
+                            <a href="{siteAdmin}{$c->download_get|default:''|escape}" title="Скачать шаблон в виде архива">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_filed_16x16.png">
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- иконка Выбрать (активировать) --> *}
+                            <a href="{siteAdmin}{$c->activate_get|default:''|escape}" title="Выбрать этот шаблон">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_done{if !$temp_selected}_off{/if}_16x16.png">
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                            {* <!-- нумерация --> *}
+                            <span class="topic" style="display: inline;">
+                                {$smarty.foreach.items.iteration}.
+                            </span>
+
+                            {* <!-- название --> *}
+                            <a href="{siteAdmin}{$c->activate_get|default:''|escape}" title="Выбрать этот шаблон"{if isset($c->enabled) && !$c->enabled} class="disabled_item"{/if}>
+                                {if $temp_selected}<b>{/if}
+                                    {$c->name|default:'Нет названия!'}
+                                {if $temp_selected}</b>{/if}
+                            </a>
+                        </div>
+
+                        {* <!-- изображение --> *}
+                        <img class="thumb thumb_leftshift" src="{siteAdmin}design/{$c->dir|default:$c->name|default:''|escape}/images/thumbnail.jpg" />
+
+                        {* <!-- описание --> *}
+                        <div class="line" style="padding-top: 9px;" title="{($c->description|default:'')|strip_tags|replace:'&nbsp;':' '|escape}">
+                            <span>
+                                описание:
+                            </span>
+                            {($c->description|default:'')|strip_tags|replace:'&nbsp;':' '|escape}
+                        </div>
+                    </li>
+                {/foreach}
+            {else}
+                <div class="noitems">
+                    Не найдено дизайнов для админпанели.
+                </div>
+            {/if}
+
+            <br /><br />
+        </div>
+    </div>

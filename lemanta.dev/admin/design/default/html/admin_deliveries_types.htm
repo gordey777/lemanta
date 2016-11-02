@@ -1,0 +1,258 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка типов доставки.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о типах доставки;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    setup = true - вывести эту кнопку
+    currencies = true - вывести эту кнопку
+    deliveries = true - вывести эту кнопку
+    deliveries_types = true - вывести эту кнопку
+    shippings_terms = true - вывести эту кнопку
+    payment = true - вывести эту кнопку
+    sms = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "deliveries_types"
+           main = true
+           setup = true
+           currencies = true
+           deliveries = true
+           deliveries_types = true
+           shippings_terms = true
+           payment = true
+           sms = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Типы
+      </div>
+      Типы доставки
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=DeliveriesType&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить тип доставки">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=DeliveriesTypes" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <!-- Фильтр -->
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить&nbsp;
+          </td>
+
+          <!-- флажок Направление сортировки -->
+          <td class="param_short" title="Включить обратный порядок сортировки">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png">
+            </span>
+          </td>
+
+          <!-- флажок Лаконичный режим -->
+          <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Способ сортировки -->
+          <td class="value" width="60%" title="Способ сортировки типов доставки в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_DELIVERIESTYPES_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_DELIVERIESTYPES_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_DELIVERIESTYPES_MODE_BY_CREATED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_DELIVERIESTYPES_MODE_BY_CREATED)} selected{/if}>по дате добавления</option>
+              <option value="{$smarty.const.SORT_DELIVERIESTYPES_MODE_BY_MODIFIED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_DELIVERIESTYPES_MODE_BY_MODIFIED)} selected{/if}>по дате исправления</option>
+            </select>
+          </td>
+
+          <!-- поле Режим отображения -->
+          <td class="value" width="40%" title="Насколько полно выводить информацию о типах доставки в списке">
+
+            <!-- Создаем селектор режимов отображения и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.VIEW_MODE_COMPACT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_COMPACT)} selected{/if}>компактно</option>
+              <option value="{$smarty.const.VIEW_MODE_FULL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)} selected{/if}>подробно</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <!-- {* В переменной $id запоминаем идентификатор текущей записи *} -->
+            {assign var="id" value=$c->type_id}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки справа от названия -->
+                <input class="checkbox" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="javascript: Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();">
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                  <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                </a>
+
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Нумерация -->
+                <span class="topic" style="display: inline;">
+                  {if isset($CurrentPage)}
+                    {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                  {else}
+                    {$smarty.foreach.items.iteration}.
+                  {/if}
+                </span>
+
+                <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                  <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                  <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+
+                {/if}
+
+                <!-- Название -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->name|strip_tags|escape}">
+                  {$c->name|strip_tags|escape}
+                </a>
+
+              </div>
+
+              <!-- Краткая информация -->
+
+              <!-- {* Если включен полный вывод информации о записях *} -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)}
+
+                <!-- дата добавления -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_DELIVERIESTYPES_MODE_BY_CREATED)}
+                  <div class="line">
+                    <span>
+                      добавлен:
+                    </span>
+                    {$c->created|escape}
+                  </div>
+                {/if}
+
+                <!-- дата исправления -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_DELIVERIESTYPES_MODE_BY_MODIFIED)}
+                  {if $c->created != $c->modified}
+                    <div class="line">
+                      <span>
+                        исправлен:
+                      </span>
+                      {$c->modified|escape}
+                    </div>
+                  {/if}
+                {/if}
+
+              {/if}
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено типов доставки{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} (режим: лаконичный){/if}.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+    </div>
+
+  </div>

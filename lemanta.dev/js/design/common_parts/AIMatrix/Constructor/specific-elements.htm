@@ -1,0 +1,85 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Specific Elements - специфичные элементы шаблона                        |
+  Версия модуля: 1.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Назначение модуля: добавить в тело страницы обязательные элементы, присущие     |
+  шаблонам клиентской стороны магазина.                                           |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $smarty.session = массив параметров сеанса                                    |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Требует наличия в ПАПКЕ ШАБЛОНОВ следующих файлов:                              |
+    common_parts/admin.tools.htm                                                  |
+    common_parts/javascript.handlers_htm.tpl                                      |
+    common_parts/notify.htm                                                       |
+    common_parts/fulminant-order.htm                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/specific-elements.htm'}|
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- если это админ, подключаем его инструменты --> *}
+    {if $smarty.session.admin|default:'' == 'admin'}
+        {include file = '../../../common_parts/admin.tools.htm'}
+    {/if}
+
+
+
+    {* <!-- скрипты обработки корзины --> *}
+    {include file = '../../../common_parts/javascript.handlers_htm.tpl'}
+
+
+
+    {* <!-- модуль подключения к уведомлению --> *}
+    {include file = '../../../common_parts/notify.htm'
+             id = 'ask_notify_exist_form'
+             title = 'Уведомить о наличии'
+             submit = 'Ok'}
+
+
+
+    {* <!-- модуль мгновенного заказа --> *}
+    {include file = '../../../common_parts/fulminant-order.htm'
+             id = 'fulminant-order-form'
+             title = 'Быстрый заказ'
+             submit = 'Ok'
+             remark = ''}
+
+
+
+    {* <!-- скрытый контейнер всплывающей корзины --> *}
+    <div class="quick_cart" id="cart_quickcontent" style="display: none;">
+        &nbsp;
+    </div>
+
+
+
+    {* <!-- скрытый контейнер всплывающей плашки "Товар добавлен в сравнение" --> *}
+    <div class="quick_compare" id="compare_quickcontent" style="display: none;">
+        &nbsp;
+    </div>
+
+{/strip}

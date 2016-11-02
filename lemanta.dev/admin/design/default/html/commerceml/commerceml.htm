@@ -1,0 +1,2532 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: настройки синхронизации 1С                                              |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $upload_folder = имя папки для хранения временных файлов импорта              |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+                    ->имя = значение конкретной настройки                         |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.COMMERCEML_MODULELINK_POINTER|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.COMMERCEML_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.COMMERCEML_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    <style>
+        .inessential td input {
+            color: #aaa !important;
+        }
+    </style>
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$admin_site}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → Обмен
+            </div>
+
+            {($title|default:'Настройки синхронизации 1С')|escape}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма настроек --> *}
+        <a name="settings"></a>
+
+        <form action="{$admin_goto}{$module_pointer|escape}" id="setup_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+
+
+
+                    {* <!-- url обмена --> *}
+                    <td class="param">
+                        URL обмена:
+                    </td>
+                    <td class="value value_sheet" colspan="6" title="Адрес страницы синхронизации" width="100%">
+                        {* <!-- <input class="edit" readonly type="text" value="{$admin_goto}{$module_pointer|escape}" /> --> *}
+                        <input class="edit" readonly type="text" value="{$site}cml" />
+                    </td>
+
+
+
+                    {* <!-- флажок Разрешен --> *}
+                    {call settings_checkbox param = 'cml_enabled'
+                                            image = ''
+                                            text = 'Разрешен'
+                                            title = 'Включить модуль синхронизации 1С'
+                                            width = ''
+                                            colspan = 1}
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Только с IP --> *}
+                    {call settings_editbox param = 'cml_ips'
+                                           text = 'Только с IP:'
+                                           title = 'С каких IP-адресов разрешен доступ к странице обмена (перечислить через запятую)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 7
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    <td class="param">
+                        Что принимать:
+                    </td>
+
+
+
+                    {* <!-- флажок Принимать категории --> *}
+                    {call settings_checkbox param = 'cml_categories_import_enabled'
+                                            image = ''
+                                            text = 'Категории'
+                                            title = ''
+                                            width = ''
+                                            colspan = 1}
+
+
+
+                    {* <!-- флажок Принимать товары --> *}
+                    {call settings_checkbox param = 'cml_products_import_enabled'
+                                            image = ''
+                                            text = 'Товары'
+                                            title = ''
+                                            width = ''
+                                            colspan = 1}
+
+
+
+                    {* <!-- флажок Принимать варианты --> *}
+                    {call settings_checkbox param = 'cml_variants_import_enabled'
+                                            image = ''
+                                            text = 'Варианты'
+                                            title = ''
+                                            width = ''
+                                            colspan = 1}
+
+
+
+                    {* <!-- флажок Принимать свойства --> *}
+                    {call settings_checkbox param = 'cml_properties_import_enabled'
+                                            image = ''
+                                            text = 'Свойства товара'
+                                            title = ''
+                                            width = ''
+                                            colspan = 1}
+
+
+
+                    {* <!-- флажок Принимать заказы --> *}
+                    {call settings_checkbox param = 'cml_orders_import_enabled'
+                                            image = ''
+                                            text = 'Заказы'
+                                            title = ''
+                                            width = ''
+                                            colspan = 1}
+
+
+
+                    {* <!-- флажок Передавать заказы --> *}
+                    {call settings_checkbox param = 'cml_orders_export_enabled'
+                                            image = ''
+                                            text = 'Передавать заказы'
+                                            title = ''
+                                            width = '100%'
+                                            colspan = 1}
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    {call save_button width = '1%'}
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- флажок Хранить файлы прежних синхронизаций --> *}
+                    <td class="param">
+                        &nbsp;
+                    </td>
+                    {call settings_checkbox param = 'cml_store_old_files'
+                                            image = ''
+                                            text = 'Хранить файлы прежних синхронизаций'
+                                            title = 'При отключенном флажке полученные извне файлы импорта удаляются сразу, как только обработаны'
+                                            width = ''
+                                            colspan = 3}
+
+
+
+                    {* <!-- флажок Сохранять в истории добавления --> *}
+                    {call settings_checkbox param = 'cml_history_adds_enabled'
+                                            image = ''
+                                            text = 'История добавленных записей'
+                                            title = 'Помещать ли в историю сведения о новых записях'
+                                            width = ''
+                                            colspan = 2}
+
+
+
+                    {* <!-- флажок Сохранять в истории изменения --> *}
+                    {call settings_checkbox param = 'cml_history_changes_enabled'
+                                            image = ''
+                                            text = 'История изменившихся записей'
+                                            title = 'Помещать ли в историю сведения об изменившихся записях'
+                                            width = ''
+                                            colspan = 2}
+
+
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- история --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    <td class="param_high">
+                        История:
+                    </td>
+                    <td class="value value_sheet" title="Сведения о результатах прошлых синхронизаций">
+                        <textarea class="editor_big" name="cml_history" readonly>{($settings->cml_history|default:'')|escape}</textarea>
+                    </td>
+                </tr>
+            </table>
+
+
+
+            <li class="head_divider">
+                <div>
+                    Правила обработки категорий
+                </div>
+            </li>
+
+
+
+            {* <!-- узел корневой категории --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    {call settings_editbox param = 'cml_category_node'
+                                           text = 'Узел категории:'
+                                           title = 'Путь к XML-узлу отдельной корневой категории (например КоммерческаяИнформация->Классификатор->Группы->Группа)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- синхронизационный ИД --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_id'
+                                           text = 'Синхро ИД:'
+                                           title = 'Путь к синхронизационному идентификатору'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- мета заголовок --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_meta_title'
+                                           text = 'Мета заголовок:'
+                                           title = 'Путь к мета заголовку страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- мета ключевые слова --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_meta_keywords'
+                                           text = 'Мета ключевики:'
+                                           title = 'Путь к мета ключевым словам страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- мета описание --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_meta_description'
+                                           text = 'Мета описание:'
+                                           title = 'Путь к мета описанию страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- теги --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_tags'
+                                           text = 'Теги:'
+                                           title = 'Путь к тегам'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_name'
+                                           text = 'Название:'
+                                           title = 'Путь к названию категории'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название в единственном числе --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_single_name'
+                                           text = 'В единств. числе:'
+                                           title = 'Путь к названию категории в единственном числе'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название в конфигураторе --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_configurator_name'
+                                           text = 'В конфигураторе:'
+                                           title = 'Путь к названию категории в конфигураторе комплектов'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- описание --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_description'
+                                           text = 'Описание:'
+                                           title = 'Путь к описанию'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- seo текст --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_seo_description'
+                                           text = 'SEO текст:'
+                                           title = 'Путь к SEO тексту'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- субдомен --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_subdomain'
+                                           text = 'Субдомен:'
+                                           title = 'Путь к имени субдомена'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- субдомен разрешен --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_subdomain_enabled'
+                                           text = 'Субдомен вкл.:'
+                                           title = 'Путь к признаку "Субдомен разрешен"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- контент субдомена --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_subdomain_html'
+                                           text = 'Html субдомена:'
+                                           title = 'Путь к контенту страницы субдомена'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- url картинки --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_image'
+                                           text = 'Картинка:'
+                                           title = 'Путь к списку url картинок'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название картинки --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_image_alt'
+                                           text = 'Имя картинки:'
+                                           title = 'Путь к списку названий картинок'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- описание картинки --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_image_text'
+                                           text = 'Текст картинки:'
+                                           title = 'Путь к списку описаний картинок'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- разрешена картинка --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_image_view'
+                                           text = 'Видна картинка:'
+                                           title = 'Путь к списку признаков "Показывать картинку в слайдере"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- вес в списке --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_order_num'
+                                           text = 'Позиция:'
+                                           title = 'Путь к позиции категории среди прочих в своей ветке'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- отображать шаблоном --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_template'
+                                           text = 'Шаблоном:'
+                                           title = 'Путь к названию шаблона, которым отображается страница категории'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- число просмотров --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_browsed'
+                                           text = 'Просмотры:'
+                                           title = 'Путь к числу просмотров страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- url --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_url'
+                                           text = 'URL:'
+                                           title = 'Путь к адресу страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- особый url --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_url_special'
+                                           text = 'Особый URL:'
+                                           title = 'Путь к признаку особого адреса страницы (без префикса catalog/ в начале адреса)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- яндекс.маркет --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_ymarket'
+                                           text = 'Яндекс.Маркет:'
+                                           title = 'Путь к признаку "Разрешен экспорт в Яндекс.Маркет" (признак 32-битный по биту на канал)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- вконтакте --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_vkontakte'
+                                           text = 'ВКонтакте:'
+                                           title = 'Путь к признаку "Разрешен экспорт ВКонтакте"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- разрешена на сайте --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_enabled'
+                                           text = 'Разрешена:'
+                                           title = 'Путь к признаку "Разрешена к показу на сайте"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- выделена визуально --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_highlighted'
+                                           text = 'Выделена:'
+                                           title = 'Путь к признаку "Выделена визуально на клиентской стороне сайта"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- имеет свой блок --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_own_block'
+                                           text = 'Имеет свой блок:'
+                                           title = 'Путь к признаку "Имеет свой блок на главной странице сайта"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- информативная страница --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_informative'
+                                           text = 'Информативная:'
+                                           title = 'Путь к признаку "Является информативной страницей (без списка товаров)"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- скрыта от неавторизованных --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_hidden'
+                                           text = 'Только клиентам:'
+                                           title = 'Путь к признаку "Скрыта от неавторизованных посетителей"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- не для rss --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_rss_disabled'
+                                           text = 'Не для RSS:'
+                                           title = 'Путь к признаку "Запрещен экспорт в RSS"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- не для информеров --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_export_disabled'
+                                           text = 'Не экспорт:'
+                                           title = 'Путь к признаку "Запрещен экспорт в информеры для трансляции на партнерских сайтах"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- в прайсах --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_in_prices'
+                                           text = 'В прайсах:'
+                                           title = 'Путь к признаку "Выводить в прайс лист" (признак 8-битный по биту на прайс)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- плагины --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_objects'
+                                           text = 'Плагины:'
+                                           title = 'Путь к списку плагинов, динамически подключаемых на страницу категории'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- узел подкатегории --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_category_subitem'
+                                           text = 'Подкатегория:'
+                                           title = 'Путь к узлу подкатегории'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+            </table>
+
+
+
+            <li class="head_divider">
+                <div>
+                    Правила обработки свойств
+                </div>
+            </li>
+
+
+
+            {* <!-- узел свойства номенклатуры --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    {call settings_editbox param = 'cml_property_node'
+                                           text = 'Узел свойства:'
+                                           title = 'Путь к XML-узлу отдельного свойства номенклатуры (например КоммерческаяИнформация->Классификатор->Свойства->СвойствоНоменклатуры)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- узел свойства номенклатуры (еще один вид) --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_node2'
+                                           text = 'Или узел:'
+                                           title = 'Путь к XML-узлу отдельного свойства номенклатуры (еще один возможный вид)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- синхронизационный ИД --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_id'
+                                           text = 'Синхро ИД:'
+                                           title = 'Путь к синхронизационному идентификатору'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- группа --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_group'
+                                           text = 'Группа:'
+                                           title = 'Путь к названию группы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_name'
+                                           text = 'Название:'
+                                           title = 'Путь к названию свойства'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- разрешено на странице товара --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_in_product'
+                                           text = 'В товаре:'
+                                           title = 'Путь к признаку "Разрешено на странице товара"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- разрешено в фильтре --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_in_filter'
+                                           text = 'В фильтре:'
+                                           title = 'Путь к признаку "Разрешено в фильтре характеристик"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- разрешено на странице сравнения --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_in_compare'
+                                           text = 'В сравнении:'
+                                           title = 'Путь к признаку "Разрешено на странице сравнения"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- разрешено на сайте --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_enabled'
+                                           text = 'Разрешено:'
+                                           title = 'Путь к признаку "Разрешено к показу на сайте"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- вес в списке --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_property_order_num'
+                                           text = 'Позиция:'
+                                           title = 'Путь к позиции свойства среди прочих в списке'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+            </table>
+
+
+
+            <li class="head_divider">
+                <div>
+                    Правила обработки товаров
+                </div>
+            </li>
+
+
+
+            {* <!-- узел товара --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    {call settings_editbox param = 'cml_product_node'
+                                           text = 'Узел товара:'
+                                           title = 'Путь к XML-узлу отдельного товара (например КоммерческаяИнформация->Каталог->Товары->Товар)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- синхронизационный ИД --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_id'
+                                           text = 'Синхро ИД:'
+                                           title = 'Путь к синхронизационному идентификатору'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- ИД категории --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_category'
+                                           text = 'Категория:'
+                                           title = 'Путь к идентификатору категории'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- код производителя --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_pcode'
+                                           text = 'vendorCode:'
+                                           title = 'Путь к ьуквенному коду производителя'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- штрих код --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_barcode'
+                                           text = 'Штрих код:'
+                                           title = 'Путь к штрих коду'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- мета заголовок --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_meta_title'
+                                           text = 'Мета заголовок:'
+                                           title = 'Путь к мета заголовку страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- мета ключевые слова --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_meta_keywords'
+                                           text = 'Мета ключевики:'
+                                           title = 'Путь к мета ключевым словам страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- мета описание --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_meta_description'
+                                           text = 'Мета описание:'
+                                           title = 'Путь к мета описанию страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- теги --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_tags'
+                                           text = 'Теги:'
+                                           title = 'Путь к тегам'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_name'
+                                           text = 'Название:'
+                                           title = 'Путь к названию товара'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- описание --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_description'
+                                           text = 'Аннотация:'
+                                           title = 'Путь к краткому описанию'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- полное описание --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_body'
+                                           text = 'Описание:'
+                                           title = 'Путь к полному описанию'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- seo текст --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_seo_description'
+                                           text = 'SEO текст:'
+                                           title = 'Путь к SEO тексту'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- видео материалы --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_video'
+                                           text = 'Видео:'
+                                           title = 'Путь к видео материалам'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- субдомен --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_subdomain'
+                                           text = 'Субдомен:'
+                                           title = 'Путь к имени субдомена'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- субдомен разрешен --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_subdomain_enabled'
+                                           text = 'Субдомен вкл.:'
+                                           title = 'Путь к признаку "Субдомен разрешен"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- контент субдомена --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_subdomain_html'
+                                           text = 'Html субдомена:'
+                                           title = 'Путь к контенту страницы субдомена'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- url картинки --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_image'
+                                           text = 'Картинка:'
+                                           title = 'Путь к списку url картинок'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название картинки --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_image_alt'
+                                           text = 'Имя картинки:'
+                                           title = 'Путь к списку названий картинок'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- описание картинки --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_image_text'
+                                           text = 'Текст картинки:'
+                                           title = 'Путь к списку описаний картинок'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- разрешена картинка --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_image_view'
+                                           text = 'Видна картинка:'
+                                           title = 'Путь к списку признаков "Показывать картинку в слайдере"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- url файла --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_file'
+                                           text = 'Файл:'
+                                           title = 'Путь к списку url файлов'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название файла --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_file_alt'
+                                           text = 'Имя файла:'
+                                           title = 'Путь к списку названий файлов'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- описание файла --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_file_text'
+                                           text = 'Текст файла:'
+                                           title = 'Путь к списку описаний файлов'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- цифровой товар --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_download'
+                                           text = 'Цифровой товар:'
+                                           title = 'Путь к файлу цифрового товара'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- гарантия --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_guarantee'
+                                           text = 'Гарантия:'
+                                           title = 'Путь к сроку гарантии'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- ожидаемая дата поступления --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_coming'
+                                           text = 'Ожидаем:'
+                                           title = 'Путь к ожидаемой дате поступления в продажу'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- узел свойства --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_property'
+                                           text = 'Свойство:'
+                                           title = 'Путь к узлу свойства'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название свойства --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_property_name'
+                                           text = 'Имя свойства:'
+                                           title = 'Путь к названию свойства'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- значение свойства --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_property_value'
+                                           text = 'Значение:'
+                                           title = 'Путь к значению свойства'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- вес в списке --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_order_num'
+                                           text = 'Позиция:'
+                                           title = 'Путь к позиции товара среди прочих в своей категории'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- отображать шаблоном --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_template'
+                                           text = 'Шаблоном:'
+                                           title = 'Путь к названию шаблона, которым отображается страница товара'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- число просмотров --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_browsed'
+                                           text = 'Просмотры:'
+                                           title = 'Путь к числу просмотров страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- url --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_url'
+                                           text = 'URL:'
+                                           title = 'Путь к адресу страницы'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- особый url --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_url_special'
+                                           text = 'Особый URL:'
+                                           title = 'Путь к признаку особого адреса страницы (без префикса products/ в начале адреса)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- хит продаж --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_hit'
+                                           text = 'Хит продаж:'
+                                           title = 'Путь к признаку "Хит продаж"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- новинка --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_newest'
+                                           text = 'Новинка:'
+                                           title = 'Путь к признаку "Новинка"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- акционный --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_actional'
+                                           text = 'Акционный:'
+                                           title = 'Путь к признаку "Акционный"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- скоро в продаже --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_awaited'
+                                           text = 'Скоро в продаже:'
+                                           title = 'Путь к признаку "Скоро в продаже"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- яндекс.маркет --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_ymarket'
+                                           text = 'Яндекс.Маркет:'
+                                           title = 'Путь к признаку "Разрешен экспорт в Яндекс.Маркет" (признак 32-битный по биту на канал)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- вконтакте --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_vkontakte'
+                                           text = 'ВКонтакте:'
+                                           title = 'Путь к признаку "Разрешен экспорт ВКонтакте"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- разрешен на сайте --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_enabled'
+                                           text = 'Разрешен:'
+                                           title = 'Путь к признаку "Разрешен к показу на сайте"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- выделен визуально --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_highlighted'
+                                           text = 'Выделен:'
+                                           title = 'Путь к признаку "Выделен визуально на клиентской стороне сайта"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- обсуждаемый --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_commented'
+                                           text = 'Обсуждаемый:'
+                                           title = 'Путь к признаку "Разрешен к обсуждению"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- скрыт от неавторизованных --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_hidden'
+                                           text = 'Только клиентам:'
+                                           title = 'Путь к признаку "Скрыт от неавторизованных посетителей"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- не для rss --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_rss_disabled'
+                                           text = 'Не для RSS:'
+                                           title = 'Путь к признаку "Запрещен экспорт в RSS"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- не для информеров --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_export_disabled'
+                                           text = 'Не экспорт:'
+                                           title = 'Путь к признаку "Запрещен экспорт в информеры для трансляции на партнерских сайтах"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- не в кредит --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_non_creditable'
+                                           text = 'Не в кредит:'
+                                           title = 'Путь к признаку "Запрещен к продаже в кредит"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- снят с производства --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_non_usable'
+                                           text = 'Экспонат:'
+                                           title = 'Путь к признаку "Является выставочным экспонатом"'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- в прайсах --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_in_prices'
+                                           text = 'В прайсах:'
+                                           title = 'Путь к признаку "Выводить в прайс лист" (признак 8-битный по биту на прайс)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- плагины --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_product_objects'
+                                           text = 'Плагины:'
+                                           title = 'Путь к списку плагинов, динамически подключаемых на страницу товара'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+            </table>
+
+
+
+            <li class="head_divider">
+                <div>
+                    Правила обработки вариантов товара
+                </div>
+            </li>
+
+
+
+            {* <!-- узел варианта --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    {call settings_editbox param = 'cml_variant_node'
+                                           text = 'Узел варианта:'
+                                           title = 'Путь к XML-узлу отдельного варианта товара (например КоммерческаяИнформация->ПакетПредложений->Предложения->Предложение)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- синхронизационный ИД --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_id'
+                                           text = 'Синхро ИД:'
+                                           title = 'Путь к синхронизационному идентификатору'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- артикул --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_sku'
+                                           text = 'Артикул:'
+                                           title = 'Путь к артикулу'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- название варианта --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_name'
+                                           text = 'Название:'
+                                           title = 'Путь к названию варианта'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- количество на складе --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_stock'
+                                           text = 'На складе:'
+                                           title = 'Путь к количеству на складе'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- вес в списке --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_position'
+                                           text = 'Позиция:'
+                                           title = 'Путь к позиции варианта товара в списке вариантов'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- приоритетная скидка --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_discount'
+                                           text = 'Скидка:'
+                                           title = 'Путь к приоритетной скидке (когда нельзя продавать с иной скидкой, кроме указанной)'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- валюта цен --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_currency'
+                                           text = 'Валюта цен:'
+                                           title = 'Путь к валюте цен'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- цена по группам --> *}
+                {$value = $smarty.const.PRICE_TYPES_MAXCOUNT|default:10|string_format:'%d'}
+                {section name = 'items' start = 1 loop = $value + 1}
+                    {$index = $smarty.section.items.index}
+                    {call get_setting param = 'price_type'|cat:$index
+                                      def = ''
+                                      assign = 'group'}
+                    <tr {($group == '') ? " class=\"inessential\"" : ''}>
+                        {call settings_editbox param = 'cml_variant_price'|cat:(($index > 1) ? $index : '')
+                                               text = 'Цена группы '|cat:$index|cat:':'
+                                               title = 'Путь к цене для ценовой группы '|cat:$index|cat:' - '|cat:($group|default:'без названия')
+                                               value = false
+                                               width = '100%'
+                                               colspan = 1
+                                               rowspan = 1
+                                               size = 0
+                                               flat = true
+                                               short = false
+                                               text_width = ''
+                                               text_colspan = 1
+                                               text_rowspan = 1}
+                    </tr>
+                {/section}
+
+
+
+                {* <!-- старая цена --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_old_price'
+                                           text = 'Старая цена:'
+                                           title = 'Путь к старой цене'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- акционная цена --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_temp_price'
+                                           text = 'Акционная цена:'
+                                           title = 'Путь к акционной цене'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- дата начала акции --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_temp_price_start'
+                                           text = 'Начало акции:'
+                                           title = 'Путь к дате начала акционной цены'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- дата конца акции --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_temp_price_date'
+                                           text = 'Конец акции:'
+                                           title = 'Путь к даты конца акционной цены'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- число необходимых участников акции --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_temp_price_members'
+                                           text = 'Условие акции:'
+                                           title = 'Путь к числу необходимых участников акционной цены'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+
+
+
+                {* <!-- число необходимых участников акции --> *}
+                <tr>
+                    {call settings_editbox param = 'cml_variant_temp_price_invited'
+                                           text = 'Ход акции:'
+                                           title = 'Путь к числу привлеченных участников акционной цены'
+                                           value = false
+                                           width = '100%'
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 0
+                                           flat = true
+                                           short = false
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                </tr>
+            </table>
+
+
+
+            <li class="head_divider">
+                <div>
+                    Правила обработки заказов
+                </div>
+            </li>
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            {call hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                 id = false
+                                 value = $token}
+        </form>
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                При настройке 1С необходимо сообщить показанный выше <b>URL обмена</b> - это {**}
+                адрес страницы синхронизации, через которую 1С будет обмениваться информацией {**}
+                с сайтом магазина. В качестве логина и пароля для 1С необходимо сообщить {**}
+                логин/пароль любого администратора, в правах которого разрешен доступ к странице {**}
+                этого модуля. Даже рекомендуется <a href="{$admin_goto}Admins">создать</a> отдельного {**}
+                администратора и назначить ему права доступа - только <i>{$module_pointer|escape}</i>.
+            </div>
+
+            <div>
+                Вы также можете использовать произвольный URL обмена, но в этом случае нужно {**}
+                исправить в корневом файле <a href="{$admin_goto}HTAccess">.htaccess</a> {**}
+                стандартный относительный адрес <i>cml</i> (он назван там точкой синхронизации {**}
+                1С и Мой Склад) на выбранный вами адрес, например <i style="white-space: nowrap;">my-secret/very-secret/page</i>.
+            </div>
+
+
+
+            <div>
+                <b>Только с IP</b>. В этом поле необходимо перечислить через запятую IP-адреса {**}
+                или их начальные части, чтобы ограничить посторонним доступ к функциям синхронизации. {**}
+                Например, <i>22.32.42.52, 33.73, 11.12.13.14</i> - тогда синхронизацию смогут делать {**}
+                только те компьютеры, чей адрес начинается с одного из перечисленных в списке примеров {**}
+                (это два компьютера <i>22.32.42.52</i> и <i>11.12.13.14</i> и вся подсеть <i>33.73.*.*</i>). {**}
+                Пустое поле означает неограниченный доступ с любого адреса.
+            </div>
+
+
+
+            <div>
+                <b>Хранить файлы</b>. Данный флажок дает возможность не удалять сразу же {**}
+                после обработки файлы импорта, полученные в процессе синхронизации, а хранить их в папке {**}
+                <i style="white-space: nowrap;">{$smarty.const.FOLDERNAME_FOR_ENGINE_OBJECTS|default:''|escape}/{$module_pointer|lower|escape}/{$upload_folder|default:''|escape}</i> {**}
+                для дальнейшего исследования. Предполагается, что флажок будет включаться только {**}
+                на время отладки, когда необходимо узнать, в какой форме приходят сведения из 1C. {**}
+                В остальное время флажок рекомендуется отключить, так как хранимые файлы будут {**}
+                занимать все больше и больше файлового пространства сайта.
+            </div>
+
+
+
+            <div>
+                <b>История</b>. Существует в информационных целях и заполняется исключительно системой {**}
+                по мере использования синхронизации. Здесь в хронологическом порядке можно узнать {**}
+                о выполнявшихся этапах синхронизации с указанием результата.
+            </div>
+
+
+
+            <div>
+                <b>Правила обработки</b>. Это редактируемый список узлов синхронизационного {**}
+                XML-документа, из которых должно извлекаться содержимое для конкретных полей {**}
+                записи о категории, товаре, варианте товара, свойстве, заказе. В каждой секции {**}
+                правил первой строкой указан искомый узел относительно начала XML-документа, {**}
+                следующие строки содержат внутренний путь к конкретным нодам относительно начала {**}
+                искомого узла.
+            </div>
+        </div>
+
+    </div>
+
+{/strip}

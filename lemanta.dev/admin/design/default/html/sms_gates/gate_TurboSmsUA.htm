@@ -1,0 +1,33 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница модуля SMS-шлюза TurboSMS.ua                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $item = запись о шлюзе                                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {include file = 'sms_gates/gate_model.htm'
+
+             item = $item|default:false
+
+             title = 'SMS шлюз TurboSMS.ua (Украина)'
+             engine_info = 'работает по протоколу SOAP'
+             official_site = 'turbosms.ua'
+
+             balance_sign = 'грн'
+             balance_exists = true}
+
+
+
+    <div style="color: #C00000; font-size: 8pt; margin: 15px 10px; text-align: justify; {($item->enabled|default:false) ? '' : 'display: none;'}">
+        <b>Требования шлюза</b>: использовать только кодировку UTF-8; имя отправителя {**}
+        только из английских букв и цифр (максимальная длина - 11 символов); номера {**}
+        указывать в полном формате, включая плюс и код страны.
+    </div>
+
+{/strip}

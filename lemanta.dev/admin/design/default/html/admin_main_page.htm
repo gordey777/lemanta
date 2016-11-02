@@ -1,0 +1,592 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля главной страницы.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $last_orders = список записей новых заказов;
+    $last_products = список записей недавно измененных товаров;
+    $last_comments = плоский список записей недавних отзывов о товарах;
+    $last_articles = список записей недавних статей;
+    $last_acomments = плоский список записей недавних комментариев к статьям;
+    $last_news = список записей недавних новостей;
+    $last_ncomments = плоский список записей недавних комментариев к новостям;
+    $currency = запись о текущей валюте админпанели;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификационный идентификатор;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "main" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "main"
+           main = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        Главная
+      </div>
+      Главная страница
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Order&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}" title="Добавить заказ">
+          добавить заказ
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Product&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}" title="Добавить товар">
+          добавить товар
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Section&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}" title="Добавить страницу">
+          добавить страницу
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=NewsItem&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}" title="Добавить новость">
+          добавить новость
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Article&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}" title="Добавить статью">
+          добавить статью
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком заказов -->
+    <form class="half_left" action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Orders" id="orders_items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <div class="title">
+        Новые заказы
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Orders&{$smarty.const.REQUEST_PARAM_NAME_TYPE|escape}={$smarty.const.TYPE_ORDERS_COMING|escape}&{$smarty.const.REQUEST_PARAM_NAME_FILTER_CREDITABLE|escape}=1" style="float: right; font-size: 8pt; font-weight: normal; margin-left: 20px;">
+          Новые в кредит
+        </a>
+      </div>
+
+      {if isset($last_orders) && !empty($last_orders)}
+
+        {foreach item=c from=$last_orders}
+          {strip}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->processing_get|escape}" title="Считать заказ находящимся в обработке">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_order_processing{if $c->status != $smarty.const.ORDER_STATUS_PROCESS}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Номер заказа -->
+                <span class="topic" style="display: inline;" title="Дата оформления: {$c->date|escape}">
+                  №{$c->order_id|escape}
+                </span>
+
+                <!-- Сумма -->
+                <span class="rating" title="{$c->total_quantity|default:0|escape} товаров, товарных позиций {$c->total_rows|default:0|escape}">
+                  {($c->total_amount*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                </span>
+
+                <!-- значок Оформляется в кредит -->
+                {if ($c->credit_id != 0) && ($c->credit_details != "")}
+                  <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_credit_16x16.png" title="Этот заказ оформляется в кредит">
+                {/if}
+
+                <!-- Имя покупателя -->
+                {if $c->compound_name != ""}
+                  <!-- значок заказа зарегистрированного пользователя сайта -->
+                  {if $c->user_id != 0}
+                    <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_registered_16x16.png" title="Это заказ зарегистрированного пользователя сайта">
+                  {/if}
+                  <!-- ссылка не редактирование -->
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->compound_name|escape}">
+                    {$c->compound_name|escape}
+                  </a>
+                {else}
+                  <!-- значок заказа зарегистрированного пользователя сайта -->
+                  {if $c->user_id != 0}
+                    <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_registered_16x16.png" title="Это заказ зарегистрированного пользователя сайта">
+                  {/if}
+                  <!-- ссылка не редактирование -->
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}">
+                    Имя не указано
+                  </a>
+                {/if}
+
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="orders_items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="orders_items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+      {else}
+        <div class="noitems">
+          Не найдено заказов.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Форма со списком переписки -->
+    <form class="half_right" action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Feedback" id="feedback_items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <div class="title">
+        Недавние сообщения
+      </div>
+
+      {if isset($last_feedback) && !empty($last_feedback)}
+
+        {foreach item=c from=$last_feedback}
+          {strip}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->new_get|escape}" title="Считать / не считать прочитанным">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_new{if $c->new != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Дата -->
+                <span class="topic" style="display: inline;" title="Дата сообщения">
+                  {if $c->date|truncate:10:"":true != "0000-00-00"}
+                    {$c->date|truncate:10:"":true|escape}
+                  {else}
+                    нет даты
+                  {/if}
+                </span>
+
+                <!-- Текст -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->message|strip_tags|escape}">
+                  {$c->message|strip_tags|escape}
+                </a>
+
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="feedback_items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="feedback_items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+      {else}
+        <div class="noitems">
+          Не найдено сообщений.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Форма со списком товаров -->
+    <form class="half_left" action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Products" id="products_items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <div class="title">
+        Недавно измененные товары
+      </div>
+
+      {if isset($last_products) && !empty($last_products)}
+
+        {foreach item=c from=$last_products}
+          {strip}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Количество просмотров -->
+                <span class="browsed{if $c->browsed == 0} zero{/if}" title="Количество просмотров: {$c->browsed|escape}">
+                  {$c->browsed|escape}
+                </span>
+
+                <!-- Название -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}"{if !empty($c->pcode)} title="Буквенный код: {$c->pcode|escape}"{/if}>
+                  {$c->model|escape}
+                </a>
+
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="products_items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="products_items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+      {else}
+        <div class="noitems">
+          Не найдено товаров.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Форма со списком отзывов о товарах -->
+    <form class="half_right" action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Comments" id="comments_items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <div class="title">
+        Недавние отзывы о товарах
+      </div>
+
+      {if isset($last_comments) && !empty($last_comments)}
+
+        {foreach item=c from=$last_comments}
+          {strip}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Дата -->
+                <span class="topic" style="display: inline;" title="Дата отзыва">
+                  {if $c->date|truncate:10:"":true != "0000-00-00"}
+                    {$c->date|truncate:10:"":true|escape}
+                  {else}
+                    нет даты
+                  {/if}
+                </span>
+
+                <!-- Текст -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->comment|strip_tags|escape}">
+                  {$c->comment|strip_tags|escape}
+                </a>
+
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="comments_items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="comments_items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+      {else}
+        <div class="noitems">
+          Не найдено отзывов.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Форма со списком статей -->
+    <form class="half_left" action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Articles" id="articles_items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <div class="title">
+        Недавние статьи
+      </div>
+
+      {if isset($last_articles) && !empty($last_articles)}
+
+        {foreach item=c from=$last_articles}
+          {strip}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Дата -->
+                <span class="topic" style="display: inline;" title="Дата статьи">
+                  {if $c->date|truncate:10:"":true != "0000-00-00"}
+                    {$c->date|truncate:10:"":true|escape}
+                  {else}
+                    нет даты
+                  {/if}
+                </span>
+
+                <!-- Количество просмотров -->
+                <span class="browsed{if $c->browsed == 0} zero{/if}" title="Количество просмотров: {$c->browsed|escape}">
+                  {$c->browsed|escape}
+                </span>
+
+                <!-- Заголовок -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->header|escape}">
+                  {$c->header|escape}
+                </a>
+
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="articles_items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="articles_items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+      {else}
+        <div class="noitems">
+          Не найдено статей.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Форма со списком комментариев к статьям -->
+    <form class="half_right" action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=AComments" id="acomments_items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <div class="title">
+        Недавние комментарии к статьям
+      </div>
+
+      {if isset($last_acomments) && !empty($last_acomments)}
+
+        {foreach item=c from=$last_acomments}
+          {strip}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Дата -->
+                <span class="topic" style="display: inline;" title="Дата комментария">
+                  {if $c->date|truncate:10:"":true != "0000-00-00"}
+                    {$c->date|truncate:10:"":true|escape}
+                  {else}
+                    нет даты
+                  {/if}
+                </span>
+
+                <!-- Текст -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->comment|strip_tags|escape}">
+                  {$c->comment|strip_tags|escape}
+                </a>
+
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="acomments_items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="acomments_items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+      {else}
+        <div class="noitems">
+          Не найдено комментариев.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Форма со списком новостей -->
+    <form class="half_left" action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=News" id="news_items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <div class="title">
+        Недавние новости
+      </div>
+
+      {if isset($last_news) && !empty($last_news)}
+
+        {foreach item=c from=$last_news}
+          {strip}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Дата -->
+                <span class="topic" style="display: inline;" title="Дата новости">
+                  {if $c->date|truncate:10:"":true != "0000-00-00"}
+                    {$c->date|truncate:10:"":true|escape}
+                  {else}
+                    нет даты
+                  {/if}
+                </span>
+
+                <!-- Количество просмотров -->
+                <span class="browsed{if $c->browsed == 0} zero{/if}" title="Количество просмотров: {$c->browsed|escape}">
+                  {$c->browsed|escape}
+                </span>
+
+                <!-- Заголовок -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->header|escape}">
+                  {$c->header|escape}
+                </a>
+
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="news_items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="news_items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+      {else}
+        <div class="noitems">
+          Не найдено новостей.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Форма со списком комментариев к новостям -->
+    <form class="half_right" action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=NComments" id="ncomments_items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <div class="title">
+        Недавние комментарии к новостям
+      </div>
+
+      {if isset($last_ncomments) && !empty($last_ncomments)}
+
+        {foreach item=c from=$last_ncomments}
+          {strip}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Дата -->
+                <span class="topic" style="display: inline;" title="Дата комментария">
+                  {if $c->date|truncate:10:"":true != "0000-00-00"}
+                    {$c->date|truncate:10:"":true|escape}
+                  {else}
+                    нет даты
+                  {/if}
+                </span>
+
+                <!-- Текст -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->comment|strip_tags|escape}">
+                  {$c->comment|strip_tags|escape}
+                </a>
+
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="ncomments_items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="ncomments_items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+      {else}
+        <div class="noitems">
+          Не найдено комментариев.
+        </div>
+      {/if}
+    </form>
+
+  </div>

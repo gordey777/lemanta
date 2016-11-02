@@ -1,0 +1,503 @@
+{* <!--
+  Impera CMS: шаблон админ модуля баннеров.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о файлах и папках;
+    $item = относительный путь выбранной папки;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    pages = true - вывести эту кнопку
+    news = true - вывести эту кнопку
+    articles = true - вывести эту кнопку
+    banners = true - вывести эту кнопку
+    files = true - вывести эту кнопку
+    menus = true - вывести эту кнопку
+    modules = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "banners"
+           main = true
+           pages = true
+           news = true
+           articles = true
+           banners = true
+           files = true
+           menus = true
+           modules = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Баннеры
+      </div>
+      Баннеры
+    </h1>
+
+    <!-- Часть страницы, показываемая после старта загрузки фото -->
+    <div class="box_part" id="banners_start_box" style="display: none;">
+      <div class="toolkey">
+        &nbsp;
+      </div>
+      <div class="message">
+        Выполняется указанное Вами действие.<br>
+        Пожалуйста подождите.
+      </div>
+    </div>
+
+    <!-- Изначально видимая часть страницы, скрываемая после старта загрузки фото -->
+    <div class="box_part" id="banners_list_box">
+
+      <!-- Выводим инструментальные ссылки -->
+      <div class="toolkey">
+        {strip}
+          <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+            справка
+          </a>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banners&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DOWNLOAD|escape}&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape|default:''}" title="Загрузить баннер в текущую папку" onclick="javascript: return Start_Popup('popupDOWNLOAD', null);">
+            загрузить
+          </a>
+        {/strip}
+      </div>
+
+      <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+      {if isset($message) && ($message != "")}
+        <div class="message">
+          {$message}
+        </div>
+      {/if}
+
+      <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+      {if isset($error) && ($error != "")}
+        <div class="error">
+          <b>Ошибка:</b> {$error}
+        </div>
+      {/if}
+
+      <!-- Форма со списком записей -->
+      <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banners" enctype="multipart/form-data" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+        <!-- Селектор -->
+        <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+          <tr>
+
+            <!-- кнопка Удалить -->
+            <td class="param_short" title="Удалить текущую папку">
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banners" onclick="javascript: var object = document.getElementById('select_{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}'); if ((typeof(object) != 'object') || (object == null) || !('options' in object) || !('length' in object.options) || !('selectedIndex' in object) || (object.options.length <= object.selectedIndex)) return false; object = object.options[object.selectedIndex]; if ((typeof(object) != 'object') || (object == null) || !('getAttribute' in object)) return false; object = object.getAttribute('link'); if (!object || (object == '')) return false; if (!confirm('Данная папка будет удалена с сайта. Вы подтверждаете такую операцию?')) return false; this.href = object; return true;">
+                <img class="microkey_right icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+              </a>
+            </td>
+
+            <!-- текущая папка -->
+            <td class="param_short">
+              текущая папка:
+            </td>
+            <td class="value" width="60%" title="Выбор папки с баннерами">
+
+              <!-- Создаем селектор папок -->
+              <select class="thin" id="select_{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                {capture name="temp_title"}{/capture}
+                {capture name="temp_description"}{/capture}
+                {capture name="temp_itemscount"}{/capture}
+                {capture name="temp_path"}{/capture}
+
+                <!-- элемент корневой папки -->
+                {strip}
+                  {assign var="temp_count" value=0}
+                  {if isset($items) && !empty($items)}
+                    {foreach item=r from=$items}
+                      {if !isset($r->files)}
+                        {assign var="temp_count" value=$temp_count+1}
+                      {/if}
+                    {/foreach}
+                  {/if}
+                  {capture name="temp_itemscount"}{$temp_count} картинок{/capture}
+                  <option value="" link="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banners&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DELETE|escape}&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}=&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape|default:''}"{if $temp_count == 0} style="color: #808080;"{/if}>
+                    корень
+                    {if $temp_count != 0}&nbsp;&nbsp;&nbsp;&nbsp;({$temp_count} шт.){/if}
+                  </option>
+                {/strip}
+
+                <!-- {* Перечисляем имена папок *} -->
+                {if isset($items) && !empty($items)}
+                  {function name="show_folders"}
+                    {foreach item=c from=$dir}
+                      {if isset($c->files)}
+
+                        {strip}
+                          {assign var="temp_count" value=0}
+                          {if !empty($c->files)}
+                            {foreach item=r from=$c->files}
+                              {if !isset($r->files)}
+                                {assign var="temp_count" value=$temp_count+1}
+                              {/if}
+                            {/foreach}
+                          {/if}
+                          {capture assign="temp"}{$c->path}{$c->filename}{/capture}
+                          {if isset($item) && ($item == $temp)}
+                            {capture name="temp_title"}{$c->title|default:""|strip_tags|escape}{/capture}
+                            {capture name="temp_description"}{$c->description|default:""|strip_tags|escape}{/capture}
+                            {capture name="temp_itemscount"}{$temp_count} картинок{/capture}
+                            {capture name="temp_path"}{$temp|escape}{/capture}
+                          {/if}
+                          <option value="{$temp|escape}"{if isset($item) && ($item == $temp)} selected{/if} link="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}"{if $temp_count == 0} style="color: #808080;"{/if}>
+                            {section name="spaces" start=0 loop=$level step=1}&nbsp;&nbsp;&nbsp;&nbsp;{/section}
+                            {if isset($c->title) && ($c->title|strip_tags|strip != "")}
+                              {$c->title|strip_tags|escape}
+                            {else}
+                              {$c->filename|escape}
+                            {/if}
+                            {if $temp_count != 0}&nbsp;&nbsp;&nbsp;&nbsp;({$temp_count} шт.){/if}
+                          </option>
+                        {/strip}
+
+                        {if isset($c->files) && !empty($c->files)}
+                          {show_folders dir=$c->files level=$level+1}
+                        {/if}
+                      {/if}
+                    {/foreach}
+                  {/function}
+
+                  {* <!-- запускаем исполнение объявленной выше функции show_folders,
+                          передавая ей в качестве параметра массив файлов $items --> *}
+                  {show_folders dir=$items level=1}
+                {/if}
+              </select>
+            </td>
+
+            <!-- добавить папку -->
+            <td class="param_short">
+              &nbsp;&nbsp; в ней папку:
+            </td>
+            <td class="value" width="40%" title="Имя новой папки, которая будет создана в текущей папке">
+              <input class="edit" name="{$smarty.const.REQUEST_PARAM_NAME_NAME|escape}" type="text" value="">
+            </td>
+            <td class="value_box">
+              <input class="submit" type="submit" value="Создать" onclick="javascript: return Submit_Popup('?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banners&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_CREATE|escape}', 'banners');">
+            </td>
+
+          </tr>
+        </table>
+
+        <!-- Кнопка сброса фильтра --> 
+        <div class="toolkey">
+          {strip}
+            <span>
+              папка: <span>
+                       корень{if isset($item) && ($item != "")}/{$item|escape}{/if}
+                     </span>
+            </span>
+          {/strip}
+        </div>
+
+        <li class="flatlist">
+
+          <!-- Нумерация -->
+          {if $smarty.capture.temp_title != ""}
+            <div class="onerow">
+              <span class="topic" style="display: inline;">
+                1.
+              </span>
+
+              <!-- Описание папки -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banners" onclick="javascript: return false;" title="{$smarty.capture.temp_title|default:'Виртуальное название папки не задано'}">
+                {$smarty.capture.temp_title}
+              </a>
+            </div>
+          {/if}
+
+          <!-- Путь папки -->
+          <div class="line" title="Путь для субшаблона баннеров: {$smarty.capture.temp_path}{if $smarty.capture.temp_path != ''}/{/if}">
+            <span>
+              путь:
+            </span>
+            {$smarty.capture.temp_path}{if $smarty.capture.temp_path != ""}/{/if}
+          </div>
+
+          <!-- Описание папки -->
+          <div class="line" title="{$smarty.capture.temp_description|default:'Описание папки не задано'}">
+            <span>
+              описание:
+            </span>
+            {if $smarty.capture.temp_description != ""}
+              {$smarty.capture.temp_description}
+            {else}
+              нет
+            {/if}
+          </div>
+
+          <!-- Количество картинок -->
+          <div class="line" title="Картинки, помеченные ниже запрещенными, не участвуют в ротации картинок в баннере!">
+            <span>
+              состоит из:
+            </span>
+            {$smarty.capture.temp_itemscount}
+          </div>
+        </li>
+        <br>
+
+        <!-- {* Выпадающая панель выбора файла для загрузки *} -->
+        {strip}
+          <div class="popup" id="popupDOWNLOAD">
+            <div class="popup_content">
+              <div class="title">
+                <div class="close">
+                  <a href="#" onclick="javascript: return Hide_Popup('popupDOWNLOAD');" title="Закрыть">
+                    x
+                  </a>
+                </div>
+                Загрузка баннера
+              </div>
+              <div class="cell">
+                файл баннера или zip-архив баннеров:
+                <div class="input">
+                  <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.ZIP_IMAGES_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                  <input class="input" disabled id="popupDOWNLOADfile" name="image" type="file" title="Какой файл требуется взять с Вашего компьютера (объем файла не более {($smarty.const.ZIP_IMAGES_UPLOAD_MAXIMAL_FILESIZE/1024/1024)|string_format:"%d"|escape} Мбайт)">
+                </div>
+              </div>
+              <div class="cell" style="clear: left; float: left; overflow: auto; width: 66%;">
+                название:
+                <div class="input">
+                  <input class="input" disabled id="popupDOWNLOADtitle" maxlength="160" name="{$smarty.const.REQUEST_PARAM_NAME_TITLE|escape}" type="text" title="Название рекламируемого баннером объекта (выводится по верху баннера)">
+                </div>
+              </div>
+              <div class="cell" style="clear: right; float: right; overflow: auto; width: 30%;">
+                цена:
+                <div class="input">
+                  <input class="input" disabled id="popupDOWNLOADprice" maxlength="16" name="{$smarty.const.REQUEST_PARAM_NAME_PRICE|escape}" type="text" title="Цена рекламируемого баннером объекта (выводится в правом верхнем углу баннера)">
+                </div>
+              </div>
+              <div class="cell">
+                описание:
+                <div class="input">
+                  <textarea class="input" disabled id="popupDOWNLOADdescription" name="{$smarty.const.REQUEST_PARAM_NAME_DESCRIPTION|escape}" style="height: 128px;" title="Описание рекламируемого баннером объекта (выводится по низу баннера)"></textarea>
+                </div>
+              </div>
+              <div class="cell">
+                url страницы:
+                <div class="input">
+                  <input class="input" disabled id="popupDOWNLOADlink" maxlength="256" name="{$smarty.const.REQUEST_PARAM_NAME_LINK|escape}" type="text" title="По какой ссылке ведет баннер">
+                </div>
+              </div>
+              <div class="submit">
+                <input class="submit" type="submit" value="Начать" onclick="javascript: return Submit_Popup('?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banners&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DOWNLOAD|escape}', 'banners');">
+              </div>
+            </div>
+          </div>
+        {/strip}
+
+        {if isset($items) && !empty($items)}
+
+          <!-- {* Перечисляем имена файлов *} -->
+          {capture name="temp_count"}{/capture}
+          {capture assign="temp"}{if isset($item)}{$item}{if $item != ""}/{/if}{/if}{/capture}
+          {function name="show_files"}
+            {foreach name=items item=c from=$dir}
+              {strip}
+                {if isset($c->files)}
+                  {if !empty($c->files)}
+                    {show_files dir=$c->files}
+                  {/if}
+                {elseif $c->path == $temp}
+                  {capture name="temp_count"}1{/capture}
+
+                  <li class="bannerlist{if isset($c->enabled) && ($c->enabled != 1)} disabled_banner{/if}">
+
+                    <!-- Изображение -->
+                    <a class="image{if !isset($c->enabled) || ($c->enabled == 1)} enabled_banner{/if}" href="http://{$root_url|escape}/{$smarty.const.ADMIN_BANNERS_CLASS_UPLOAD_FOLDER|escape}/{if isset($c->path) && ($c->path != "")}{$c->path|escape}{/if}{$c->filename|escape}" target="_blank" title="{if isset($c->title) && ($c->title|strip_tags|strip != "")}{$c->title|strip_tags|escape}{else}{$c->filename|escape}{/if}">
+                      {if isset($c->width) && isset($c->height)}
+                        <img src="http://{$root_url|escape}/{$smarty.const.ADMIN_BANNERS_CLASS_UPLOAD_FOLDER|escape}/{if isset($c->path) && ($c->path != "")}{$c->path|escape}{/if}{$c->filename|escape}">
+                      {else}
+                        невозможно отобразить
+                      {/if}
+
+                      <!-- Название -->
+                      {if isset($c->title) && ($c->title|strip_tags|strip != "")}
+                        <div class="title">
+                          {$c->title|strip_tags|escape}
+                        </div>
+                      {/if}
+
+                      <!-- Цена -->
+                      {if isset($c->price) && ($c->price|strip_tags|strip != "")}
+                        <div class="price">
+                          {$c->price|strip_tags|escape}
+                        </div>
+                      {/if}
+
+                      <!-- Описание -->
+                      {if isset($c->description) && ($c->description|strip_tags|strip != "")}
+                        <div class="description">
+                          {$c->description|strip_tags|escape}
+                        </div>
+                      {/if}
+                    </a>
+
+                    <div class="onerow">
+
+                      <!-- Микро кнопки справа от имени файла -->
+                      <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данный баннер будет удален с сайта. Вы подтверждаете такую операцию?');">
+                        <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                      </a>
+                      <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                        <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if isset($c->enabled) && ($c->enabled != 1)}_off{/if}_16x16.png">
+                      </a>
+
+                      <!-- Имя файла -->
+                      <a href="http://{$root_url|escape}/{$smarty.const.ADMIN_BANNERS_CLASS_UPLOAD_FOLDER|escape}/{if isset($c->path) && ($c->path != "")}{$c->path|escape}{/if}{$c->filename|escape}" title="{$c->filename|escape}" style="display: block; overflow: hidden; width: 230px;" onclick="javascript: return Start_Popup('popupEDIT{$smarty.foreach.items.iteration}', this);">
+                        {$c->filename|escape}
+                      </a>
+
+                    </div>
+
+                    <!-- Размеры -->
+                    <div class="size">
+                      {if isset($c->width) && isset($c->height)}
+                        {$c->width|string_format:"%d"}&times;{$c->height|string_format:"%d"} точек
+                      {else}
+                        &nbsp;
+                      {/if}
+                    </div>
+
+                    <!-- Ссылка -->
+                    <div class="link">
+                      {if isset($c->link) && ($c->link|strip_tags|strip != "")}
+                        <a href="{$c->link|strip_tags|escape}" title="{$c->link|strip_tags|escape}">
+                        {$c->link|strip_tags|escape}
+                        </a>
+                      {else}
+                        не имеет ссылки
+                      {/if}
+                    </div>
+
+                  </li>
+
+                  <!-- {* Выпадающая панель редактирования баннера *} -->
+                  <div class="popup" id="popupEDIT{$smarty.foreach.items.iteration}">
+                    <div class="popup_content">
+                      <div class="title">
+                        <div class="close">
+                          <a href="#" onclick="javascript: return Hide_Popup('popupEDIT{$smarty.foreach.items.iteration}');" title="Закрыть">
+                            x
+                          </a>
+                        </div>
+                        Редактирование
+                      </div>
+                      <div class="cell">
+                        название:
+                        <div class="input">
+                          <input class="input" disabled id="popupEDIT{$smarty.foreach.items.iteration}title" maxlength="160" name="{$smarty.const.REQUEST_PARAM_NAME_TITLE|escape}[{if isset($c->path) && ($c->path|strip_tags|strip != "")}{$c->path|strip_tags|escape}{/if}{$c->filename|strip_tags|escape}]" type="text" value="{$c->title|default:''|strip_tags|escape}" title="Название рекламируемого баннером объекта (выводится по верху баннера)">
+                        </div>
+                      </div>
+                      <div class="cell">
+                        цена:
+                        <div class="input">
+                          <input class="input" disabled id="popupEDIT{$smarty.foreach.items.iteration}price" maxlength="16" name="{$smarty.const.REQUEST_PARAM_NAME_PRICE|escape}[{if isset($c->path) && ($c->path|strip_tags|strip != "")}{$c->path|strip_tags|escape}{/if}{$c->filename|strip_tags|escape}]" type="text" value="{$c->price|default:''|strip_tags|escape|replace:',':'.'}" title="Цена рекламируемого баннером объекта (выводится в правом верхнем углу баннера)">
+                        </div>
+                      </div>
+                      <div class="cell">
+                        описание:
+                        <div class="input">
+                          <textarea class="input" disabled id="popupEDIT{$smarty.foreach.items.iteration}description" name="{$smarty.const.REQUEST_PARAM_NAME_DESCRIPTION|escape}[{if isset($c->path) && ($c->path|strip_tags|strip != "")}{$c->path|strip_tags|escape}{/if}{$c->filename|strip_tags|escape}]" style="height: 128px;" title="Описание рекламируемого баннером объекта (выводится по низу баннера)">{$c->description|default:''|strip_tags|escape}</textarea>
+                        </div>
+                      </div>
+                      <div class="cell">
+                        url страницы:
+                        <div class="input">
+                          <input class="input" disabled id="popupEDIT{$smarty.foreach.items.iteration}link" maxlength="256" name="{$smarty.const.REQUEST_PARAM_NAME_LINK|escape}[{if isset($c->path) && ($c->path|strip_tags|strip != "")}{$c->path|strip_tags|escape}{/if}{$c->filename|strip_tags|escape}]" type="text" value="{$c->link|default:''|strip_tags|escape}" title="По какой ссылке ведет баннер">
+                        </div>
+                      </div>
+                      <div class="submit">
+                        <input class="submit" type="submit" value="Сохранить" onclick="javascript: return Submit_Popup('{$c->edit_get|escape}', 'banners');">
+                      </div>
+                    </div>
+                  </div>
+
+                {/if}
+              {/strip}
+            {/foreach}
+          {/function}
+
+          {* <!-- запускаем исполнение объявленной выше функции show_files,
+                  передавая ей в качестве параметра массив файлов $items --> *}
+          {show_files dir=$items}
+
+          {if $smarty.capture.temp_count == ""}
+            <div class="noitems">
+              Папка не содержит баннеров.
+            </div>
+          {/if}
+
+        {else}
+          <div class="noitems">
+            Папка не содержит баннеров.
+          </div>
+        {/if}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape|default:''}">
+
+      </form>
+
+    </div>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        &nbsp;
+      </div>
+    </div>
+
+  </div>
+
+  {literal}
+    <script language="JavaScript" type="text/javascript">
+      <!--
+
+      // аниматроника баннеров
+
+      jQuery(document).ready(function () {
+
+        // находим все кликабельные разрешенные баннеры
+        var $images = jQuery('li.bannerlist').find('a.enabled_banner');
+
+        // устанавливаем обработчик проявления свойств баннера
+        $images.bind('mouseover', function (evt) {
+                                    var $this = jQuery(this);
+                                    $this.find('div.title').stop().animate({'top': '0px', 'opacity': 0.5}, 500);
+                                    $this.find('div.price').stop().animate({'right': '0px', 'opacity': 0.8}, 500);
+                                    $this.find('div.description').stop().animate({'top': '161px', 'opacity': 0.5}, 500);
+                                    evt.preventDefault();
+                                  });
+
+        // устанавливаем обработчик скрывания свойств баннера
+        $images.bind('mouseout', function (evt) {
+                                   var $this = jQuery(this);
+                                   $this.find('div.title').stop().animate({'top': '-19px', 'opacity': 0.0}, 500);
+                                    $this.find('div.price').stop().animate({'right': '-70px', 'opacity': 0.0}, 500);
+                                   $this.find('div.description').stop().animate({'top': '206px', 'opacity': 0.0}, 500);
+                                   evt.preventDefault();
+                                 });
+      });
+      // -->
+    </script>
+  {/literal}

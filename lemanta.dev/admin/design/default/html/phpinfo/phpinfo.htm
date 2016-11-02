@@ -1,0 +1,117 @@
+{* <!--
+  Impera CMS: шаблон админ модуля PHP info
+
+  Принимает во входных переменных:
+    $data = контент ифнормации о PHP
+    $message = текст информационного сообщения, если есть
+    $error = текст сообщения об ошибке, если была
+    $Token = аутентификатор операции
+    $settings = настройки сайта
+    $admin_folder = имя папки админпанели
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта
+    $site = полный адрес корня сайта
+
+  ============================================================================
+
+    Подключаем субшаблон закладок. В субшаблон передаем атрибуты:
+      main = вывести закладку "главная"
+      me = текст собственной закладки модуля
+      me_pointer = указатель на модуль в ссылке
+      me_menupath = путевое положение модуля в меню
+      select = какая закладка будет выбранной --> *}
+
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.PHPINFO_MODULETAB_TEXT|default:''
+             me_pointer = $smarty.const.PHPINFO_MODULELINK_POINTER|default:''
+             me_menupath = $smarty.const.PHPINFO_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- определяем стили контента функции phpinfo() --> *}
+    <style type="text/css">
+        .phpinfo-box pre { margin: 0px; font-family: monospace; }
+        .phpinfo-box table { border-collapse: collapse; margin-top: 20px; max-width: 700px !important; overflow: hidden;}
+        .phpinfo-box .center { text-align: center; }
+        .phpinfo-box .center table { margin-left: auto; margin-right: auto; width: 100%; text-align: left; }
+        .phpinfo-box .center th { text-align: center !important; }
+        .phpinfo-box td { max-width: 300px !important; overflow: hidden; }
+        .phpinfo-box td, .phpinfo-box th { border: 1px solid #000000; vertical-align: baseline; padding: 5px 10px; }
+        .phpinfo-box .p { text-align: left; }
+        .phpinfo-box .e { background-color: #ccccff; font-weight: bold; color: #000000; }
+        .phpinfo-box .h { background-color: #9999cc; font-weight: bold; color: #000000; }
+        .phpinfo-box .v { background-color: #cccccc; color: #000000; }
+        .phpinfo-box .vr { background-color: #cccccc; text-align: right; color: #000000; }
+        .phpinfo-box img { float: right; border: 0px; }
+        .phpinfo-box hr { display: none; }
+        .phpinfo-box h1 { margin-top: 50px; }
+        .phpinfo-box table h1 { margin-top: 5px; }
+    </style>
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок содержимого --> *}
+        {strip}
+            <h1>
+                <div class="path">
+                    <a href="{$site|default:''|escape}{$admin_folder|default:''|escape}/">
+                        Главная
+                    </a> → PHP info
+                </div>
+                {$title|default:'Информация о PHP'}
+            </h1>
+        {/strip}
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            {strip}
+                &nbsp;
+            {/strip}
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма --> *}
+        <form action="{$site|default:''|escape}{$admin_folder|default:''|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|default:''|escape}={$smarty.const.PHPINFO_MODULELINK_POINTER|default:''|escape}" id="item_form" method="post">
+
+
+
+            {* <!-- информация о PHP --> *}
+            <div class="phpinfo-box">
+
+                {$data|default:''}
+
+            </div>
+
+
+
+        </form>
+
+
+
+    </div>

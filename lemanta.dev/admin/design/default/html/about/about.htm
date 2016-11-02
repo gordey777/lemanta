@@ -1,0 +1,332 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница О программе                                                    |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $admin_folder = имя папки админпанели                                         |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty.const = массив констант движка                                        |
+    $IMPERA_CMS_version = номер версии движка                                     |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.ABOUT_MODULETAB_TEXT|default:''
+             me_pointer = $smarty.const.ABOUT_MODULELINK_POINTER|default:''
+             me_menupath = $smarty.const.ABOUT_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+    {* <!-- имя домена --> *}
+    {$domain = $site|default:''}
+    {$domain = preg_replace('!^[a-z]+://([^/]+)/.*$!i', '$1', $domain)}
+    {$domain = $domain|escape}
+
+    {* <!-- адрес корня админпанели --> *}
+    {$site = ($site|default:'')|escape}
+    {$admin_site = $site|cat:(($admin_folder|default:'')|escape)|cat:'/'}
+
+    {$cms_name = 'Impera CMS'}
+
+    <div class="box">
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$admin_site}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → О программе
+            </div>
+
+            {($title|default:'О программе')|escape}
+        </h1>
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+        {* <!-- информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+        {* <!-- сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+        {* <!-- форма --> *}
+        <form method="post">
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+                {* <!-- имя программы --> *}
+                <tr>
+                    <td class="param">
+                        Программа:
+                    </td>
+                    <td class="value value_sheet" nowrap width="70%">
+                        {$cms_name}
+                    </td>
+
+                    {* <!-- версия --> *}
+                    <td class="param_short">
+                        Версия:
+                    </td>
+                    <td class="value value_sheet" nowrap width="30%">
+                        {($IMPERA_CMS_version|default:'')|escape}
+                    </td>
+                </tr>
+
+                {* <!-- назначение --> *}
+                <tr>
+                    <td class="param">
+                        Назначение:
+                    </td>
+                    <td class="value value_sheet">
+                        Система управления интернет-магазином
+                    </td>
+
+                    {* <!-- тип --> *}
+                    <td class="param_short">
+                        Тип:
+                    </td>
+                    <td class="value value_sheet" nowrap>
+                        Коммерческое ПО
+                    </td>
+                </tr>
+
+                {* <!-- домен --> *}
+                <tr>
+                    <td class="param">
+                        Установлена на:
+                    </td>
+                    <td class="value value_sheet" colspan="3">
+                        {$domain}
+                    </td>
+                </tr>
+
+                {* <!-- лицензионный ключ --> *}
+                <tr>
+                    <td class="param_high">
+                        Лицензионный ключ вашего сайта:
+                    </td>
+                    <td class="value value_sheet" id="license_key" style="vertical-align: top;">
+                        идет запрос информации...
+                    </td>
+
+                    {* <!-- список версий --> *}
+                    <td class="param_high">
+                        Официальные версии:
+                    </td>
+                    <td class="value value_sheet" id="official_versions" nowrap style="vertical-align: top;">
+                        запрос информации...
+                    </td>
+                </tr>
+
+                {* <!-- тип ключа --> *}
+                <tr>
+                    <td class="param">
+                        Тип ключа:
+                    </td>
+                    <td class="value value_sheet" colspan="3" id="license_key_type">
+                        идет запрос информации...
+                    </td>
+                </tr>
+
+                {* <!-- домены ключа --> *}
+                <tr>
+                    <td class="param_high">
+                        Выдан сайтам:
+                    </td>
+                    <td class="value value_sheet" colspan="3" id="license_key_domains" style="vertical-align: top;">
+                        идет запрос информации...
+                    </td>
+                </tr>
+
+                {* <!-- о владельце ключа --> *}
+                <tr>
+                    <td class="param_high">
+                        О владельце ключа:
+                    </td>
+                    <td class="value value_sheet" colspan="3" id="license_key_owner" style="vertical-align: top;">
+                        идет запрос информации...
+                    </td>
+                </tr>
+            </table>
+        </form>
+
+        {* <!-- блок справки --> *}
+        <div class="help">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                {$cms_name} - мощная современная система управления интернет-магазином. {**}
+                Одной из важных сторон разработки движка является следование за <b>идеями</b>, {**}
+                высказанными активными пользователями движка. Благодаря чему движок {**}
+                вобрал в себя богатый функционал, причем самый необходимый пользователям, {**}
+                и с каждой новой версией продолжает вбирать функционал дальше. Вторая черта {**}
+                состоит в том, что модули, функции, дополнения реализуются как правило с широкими {**}
+                <b>настройками</b>, тем самым часто снимая с пользователей необходимость доточки {**}
+                под себя.
+            </div>
+
+            <div>
+                Движок защищен лицензионным ключом, символьно-цифровая последовательность {**}
+                которого привязана к конкретному сайту (сайтам, если магазин имеет зеркала на {**}
+                других доменах). Ключи бывают тестовыми - в этом случае движок сохраняет {**}
+                работоспособность в течение некоторого периода времени, чтобы вы могли {**}
+                протестировать пригодность движка для ваших нужд, после чего работа системы {**}
+                блокируется, или ключи бывают неограниченными - такой ключ выдается после {**}
+                оплаты лицензии на использование движка. Без ключа или с ключом от чужого {**}
+                сайта движок работать не станет.
+            </div>
+
+            <div>
+                Информация о ключе вашего сайта представлена в полях выше - это сам ключ, {**}
+                его тип (и срок действия, если это тестовый), для какого сайт(а, ов) действует {**}
+                и сведения о владельце ключа, на кого регистрировался ключ.
+            </div>
+            <br />
+
+            <div>
+                Разработчик выражает признательность всем пользователям, повлиявшим на развитие {**}
+                движка, кто своими советами, подсказками, замеченными багами, рационализаторскими {**}
+                предложениями подталкивает движок к меркам лучшего. Ваши собственные представления {**}
+                идеалов, стремление работать с качественной системой побуждают разработчика тянуться {**}
+                за тем высоким уровнем, планку которого вы негласно поднимаете таким влиянием на движок.
+            </div>
+        </div>
+    </div>
+
+    {* <!-- скрипт запроса ключевой информации --> *}
+    <script type="text/javascript">
+        function setKeyFields () {
+            try {
+                if (window.IMPERACMS) {
+                    var stop = false;
+
+                    {* // лицензионный ключ *}
+                    if (window.IMPERACMS.license_key) {
+                        var key = '';
+                        try {
+                            key = IMPERACMS.license_key();
+                            stop = true;
+                        } catch (e) {
+                            key = '';
+                        }
+                        if (key == '') key = 'информация недоступна!';
+                        jQuery('#license_key').html(key);
+                    }
+
+                    {* // тип ключа *}
+                    if (window.IMPERACMS.license_key_edate) {
+                        var sdate = '';
+                        var edate = '';
+                        try {
+                            edate = IMPERACMS.license_key_edate();
+                            stop = true;
+                            if (window.IMPERACMS.license_key_sdate) {
+                                try {
+                                    sdate = IMPERACMS.license_key_sdate();
+                                } catch (e) {
+                                    sdate = '';
+                                }
+                            }
+                        } catch (e) {
+                            edate = '';
+                        }
+                        if (edate == '') {
+                            edate = 'информация недоступна!';
+                        } else if (edate == '31-12-2037 23:59.59') {
+                            edate = 'неограниченный';
+                            if (sdate != '') {
+                                edate += ', первая установка движка была ' + sdate;
+                            }
+                        } else {
+                            edate = 'тестовый, действует до ' + edate;
+                            if (sdate != '') {
+                                edate += ', первая установка движка была ' + sdate;
+                            }
+                        }
+                        jQuery('#license_key_type').html(edate);
+                    }
+
+                    {* // домены ключа *}
+                    if (window.IMPERACMS.license_key_domains) {
+                        var domains = '';
+                        try {
+                            domains = IMPERACMS.license_key_domains();
+                            if (domains != '') domains = domains.replace(' ', '<br />');
+                            stop = true;
+                        } catch (e) {
+                            domains = '';
+                        }
+                        if (domains == '') domains = 'информация недоступна!';
+                        jQuery('#license_key_domains').html(domains);
+                    }
+
+                    {* // владелец ключа *}
+                    if (window.IMPERACMS.license_key_owner) {
+                        var owner = '';
+                        try {
+                            owner = IMPERACMS.license_key_owner();
+                            if (owner == '') owner = 'владелец не предоставлял сведений, на кого зарегистрирован ключ';
+                            stop = true;
+                        } catch (e) {
+                            owner = '';
+                        }
+                        if (owner == '') owner = 'информация недоступна!';
+                        jQuery('#license_key_owner').html(owner);
+                    }
+
+                    {* // официальные версии *}
+                    if (window.IMPERACMS.official_versions) {
+                        var versions = '';
+                        try {
+                            var items = IMPERACMS.official_versions();
+                            if ((typeof(items) == 'object') && ('length' in items) && (items.length > 0)) {
+                                for (var i = 0; i < items.length; i++) {
+                                    if (items[i] == '110901') {
+                                        if (versions != '') versions += '<br />';
+                                        versions += 'как пакет расширений:<br />';
+                                    }
+                                    versions += items[i] + '<br />';
+                                    if ((items[i] == '110717') && (i + 1 == items.length)) {
+                                        versions += '110xxx ... 10xxxx';
+                                        break;
+                                    }
+                                }
+                            }
+                            stop = true;
+                        } catch (e) {
+                            versions = '';
+                        }
+                        if (versions == '') versions = 'информация недоступна!';
+                        jQuery('#official_versions').html(versions);
+                    }
+
+                    if (stop) clearInterval(setKeyFields_timer);
+                }
+            } catch (e) {
+            }
+        }
+
+        var setKeyFields_timer = setInterval(setKeyFields, 500);
+    </script>
+
+{/strip}

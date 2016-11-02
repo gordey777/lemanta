@@ -1,0 +1,156 @@
+{* <!-- страница заказа --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Отправляем серверный заголовок "Ошибка 404" (чтобы не попал в поисковик).  |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {if !empty($order) && (empty($order->hidden) || $order->user_id|default:FALSE === $user->user_id|default:0 || $smarty.session.admin|default:'' == 'admin')}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Устанавливаем глобальные переменные (для заголовков в index.tpl).      |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {$title = 'Ваш заказ' scope=global}
+        {$meta = '<meta name="Robots" content="noindex, follow" />' scope=global}
+        {header404}
+
+        {$status = $order->status|default:0}
+        <div id="main_page_bloks">
+            <h1>
+                Ваш заказ №{$order->order_id}
+                {if $status == 0} принят
+                {elseif $status == 1} в обработке
+                {elseif $status == 2} выполнен
+                {elseif $status == 3} аннулирован
+                {else} статус неизвестный{/if}
+
+                {if !empty($order->payment_status)}, оплачен{/if}
+            </h1>
+
+            <table id="purchases">
+                {foreach $order->products as $item}
+                    <tr>
+                        <td class="image">
+                            <a href="{url}">
+                                <img src="{image folder='files/products'}" alt="{name}" width="50" />
+                            </a>
+                        </td>
+                        <td class="name" width="100%">
+                            <a href="{url}">
+                                {name}
+                            </a> {**}
+                            {$item->variant_name}
+                        </td>
+                        <td class="price" nowrap>
+                            {$helper->priceForScreen($item->price)} {sign}
+                        </td>
+                        <td class="amount" nowrap>
+                            {$amount = ($item->quantity < 0) ? $item->quantity * -1 : $item->quantity}
+                            &times; {$amount} =
+                        </td>
+                        <td class="price" nowrap>
+                            {$helper->priceForScreen($item->price * $amount)} {sign}
+                        </td>
+                    </tr>
+                {/foreach}
+
+                {if !empty($order->discount_sum)}
+                    <tr>
+                        <td class="image"></td>
+                        <td class="name">Скидка</td>
+                        <td class="price"></td>
+                        <td class="amount"></td>
+                        <th class="price" nowrap>{$helper->priceForScreen($order->discount_sum)} {sign}</th>
+                    </tr>
+                {/if}
+
+                {if !empty($order->delivery_price)}
+                    <tr>
+                        <td class="image>"</td>
+                        <td class="name">{$order->delivery_method}</td>
+                        <td class="price"></td>
+                        <td class="amount"></td>
+                        <td class="price" nowrap>{$helper->priceForScreen($order->delivery_price)} {sign}</td>
+                    </tr>
+                {/if}
+
+                <tr>
+                    <td class="image"></td>
+                    <td class="name">Итого</td>
+                    <td class="price"></td>
+                    <td class="amount"></td>
+                    <th class="price" nowrap>{$helper->priceForScreen($order->total_amount)} {sign}</th>
+                </tr>
+            </table>
+
+            <h2>Детали заказа</h2>
+            <table class="order_info">
+                <tr>
+                    <td nowrap>Дата заказа</td>
+                    <td width="100%">{$order->date_date} в {$order->date_time}</td>
+                </tr>
+                {if !empty($order->compound_name)}
+                    <tr nowrap>
+                        <td>Имя</td>
+                        <td>{$order->compound_name}</td>
+                    </tr>
+                {/if}
+                {if !empty($order->email)}
+                    <tr nowrap>
+                        <td>Email</td>
+                        <td>{$order->email}</td>
+                    </tr>
+                {/if}
+                {if !empty($order->phone)}
+                    <tr>
+                        <td nowrap>Телефон</td>
+                        <td>{$order->phone}</td>
+                    </tr>
+                {/if}
+                {if !empty($order->compound_address)}
+                    <tr>
+                        <td nowrap>Адрес доставки</td>
+                        <td>{$order->compound_address}</td>
+                    </tr>
+                {/if}
+                {if !empty($order->comment)}
+                    <tr>
+                        <td nowrap>Комментарий</td>
+                        <td>{$order->comment|escape|nl2br}</td>
+                    </tr>
+                {/if}
+            </table>
+
+            {if empty($order->payment_status)}
+                {if !empty($PaymentMethods)}
+                    {foreach $PaymentMethods as $item}
+                        <div class="payment">
+                            <h2>Оплата → {name} {$helper->priceForScreen($item->amount, FALSE)} → {$item->currency_sign}</h2>
+                            {if !empty($item->description)}
+                                <div class="description">{$item->description}</div>
+                            {/if}
+                            {if !empty($item->payment_button)}
+                                <span class="payment-box">{$item->payment_button}</span>
+                            {/if}
+                        </div>
+                    {/foreach}
+                {/if}
+            {/if}
+        </div>
+    {else}
+        {include 'missing_template.htm'}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Устанавливаем глобальные переменные (для заголовков страницы в index.tpl). |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$meta = '<meta name="Robots" content="noindex, follow" />' scope=global}
+
+{/strip}

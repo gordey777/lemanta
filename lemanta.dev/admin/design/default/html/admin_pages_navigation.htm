@@ -1,0 +1,111 @@
+<!-- {*
+  Impera CMS: шаблон навигатора страниц в админпанели.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $Pages = массив с url (адресами) листаемых страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================ *} -->
+
+  <div class="navigator">
+
+    <!-- Выводим скрытые кнопки массовых операций -->
+    <input class="mass_submit disabled_button" disabled name="delete_selected_button" type="button" value="Удалить" onclick="javascript: if (confirm('Это действие удалит записи, помеченные на текущей странице. Вы подтверждаете такую операцию?')) Start_PageMassDelete('items_form');" title="Удалить помеченные на этой странице записи">
+    <input class="mass_submit disabled_button" disabled name="accept_changes_button" type="button" value="Применить" onclick="javascript: Start_PageMassPost('items_form');" title="Принять исправления в записях на этой странице">
+
+    <!-- {* Если не задан индексный номер текущей страницы или он отрицательный *} -->
+    {strip}
+      {if !isset($CurrentPage) || ($CurrentPage < 0)}
+        {assign var="CurrentPage" value=0}
+      {/if}
+
+      <!-- {* Если индексный номер текущей страницы больше числа страниц *} -->
+      {assign var="temp_count" value=$Pages|@count}
+      {if $CurrentPage >= $temp_count}
+        {assign var="CurrentPage" value=$temp_count-1}
+        {if $CurrentPage < 0}
+          {assign var="CurrentPage" value=0}
+        {/if}
+      {/if}
+
+      <!-- {* Вычисляем левую границу *} -->
+      {assign var="temp_size" value=11}
+      {assign var="temp_left" value=($CurrentPage-$temp_size/2)|string_format:"%d"}
+      {if $temp_left < 0}
+        {assign var="temp_left" value=0}
+      {/if}
+
+      <!-- {* Вычисляем правую границу *} -->
+      {assign var="temp_right" value=$temp_left+$temp_size-1}
+      {if $temp_right >= $temp_count}
+        {assign var="temp_right" value=$temp_count-1}
+        {assign var="temp_left" value=$temp_right-$temp_size+1}
+        {if $temp_left < 0}
+          {assign var="temp_left" value=0}
+        {/if}
+      {/if}
+    {/strip}
+
+    <!-- Выводим кнопки листаемых страниц -->
+    {if isset($Pages) && !empty($Pages)}
+      {foreach name=pages item=page from=$Pages}
+        {if !$smarty.foreach.pages.first && ($smarty.foreach.pages.index == $temp_left - 1)}
+          {strip}
+            <a href="{$page|escape}" title="Перейти на страницу {$smarty.foreach.pages.iteration}: записи от {($smarty.foreach.pages.index*$CurrentPageMaxsize+1)|string_format:'%d'} до {($smarty.foreach.pages.iteration*$CurrentPageMaxsize)|string_format:'%d'}">
+              ...
+            </a>
+          {/strip}
+        {/if}
+
+        <!-- Если это первая, последняя или кнопки около кнопки текущей страницы -->
+        {if $smarty.foreach.pages.first || $smarty.foreach.pages.last || (($smarty.foreach.pages.index >= $temp_left) && ($smarty.foreach.pages.index <= $temp_right))}
+          {if $smarty.foreach.pages.index != $CurrentPage}
+            {strip}
+              <a href="{$page|escape}" title="Перейти на страницу {$smarty.foreach.pages.iteration}: записи от {($smarty.foreach.pages.index*$CurrentPageMaxsize+1)|string_format:'%d'} до {if !$smarty.foreach.pages.last}{($smarty.foreach.pages.iteration*$CurrentPageMaxsize)|string_format:'%d'}{else}{$total_items|default:0|string_format:'%d'}{/if}">
+                {$smarty.foreach.pages.iteration}
+              </a>
+            {/strip}
+          {else}
+            {strip}
+              <a class="current" href="{$page|escape}" title="Перейти на страницу {$smarty.foreach.pages.iteration}: записи от {($smarty.foreach.pages.index*$CurrentPageMaxsize+1)|string_format:'%d'} до {if !$smarty.foreach.pages.last}{($smarty.foreach.pages.iteration*$CurrentPageMaxsize)|string_format:'%d'}{else}{$total_items|default:0|string_format:'%d'}{/if}">
+                {$smarty.foreach.pages.iteration}
+              </a>
+            {/strip}
+          {/if}
+        {/if}
+
+        {if !$smarty.foreach.pages.last && ($smarty.foreach.pages.index == $temp_right + 1)}
+          {strip}
+            <a href="{$page|escape}" title="Перейти на страницу {$smarty.foreach.pages.iteration}: записи от {($smarty.foreach.pages.index*$CurrentPageMaxsize+1)|string_format:'%d'} до {($smarty.foreach.pages.iteration*$CurrentPageMaxsize)|string_format:'%d'}">
+              ...
+            </a>
+          {/strip}
+        {/if}
+      {/foreach}
+    {/if}
+
+    <!-- ссылка Назад -->
+    {if isset($Pages) && !empty($Pages) && isset($PrevPageUrl) && ($PrevPageUrl != "")}
+      {strip}
+        <a class="next" name="GotoPreviousPageLink" href="{$PrevPageUrl|escape}" title="Перейти на предыдущую страницу (для управления с клавиатуры нажмите Ctrl+Влево)">
+          &lt;
+        </a>
+      {/strip}
+    {/if}
+
+    <!-- ссылка Вперед -->
+    {if isset($Pages) && !empty($Pages) && isset($NextPageUrl) && ($NextPageUrl != "")}
+      {strip}
+        <a class="next" name="GotoNextPageLink" href="{$NextPageUrl|escape}" title="Перейти на следующую страницу (для управления с клавиатуры нажмите Ctrl+Вправо)">
+          &gt;
+        </a>
+      {/strip}
+    {/if}
+  </div>

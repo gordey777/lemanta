@@ -1,0 +1,51 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля комментариев к статьям.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $Items = список записей с комментариями
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "acomments" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    comments = true - вывести эту кнопку
+    acomments = true - вывести эту кнопку
+    ncomments = true - вывести эту кнопку
+    feedback = true - вывести эту кнопку
+    callme = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "acomments"
+           main = true
+           comments = true
+           acomments = true
+           ncomments = true
+           feedback = true
+           callme = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Комментарии
+      </div>
+      Комментарии к статьям
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        &nbsp;
+      {/strip}
+    </div>
+
+    {include file = "admin_posts.htm"}
+  </div>

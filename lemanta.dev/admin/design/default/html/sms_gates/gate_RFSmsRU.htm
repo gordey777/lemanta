@@ -1,0 +1,25 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница модуля SMS-шлюза RFSMS.ru                                      |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $item = запись о шлюзе                                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {include file = 'sms_gates/gate_model.htm'
+
+             item = $item|default:false
+
+             title = 'SMS шлюз RFSMS.ru (Россия)'
+             engine_info = 'работает на транспорте RF SMS'
+             official_site = 'rfsms.ru'
+
+             balance_sign = 'руб'
+             balance_exists = true}
+
+{/strip}

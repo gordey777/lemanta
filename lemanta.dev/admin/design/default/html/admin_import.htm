@@ -1,0 +1,1378 @@
+{* <!--
+  Impera CMS: шаблон админ модуля страницы варианта импорта.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о варианте импорта;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    imports = true - вывести эту кнопку
+    card_imports = true - вывести эту кнопку
+    export = true - вывести эту кнопку
+    backup = true - вывести эту кнопку
+    redirects = true - вывести эту кнопку
+    mailer = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           imports = true
+           card_imports = true
+           export = true
+           backup = true
+           redirects = true
+           mailer = true}
+
+  {* <!-- В переменную $id заносим идентификатор варианта импорта или 0 при его отсутствии. --> *}
+  {assign var="id" value=$item->import_id|default:0|escape}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Imports" title="Перейти на страницу вариантов импорта в админпанели">Импорт</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id)}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новый вариант импорта
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        {if !empty($id) && isset($item->url) && !empty($item->url) && empty($error)}
+          <a href="http://{$root_url|escape}/import/{$item->url|escape}" title="Адрес страницы внешнего вызова варианта импорта" onclick="javascript: return false;">
+            http://{$root_url|escape}/import/{$item->url|escape}
+          </a>
+        {else}
+          &nbsp;
+        {/if}
+      {/strip}
+    </div>
+
+    {* <!-- Если во входной переменной $message есть текст информационного сообщения --> *}
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    {* <!-- Если во входной переменной $error есть текст сообщения об ошибке --> *}
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о варианте импорта -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Import" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param">
+            Название:
+          </td>
+          <td class="value" width="100%" title="Название варианта импорта">
+            <input class="edit" name="name[{$id}]" type="text" value="{$item->name|escape|default:''}">
+          </td>
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Настройки -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+        <tr>
+          <td class="param">
+            URL интерфейса:
+          </td>
+          <td class="param_short" width="1%">
+            http://сайт/import/
+          </td>
+          <td class="value" colspan="4" width="100%" title="Окончание адреса страницы внешнего вызова варианта импорта">
+            <input class="edit" name="url[{$id}]" type="text" value="{$item->url|escape|default:''}">
+          </td>
+          <td class="param_short">
+            Пароль:
+          </td>
+          <td class="value" width="1%" title="Пароль доступа к варианту импорта через внешний вызов">
+            <input class="edit" name="password[{$id}]" type="text" value="{$item->password|escape|default:''}">
+          </td>
+        </tr>
+        <tr>
+          <td class="param">
+            Источник:
+          </td>
+          <td class="value" colspan="3" width="100%" style="width: 100%;" title="URL файла, из которого будет произведен импорт данных">
+            <input class="edit" name="filename[{$id}]" type="text" value="{$item->filename|escape|default:''}">
+          </td>
+          <td class="value" title="В каком формате импортируются данные">
+            <select name="format[{$id}]" style="width: 50px;">
+              <option value="csv"{if isset($item->format) && ($item->format == "csv")} selected{/if}>csv</option>
+              <option value="xls html"{if isset($item->format) && ($item->format == "xls html")} selected{/if}>xls (html)</option>
+            </select>
+          </td>
+          <td class="value" title="Символ деления строки данных на поля (этот параметр игнорируется при формате XLS html)">
+            <select name="delimiter[{$id}]" style="width: 50px;">
+              {assign var="delimiter_tabulation" value="\t"}
+              <option value="{$delimiter_tabulation}"{if isset($item->delimiter) && ($item->delimiter == $delimiter_tabulation)} selected{/if}>табуляция</option>
+              <option value=";"{if isset($item->delimiter) && ($item->delimiter == ";")} selected{/if}>;</option>
+              <option value=","{if isset($item->delimiter) && ($item->delimiter == ",")} selected{/if}>,</option>
+              <option value="#"{if isset($item->delimiter) && ($item->delimiter == "#")} selected{/if}>#</option>
+              <option value="|"{if isset($item->delimiter) && ($item->delimiter == "|")} selected{/if}>|</option>
+            </select>
+          </td>
+          <td class="param_short" title="Разрешен ли запуск импорта по расписанию">
+            <input class="checkbox" id="item_form_automatic" name="automatic[{$id}]" type="checkbox"{if isset($item->automatic) && ($item->automatic == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_automatic');">
+              Авто
+            </span>
+          </td>
+          <td class="value" title="Пауза между сеансами автоматического импорта">
+            <select name="lifetime[{$id}]">
+              <option value="900"{if isset($item->lifetime) && ($item->lifetime > 0) && ($item->lifetime <= 900)} selected{/if}>15 минут</option>
+              <option value="1800"{if isset($item->lifetime) && ($item->lifetime > 900) && ($item->lifetime <= 1800)} selected{/if}>30 минут</option>
+              <option value="2700"{if isset($item->lifetime) && ($item->lifetime > 1800) && ($item->lifetime <= 2700)} selected{/if}>45 минут</option>
+              <option value="3600"{if isset($item->lifetime) && ($item->lifetime > 2700) && ($item->lifetime <= 3600)} selected{/if}>1 час</option>
+              <option value="5400"{if isset($item->lifetime) && ($item->lifetime > 3600) && ($item->lifetime <= 5400)} selected{/if}>1 час 30 минут</option>
+              <option value="7200"{if isset($item->lifetime) && ($item->lifetime > 5400) && ($item->lifetime <= 7200)} selected{/if}>2 часа</option>
+              <option value="10800"{if isset($item->lifetime) && ($item->lifetime > 7200) && ($item->lifetime <= 10800)} selected{/if}>3 часа</option>
+              <option value="21600"{if isset($item->lifetime) && ($item->lifetime > 10800) && ($item->lifetime <= 21600)} selected{/if}>6 часов</option>
+              <option value="43200"{if isset($item->lifetime) && ($item->lifetime > 21600) && ($item->lifetime <= 43200)} selected{/if}>12 часов</option>
+              <option value="86400"{if isset($item->lifetime) && ($item->lifetime > 43200) && ($item->lifetime <= 86400)} selected{/if}>1 сутки</option>
+              <option value="172800"{if isset($item->lifetime) && ($item->lifetime > 86400) && ($item->lifetime <= 172800)} selected{/if}>2 суток</option>
+              <option value="345600"{if isset($item->lifetime) && ($item->lifetime > 172800) && ($item->lifetime <= 345600)} selected{/if}>4 суток</option>
+              <option value="604800"{if isset($item->lifetime) && ($item->lifetime > 345600) && ($item->lifetime <= 604800)} selected{/if}>1 неделя</option>
+              <option value="1296000"{if isset($item->lifetime) && ($item->lifetime > 604800) && ($item->lifetime <= 1296000)} selected{/if}>15 суток</option>
+              <option value="2592000"{if isset($item->lifetime) && ($item->lifetime > 1296000) && ($item->lifetime <= 2592000)} selected{/if}>30 суток</option>
+            </select>
+          </td>
+        </tr>
+
+
+
+        <tr>
+            <td class="param">
+                Перед импортом:
+            </td>
+
+            <td class="value" colspan="2" width="100%" title="Какое действие выполнить перед началом импорта данных из файла">
+
+                <select name="before_action[{$id}]">
+
+                    <option value="{$smarty.const.BEFORE_IMPORT_OPERATION_NO_ACTION|default:0|escape}" {($item->before_action|default:'' == $smarty.const.BEFORE_IMPORT_OPERATION_NO_ACTION|default:0) ? 'selected' : ''}>
+                        ничего не трогать
+                    </option>
+
+                    <option value="{$smarty.const.BEFORE_IMPORT_OPERATION_ZERO_QUANTITY|default:1|escape}" {($item->before_action|default:'' == $smarty.const.BEFORE_IMPORT_OPERATION_ZERO_QUANTITY|default:1) ? 'selected' : ''}>
+                        обнулить у всех товаров их количество на складе
+                    </option>
+
+                    <option value="{$smarty.const.BEFORE_IMPORT_OPERATION_DELETE_PRODUCTS|default:2|escape}" {($item->before_action|default:'' == $smarty.const.BEFORE_IMPORT_OPERATION_DELETE_PRODUCTS|default:2) ? 'selected' : ''}>
+                        удалить все товары из каталога
+                    </option>
+
+                    <option value="{$smarty.const.BEFORE_IMPORT_OPERATION_HIDE_PRODUCTS|default:3|escape}" {($item->before_action|default:'' == $smarty.const.BEFORE_IMPORT_OPERATION_HIDE_PRODUCTS|default:3) ? 'selected' : ''}>
+                        скрыть все товары от показа на сайте
+                    </option>
+
+                </select>
+
+            </td>
+
+
+
+          <td class="param_short" colspan="2" title="Затирать ли во время импорта прежние признаки товара (хит, новинка, акционный и т.п.)">
+            <input class="checkbox" id="item_form_marketing_update" name="marketing_update[{$id}]" type="checkbox"{if isset($item->marketing_update) && ($item->marketing_update == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_marketing_update');">
+              Перезаписать маркетинговые поля товаров
+            </span>
+          </td>
+          <td class="param_short" colspan="3" title="Затирать ли во время импорта прежние цены и количество товара">
+            <input class="checkbox" id="item_form_financial_update" name="financial_update[{$id}]" type="checkbox"{if isset($item->financial_update) && ($item->financial_update == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_financial_update');">
+              Перезаписать количественные поля
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_high" rowspan="2">
+            Поля:
+          </td>
+          <td class="value" colspan="6" rowspan="2" width="100%" title="Мнемоническое описание порядка полей в импортируемых данных">
+            <textarea class="editor_big" id="item_form_columns" name="columns[{$id}]" style="height: 64px;">{$item->columns|escape|default:''}</textarea>
+          </td>
+          <td class="param_short" title="Разрешен ли вариант импорта к использованию">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешен
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="value_box" style="vertical-align: bottom;">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+        <tr>
+          <td><!-- / --></td>
+          <td><!-- / --></td>
+          <td><!-- / --></td>
+          <td width="100%"><!-- / --></td>
+          <td><!-- / --></td>
+          <td><!-- / --></td>
+          <td><!-- / --></td>
+          <td><!-- / --></td>
+        </tr>
+      </table>
+
+      <!-- Выбор мнемонических обозначений полей -->
+      <center>
+        <table align="center" cellpadding="0" cellspacing="5" class="center">
+          <tr>
+            <td class="title" colspan="4">
+              Возможные колонки в импортируемых данных
+            </td>
+          </tr>
+
+          <tr>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              категория
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              бренд
+            </td>
+          </tr>
+
+          <tr>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('category');">category</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('category2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('category3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('category4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('category5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('category6');">6</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('category{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+               звенья ветви категории товара
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand');">brand</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brand{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              звенья ветви бренда товара
+            </td>
+          </tr>
+
+          <tr>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categoryId');">categoryId</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categoryId2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categoryId3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categoryId4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categoryId5');">5</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categoryId{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+               идентификаторы звеньев категории
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId');">brandId</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandId{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              идентификаторы звеньев бренда
+            </td>
+          </tr>
+
+          <tr>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categorySyncId');">categorySyncId</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categorySyncId2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categorySyncId3');">3</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('categorySyncId{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+               синхронизационный ИД категории
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandSyncId');">brandSyncId</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandSyncId2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandSyncId3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandSyncId4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandSyncId5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandSyncId6');">6</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('brandSyncId{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              синхронизационный ИД бренда
+            </td>
+          </tr>
+
+          <tr>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              товар
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              файлы товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('productId');">productId</a>
+            </td>
+            <td nowrap width="50%">
+              идентификатор товара
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('smallImage');">smallImage</a>
+            </td>
+            <td nowrap width="50%">
+              имя файла миниатюры товара
+            </td>
+          </tr>
+
+          <tr>
+            <td class="inaccessible" title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('productSyncId');">productSyncId</a>
+            </td>
+            <td nowrap width="50%">
+              синхронизационный ИД товара
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('largeimage');">largeImage</a>
+            </td>
+            <td nowrap width="50%">
+              имя файла фотографии товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('pCode');">pCode</a>
+            </td>
+            <td nowrap width="50%">
+              буквенный код товара
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images');">images</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('images{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              имена файлов дополнительных фото
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('barCode');">barCode</a>
+            </td>
+            <td nowrap width="50%">
+              штрихкод товара
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesAlt');">imagesAlt</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesAlt2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesAlt3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesAlt4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesAlt5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesAlt6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesAlt7');">7</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesAlt{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              надписи файлов дополнительных фото
+            </td>
+          </tr>
+
+          <tr>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('model');">model</a>
+            </td>
+            <td nowrap width="50%">
+              название товара
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesText');">imagesText</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesText2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesText3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesText4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesText5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesText6');">6</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesText{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              описания файлов дополнит.фото
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('variant');">variant</a>
+            </td>
+            <td nowrap width="50%">
+              название варианта товара
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesView');">imagesView</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesView2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesView3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesView4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesView5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesView6');">6</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('imagesView{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              признаки слайдинга дополнит.фото
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('sku');">sku</a>
+            </td>
+            <td nowrap width="50%">
+              артикул варианта товара
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video');">video</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('video{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              ссылки на видео обзоры товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('comeDate');">comeDate</a>
+            </td>
+            <td nowrap width="50%">
+              дата поступления товара
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files');">files</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('files{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              имена медиа файлов товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('guarantee');">guarantee</a>
+            </td>
+            <td nowrap width="50%">
+              срок гарантии на товар
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt');">filesAlt</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesAlt{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              подсказки медиа файлов товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('section');">section</a>
+            </td>
+            <td nowrap width="50%">
+              код раздела магазина
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText');">filesText</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('filesText{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              описания медиа файлов товара
+            </td>
+          </tr>
+
+          <tr>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              количественные поля
+            </td>
+            <td class="inaccessible" title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('downloadFile');">downloadFile</a>
+            </td>
+            <td nowrap width="50%">
+              ссылка на скачиваемый файл
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price');">price</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price8');">8</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price9');">9</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('price10');">10</a>
+            </td>
+            <td nowrap width="50%">
+              цена варианта товара
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              адрес страницы
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('oldPrice');">oldPrice</a>
+            </td>
+            <td nowrap width="50%">
+              старая цена варианта товара
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('url');">url</a>
+            </td>
+            <td nowrap width="50%">
+              URL страницы товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tempPrice');">tempPrice</a>
+            </td>
+            <td nowrap width="50%">
+              акционная цена варианта товара
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('urlSpecial');">urlSpecial</a>
+            </td>
+            <td nowrap width="50%">
+              признак "это особый URL"
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('discount');">discount</a>
+            </td>
+            <td nowrap width="50%">
+              приоритетная скидка варианта
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              описание товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('quantity');">quantity</a>
+            </td>
+            <td nowrap width="50%">
+              количество варианта на складе
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('annotation');">annotation</a>
+            </td>
+            <td nowrap width="50%">
+              краткое описание товара
+            </td>
+          </tr>
+
+          <tr>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              маркетинговые поля
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('description');">description</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('description2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('description3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('description4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('description5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('description6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('description7');">7</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('description{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              полное описание товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('hit');">hit</a>
+            </td>
+            <td nowrap width="50%">
+              признак "хит продаж"
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo');">seo</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('seo{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              SEO текст для товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('newest');">newest</a>
+            </td>
+            <td nowrap width="50%">
+              признак "новинка"
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaTitle');">metaTitle</a>
+            </td>
+            <td nowrap width="50%">
+              заголовок для тега META
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('actional');">actional</a>
+            </td>
+            <td nowrap width="50%">
+              признак "акционный товар"
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaKeyword');">metaKeyword</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaKeyword2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaKeyword3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaKeyword4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaKeyword5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaKeyword6');">6</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaKeyword{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              ключевые слова для тега META
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('awaited');">awaited</a>
+            </td>
+            <td nowrap width="50%">
+              признак "скоро в продаже"
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaDescription');">metaDescription</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaDescription2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaDescription3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaDescription4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaDescription5');">5</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('metaDescription{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              описание для тега META
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('ymarket');">ymarket</a>
+            </td>
+            <td nowrap width="50%">
+              признак "экспорт в Яндекс.Маркет"
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              свойства товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('vkontakte');">vkontakte</a>
+            </td>
+            <td nowrap width="50%">
+              признак "экспорт в ВКонтакте"
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property');">property</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('property{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              свойство товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('highlighted');">highlighted</a>
+            </td>
+            <td nowrap width="50%">
+              признак "выделен визуально"
+            </td>
+            <td class="inaccessible" nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propertyInfo');">propertyInfo</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propertyInfo2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propertyInfo3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propertyInfo4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propertyInfo5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propertyInfo6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propertyInfo7');">7</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propertyInfo{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              описание свойства товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('hidden');">hidden</a>
+            </td>
+            <td nowrap width="50%">
+              признак "скрыт от неавторизованных"
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue');">propValue</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propValue{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              значение свойства товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('commented');">commented</a>
+            </td>
+            <td nowrap width="50%">
+              признак "разрешен к обсуждению"
+            </td>
+            <td class="inaccessible" nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon');">propIcon</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propIcon{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              картинка значения свойства товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('enabled');">enabled</a>
+            </td>
+            <td nowrap width="50%">
+              признак "товар виден на сайте"
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder');">propOrder</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('propOrder{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              порядок (вес) значения свойства
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('rssDisabled');">rssDisabled</a>
+            </td>
+            <td nowrap width="50%">
+              признак "не показывать в RSS"
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              разное
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('informerDisabled');">informerDisabled</a>
+            </td>
+            <td nowrap width="50%">
+              признак "не для информеров"
+            </td>
+            <td class="attention" nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('skip');">skip</a> или
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('null');">null</a>
+            </td>
+            <td class="attention" nowrap width="50%">
+              пропускаемая колонка
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('nonCreditable');">nonCreditable</a>
+            </td>
+            <td nowrap width="50%">
+              признак "не продавать в кредит"
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('created');">created</a>
+            </td>
+            <td nowrap width="50%">
+              дата создания записи о товаре
+            </td>
+          </tr>
+
+          <tr>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              порядок (вес)
+            </td>
+            <td class="inaccessible" title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('inPrice');">inPrice</a>
+              2 3 4 5 6 7 8
+            </td>
+            <td nowrap width="50%">
+              признаки "показывать в прайсе N"
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('order');">order</a>
+            </td>
+            <td nowrap width="50%">
+              порядок товара в своей ветке
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules');">modules</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('modules{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              модули на странице товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('orderHit');">orderHit</a>
+            </td>
+            <td nowrap width="50%">
+              порядок товара среди хитов
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('template');">template</a>
+            </td>
+            <td nowrap width="50%">
+              шаблон отрисовки страницы товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('orderNewest');">orderNewest</a>
+            </td>
+            <td nowrap width="50%">
+              порядок товара среди новинок
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              популярность
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('orderActional');">orderActional</a>
+            </td>
+            <td nowrap width="50%">
+              порядок товара среди акционных
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('votes');">votes</a>
+            </td>
+            <td nowrap width="50%">
+              количество голосов за товар
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('orderAwaited');">orderAwaited</a>
+            </td>
+            <td nowrap width="50%">
+              порядок товара среди ожидаемых
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('rating');">rating</a>
+            </td>
+            <td nowrap width="50%">
+              значение рейтинга товара
+            </td>
+          </tr>
+
+          <tr>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              субдомен
+            </td>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('browsed');">browsed</a>
+            </td>
+            <td nowrap width="50%">
+              число просмотров товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('subdomain');">subdomain</a>
+            </td>
+            <td nowrap width="50%">
+              левая часть имени субдомена товара
+            </td>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags');">tags</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags3');">3</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags4');">4</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags5');">5</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags6');">6</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags7');">7</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags8');">8</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('tags{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              теги товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('subdomainEnabled');">subdomainEnabled</a>
+            </td>
+            <td nowrap width="50%">
+              признак "субдомен товара разрешен"
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              пользователи
+            </td>
+          </tr>
+
+          <tr>
+            <td nowrap title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('subdomainHtml');">subdomainHtml</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('subdomainHtml2');">2</a>
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('subdomainHtml3');">3</a> ...
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('subdomainHtml{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}');">{$smarty.const.IMPORT_COLUMN_PARTS_MAXCOUNT|escape}</a>
+            </td>
+            <td nowrap width="50%">
+              контент субдомена товара
+            </td>
+            <td class="inaccessible" title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('supplier');">userId</a>
+            </td>
+            <td nowrap width="50%">
+              идентификатор пользователя
+            </td>
+          </tr>
+
+          <tr>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              связи (список через запятую)
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              сроки доставки
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('relatedProducts');">relatedProducts</a>
+            </td>
+            <td nowrap width="50%">
+              идентификаторы похожих товаров
+            </td>
+            <td class="inaccessible" title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('shippingsTerm');">shippingsTerm</a>
+            </td>
+            <td nowrap width="50%">
+              срок доставки товара
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('relatedCategories');">relatedCategories</a>
+            </td>
+            <td nowrap width="50%">
+              идентификаторы похожих категорий
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              меню
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('relatedBrands');">relatedBrands</a>
+            </td>
+            <td nowrap width="50%">
+              идентификаторы похожих брендов
+            </td>
+            <td class="inaccessible" title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('shippingsTerm');">menu</a>
+            </td>
+            <td nowrap width="50%">
+              название меню
+            </td>
+          </tr>
+
+          <tr>
+            <td title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('accessoryProducts');">accessoryProducts</a>
+            </td>
+            <td nowrap width="50%">
+              ИДы дополн.товаров (аксессуаров)
+            </td>
+            <td colspan="2" nowrap width="50%">
+              &nbsp;
+            </td>
+          </tr>
+
+          <tr>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              статьи
+            </td>
+            <td class="subtitle" colspan="2" nowrap width="50%">
+              новости
+            </td>
+          </tr>
+
+          <tr>
+            <td class="inaccessible" title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('articleId');">articleId</a>
+            </td>
+            <td nowrap width="50%">
+              идентификатор статьи
+            </td>
+            <td class="inaccessible" title="Добавить такое поле в строку мнемонического описания полей в импортируемых данных">
+              <a href="#" rel="nofollow" onclick="javascript: return Import_Append_Column('newsId');">newsId</a>
+            </td>
+            <td nowrap width="50%">
+              идентификатор новости
+            </td>
+          </tr>
+
+        </table>
+      </center>
+
+      <!-- История -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            История:
+          </td>
+          <td class="value" title="Сведения об использовании варианта импорта">
+            <textarea class="editor_big" name="history[{$id}]" readonly>{$item->history|escape|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && !empty($from_page)}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем пустой указатель требуемой команды -->
+      <input id="item_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <div class="help">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Название</b>. Обычная строка с названием данного варианта импорта. Под этим названием вариант появится в списке на странице вариантов импорта
+        в админпанели.
+      </div>
+      <div>
+        <b>URL интерфейса, Пароль</b>. Если необходимо, здесь задается шлюзовый адрес, который выделяется для проведения импорта данных по инициативе
+        стороннего сайта. То есть внешний ресурс, знающий этот выделенный URL, обращается по нему к данному сайту и передает POST-запросом набор строк,
+        которые он хотел бы импортировать в базу сайта. В целях безопасности предусмотрен пароль доступа к URL интерфейса. Если он задан, удаленный
+        импорт сможет провести только ресурс, передавший в запросе аналогичный пароль.
+      </div>
+      <div>
+        <b>Источник, Авто, Пауза</b>. В общем случае импорт производит администратор в ручном режиме: на странице вариантов импорта нажимает кнопку
+        старта интересующего варианта, выбирает какой файл взять с локального компьютера и начинается импорт. Система также поддерживает импорт из
+        удаленного источника, когда указывается URL файла, расположенного на внешнем сайте. В этом случае исключается процедура выбора локального
+        файла и импорт начинается сразу после нажатия кнопки старта интересующего варианта. В дополнение можно выставить флажок автоматического
+        запуска импорта и задать, через какое время он повторится. Тогда система периодически станет выкачивать файл из внешнего источника и
+        импортировать его на сайт.
+      </div>
+      <div>
+        <b>Формат, Разделитель полей</b>. Существует для указания в каком формате поступают импортируемые данные на сайт и каким символом разделяются
+        поля внутри одной строки данных. Подразумевается, что сайтом будет получена одна или более строк, причем в каждой из них будет одинаковое
+        количество полей.
+      </div>
+      <div>
+        <b>Перед импортом</b>. Дает возможность указать, что необходимо сделать с базой товаров перед началом импорта данных. Если это действие не влечет
+        за собой очистку базы от товаров, то можно выставить или снять флажки управления перезаписью некоторых полей товаров. Ведь в маркетинговых целях
+        администратор мог изменить признаки "хит продаж", "акция" и подобные у отдельных товаров, а в момент импорта изменения затрутся, если в импортируемых
+        данных находятся аналогичные колонки.
+      </div>
+      <div>
+        <b>Поля</b>. Здесь перечисляются через запятую мнемонические названия полей в том порядке, как они расположены в одной строке импортируемых данных.
+        По сути это символическое перечисление порядка колонок, ведь в каждом случае данные поступают на сайт в виде воображаемой таблицы, будь она
+        однострочной или многострочной.
+      </div>
+      <div>
+        В то время как формат мнемонического описания порядка полей - это простое перечисление через запятую, имеются нюансы в формате отдельного поля.
+        Во-первых, оно начинается с мнемоники (условного короткого обозначения) - какой собственно вид значений содержится в такой колонке таблицы.
+        Разрешается с помощью знака плюс склеивать несколько мнемоник для целей копирования значения. Это может быть важно для таблиц с недостаточным
+        количеством столбцов. Например запись model+metatitle означает, что значение такой колонки таблицы будет попадать в базу сайта как в название
+        товара, так и копироваться в мета заголовок страницы товара.
+      </div>
+      <div>
+        Существенный момент: за каждой мнемоникой допускается символ ~ (тильда) - это маркер непринципиальности к изменению значения в данном поле.
+        Смысл маркера в указании тех полей, на импортируемое содержимое которых не обращать внимание, если такой товар уже есть в базе. Для примера
+        представим, среди мнемонического описания полей встретилось smallimage~. Это значит, что в момент импорта поле имени файла миниатюры
+        уже существующего в базе товара не будет обновлено, а при отсутствии товара будет добавлен с импортируемым содержимым поля smallimage. Таким
+        образом маркер ~ после мнемоники можно трактовать как оставить в этом поле прежнее значение в существующих товарах.
+      </div>
+      <div>
+        Во-вторых, следом за мнемоникой или их склейкой опционально можно указать произвольное количество команд отклонения или безусловного принятия
+        обрабатываемой строки. Каждая команда заключается в квадратные скобки и содержит значение, при котором она срабатывает. Сразу за открывающей
+        квадратной скобкой обязательно ставится знак плюс или минус, чтобы классифицировать команду. Минус означает команду отклонения строки, плюс -
+        команду безусловного принятия. Например запись brand [-sony ericsson] [-siemens] [-] [+sony] обозначает импорт из таблицы всех строк, где
+        бренд не Sony Ericsson и не Siemens и не пустая строка, причем строки с брендом Sony импортировать безусловно. То есть команды [+...]
+        доминируют над командами [-...], позволяя импортировать строку, даже если команды в других частях мнемонического описания порядка полей
+        сигнализировали отклонить ее.
+      </div>
+      <div>
+        Еще важно, что только в командах [-...] может использоваться специальный символ звездочка, означающий "все остальные". Например запись
+        brand [-*] [+sony] [+] обозначает импорт всех строк лишь с брендом Sony или вообще неуказанным, остальные строки будут отклонены.
+      </div>
+      <div>
+        В-третьих, следом можно опционально указать произвольное количество вариантов замен значения - пары что ищем на что заменяем. Части пар
+        разделяются двоеточием, сами пары заключаются в квадратные скобки. Специальный символ звездочка в левой части пары означает "все оcтальные".
+        Например запись brand [сони:Sony] [:Siemens] [неизвестный:] [*:Sony Ericsson] обозначает, что в такой колонке таблицы все бренды Сони заменить
+        на Sony, не указанные бренды заменить на Siemens, бренды Неизвестный заменить пустой строкой, все остальные заменить на Sony Ericsson.
+      </div>
+      <div>
+        Таким образом формат отдельного поля в мнемоническом описании порядка полей: МнемоникаИлиИхСклейка КомандыОтклоненияПринятия ВариантыЗамен.
+      </div>
+      <div>
+        <b>Возможные колонки</b>. Эта таблица содержит список всех распознаваемых системой мнемоник. Для удобства каждая мнемоника сделана кликабельной,
+        чтобы администратор вместо ручного набора мог просто щелкнуть по мнемонике, тогда она добавится в конец мнемонического описания порядка
+        полей при условии, что ее там еще нет.
+      </div>
+      <div>
+        <b>История</b>. Существует в информационных целях и заполняется исключительно системой по мере использования данного варианта импорта. Здесь
+        в хронологическом порядке можно узнать, когда запускался вариант импорта, в каком режиме, с каким результатом.
+      </div>
+    </div>
+
+  </div>
+
+  {literal}
+    <!-- Скрипт добавления поля в строку мнемонического описания полей -->
+    <script language="JavaScript" type="text/javascript">
+      <!--
+      function Import_Append_Column (mnemonic) {
+
+        // находим поле ввода
+        var object = document.getElementById('item_form_columns');
+        if ((typeof(object) == 'object') && (object != null)) {
+          if ('value' in object) {
+
+            // корректируем его строку до формата Текст[, Текст[, Текст[, И так далее]]]
+            var previous = '';
+            var line = '';
+            var i = 0;
+            while (i < object.value.length) {
+              char = object.value.substr(i, 1);
+              if (((previous != '') && (previous != ' ')) || (char != ' ')) {
+                if (char == ',') {
+                  while ((line.substr(line.length - 1) == ' ') || (line.substr(line.length - 1) == ',')) line = line.substr(0, line.length - 1);
+                }
+                line = line + char;
+                if (char == ',') {
+                  char = ' ';
+                  line = line + char;
+                }
+              }
+              previous = char;
+              i = i + 1;
+            }
+            while ((line.substr(line.length - 1) == ' ') || (line.substr(line.length - 1) == ',')) line = line.substr(0, line.length - 1);
+            while ((line.substr(0, 1) == ' ') || (line.substr(0, 1) == ',')) line = line.substr(1);
+            object.value = line;
+
+            // работаем в нижнем регистре
+            var line = line.toLowerCase();
+            var value = mnemonic.toLowerCase();
+
+            // если строка еще не содержит мнемоник
+            if (line == '') {
+              object.value = mnemonic;
+            } else {
+
+              // иначе ищем такую мнемонику в строке, если это не мнемоника null или skip
+              var exist = false;
+              if ((value != 'null') && (value != 'skip')) {
+                // может она одна в строке?
+                exist = (line == value);
+                if (!exist) {
+                  // может в начале строки?
+                  exist = value + ',';
+                  exist = (line.substr(0, exist.length) == exist);
+                  if (!exist) {
+                    // может в начале строки и содержит параметры замены (отделяются пробелом)?
+                    exist = value + ' ';
+                    exist = (line.substr(0, exist.length) == exist);
+                    if (!exist) {
+                      // может в конце строки?
+                      exist = ', ' + value;
+                      exist = (line.substr(line.length - exist.length) == exist);
+                      if (!exist) {
+                        // может в середине строки?
+                        exist = ', ' + value + ',';
+                        exist = (line.indexOf(exist) >= 0);
+                        if (!exist) {
+                          // может в середине строки и содержит параметры замены?
+                          exist = ', ' + value + ' ';
+                          exist = (line.indexOf(exist) >= 0);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+
+              // если такая мнемоника не найдена, добавляем в конец строки поля ввода
+              if (!exist) object.value += ', ' + mnemonic;
+            }
+
+            // фокусируемся на поле ввода
+            if ('scrollLeft' in object) object.scrollLeft = 10000;
+            object.focus();
+          }
+        }
+
+        // возвращаем отбой перехода по ссылке
+        return false;
+      }
+      // -->
+    </script>
+  {/literal}

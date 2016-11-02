@@ -1,0 +1,303 @@
+{* <!--
+  Impera CMS: шаблон админ модуля картинок дизайна.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о файлах и папках;
+    $item = относительный путь выбранной папки;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    themes = true - вывести эту кнопку
+    templates = true - вывести эту кнопку
+    styles = true - вывести эту кнопку
+    images = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "images"
+           main = true
+           themes = true
+           templates = true
+           styles = true
+           images = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Картинки
+      </div>
+      Файлы картинок: <b style="font-size: 10pt; font-weight: normal;">шаблон {$settings->theme|escape}</b>
+    </h1>
+
+    <!-- Часть страницы, показываемая после старта загрузки фото -->
+    <div class="box_part" id="images_start_box" style="display: none;">
+      <div class="toolkey">
+        &nbsp;
+      </div>
+      <div class="message">
+        Выполняется указанное Вами действие.<br>
+        Пожалуйста подождите.
+      </div>
+    </div>
+
+    <!-- Изначально видимая часть страницы, скрываемая после старта загрузки фото -->
+    <div class="box_part" id="images_list_box">
+
+      <!-- Выводим инструментальные ссылки -->
+      <div class="toolkey">
+        {strip}
+          <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+            справка
+          </a>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Images&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DOWNLOAD|escape}&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape|default:''}" title="Загрузить картинку в текущую папку" onclick="javascript: return Start_Popup('popupDOWNLOAD', null);">
+            загрузить
+          </a>
+        {/strip}
+      </div>
+
+      <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+      {if isset($message) && ($message != "")}
+        <div class="message">
+          {$message}
+        </div>
+      {/if}
+
+      <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+      {if isset($error) && ($error != "")}
+        <div class="error">
+          <b>Ошибка:</b> {$error}
+        </div>
+      {/if}
+
+      <!-- Форма со списком записей -->
+      <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Images" enctype="multipart/form-data" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+        <!-- Селектор -->
+        <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+          <tr>
+
+            <!-- кнопка Удалить -->
+            <td class="param_short" title="Удалить текущую папку">
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Images" onclick="javascript: var object = document.getElementById('select_{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}'); if ((typeof(object) != 'object') || (object == null) || !('options' in object) || !('length' in object.options) || !('selectedIndex' in object) || (object.options.length <= object.selectedIndex)) return false; object = object.options[object.selectedIndex]; if ((typeof(object) != 'object') || (object == null) || !('getAttribute' in object)) return false; object = object.getAttribute('link'); if (!object || (object == '')) return false; if (!confirm('Данная папка будет удалена с сайта. Вы подтверждаете такую операцию?')) return false; this.href = object; return true;">
+                <img class="microkey_right icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+              </a>
+            </td>
+
+            <!-- текущая папка -->
+            <td class="param_short">
+              текущая папка:
+            </td>
+            <td class="value" width="60%" title="Выбор папки с картинками">
+
+              <!-- Создаем селектор папок -->
+              <select class="thin" id="select_{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+
+                <!-- элемент корневой папки -->
+                {strip}
+                  {assign var="temp_count" value=0}
+                  {if isset($items) && !empty($items)}
+                    {foreach item=r from=$items}
+                      {if !isset($r->files)}
+                        {assign var="temp_count" value=$temp_count+1}
+                      {/if}
+                    {/foreach}
+                  {/if}
+                  <option value="" link="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Images&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DELETE|escape}&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}=&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape|default:''}"{if $temp_count == 0} style="color: #808080;"{/if}>
+                    корень
+                    {if $temp_count != 0}&nbsp;&nbsp;&nbsp;&nbsp;({$temp_count} шт.){/if}
+                  </option>
+                {/strip}
+
+                <!-- {* Перечисляем имена папок *} -->
+                {if isset($items) && !empty($items)}
+                  {function name="show_folders"}
+                    {foreach item=c from=$dir}
+                      {if isset($c->files)}
+
+                        {strip}
+                          {assign var="temp_count" value=0}
+                          {if !empty($c->files)}
+                            {foreach item=r from=$c->files}
+                              {if !isset($r->files)}
+                                {assign var="temp_count" value=$temp_count+1}
+                              {/if}
+                            {/foreach}
+                          {/if}
+                          {capture assign="temp"}{$c->path}{$c->filename}{/capture}
+                          <option value="{$temp|escape}"{if isset($item) && ($item == $temp)} selected{/if} link="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}"{if $temp_count == 0} style="color: #808080;"{/if}>
+                            {section name="spaces" start=0 loop=$level step=1}&nbsp;&nbsp;&nbsp;&nbsp;{/section}
+                            {$c->filename|escape}
+                            {if $temp_count != 0}&nbsp;&nbsp;&nbsp;&nbsp;({$temp_count} шт.){/if}
+                          </option>
+                        {/strip}
+
+                        {if isset($c->files) && !empty($c->files)}
+                          {show_folders dir=$c->files level=$level+1}
+                        {/if}
+                      {/if}
+                    {/foreach}
+                  {/function}
+
+                  {* <!-- запускаем исполнение объявленной выше функции show_folders,
+                          передавая ей в качестве параметра массив файлов $items --> *}
+                  {show_folders dir=$items level=1}
+                {/if}
+              </select>
+            </td>
+
+            <!-- добавить папку -->
+            <td class="param_short">
+              &nbsp;&nbsp; в ней папку:
+            </td>
+            <td class="value" width="40%" title="Имя новой папки, которая будет создана в текущей папке">
+              <input class="edit" name="{$smarty.const.REQUEST_PARAM_NAME_NAME|escape}" type="text" value="">
+            </td>
+            <td class="value_box">
+              <input class="submit" type="submit" value="Создать" onclick="javascript: return Submit_Popup('?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Images&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_CREATE|escape}', 'images');">
+            </td>
+
+          </tr>
+        </table>
+
+        <!-- Кнопка сброса фильтра --> 
+        <div class="toolkey">
+          {strip}
+            <span>
+              папка: <span>
+                       корень{if isset($item) && ($item != "")}/{$item|escape}{/if}
+                     </span>
+            </span>
+          {/strip}
+        </div>
+
+        <!-- {* Выпадающая панель выбора файла для загрузки *} -->
+        {strip}
+          <div class="popup" id="popupDOWNLOAD">
+            <div class="popup_content">
+              <div class="title">
+                <div class="close">
+                  <a href="#" onclick="javascript: return Hide_Popup('popupDOWNLOAD');" title="Закрыть">
+                    x
+                  </a>
+                </div>
+                Загрузка картинки
+              </div>
+              <div class="cell">
+                файл картинки или zip-архив картинок:
+                <div class="input">
+                  <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.ZIP_IMAGES_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                  <input class="input" disabled id="popupDOWNLOADfile" name="image" type="file" title="Какой файл требуется взять с Вашего компьютера (объем файла не более {($smarty.const.ZIP_IMAGES_UPLOAD_MAXIMAL_FILESIZE/1024/1024)|string_format:"%d"|escape} Мбайт)">
+                </div>
+              </div>
+              <div class="submit">
+                <input class="submit" type="submit" value="Начать" onclick="javascript: return Submit_Popup('?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Images&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DOWNLOAD|escape}', 'images');">
+              </div>
+            </div>
+          </div>
+        {/strip}
+
+        {if isset($items) && !empty($items)}
+
+          <!-- {* Перечисляем имена файлов *} -->
+          {capture name="temp_count"}{/capture}
+          {capture assign="temp"}{if isset($item)}{$item}{if $item != ""}/{/if}{/if}{/capture}
+          {function name="show_files"}
+            {foreach item=c from=$dir}
+              {strip}
+                {if isset($c->files)}
+                  {if !empty($c->files)}
+                    {show_files dir=$c->files}
+                  {/if}
+                {elseif $c->path == $temp}
+                  {capture name="temp_count"}1{/capture}
+
+                  <li class="imagelist">
+
+                    <!-- Изображение -->
+                    <a class="image" href="http://{$root_url|escape}/design/{$settings->theme|escape}/images/{if isset($c->path) && ($c->path != "")}{$c->path|escape}{/if}{$c->filename|escape}" target="_blank" title="{$c->filename|escape}">
+                      {if (isset($c->width) && isset($c->height)) || (isset($c->extension) && ($c->extension == "ico"))}
+                        <img src="http://{$root_url|escape}/design/{$settings->theme|escape}/images/{if isset($c->path) && ($c->path != "")}{$c->path|escape}{/if}{$c->filename|escape}">
+                      {else}
+                        невозможно отобразить
+                      {/if}
+                    </a>
+
+                    <div class="onerow">
+
+                      <!-- Микро кнопки справа от названия -->
+                      <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данный файл будет удален с сайта. Вы подтверждаете такую операцию?');">
+                        <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                      </a>
+
+                      <!-- Название -->
+                      <a href="http://{$root_url|escape}/design/{$settings->theme|escape}/images/{if isset($c->path) && ($c->path != "")}{$c->path|escape}{/if}{$c->filename|escape}" target="_blank" title="{$c->filename|escape}" style="display: block; overflow: hidden; width: 135px;">
+                        {$c->filename|escape}
+                      </a>
+
+                    </div>
+
+                    <!-- Размеры -->
+                    <div class="size">
+                      {if isset($c->width) && isset($c->height)}
+                        {$c->width|string_format:"%d"}&times;{$c->height|string_format:"%d"} точек
+                      {else}
+                        &nbsp;
+                      {/if}
+                    </div>
+
+                  </li>
+
+                {/if}
+              {/strip}
+            {/foreach}
+          {/function}
+
+          {* <!-- запускаем исполнение объявленной выше функции show_files,
+                  передавая ей в качестве параметра массив файлов $items --> *}
+          {show_files dir=$items}
+
+          {if $smarty.capture.temp_count == ""}
+            <div class="noitems">
+              Папка не содержит картинок.
+            </div>
+          {/if}
+
+        {else}
+          <div class="noitems">
+            Папка не содержит картинок.
+          </div>
+        {/if}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape|default:''}">
+
+      </form>
+
+    </div>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        &nbsp;
+      </div>
+    </div>
+
+  </div>

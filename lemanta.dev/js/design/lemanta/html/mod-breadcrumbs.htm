@@ -1,0 +1,389 @@
+{* <!-- ===========================================================================
+                                                                                  |
+    Модуль: Хлебные крошки (с микроразметкой Schema.org и/или RDFa).              |
+    ----------------------------------------------------------------------------  |
+                                                                                  |
+    Входные переменные:                                                           |
+        $path = массив звеньев пути (если хотим отобразить абстрактный путь)      |
+            $category = запись о категории (если смотрят ее страницу)             |
+            $brand = запись о бренде (если смотрят его страницу)                  |
+            $product = запись о товаре (если смотрят его страницу)                |
+                $title = заголовок страницы (если это ни категория, ни бренд,     |
+                         ни товар)                                                |
+        $CurrentPage = индекс (номер-1) текущей страницы (если смотрят список)    |
+        $markupTypes = типы используемой разметки, перечисленные через запятую:   |
+                           пустая строка = все одновременно (по умолчанию)        |
+                           * = все поддерживаемые одновременно (как пустая строка)|
+                           rdfa или rdf = Resource Description Framework          |
+                           microdata или schema.org = Microdata                   |
+                           rdfa, microdata = одновременно Microdata и RDFa        |
+        $noCatalogLink = TRUE если без ссылки на весь каталог                     |
+                         FALSE если ссылка после главной (по умолчанию FALSE)     |
+    ----------------------------------------------------------------------------  |
+                                                                                  |
+    Конфигурационные параметры:                                                   |
+        ->breadcrumbsTopName = название первого звена хлебных крошек (по          |
+                               умолчанию Главная)                                 |
+        ->breadcrumbsTopAlt = Alt-текст первого звена хлебных крошек (по          |
+                              умолчанию Главная)                                  |
+        ->breadcrumbsMarkupTypes = типы используемой разметки (аналогичен         |
+                                   параметру $markupTypes и везде по шаблону      |
+                                   перекрывает его действие, если такой конфиг-   |
+                                   параметр прописан в настройках сайта)          |
+        ->breadcrumbsNoCatalogLink = управление ссылкой на весь каталог           |
+                                     (аналогичен параметру $noCatalogLink и везде |
+                                     по шаблону перекрывает его действие, если    |
+                                     такой конфиг-параметр прописан в настройках  |
+                                     сайта)                                       |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Анализируем параметр noCatalogLink.                                        |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$noCatalogLink = (isset($config->breadcrumbsNoCatalogLink)) ? $config->breadcrumbsNoCatalogLink
+                                                                 : ($noCatalogLink|default:FALSE)}
+    {$noCatalogLink = !empty($noCatalogLink)}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Анализируем параметр markupTypes.                                          |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$defTypes = [ 'rdf'        => 'rdfa',
+                   'rdfa'       => 'rdfa',
+                   'schema.org' => 'microdata',
+                   'microdata'  => 'microdata',
+                   '*'          => '*' ]}
+
+    {$items = (isset($config->breadcrumbsMarkupTypes)) ? $config->breadcrumbsMarkupTypes
+                                                       : ($markupTypes|default:'')}
+
+    {$markupTypes = []}
+    {$items = explode(',', $items)}
+    {if !empty($items)}
+        {foreach $items as $item}
+            {$item = trim($item)}
+            {if !empty($item)}
+                {$item = $item|lower}
+                {if isset($defTypes[$item])}
+                    {$item = $defTypes[$item]}
+                    {if $item == '*'}
+                        {$markupTypes = []}
+                        {break}
+                    {/if}
+                    {$markupTypes[$item] = TRUE}
+                {/if}
+            {/if}
+        {/foreach}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Готовим атрибуты разметки.                                                 |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$list     = ''}
+    {$listItem = ''}
+    {$propItem = ''}
+    {$propName = ''}
+    {$propPos  = ''}
+    {$pos = 1}
+
+    {if empty($markupTypes) || isset($markupTypes.microdata)}
+        {$list     = 'itemscope itemtype="http://schema.org/BreadcrumbList" '|cat:$list}
+        {$listItem = 'itemscope itemtype="http://schema.org/ListItem" itemprop="itemListElement" '|cat:$listItem}
+        {$propItem = 'itemprop="item" '|cat:$propItem}
+        {$propName = 'itemprop="name" '|cat:$propName}
+        {$propPos  = 'itemprop="position" '|cat:$propPos}
+    {/if}
+
+    {if empty($markupTypes) || isset($markupTypes.rdfa)}
+        {$list     = 'vocab="http://schema.org/" typeof="BreadcrumbList" '|cat:$list}
+        {$listItem = 'property="itemListElement" typeof="ListItem" '|cat:$listItem}
+        {$propItem = 'property="item" typeof="WebPage" '|cat:$propItem}
+        {$propName = 'property="name" '|cat:$propName}
+        {$propPos  = 'property="position" '|cat:$propPos}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Первое звено хлебных крошек.                                               |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="breadcrumbs" {$list}>
+        <span {$listItem}>
+            <a href="{site}" {$propItem} title="{$config->breadcrumbsTopAlt|default:'Главная'|escape}">
+                <span {$propName}>
+                    {$config->breadcrumbsTopName|default:'Главная'}
+                </span>
+            </a>
+            <meta {$propPos} content="{$pos}" />
+            {$pos = $pos + 1}
+        </span>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Возможно в параметрах вызова этого файла указаны звенья пути.          |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($path)}
+            {foreach $path as $url => $name}
+                {if is_string($url)}
+                    <span {$listItem}>
+                        <a href="{$url|escape}" {$propItem} title="{$name|escape}">
+                            <span {$propName}>
+                                {$name}
+                            </span>
+                        </a>
+                        <meta {$propPos} content="{$pos}" />
+                        {$pos = $pos + 1}
+                    </span>
+                {else}
+                    <span {$listItem}>
+                        <span {$propItem}>
+                            <span {$propName}>
+                                {$name}
+                            </span>
+                        </span>
+                        <meta {$propPos} content="{$pos}" />
+                        {$pos = $pos + 1}
+                    </span>
+                {/if}
+            {/foreach}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Возможно мы в категории, выводим звенья ее пути.                       |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {elseif !empty($category)}
+            {if empty($noCatalogLink)}
+                <span {$listItem}>
+                    <a href="products" {$propItem} title="Каталог">
+                        <span {$propName}>
+                            Каталог
+                        </span>
+                    </a>
+                    <meta {$propPos} content="{$pos}" />
+                    {$pos = $pos + 1}
+                </span>
+            {/if}
+
+            {if !empty($category->path)}
+                {foreach $category->path as $item}
+                    <span {$listItem}>
+                        <a href="{url}" {$propItem} title="{itemTitle}">
+                            <span {$propName}>
+
+                                {* <!-- ===========================================
+                                |                                                 |
+                                |  Заскоки сеошников (NetPeak).                   |
+                                |                                                 |
+                                ============================================ --> *}
+
+                                {name assign=tmpName}
+                                {if $tmpName == 'Костюмы тройки'}
+                                    {if !empty($item->url)}
+                                        {if $item->url == 'detskaya-odezhda/dlya-malchikov/kostyumy'
+                                        || $item->url == 'detskaya-odezhda/dlya-devochek/kostyumy'}
+                                            {$tmpName = 'Костюмы'}
+                                        {/if}
+                                    {/if}
+                                {/if}
+                                {$tmpName}
+                            </span>
+                        </a>
+                        <meta {$propPos} content="{$pos}" />
+                        {$pos = $pos + 1}
+                    </span>
+                {/foreach}
+            {else}
+                <span {$listItem}>
+                    <a href="{url from=category}" {$propItem} title="{itemTitle from=category}">
+                        <span {$propName}>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Заскоки сеошников (NetPeak).                       |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            {name from=category assign=tmpName}
+                            {if $tmpName == 'Костюмы тройки'}
+                                {if !empty($item->url)}
+                                    {if $item->url == 'detskaya-odezhda/dlya-malchikov/kostyumy'
+                                    || $item->url == 'detskaya-odezhda/dlya-devochek/kostyumy'}
+                                        {$tmpName = 'Костюмы'}
+                                    {/if}
+                                {/if}
+                            {/if}
+                            {$tmpName}
+                        </span>
+                    </a>
+                    <meta {$propPos} content="{$pos}" />
+                    {$pos = $pos + 1}
+                </span>
+            {/if}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Возможно мы еще и в бренде + возможно в товаре.                    |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {if !empty($brand)}
+                {if !empty($product)}
+                    <span {$listItem}>
+                        <a href="{url from=category}/filter_{inputValue from='brand->url'}" {$propItem} title="{itemTitle from=brand}">
+                            <span {$propName}>
+                                {name from=brand}
+                            </span>
+                        </a>
+                        <meta {$propPos} content="{$pos}" />
+                        {$pos = $pos + 1}
+                    </span>
+                    <span {$listItem}>
+                        <span {$propItem}>
+                            <span {$propName}>
+                                {name from=product}
+                            </span>
+                        </span>
+                        <meta {$propPos} content="{$pos}" />
+                        {$pos = $pos + 1}
+                    </span>
+                {else}
+                    <span {$listItem}>
+                        <span {$propItem}>
+                            <span {$propName}>
+                                {name from=brand}
+                            </span>
+                        </span>
+                        <meta {$propPos} content="{$pos}" />
+                        {$pos = $pos + 1}
+                    </span>
+                {/if}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Возможно мы просто в товаре.                                       |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {elseif !empty($product)}
+                <span {$listItem}>
+                    <span {$propItem}>
+                        <span {$propName}>
+                            {name from=product}
+                        </span>
+                    </span>
+                    <meta {$propPos} content="{$pos}" />
+                    {$pos = $pos + 1}
+                </span>
+            {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Возможно мы только в бренде + возможно в товаре.                       |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {elseif !empty($brand)}
+            {if empty($noCatalogLink)}
+                <span {$listItem}>
+                    <a href="products" {$propItem} title="Каталог">
+                        <span {$propName}>
+                            Каталог
+                        </span>
+                    </a>
+                    <meta {$propPos} content="{$pos}" />
+                    {$pos = $pos + 1}
+                </span>
+            {/if}
+
+            {if !empty($product)}
+                <span {$listItem}>
+                    <a href="{url from=brand}" {$propItem} title="{itemTitle from=brand}">
+                        <span {$propName}>
+                            {name from=brand}
+                        </span>
+                    </a>
+                    <meta {$propPos} content="{$pos}" />
+                    {$pos = $pos + 1}
+                </span>
+                <span {$listItem}>
+                    <span {$propItem}>
+                        <span {$propName}>
+                            {name from=product}
+                        </span>
+                    </span>
+                    <meta {$propPos} content="{$pos}" />
+                    {$pos = $pos + 1}
+                </span>
+            {else}
+                <span {$listItem}>
+                    <span {$propItem}>
+                        <span {$propName}>
+                            {name from=brand}
+                        </span>
+                    </span>
+                    <meta {$propPos} content="{$pos}" />
+                    {$pos = $pos + 1}
+                </span>
+            {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Иначе мы на какой-то другой странице, выводим ее название.             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {else}
+            <span {$listItem}>
+                <span {$propItem}>
+                    <span {$propName}>
+                        {echoVar from=title}
+                    </span>
+                </span>
+                <meta {$propPos} content="{$pos}" />
+                {$pos = $pos + 1}
+            </span>
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Возможно мы еще и на дальней странице списка.                          |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($CurrentPage)}
+            <span {$listItem}>
+                <span {$propItem}>
+                    <span {$propName}>
+                        Страница {$CurrentPage + 1}
+                    </span>
+                </span>
+                <meta {$propPos} content="{$pos}" />
+            </span>
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Номер телефона.                                                        |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <div class="number">
+            {phone}
+        </div>
+    </div>
+
+{/strip}

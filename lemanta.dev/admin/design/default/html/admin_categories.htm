@@ -1,0 +1,530 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка категорий.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о категориях;
+    $all_users = массив с записями о пользователях;
+    $users_list = одноуровневый массив с теми же записями о пользователях;
+    $menus = массив с записями о меню сайта;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    products = true - вывести эту кнопку
+    products_kits = true - вывести эту кнопку
+    categories = true - вывести эту кнопку
+    brands = true - вывести эту кнопку
+    properties = true - вывести эту кнопку
+    stocks = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "categories"
+           main = true
+           products = true
+           products_kits = true
+           categories = true
+           brands = true
+           properties = true
+           stocks = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Категории
+      </div>
+      Категории товаров
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        <a class="left" href="#settings" onclick="javascript: Show_PageElements('setup_form');" title="Показать настройки сайта, относящиеся к категориям">
+          настройки
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Categories&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DELETEEMPTIES|escape}&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" onclick="javascript: return confirm('Это действие удалит все категории и подкатегории, в которых нет товаров, статей и новостей. Вы действительно подтверждаете такую операцию?');" title="Удалить пустые категории">
+          почистить
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Category&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить категорию">
+          добавить
+        </a>
+{*
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="#" onclick="javascript: var state = this.innerHTML == '[+] карточки'; this.innerHTML = state ? '[-] карточки' : '[+] карточки'; if (state) jQuery('td.content div.info').show(); else jQuery('td.content div.info').hide(); return false;" title="Показать / скрыть все карточки">[+] карточки</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="#" onclick="javascript: var state = this.innerHTML == '[+] ветви'; this.innerHTML = state ? '[-] ветви' : '[+] ветви'; if (state) jQuery('td.content ul').show(); else jQuery('td.content ul').hide(); return false;" title="Показать / скрыть все ветви (используйте также двойной щелчок на полосе ветви)">[-] ветви</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="#" onclick="javascript: var state = this.innerHTML == '[+] нумерация'; this.innerHTML = state ? '[-] нумерация' : '[+] нумерация'; if (state) jQuery('td.content span.topic').show(); else jQuery('td.content span.topic').hide(); return false;" title="Показать / скрыть веточную нумерацию">[+] нумерация</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="#" onclick="javascript: var state = this.innerHTML == '[+] кол-во'; this.innerHTML = state ? '[-] кол-во' : '[+] кол-во'; if (state) jQuery('td.content span.count, td.content span.empty, td.content span.nesting, td.content span.attach').show(); else jQuery('td.content span.count, td.content span.empty, td.content span.nesting, td.content span.attach').hide(); return false;" title="Показать / скрыть все счетчики элементов">[+] кол-во</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="#" onclick="javascript: var state = this.innerHTML == '[+] кнопки'; this.innerHTML = state ? '[-] кнопки' : '[+] кнопки'; if (state) jQuery('td.content img.microkey_left, td.content img.microkey_right').show(); else jQuery('td.content img.microkey_left, td.content img.microkey_right').hide(); return false;" title="Показать / скрыть все кнопки">[-] кнопки</a>
+*}
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+
+    {if isset($message) && !empty($message)}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+
+    {if isset($error) && !empty($error)}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком категорий -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Categories" id="items_form" method="post">
+
+
+
+        {* <!-- фильтр --> *}
+        <table align="center" cellpadding="0" cellspacing="8" class="white">
+            <tr>
+                <td class="param_short">
+                    Меню
+                </td>
+                <td class="value" width="70%" title="Фильтр: только принадлежащие такому меню сайта">
+
+                    {* <!-- селектор меню сайта --> *}
+                    <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                        <option value=""></option>
+                        {if isset($menus)}
+                            {foreach item=c from=$menus}
+                                <option value="{$c->menu_id|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU] == $c->menu_id)} selected{/if}>
+                                    {$c->name|escape}
+                                </option>
+                            {/foreach}
+                        {/if}
+                    </select>
+                </td>
+                <td class="param_short">
+                    Раздел
+                </td>
+                <td class="value" width="30%" title="Фильтр: только принадлежащие такому разделу сайта">
+
+                    {* <!-- селектор разделов сайта --> *}
+                    <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SECTION|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                        <option value=""></option>
+                        <option value="1"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SECTION] == "1")} selected{/if}>
+                            Основной
+                        </option>
+                    </select>
+                </td>
+                <td class="param_short" title="Фильтр: только информативные страницы">
+                    <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_INFORMATIVE|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_INFORMATIVE|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_INFORMATIVE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_INFORMATIVE] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                    <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_INFORMATIVE|escape}');">
+                        информативная
+                    </span>
+                </td>
+                <td class="param_short" title="Фильтр: только запрещенные в RSS">
+                    <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTRSS|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTRSS|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTRSS]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTRSS] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                    <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTRSS|escape}');">
+                        не для RSS
+                    </span>
+                </td>
+            </tr>
+
+
+
+            <tr>
+                <td class="param_short">
+                    Администратор
+                </td>
+                <td class="value" width="70%" title="Фильтр: только администрируемые таким человеком">
+
+                    {* <!-- селектор пользователей --> *}
+                    <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_USER|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_USER|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                        <option value=""></option>
+                        <option value="0"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER] == "0")} selected{/if}>
+                            Администратор
+                        </option>
+
+                        {* <!--
+                        Подключаем субшаблон списка клиентов. В субшаблон передаем атрибуты:
+                          items = из какой переменной брать список клиентов
+                          currents = идентификатор выбранного клиента (модификатор "|default:0" добавлен для обработки отсутствия выбора)
+                          selector = true - это будет селектор, а не список клиентов --> *}
+
+                        {include file = '../../common_parts/users.htm'
+                                 items = $all_users
+                                 currents = $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER]|default:0
+                                 selector = true}
+                    </select>
+                </td>
+                <td class="param_short">
+                    Глубина
+                </td>
+                <td class="value" width="30%" title="Фильтр: выводить дерево категорий не глубже такого уровня">
+                    {$field = 'view_depth'}
+                    {$depth = $inputs[$field]|default:0|string_format:'%d'}
+                    {$depth = ($depth < 1) ? 1 : $depth}
+                    <select class="thin" name="{$field}" onchange="Start_PageRecordsFilter('items_form');">
+                        {$count = 15}
+                        {section name = 'counter' loop = $count}
+                            {$value = $smarty.section.counter.iteration}
+                            <option value="{$value}" {if $depth == $value}selected{/if}>
+                                до {$value} уровня
+                            </option>
+                        {/section}
+                        <option value="1000000000" {if $depth > $count}selected{/if}>
+                            неограниченно
+                        </option>
+                    </select>
+                </td>
+                <td class="param_short" title="Фильтр: только имеющие субдомен">
+                    <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_DOMAINED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_DOMAINED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_DOMAINED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_DOMAINED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                    <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_DOMAINED|escape}');">
+                        с субдоменом
+                    </span>
+                </td>
+                <td class="param_short" title="Фильтр: только запрещенные в информерах">
+                    <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTEXPORT|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTEXPORT|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTEXPORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTEXPORT] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                    <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_NOTEXPORT|escape}');">
+                        не экспорт
+                    </span>
+                </td>
+            </tr>
+        </table>
+
+
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить
+          </td>
+          <td class="value" width="100%" title="Способ сортировки категорий в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_AS_IS}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CATEGORIES_MODE_AS_IS)} selected{/if}>как расставлены</option>
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_BY_NAME}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CATEGORIES_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_BY_BROWSED}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CATEGORIES_MODE_BY_BROWSED)} selected{/if}>по количеству просмотров</option>
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_BY_URL}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CATEGORIES_MODE_BY_URL)} selected{/if}>по url (адресу страницы категории)</option>
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_BY_MENU}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CATEGORIES_MODE_BY_MENU)} selected{/if}>по меню</option>
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_BY_OBJECTS}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CATEGORIES_MODE_BY_OBJECTS)} selected{/if}>по подключаемым плагинам</option>
+            </select>
+          </td>
+
+          <!-- Флажки фильтра -->
+          <td class="param_short" title="Фильтр: только скрытые от незарегистрированных пользователей">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}');">
+              скрыта
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только разрешенные к показу на сайте">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+              разрешена
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только загружавшиеся изображениями">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}');">
+              с картинками
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с SEO текстом">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}');">
+              с SEO текстом
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с особым URL">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL|escape}');">
+              с особым URL
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с подключаемыми плагинами">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED|escape}');">
+              с плагинами
+            </span>
+          </td>
+<!--//   [$params->in_price1] = используемая в прайсе 1
+    //   [$params->in_price2] = используемая в прайсе 2
+    //   [$params->in_price3] = используемая в прайсе 3
+    //   [$params->in_price4] = используемая в прайсе 4
+    //   [$params->in_price5] = используемая в прайсе 5
+    //   [$params->in_price6] = используемая в прайсе 6
+    //   [$params->in_price7] = используемая в прайсе 7
+    //   [$params->in_price8] = используемая в прайсе 8 -->
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+
+
+      {if !empty($items)}
+
+          {* <!-- навигатор страниц --> *}
+          {$PagesNavigation|default:''}
+
+          {* <!-- разрешено ли использовать функции перемещения категорий по ветвям --> *}
+          {$moveedit = !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || $inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CATEGORIES_MODE_AS_IS}
+
+          {* <!--
+          Подключаем субшаблон списка категорий. В субшаблон передаем атрибуты:
+            items = из какой переменной брать список категорий
+            counter = true - выводить у категорий количество товаров в них
+            topics = true - выводить веточную нумерацию элементов
+            flatlist = true - нужен список без выпадения ветвей
+            fullinfo = false - не выводить полную информацию о категориях
+            editable = true - выводить у категорий кнопки редактирования
+            fulledit = true - нужен полный набор функций редактирования
+            moveedit = нужны ли функции перемещения элементов по ветви
+            maxdepth = максимальная глубина вывода дерева --> *}
+
+          {include file = '../../common_parts/categories.htm'
+                   items = $items
+                   counter = true
+                   topics = true
+                   flatlist = true
+                   fullinfo = false
+                   editable = true
+                   fulledit = true
+                   moveedit = $moveedit
+                   maxdepth = $depth}
+
+          {* <!-- навигатор страниц --> *}
+          {$PagesNavigation|default:''}
+
+
+
+      {else}
+          <div class="noitems">
+              Не найдено категорий.
+          </div>
+      {/if}
+    </form>
+
+
+
+    {* <!-- справка --> *}
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка категории по конкретным параметрам.
+        Поля фильтра можно сочетать произвольно, они объединены функцией И.
+      </div>
+      <div>
+        В принципе часть изображений или вообще все они могут быть загружены в категорию не обязательно для использования в тексте описания, а например
+        как элементы ее фотогалереи. Поэтому поле фильтра "<u>с&nbsp;картинками</u>" дает возможность выделить категории, в которые производилась
+        именно загрузка изображений, не уточняя притом факт, реально ли используются картинки или просто хранятся на сайте для прочих целей.
+      </div>
+      <div>
+        Поле фильтра "<u>с&nbsp;особым&nbsp;URL</u>" выделяет категории с произвольно заданным адресом страницы, то есть не содержащим в начале
+        адреса специальных включений (например catalog/), идентифицирующих разновидность запрошенного контента. Всякий URL категории не может
+        быть похожим на URL другой категории, однако особым URL допустимо перекрываться с особыми URL других разновидностей контента сайта. В этом
+        случае установлен следующий приоритет владения конфликтующим адресом: специальная страница, товар, категория, бренд, статья, новость.
+      </div>
+      <div>
+        Поле фильтра "<u>с&nbsp;плагинами</u>" выделяет категории, на страницу которых во время создания или редактирования категории было предписано
+        динамически подключать программные модули (плагины, расширяющие функционал) при просмотре страницы категории посетителем сайта. Здесь
+        фильтрацией также не уточняется, действительно ли существуют файлы плагинов на сайте. Визуально категории с подключаемыми плагинами отмечаются
+        в списке соответствующим значком перед названием категории. Наведение курсора на значок демонстрирует перечень плагинов, подключаемых
+        конкретно к этой категории. Так как возможно подключать любые сторонние плагины, указываются не их названия, а классы модулей.
+      </div>
+      <div>
+        <b>Упорядочение</b>. По умолчанию способ сортировки категорий в списке на данной странице равен "<u>как&nbsp;расставлены</u>". В случае
+        смены способа сортировки он запоминается на время текущего сеанса.
+      </div>
+      <div>
+        В отличие от других способов упорядочения, способ упорядочения "<u>как&nbsp;расставлены</u>" отключает сортировку и предоставляет функции
+        перемещения категорий по ветви, в которой они находятся. Эта расстановка основана на так называемых весах элементов - символических числах
+        первостепенности одной записи перед другой. Чем больше число, тем выше в своей ветви размещается категория в списке, упорядоченном таким образом.
+      </div>
+      <div>
+        <b>Количества</b>. Напротив каждой категории указывается количество содержащихся в ней разрешенных к показу товаров. То есть это количество
+        вычислено без учета товаров, которые находятся в базе данных, но имеют флажок запрета к показу на сайте. Так как категории могут быть вложены
+        одна в другую, образуя ветвь, указываемое количество является суммарным для всей ветви, начиная от этой категории. Наведение курсора мыши на
+        количество покажет, сколько всего товаров в такой ветви и сколько из них личных товаров данной категории, то есть содержащихся непосредственно
+        в ней. Важно понимать, что под количеством товаров здесь понимается число товаров (карточек товаров) без учета числа их возможных вариантов.
+      </div>
+    </div>
+
+    <!-- Форма соответствующих модулю настроек сайта -->
+    <a name="settings"></a>
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Categories" enctype="multipart/form-data" id="setup_form" method="post"{if empty($error)} style="display: none;"{/if}>
+      <br>
+      <h1>
+        Настройки
+      </h1>
+      <br>
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high" rowspan="5">
+            Водяной знак:
+            <center>
+              <img class="watermark" src="http://{$root_url|escape}/{$admin_folder|escape}/{$settings->categories_files_folder_prefix|escape}{$smarty.const.ADMIN_IMAGES_FOLDER_REFERENCE|escape}{$smarty.const.CATEGORIES_CLASS_WATERMARK_FILENAME|escape}?{math equation='rand(1, 1000000000)'}" title="Используемое изображение водяного знака для загружаемых в категорию картинок">
+            </center>
+          </td>
+          <td class="value" colspan="4" width="100%" title="Какой файл изображения водяного знака требуется взять с Вашего компьютера (объем файла не более {($smarty.const.WATERMARK_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт)">
+            <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.WATERMARK_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+            <input class="edit" name="watermark_filename" type="file">
+          </td>
+          <td class="param_short">
+            Наложить:
+          </td>
+          <td class="value" title="Как накладывать водяной знак (производится без масштабирования водяного знака)">
+            <select name="categories_watermark_location">
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTTOP|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTTOP} selected{/if}>слева вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTERTOP|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTERTOP} selected{/if}>в центре вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTTOP|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTTOP} selected{/if}>справа вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTCENTER|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTCENTER} selected{/if}>слева в центре</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTER|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTER} selected{/if}>по центру</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTCENTER|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTCENTER} selected{/if}>справа в центре</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTBOTTOM|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTBOTTOM} selected{/if}>слева внизу</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTERBOTTOM|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTERBOTTOM} selected{/if}>в центре внизу</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTBOTTOM|escape}"{if $settings->categories_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTBOTTOM} selected{/if}>справа внизу</option>
+            </select>
+          </td>
+          <td class="param_short">
+            Видимость:
+          </td>
+          <td class="value" title="Видимость знака на картинке (чем меньше число, тем прозрачнее)">
+            <select name="categories_watermark_transparency">
+              {section name="value" start=$smarty.const.SETTINGS_MINIMAL_WATERMARK_TRANSPARENCY loop=$smarty.const.SETTINGS_MAXIMAL_WATERMARK_TRANSPARENCY+1}
+                <option value="{$smarty.section.value.index}"{if $settings->categories_watermark_transparency == $smarty.section.value.index} selected{/if}>
+                  {$smarty.section.value.index}%
+                </option>
+              {/section}
+            </select>
+          </td>
+          <td class="param_short" title="Добавлять ли водяной знак на загружаемые изображения">
+            <input class="checkbox" id="setup_form_watermark_enabled" name="categories_watermark_enabled" type="checkbox"{if isset($settings->categories_watermark_enabled) && ($settings->categories_watermark_enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_watermark_enabled');">
+              Разрешен
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            Качество:
+          </td>
+          <td class="value" width="100%" title="Качество картинок и миниатюр в процентах (чем меньше число, тем хуже качество и меньше размер файла)">
+            <input class="edit" name="categories_images_quality" type="text" value="{$settings->categories_images_quality|escape|default:''}">
+          </td>
+          <td class="param_short">
+            Размеры картинок:
+          </td>
+          <td class="value" title="Предельная ширина картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_IMAGES_WIDTH|escape} до {$smarty.const.SETTINGS_MAXIMAL_IMAGES_WIDTH|escape})">
+            <input class="edit" name="categories_images_width" size="6" style="width: auto;" type="text" value="{$settings->categories_images_width|escape|default:''}">
+          </td>
+          <td class="value" title="Предельная высота картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_IMAGES_HEIGHT|escape} до {$smarty.const.SETTINGS_MAXIMAL_IMAGES_HEIGHT|escape})">
+            <input class="edit" name="categories_images_height" size="6" style="width: auto;" type="text" value="{$settings->categories_images_height|escape|default:''}">
+          </td>
+          <td class="param_short">
+            Размеры миниатюр:
+          </td>
+          <td class="value" title="Предельная ширина уменьшенных картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_THUMBNAIL_WIDTH|escape} до {$smarty.const.SETTINGS_MAXIMAL_THUMBNAIL_WIDTH|escape})">
+            <input class="edit" name="categories_thumbnail_width" size="6" style="width: auto;" type="text" value="{$settings->categories_thumbnail_width|escape|default:''}">
+          </td>
+          <td class="value" title="Предельная высота уменьшенных картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_THUMBNAIL_HEIGHT|escape} до {$smarty.const.SETTINGS_MAXIMAL_THUMBNAIL_HEIGHT|escape})">
+            <input class="edit" name="categories_thumbnail_height" size="6" style="width: auto;" type="text" value="{$settings->categories_thumbnail_height|escape|default:''}">
+          </td>
+          <td class="param_short" title="Подгонять ли размеры меньших изображений до указанных размеров">
+            <input class="checkbox" id="setup_form_images_exactly" name="categories_images_exactly" type="checkbox"{if isset($settings->categories_images_exactly) && ($settings->categories_images_exactly == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_images_exactly');">
+              Точно
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" colspan="3" title="Использовать ли визуальный редактор при редактировании категорий">
+            <input class="checkbox" id="setup_form_wysiwyg_disabled" name="categories_wysiwyg_disabled" type="checkbox"{if isset($settings->categories_wysiwyg_disabled) && ($settings->categories_wysiwyg_disabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_wysiwyg_disabled');">
+              Отключить wysiwyg-редактор:
+            </span>
+          </td>
+          <td class="value" colspan="3" title="Как обрабатывать текст при отключенном визуальном редакторе">
+            <select name="categories_wysiwyg_disabled_mode">
+              <option value="{$smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_NO_ACTION|escape}"{if $settings->categories_wysiwyg_disabled_mode == $smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_NO_ACTION} selected{/if}>в тексте ничего не менять, не трогать разметочные теги</option>
+              <option value="{$smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_ALL_TAGS_CLEAR|escape}"{if $settings->categories_wysiwyg_disabled_mode == $smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_ALL_TAGS_CLEAR} selected{/if}>из текста удалять все теги, пустые строки и лишние пробелы</option>
+            </select>
+          </td>
+          <td class="param_short" colspan="3" title="Разрешить ли системе заполнять пустые поля мета информации">
+            <input class="checkbox" id="setup_form_meta_autofill" name="categories_meta_autofill" type="checkbox"{if isset($settings->categories_meta_autofill) && ($settings->categories_meta_autofill == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_meta_autofill');">
+              Автозаполнение полей мета тегов
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" colspan="3">
+            Сортировать в списках стороны клиента:
+          </td>
+          <td class="value" colspan="3" title="Как упорядочить список категорий, сформированный для клиентской стороны">
+            <select name="categories_sort_method">
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_AS_IS|escape}"{if $settings->categories_sort_method == $smarty.const.SORT_CATEGORIES_MODE_AS_IS} selected{/if}>как расставлены в админпанели</option>
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_BY_NAME|escape}"{if $settings->categories_sort_method == $smarty.const.SORT_CATEGORIES_MODE_BY_NAME} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_CATEGORIES_MODE_BY_BROWSED|escape}"{if $settings->categories_sort_method == $smarty.const.SORT_CATEGORIES_MODE_BY_BROWSED} selected{/if}>по количеству просмотров</option>
+            </select>
+          </td>
+          <td class="param_short">
+            Префикс:
+          </td>
+          <td class="value" title="Префикс папки с картинками категорий">
+            <input class="edit" name="categories_files_folder_prefix" type="text" value="{$settings->categories_files_folder_prefix|escape|default:''}">
+          </td>
+          <td class="value_box">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_SETUP|escape}" type="submit" value="Сохранить">
+          </td>
+        </tr>
+        <tr>
+          <td colspan="9"><!-- // --></td>
+        </tr>
+      </table>
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+    </form>
+
+  </div>

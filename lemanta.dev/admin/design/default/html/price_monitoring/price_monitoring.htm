@@ -1,0 +1,1074 @@
+{* <!-- мониторинг цен --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Если это AJAX-подгрузка страницы.                                          |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {if !empty($smarty.request.ajax)}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Информационное сообщение, сообщение об ошибке (если есть).             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($message)}
+            <span class="ok">{$message}</span>
+        {/if}
+
+        {if !empty($error)}
+            <span class="bad"><b>Ошибка:</b> {$error}</span>
+        {/if}
+
+        <span class="hint">...здесь результат...</span>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Поддержка старых версий движка (приказываем отдать этот контент без    |
+        |  интеграции в admin_page.htm).                                          |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {lastTemplate}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Стили таблицы.                                                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {else}
+        <style>
+            #items_form .table-pricelist {
+                border: 0 solid;
+                border-top: #ccc 1px solid;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                -moz-box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+
+                #items_form .table-pricelist td {
+                    border: 0 solid;
+                    border-left: #ccc 1px solid;
+                    border-bottom: #ccc 1px solid;
+                    color: #222;
+                    font-family: Verdana, Tahoma, Arial;
+                    font-size: 8pt;
+                    line-height: 20px;
+                    margin: 0;
+                    padding: 0;
+                    text-align: left;
+                    vertical-align: top;
+                    -moz-box-sizing: border-box;
+                    -webkit-box-sizing: border-box;
+                    box-sizing: border-box;
+                }
+
+                #items_form .table-pricelist td.last {
+                    border-right: #ccc 1px solid;
+                }
+
+
+
+                /* строки таблицы */
+
+                #items_form .table-pricelist .row-product:hover,
+                #items_form .table-pricelist .row-variant:hover {
+                    background: #f4f4f4;
+                }
+
+                #items_form .table-pricelist .row-gap td {
+                    background: transparent;
+                    border-left: transparent 1px solid;
+                }
+
+                #items_form .table-pricelist .row-category td {
+                    background: #eee;
+                }
+
+                #items_form .table-pricelist .row-category.level-1 td {
+                    border-top: #ccc 2px solid;
+                }
+
+                #items_form .table-pricelist .row-product td {
+                }
+
+                #items_form .table-pricelist .row-variant td {
+                }
+
+                #items_form .table-pricelist tr.disabled * {
+                    color: #ccc !important;
+                }
+
+
+
+                /* заголовки колонок */
+
+                #items_form .table-pricelist .cell-th {
+                    background: #ddd !important;
+                    color: #aaa;
+                    font-size: 8pt;
+                    padding: 4px 10px;
+                    width: 1px;
+                    text-align: center;
+                    vertical-align: middle;
+                }
+
+
+
+                /* поле ввода */
+
+                #items_form .table-pricelist td span {
+                    display: block;
+                    margin: 0;
+                    padding: 0;
+                    width: 100%;
+                    position: relative;
+                    -moz-box-sizing: border-box;
+                    -webkit-box-sizing: border-box;
+                    box-sizing: border-box;
+                }
+
+                    #items_form .table-pricelist input[type="text"],
+                    #items_form .table-pricelist select {
+                        background: transparent;
+                        border: 0 solid;
+                        outline: 0 solid;
+                        color: #222;
+                        display: block;
+                        font-family: Verdana, Tahoma, Arial;
+                        font-size: 8pt;
+                        font-weight: normal;
+                        line-height: 16px;
+                        height: 24px;
+                        margin: 0;
+                        padding: 5px 10px;
+                        width: 100%;
+                        -moz-box-sizing: border-box;
+                        -webkit-box-sizing: border-box;
+                        box-sizing: border-box;
+                    }
+                    #items_form .table-pricelist select {
+                        height: 18px;
+                        margin: 3px;
+                        padding: 2px 10px;
+                        width: calc(100% - 6px);
+                    }
+
+                    #items_form .table-pricelist span:hover > input[type="text"] {
+                        background: #d0d0d0;
+                    }
+
+
+
+                /* поле Название */
+
+                #items_form .table-pricelist .cell-name,
+                #items_form .table-pricelist .cell-url-changed,
+                #items_form .table-pricelist .cell-url-link,
+                #items_form .table-pricelist .cell-url-error {
+                    padding: 2px 10px;
+                    width: 100%;
+                }
+
+                #items_form .table-pricelist .cell-url-changed {
+                    width: 1%;
+                }
+
+                    #items_form .table-pricelist .cell-name a,
+                    #items_form .table-pricelist .cell-url-link a {
+                        opacity: 0.4;
+                    }
+
+                    #items_form .table-pricelist .cell-name a:hover,
+                    #items_form .table-pricelist .cell-url-link a:hover {
+                        opacity: 1.0;
+                    }
+
+
+
+                /* поле Буквенный код товара */
+
+                #items_form .table-pricelist .cell-pcode {
+                    color: #888;
+                    /* display: none; */
+                    font-size: 8pt;
+                    padding: 2px 10px;
+                    width: 1px;
+                }
+
+
+
+                /* поле Артикул варианта товара */
+
+                #items_form .table-pricelist .cell-sku {
+                    color: #888;
+                    font-size: 8pt;
+                    padding: 2px 10px;
+                    width: 1px;
+                }
+
+
+
+                /* поле Название варианта товара */
+
+                #items_form .table-pricelist .cell-variant {
+                    color: #888;
+                    font-size: 8pt;
+                    padding: 2px 10px;
+                    width: 1px;
+                }
+
+
+
+                /* поле Цены варианта товара */
+
+                #items_form .table-pricelist .cell-price,
+                #items_form .table-pricelist .cell-their,
+                #items_form .table-pricelist .cell-url {
+                    background: #fff;
+                    width: 1px;
+                }
+
+                #items_form .table-pricelist .cell-price {
+                    border-left: #ccc 3px solid;
+                }
+
+                #items_form .table-pricelist .cell-their {
+                    background: #efe;
+                    padding: 2px 10px;
+                }
+                #items_form .table-pricelist .cell-their.our-price-ok {
+                    background: #fff4f4;
+                }
+                #items_form .table-pricelist .cell-their.their-price-no {
+                    background: #fff;
+                }
+
+                #items_form .table-pricelist tr[data-error-msg] .cell-url {
+                    background: #fee;
+                }
+
+                #items_form .table-pricelist .cell-url,
+                #items_form .table-pricelist .cell-url-changed,
+                #items_form .table-pricelist .cell-url-link,
+                #items_form .table-pricelist .cell-url-error {
+                    background: #f8f8f8;
+                }
+                #items_form .table-pricelist .cell-url-link {
+                    border-left: transparent 1px solid;
+                    color: #ccc;
+                }
+                #items_form .table-pricelist .cell-url-changed {
+                    text-align: center;
+                }
+                    #items_form .table-pricelist .cell-url-changed b {
+                        background: #beb;
+                        border-radius: 2px;
+                        color: #0a0;
+                        display: block;
+                        padding: 0 5px;
+                        position: relative;
+                    }
+                #items_form .table-pricelist .cell-url-error {
+                    text-align: center;
+                }
+                    #items_form .table-pricelist .cell-url-error b {
+                        background: #fcc;
+                        border-radius: 2px;
+                        color: #c22;
+                        display: block;
+                        padding: 0 5px;
+                        position: relative;
+                    }
+                        #items_form .table-pricelist .cell-url-error b span {
+                            background: #fee;
+                            border: #daa 1px solid;
+                            display: none;
+                            font-weight: normal;
+                            line-height: 1.5;
+                            margin: -10px 15px 0 0;
+                            padding: 10px;
+                            width: 500px;
+                            text-align: left;
+                            position: absolute;
+                            right: 0;
+                            z-index: 1;
+                        }
+                        #items_form .table-pricelist .cell-url-error:hover b span {
+                            display: block;
+                        }
+                #items_form .table-pricelist .cell-url input[type="text"] {
+                    color: #ccc;
+                }
+                #items_form .table-pricelist .cell-url span:hover > input[type="text"],
+                #items_form .table-pricelist .cell-url input[type="text"]:focus {
+                    color: #222;
+                }
+
+                    #items_form .table-pricelist .cell-price input[type="text"],
+                    #items_form .table-pricelist .cell-their,
+                    #items_form .table-pricelist .cell-their input[type="text"] {
+                        width: 95px;
+                        max-width: 95px;
+                        min-width: 95px;
+                        text-align: right;
+                    }
+
+                #items_form .table-pricelist .cell-label {
+                    border-left: transparent 1px solid;
+                    color: #ccc;
+                    padding: 2px 10px;
+                    text-align: right;
+                }
+
+                #items_form .table-pricelist .cell-lifetime {
+                    border-left: transparent 1px solid;
+                }
+
+
+
+                /* флажки-иконки */
+
+                #items_form .table-pricelist .cell-flag {
+                    width: 1px;
+                }
+
+                    #items_form .table-pricelist .cell-flag img {
+                        margin: 4px 5px -2px 5px;
+                        height: 16px;
+                        width: 16px;
+                    }
+
+                #items_form .table-pricelist .cell-scanable {
+                    text-align: center;
+                }
+
+
+
+                /* фиктивная ячейка */
+
+                #items_form .table-pricelist .cell-dummy + .cell-dummy {
+                    border-left: transparent 1px solid;
+                }
+
+                #items_form .table-pricelist .row-variant:not(.last-variant) .cell-dummy {
+                    border-bottom: transparent 1px solid;
+                }
+
+
+
+                /* отредактированное поле */
+
+                #items_form .table-pricelist input.changed {
+                    color: #44f !important;
+                }
+
+                #items_form .table-pricelist select.changed,
+                #items_form .table-pricelist .cell-flag input.changed + span {
+                    background: #c0e0ff;
+                }
+
+
+
+            #items_form a,
+            #items_form .cell-flag img,
+            #items_form .cell-flag span,
+            #items_form .cell-flag input[type="checkbox"] {
+                cursor: pointer;
+            }
+        </style>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Закладки страниц.                                                      |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <div class="submenu">
+            <li><a href="{siteAdmin}">главная</a></li>
+            <li class="select"><a href="{siteAdmin}?section=PriceMonitoring">монитор</a></li>
+        </div>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Заголовок, хлебные крошки.                                             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <div class="box">
+            <h1>
+                <div class="path">
+                    <a href="{siteAdmin}">Главная</a> → Мониторинг
+                </div>
+                Мониторинг цен
+            </h1>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Инструментальные ссылки.                                           |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <div class="toolkey">
+                &nbsp;
+            </div>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Информационное сообщение, сообщение об ошибке (если есть).         |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {messageBox from=message css=message}
+            {if !empty($error)}
+                <div class="error"><b>Ошибка:</b> {$error}</div>
+            {/if}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Форма со списком записей.                                          |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <form action="{siteAdmin}?section=PriceMonitoring" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Фильтр.                                                        |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <table align="center" cellpadding="0" cellspacing="8" class="white">
+                    <tr>
+                        <td class="value_box" title="Заново мониторить все товары в этой категории">
+                            <input class="submit compact" name="scan" type="submit" value="Мониторить" />
+                        </td>
+
+                        <td class="value_box" title="Мониторить в этой категории товары с истекшим сроком обновления">
+                            <input class="submit compact" name="scan_old" type="submit" value="Обновить" />
+                        </td>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Категория.                                             |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {inputValue from='inputs->filter_category' assign=selectedId}
+
+                        <td class="param_short"><a href="{siteAdmin}?section=Categories" title="Перейти на страницу категорий в админпанели">Категория</a>:</td>
+                        <td class="value value_sheet" width="75%" title="Фильтр: только принадлежащие такой категории">
+                            <select class="thin" id="items_form_filter_category" name="filter_category" onchange="Start_PageRecordsFilter('items_form');">
+                                {if $selectedId == ''}
+                                    <option value=""></option>
+                                {/if}
+
+                                {function categoriesFilterTree level=0}
+                                    {if !empty($items)}
+                                        {foreach $items as $item}
+                                            {if !empty($item->filled)}
+                                                {inputValue from='item->category_id' assign=id}
+                                                <option value="{$id}" {if $id == $selectedId} selected{/if}>
+                                                    {section name=spaces loop=$level}
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                    {/section}
+                                                    {name}
+                                                </option>
+                                                {if !empty($item->subitems)}
+                                                    {categoriesFilterTree items=$item->subitems level=$level+1}
+                                                {/if}
+                                            {/if}
+                                        {/foreach}
+                                    {/if}
+                                {/function}
+                                {categoriesFilterTree}
+
+                                <option value="0" style="color: #888" {if $selectedId === "0"} selected{/if}>
+                                    [весь каталог]
+                                </option>
+                            </select>
+                        </td>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Целевой сайт.                                          |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {inputValue from='inputs->filter_target' assign=selectedTarget}
+                        {$selectedTarget = $selectedTarget|lower}
+
+                        <td class="param_short">Цель:</td>
+                        <td class="value value_sheet" width="25%" title="Сканируемый сайт">
+                            <select class="thin" id="items_form_filter_target" name="filter_target" onchange="Start_PageRecordsFilter('items_form');">
+                                {if !empty($targets)}
+                                {foreach $targets as $key => $value}
+                                    <option value="{$key}" {($key == $selectedTarget) ? "selected" : ""}>{$value}</option>
+                                {/foreach}
+                                {/if}
+                            </select>
+                        </td>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Кнопки скана.                                          |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <td class="value_box" title="Заново найти в этой категории все адреса чужих страниц">
+                            <input class="submit compact" name="scan_url" type="submit" value="Найти URL" />
+                        </td>
+
+                        <td class="value_box" title="Найти в этой категории неизвестные адреса страниц">
+                            <input class="submit compact" name="scan_url_empty" type="submit" value="Недостающие" />
+                        </td>
+                    </tr>
+                </table>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Кнопка сброса фильтра.                                         |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <div class="toolkey">
+                    &nbsp;
+                </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Список записей.                                                |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if !empty($items)}
+                    {if $selectedId !== ''}
+                        <table class="table-pricelist" border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td class="cell-th" colspan="2" nowrap>название</td>
+                                <td class="cell-pcode cell-th" nowrap>код</td>
+                                <td class="cell-th" nowrap>артикул</td>
+                                <td class="cell-th" nowrap>вариант</td>
+                                <td class="cell-price cell-th" nowrap>цена</td>
+                                <td class="cell-th" nowrap>их цена</td>
+                                <td class="cell-th last" nowrap>вкл</td>
+                            </tr>
+
+                            {function categoriesTree level=1 enabled=TRUE selected=FALSE scanable=TRUE}
+                                {foreach $items as $item}
+                                    {if !empty($item->filled)}
+                                        {if $selected || !empty($item->selected)}
+                                            {$real_selected = $selected || !empty($item->selected) && $item->selected === TRUE}
+                                            {$enabled_category = $enabled && !empty($item->enabled)}
+                                            {$scanable_category = $scanable && !empty($item->scanable)}
+                                            {inputValue from='item->category_id' assign=categoryId}
+
+                                            {* <!-- ===============================
+                                            |                                     |
+                                            |  Категория.                         |
+                                            |                                     |
+                                            ================================ --> *}
+
+                                            <tr class="row-gap">
+                                                <td colspan="8">
+                                                    &nbsp;
+
+                                                    {* <!-- =======================
+                                                    |                             |
+                                                    |  Скрытые поля идентификации |
+                                                    |  записи о мониторинге       |
+                                                    |  категории.                 |
+                                                    |                             |
+                                                    ======================== --> *}
+
+                                                    <input name="ourId[c{$categoryId}]" type="hidden" value="{inputValue from='item->ourId'}" />
+                                                    <input name="ourType[c{$categoryId}]" type="hidden" value="category" />
+                                                    <input name="monitoringId[c{$categoryId}]" type="hidden" value="{inputValue from='item->monitoringId'}" />
+                                                    <input name="post[c{$categoryId}]" type="hidden" value="" />
+                                                </span>
+                                            </tr>
+
+                                            <tr class="row-category{($enabled_category) ? '' : ' disabled'} level-{$level}">
+                                                <td class="cell-dummy">&nbsp;</td>
+                                                <td class="cell-name" colspan="4" style="padding-left: {($level - 1) * 20 + 10}px;">
+                                                    <a href="{url}" target="_blank" title="Открыть страницу этой категории на сайте"><img src="{themeAdmin}images/microicon_showall_9x9.png" /></a>
+                                                    {**} &nbsp; {name}
+                                                </td>
+
+                                                {* <!-- ===========================
+                                                |                                 |
+                                                |  Срок обновления.               |
+                                                |                                 |
+                                                ============================ --> *}
+
+                                                {inputValue from='item->lifetime' assign=lifetime}
+
+                                                {$values = [ 0 => '',
+                                                             900 => '15 минут',
+                                                             1800 => '30 минут',
+                                                             2700 => '45 минут',
+                                                             3600 => '1 час',
+                                                             5400 => '1,5 часа',
+                                                             7200 => '2 часа',
+                                                             10800 => '3 часа',
+                                                             21600 => '6 часов',
+                                                             43200 => '12 часов',
+                                                             86400 => 'сутки',
+                                                             172800 => '2 суток',
+                                                             259200 => '3 суток',
+                                                             432000 => '5 суток',
+                                                             864000 => '10 суток',
+                                                             1296000 => '15 суток',
+                                                             2592000 => '30 суток' ]}
+
+                                                <td class="cell-label">обновлять:</td>
+                                                <td class="cell-lifetime">
+                                                    <span>
+                                                        <select name="lifetime[c{$categoryId}]" onchange="checkInputboxChanges(this, 'save_params');" data-value="{$lifetime}">
+                                                            {foreach $values as $key => $value}
+                                                                <option value="{$key}" {($key == $lifetime) ? "selected" : ""}>{$value}</option>
+                                                            {/foreach}
+                                                        </select>
+                                                    </span>
+                                                </td>
+
+                                                {* <!-- ===========================
+                                                |                                 |
+                                                |  Разрешено ли мониторить.       |
+                                                |                                 |
+                                                ============================ --> *}
+
+                                                <td class="cell-scanable cell-flag last" title="Мониторить категорию / нет">
+                                                    <input class="checkbox hidden-checkbox" id="items_form_c{$categoryId}_scanable" name="scanable[c{$categoryId}]" type="checkbox" value="1" data-value="{($scanable_category) ? 1 : 0}" {if $scanable_category} checked{/if} onchange="toggleCheckboxIcon(this, this.checked, 'enabled'); checkInputboxChanges(this, 'save_params')" /> {**}
+                                                    <span onclick="Toggle_PageCheckbox('items_form_c{$categoryId}_scanable');">
+                                                        <img class="icon16x16 icon16x16-key{if !$scanable_category} icon16x16-key-off{/if}" src="{themeAdmin}images/icon_enabled_{if !$scanable_category}off_{/if}16x16.png" />
+                                                    </span>
+                                                </td>
+                                            </tr>
+
+                                            {* <!-- ===============================
+                                            |                                     |
+                                            |  Товары.                            |
+                                            |                                     |
+                                            ================================ --> *}
+
+                                            {if $real_selected}
+                                                {if !empty($item->products)}
+                                                    {foreach $item->products as $product}
+                                                        {$enabled_product = $enabled_category && !empty($product->enabled)}
+                                                        {$scanable_product = $scanable_category && !empty($product->scanable)}
+
+                                                        {$variant = reset($product->variants)}
+                                                        {inputValue from='variant->variant_id' assign=variantId}
+
+                                                        {$theirPrice = $helper->priceForScreen($product->theirPrice)}
+
+                                                        {* <!-- ===================
+                                                        |                         |
+                                                        |  Адрес чужого товара.   |
+                                                        |                         |
+                                                        ==================== --> *}
+
+                                                        {inputValue from='product->theirUrl' assign=theirUrl}
+
+                                                        {$msg = $errorMessages[$variantId]|default:''}
+                                                        {$msg = ($msg != '') ? ('data-error-msg="'|cat:($msg|escape)|cat:'"') : ''}
+
+                                                        <tr class="row-product{($enabled_product) ? '' : ' disabled'}" {$msg}>
+                                                            <td class="cell-url-changed">
+                                                                {(!empty($product->theirChanged)) ? '<b title="Этот товар был синхронизирован">&gt;</b>' : '&nbsp;'}
+
+                                                                {* <!-- ===========
+                                                                |                 |
+                                                                |  Скрытые поля   |
+                                                                |  идентификации  |
+                                                                |  записи о       |
+                                                                |  мониторинге    |
+                                                                |  товара.        |
+                                                                |                 |
+                                                                ============ --> *}
+
+                                                                <input name="ourId[{$variantId}]" type="hidden" value="{inputValue from='product->ourId'}" />
+                                                                <input name="ourType[{$variantId}]" type="hidden" value="product" />
+                                                                <input name="monitoringId[{$variantId}]" type="hidden" value="{inputValue from='product->monitoringId'}" />
+                                                            </td>
+
+                                                            <td class="cell-url" colspan="5" width="100%" title="Адрес сканируемой страницы товара">
+                                                                <span>
+                                                                    <input name="theirUrl[{$variantId}]" type="text" value="{$theirUrl}" onchange="checkInputboxChanges(this, 'save_params');" onkeyup="checkInputboxChanges(this, 'save_params');" />
+                                                                </span>
+                                                            </td>
+
+                                                            {* <!-- ===============
+                                                            |                     |
+                                                            |  Ссылка, их имя     |
+                                                            |  товара.            |
+                                                            |                     |
+                                                            ================ --> *}
+
+                                                            <td class="cell-url-link cell-dummy" {if !empty($product->theirName)} title="{inputValue from='product->theirName'}" {/if}>
+                                                                <a href="{$theirUrl}" onclick="return gotoTheirUrl(this)" target="_blank" title="Открыть сканируемую страницу товара"><img src="{themeAdmin}images/microicon_showall_9x9.png" /></a>
+                                                                {**} &nbsp; их url
+                                                                <input name="theirName[{$variantId}]" type="hidden" value="{inputValue from='product->theirName'}" />
+                                                            </td>
+
+                                                            {* <!-- ===============
+                                                            |                     |
+                                                            |  Ошибка, если была. |
+                                                            |                     |
+                                                            ================ --> *}
+
+                                                            <td class="cell-url-error cell-dummy last">
+                                                                {(!empty($product->error)) ? ('<b>!<span>'|cat:$product->error|cat:'</span></b>') : '&nbsp;'}
+                                                            </td>
+                                                        </tr>
+
+                                                        {* <!-- ===================
+                                                        |                         |
+                                                        |  Наш товар.             |
+                                                        |                         |
+                                                        ==================== --> *}
+
+                                                        <tr class="row-product{($enabled_product) ? '' : ' disabled'}">
+                                                            <td class="cell-dummy">&nbsp;</td>
+                                                            <td class="cell-name" style="padding-left: {$level * 20 + 10}px;">
+                                                                <a href="{url from=product}" target="_blank" title="Открыть страницу этого товара на сайте"><img src="{themeAdmin}images/microicon_showall_9x9.png" /></a>
+                                                                {**} &nbsp; {name from=product}
+                                                                <input name="post[{$variantId}]" type="hidden" value="" />
+                                                            </td>
+                                                            <td class="cell-pcode"><span>{echoVar from='item->pcode'}</span></td>
+                                                            <td class="cell-sku"><span>{echoVar from='variant->sku'}</span></td>
+                                                            <td class="cell-variant"><span>{echoVar from='variant->name'}</span></td>
+
+                                                            {* <!-- ===============
+                                                            |                     |
+                                                            |  Наша цена.         |
+                                                            |                     |
+                                                            ================ --> *}
+
+                                                            <td class="cell-price">
+                                                                <span>
+                                                                    {$price = $helper->priceForScreen($variant->price)}
+                                                                    <input name="price[{$variantId}]" maxlength="16" type="text" value="{$price}" onchange="checkInputboxChanges(this, 'save_prices');" onkeyup="checkInputboxChanges(this, 'save_prices');" />
+                                                                </span>
+                                                            </td>
+
+                                                            {* <!-- ===============
+                                                            |                     |
+                                                            |  Их цена.           |
+                                                            |                     |
+                                                            ================ --> *}
+
+                                                            <td class="cell-their {($price <= $theirPrice) ? 'our-price-ok' : ''} {($theirPrice == 0) ? 'their-price-no' : ''}">
+                                                                <span>{($theirPrice != 0) ? $theirPrice : ''}</span>
+                                                                <input name="theirPrice[{$variantId}]" type="hidden" value="{$theirPrice}" />
+                                                                <input name="lasttime[{$variantId}]" type="hidden" value="{inputValue from='product->lasttime'}" />
+                                                            </td>
+
+                                                            {* <!-- ===============
+                                                            |                     |
+                                                            |  Разрешено ли       |
+                                                            |  мониторить.        |
+                                                            |                     |
+                                                            ================ --> *}
+
+                                                            <td class="cell-scanable cell-flag last" title="Мониторить товар / нет">
+                                                                <input class="checkbox hidden-checkbox" id="items_form_{$variantId}_scanable" name="scanable[{$variantId}]" type="checkbox" value="1" data-value="{($scanable_product) ? 1 : 0}" {if $scanable_product} checked{/if} onchange="toggleCheckboxIcon(this, this.checked, 'enabled'); checkInputboxChanges(this, 'save_params')" /> {**}
+                                                                <span onclick="Toggle_PageCheckbox('items_form_{$variantId}_scanable');">
+                                                                    <img class="icon16x16 icon16x16-key{if !$scanable_product} icon16x16-key-off{/if}" src="{themeAdmin}images/icon_enabled_{if !$scanable_product}off_{/if}16x16.png" />
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+
+                                                        {* <!-- ===================
+                                                        |                         |
+                                                        |  Варианты товара.       |
+                                                        |                         |
+                                                        ==================== --> *}
+
+                                                        {if !empty($product->variants) && count($product->variants) > 1}
+                                                            {$i = 0}
+                                                            {foreach $product->variants as $variant}
+                                                                {if $i != 0}
+                                                                    {inputValue from='variant->variant_id' assign=variantId}
+
+                                                                    <tr class="row-variant{($enabled_product) ? '' : ' disabled'}{($variant@last) ? ' last-variant' : ''}">
+                                                                        <td class="cell-dummy">&nbsp;</td>
+                                                                        <td class="cell-dummy">
+                                                                            &nbsp;
+                                                                            <input name="post[{$variantId}]" type="hidden" value="" />
+                                                                        </td>
+                                                                        <td class="cell-pcode cell-dummy">&nbsp;</td>
+                                                                        <td class="cell-sku"><span>{echoVar from='variant->sku'}</span></td>
+                                                                        <td class="cell-variant"><span>{echoVar from='variant->name'}</span></td>
+
+                                                                        {* <!-- ===
+                                                                        |         |
+                                                                        |  Наша   |
+                                                                        |  цена.  |
+                                                                        |         |
+                                                                        ==== --> *}
+
+                                                                        <td class="cell-price">
+                                                                            <span>
+                                                                                {$price = $helper->priceForScreen($variant->price)}
+                                                                                <input name="price[{$variantId}]" maxlength="16" type="text" value="{$price}" onchange="checkInputboxChanges(this, 'save_prices');" onkeyup="checkInputboxChanges(this, 'save_prices');" />
+                                                                            </span>
+                                                                        </td>
+
+                                                                        <td class="cell-their {($price <= $theirPrice) ? 'our-price-ok' : ''} {($theirPrice == 0) ? 'their-price-no' : ''}">&nbsp;</td>
+                                                                        <td class="cell-scanable cell-flag last">&nbsp;</td>
+                                                                    </tr>
+                                                                {/if}
+                                                                {$i = $i + 1}
+                                                            {/foreach}
+                                                        {/if}
+                                                    {/foreach}
+                                                {/if}
+                                            {/if}
+
+                                            {* <!-- ===============================
+                                            |                                     |
+                                            |  Подкатегории.                      |
+                                            |                                     |
+                                            ================================ --> *}
+
+                                            {if !empty($item->subitems)}
+                                                {categoriesTree items=$item->subitems
+                                                                level=$level+1
+                                                                enabled=$enabled_category
+                                                                scanable=$scanable_category
+                                                                selected=$real_selected}
+                                            {/if}
+                                        {/if}
+                                    {/if}
+                                {/foreach}
+                            {/function}
+                            {categoriesTree}
+                        </table>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Кнопка Сохранить.                                      |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <br />
+                        <table align="center" cellpadding="0" cellspacing="8" class="white">
+                            <tr>
+                                <td class="value_box">
+                                    <input class="submit" type="submit" value="Сохранить" onclick="return Start_PageMassPost('items_form');" />
+                                </td>
+
+                                <td class="param_short" title="Сохранить цены товаров">
+                                    <input class="checkbox" id="items_form_save_prices" name="save_prices" type="checkbox" value="1" /> {**}
+                                    <span onclick="Toggle_PageCheckbox('items_form_save_prices');">цены</span>
+                                </td>
+
+                                {* <!-- ===========================================
+                                |                                                 |
+                                |  Флажок "Сохранить параметры мониторинга".      |
+                                |                                                 |
+                                ============================================ --> *}
+
+                                {$checked = (!empty($setSaveParamsFlag)) ? 'checked' : ''}
+
+                                <td class="param_short" title="Сохранить параметры мониторинга">
+                                    <input class="checkbox" id="items_form_save_params" name="save_params" type="checkbox" value="1" {$checked} /> {**}
+                                    <span onclick="Toggle_PageCheckbox('items_form_save_params');">параметры</span>
+                                </td>
+                                <td width="100%">&nbsp;</td>
+                            </tr>
+                        </table>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Пустой указатель требуемой команды.                    |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <input id="items_form_act" name="act" type="hidden" value="" />
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Признак отмены постинга.                               |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <input id="items_form_ignore_post" name="ignore_post" type="hidden" value="1" />
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Признак мини постинга (без некоторых полей записи).    |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <input name="post_mini" type="hidden" value="1" />
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Аутентификатор операции.                               |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <input name="token" type="hidden" value="{token}" />
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Иначе не выбрана категория в фильтре.                      |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    {else}
+                        <div class="noitems">Выберите необходимую категорию в фильтре.</div>
+                    {/if}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Иначе нет категорий.                                           |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {else}
+                    <div class="noitems">Каталог пустой.</div>
+                {/if}
+            </form>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Вспомогательные скрипты.                                           |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <script type="text/javascript">
+                if (typeof(checkInputboxChanges) != 'function') {
+                    function checkInputboxChanges ( ptr, related ) {
+                        try {
+                            var prev = ptr.getAttribute('data-value');
+                            if (typeof prev != 'string') prev = ptr.defaultValue;
+                            var value = ptr.getAttribute('type') == 'checkbox' ? (ptr.checked ? 1 : 0) : ptr.value;
+                            var changed = value != prev;
+                            jQuery(ptr).removeClass('changed');
+                            if (changed) {
+                                jQuery(ptr).removeClass('incorrect').addClass('changed');
+                                var flag = jQuery('#items_form_' + related);
+                                if (flag.length > 0 && 'checked' in flag[0]) flag[0].checked = true;
+                            }
+                            return changed;
+                        } catch (e) { }
+                        return false;
+                    }
+                }
+
+                if (typeof(toggleCheckboxIcon) != 'function') {
+                    function toggleCheckboxIcon ( object, checked, icon ) {
+                        try {
+                            var url = '{themeAdmin}images/icon_' + icon + (checked ? '' : '_off') + '_16x16.png';
+                            object = jQuery(object).parent()
+                                                   .find('span')
+                                                   .find('img');
+                            jQuery(object).attr('src', url);
+                            if (checked) {
+                                jQuery(object).removeClass('icon16x16-key-off');
+                            } else {
+                                jQuery(object).addClass('icon16x16-key-off');
+                            }
+                        } catch (e) { }
+                    }
+                }
+
+                function gotoTheirUrl ( ptr ) {
+                    try {
+                        var url = jQuery(ptr).closest('.row-product').find('.cell-url span input[type="text"]').val();
+                        if (typeof url != 'string' || jQuery.trim(url) == '') {
+                            url = ptr.getAttribute('href');
+                            if (typeof url == 'string' && url != '') return true;
+                            alert('Отсутствует адрес чужой страницы товара. Введите его вручную или воспользуйтесь поиском URL.');
+                        } else {
+                            url = jQuery.trim(url);
+                            if (/^https?:\/\/[a-z0-9\.\-_]+/i.test(url)) {
+                                ptr.setAttribute('href', url);
+                                return true;
+                            }
+                            alert('Введите адрес, который начинается с протокола http или https, например http://example.com/product-url.');
+                        }
+                    } catch (e) { }
+                    return false;
+                }
+            </script>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Справка.                                                           |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <a name="help"></a>
+            <div class="help" id="help_box">
+                <div class="title">
+                    Справка
+                </div>
+
+                <div>
+                    <b>Фильтр</b> : <b>Категория</b>. Выберите желаемую категорию, чьи цены {**}
+                    хотите мониторить. Внизу списка есть пункт <i>[весь каталог]</i>, чтобы {**}
+                    работать со всеми категориями.
+                </div>
+
+                <div>
+                    <b>Цель</b>. Здесь выберите, цены какого сайта хотите мониторить.
+                </div>
+
+                <hr />
+
+                <div>
+                    <b>Таблица</b> : <b>Категория</b>. Справа поле <b>обновлять:</b> - здесь можно {**}
+                    указать срок, по истечении которого товары этой категории требуется мониторить {**}
+                    заново. Пустое поле означает наследовать срок родительской категории. Погасшая {**}
+                    <b>лампочка</b> отключает мониторинг всей категории, независимо от состояния {**}
+                    лампочек внутри.
+                </div>
+
+                <div>
+                    <b>Товар</b>. Над каждым выводится адрес чужой страницы с таким же товаром. {**}
+                    Этот адрес заполняется при поиске URL и далее может быть скорректирован вручную. {**}
+                    Справа от адреса ссылка <b>их url</b> откроет чужую страницу для просмотра в новом окне. {**}
+                    Поле <b>цена</b> - здесь можно вручную изменить цену каждого из вариантов товара. {**}
+                    Погасшая <b>лампочка</b> отключает мониторинг этого товара.
+                </div>
+
+                <div>
+                    Если удалось выяснить название товара на чужой странице, это название можно видеть {**}
+                    в выпадающей подсказке над ссылкой <b>их url</b>.
+                </div>
+
+                <div>
+                    <b>Их цена</b>. Поле автоматически заполняется во время мониторинга и подсвечивается {**}
+                    зелёным, если их цена такая же или лучшей вашей, красным - когда ваша цена лучше.
+                </div>
+
+                <hr />
+
+                <div>
+                    Кнопка <b>Сохранить</b>. Записывает ваши изменения в таблице. Включенный флажок {**}
+                    <b>цены</b> означает сохранить изменения цен, отключенный - пропустить сохранение цен. {**}
+                    Включенный флажок <b>параметры</b> означает сохранить изменения в параметрах мониторинга, {**}
+                    отключенный - пропустить сохранение параметров.
+                </div>
+
+                <div>
+                    Во время редактирования таблицы изменённые вами данные подсвечиваются другим цветом {**}
+                    и автоматически включаются флажки <b>цены</b> и <b>параметры</b>, если изменились {**}
+                    относящиеся к ним данные.
+                </div>
+            </div>
+        </div>
+    {/if}
+
+{/strip}

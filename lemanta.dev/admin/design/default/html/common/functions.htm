@@ -1,0 +1,558 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: универсальные функции                                                   |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+  Устанавливает внешние переменные (глобальные):                                  |
+    $common_functions_included = true                                             |
+    $domain = имя домена магазина (уже экранировано)                              |
+    $site = полный url корневой папки магазина (уже экранировано)                 |
+    $theme = полный url папки текущего клиентского шаблона (уже экранировано)     |
+    $admin_site = полный url папки админпанели (уже экранировано)                 |
+    $admin_script = полный url основного скрипта админпанели (уже экранировано)   |
+    $admin_goto = полный url перехода в админпанели (ожидает справа имя модуля)   |
+                  (уже экранировано)                                              |
+    $admin_theme = полный url папки текущего админ шаблона (уже экранировано)     |
+    $token = аутентификатор операции                                              |
+    $token_request = часть get-запроса для параметра token (уже экранировано)     |
+                                                                                  |
+  Предоставляет функции:                                                          |
+    filter_editbox(param) = генерация поля ввода для фильтра                      |
+    filter_checkbox(param,                                                        |
+                    shadow,                                                       |
+                    image,                                                        |
+                    text,                                                         |
+                    style,                                                        |
+                    invertable) = генерация флажка для фильтра                    |
+    get_setting(param, def) = получить значение настройки сайта (не экранировано) |
+    settings_checkbox(param,                                                      |
+                      image,                                                      |
+                      text,                                                       |
+                      title,                                                      |
+                      width,                                                      |
+                      colspan) = генерация флажка настройки сайта                 |
+    settings_editbox(param,                                                       |
+                     text,                                                        |
+                     title,                                                       |
+                     value,                                                       |
+                     width,                                                       |
+                     colspan,                                                     |
+                     rowspan,                                                     |
+                     size,                                                        |
+                     flat,                                                        |
+                     short,                                                       |
+                     text_width,                                                  |
+                     text_colspan,                                                |
+                     text_rowspan) = генерация поля ввода настройки сайта         |
+    settings_textarea(param,                                                      |
+                      text,                                                       |
+                      title,                                                      |
+                      value,                                                      |
+                      width,                                                      |
+                      colspan,                                                    |
+                      rowspan,                                                    |
+                      style,                                                      |
+                      flat,                                                       |
+                      text_width,                                                 |
+                      text_colspan,                                               |
+                      text_rowspan) = генерация поля ввода настройки сайта        |
+    get_item_string(item,                                                         |
+                    param,                                                        |
+                    def,                                                          |
+                    escaped) = получить значение строкового поля записи           |
+    items_checkbox(item,                                                          |
+                   id,                                                            |
+                   param,                                                         |
+                   as_icon,                                                       |
+                   image,                                                         |
+                   text,                                                          |
+                   class,                                                         |
+                   title,                                                         |
+                   width,                                                         |
+                   colspan,                                                       |
+                   rowspan,                                                       |
+                   onchange,                                                      |
+                   options) = генерация флажка записи                             |
+    hidden_editbox(param, id, value) = генерация скрытого поля ввода              |
+    save_button(width) = кнопка Сохранить формы ввода                             |
+    start_button(text, width) = кнопка Старт формы ввода                          |
+    main_title(alt, path) = основной заголовок страницы                           |
+    info_message() = информационное сообщение                                     |
+    error_message() = сообщение об ошибке                                         |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- если универсальные функции еще не подключались --> *}
+    {if !$common_functions_included|default:false}
+
+
+
+        {* <!-- адрес корня домена --> *}
+        {$domain = $site|default:''}
+        {$domain = preg_replace('!^([a-z]+://[^/]+/).*$!iu', '$1', $domain)}
+        {$domain = $domain|escape
+                   scope = 'global'}
+
+
+
+        {* <!-- адрес корня админпанели --> *}
+        {$site = ($site|default:'')|escape
+                 scope = 'global'}
+        {$admin_site = $site|cat:(($admin_folder|default:'')|escape)|cat:'/'
+                       scope = 'global'}
+        {$admin_script = $admin_site|cat:'index.php'
+                         scope = 'global'}
+
+
+
+        {* <!-- адрес для перехода в админпанели (ожидает справа имя модуля) --> *}
+        {$param = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+        {$param = $param|regex_replace:'/[=\?#]/u':''}
+        {$admin_goto = $admin_script|cat:'?'|cat:($param|escape)|cat:'='
+                       scope = 'global'}
+
+
+
+        {* <!-- адрес корня текущего шаблона админпанели --> *}
+        {$param = $settings->admin_theme|default:''}
+        {$admin_theme = $admin_site|cat:'design/'|cat:($param|escape)|cat:'/'
+                        scope = 'global'}
+        {$theme = ($theme|default:'')|escape
+                  scope = 'global'}
+
+
+
+        {* <!-- часть get-запроса страницы для параметра token --> *}
+        {$param = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+        {$param = $param|regex_replace:'/[=\?#]/u':''}
+        {$token = ($inputs[$param]|default:$Token)|default:''
+                  scope = 'global'}
+        {$token_request = ($param|cat:'='|cat:$token)|escape
+                          scope = 'global'}
+
+
+
+        {* <!-- filter_editbox(param) = генерация поля ввода для фильтра --> *}
+        {function name = 'filter_editbox'
+                  param = ''}
+            {if $param != ''}
+                {if $param != ''}
+                    {eval var = '{$smarty.const.'|cat:$param|cat:'|default:\'\'}'
+                          assign = 'param'}
+                    {$id = $param|escape}
+                    {$value = $inputs[$param]|default:''}
+
+                    {* <!-- поле ввода --> *}
+                    <input class="edit" id="items_form_{$id}" name="{$id}" type="text" value="{$value|escape}" />
+                {/if}
+            {/if}
+        {/function}
+
+
+
+        {* <!-- filter_checkbox(param, shadow, image, text, style, invertable) = генерация флажка для фильтра --> *}
+        {function name = 'filter_checkbox'
+                  param = ''
+                  shadow = false
+                  image = ''
+                  text = ''
+                  style = ''
+                  invertable = false}
+            {if $param != ''}
+                {eval var = '{$smarty.const.'|cat:$param|cat:'|default:\'\'}'
+                      assign = 'param'}
+                {if $param != ''}
+                    {$id = $param|escape}
+
+                    {* <!-- теневой флажок (для случая "не выбрано - это тоже состояние") --> *}
+                    {if $shadow}
+                        <input name="{$id}" type="hidden" value="0" />
+                    {/if}
+
+                    {* <!-- флажок --> *}
+                    {$value = $inputs[$param]|default:0}
+                    {$checked = ($value != 0) ? 'checked' : ''}
+                    <input class="checkbox" id="items_form_{$id}" name="{$id}" type="checkbox" {$checked} value="{($value != 0) ? ($value|escape) : 1}" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+
+                    {* <!-- картинка и/или текст --> *}
+                    {$style = ($style != '') ? ('style="'|cat:$style|cat:'"') : ''}
+                    <span onclick="Toggle_PageCheckbox('items_form_{$id}');">
+                        {if $image != ''}
+                            <img class="icon16x16" src="{$admin_theme|default:''}images/{$image|escape}" {$style} />
+                        {/if}
+                        {if $text != ''}
+                            {$text|escape}
+                        {/if}
+
+                        {* <!-- если поддерживает инверсию действия --> *}
+                        {if $invertable}
+                            <div class="inverted">
+                                <span onclick="var el = document.getElementById('items_form_{$id}'); if (el) if (!el.checked) el.value = -1; else if (el.value != -1) { el.value = -1; el.checked = false; }">
+                                    противоположный
+                                </span>
+                                <span onclick="var el = document.getElementById('items_form_{$id}'); if (el) if (!el.checked) el.value = 1; else if (el.value != 1) { el.value = 1; el.checked = false; }">
+                                    обычный
+                                </span>
+                            </div>
+                        {/if}
+                    </span>
+                {/if}
+            {/if}
+        {/function}
+
+
+
+        {* <!-- get_setting(param, def) = получить значение настройки сайта (не экранировано) --> *}
+        {function name = 'get_setting'
+                  param = ''
+                  def = ''}
+            {if $param != ''}
+                {$param = $param|lower}
+                {if isset($settings) && (is_object($settings) || is_array($settings))}
+                    {foreach $settings as $k => $v}
+                        {if $k|lower == $param}
+                            {$def = $v}
+                            {break}
+                        {/if}
+                    {/foreach}
+                {/if}
+            {/if}
+            {$def}
+        {/function}
+
+
+
+        {* <!-- settings_checkbox(param, image, text, title, width, colspan) = генерация флажка настройки сайта --> *}
+        {function name = 'settings_checkbox'
+                  param = ''
+                  image = ''
+                  text = ''
+                  title = ''
+                  width = ''
+                  colspan = 1}
+            {if $param != ''}
+                {$p = $param|lower}
+                {$param = ($param|regex_replace:'/^def_/iu':'')|escape}
+                {if $param != ''}
+                    {$value = false}
+                    {if isset($settings) && (is_object($settings) || is_array($settings))}
+                        {foreach $settings as $k => $v}
+                            {if $k|lower == $p}
+                                {$value = $v == true}
+                                {break}
+                            {/if}
+                        {/foreach}
+                    {/if}
+                    {$title = ($title != '') ? ('title="'|cat:($title|escape)|cat:'"') : ''}
+                    {$colspan = ($colspan|string_format:'%d' > 1) ? ('colspan="'|cat:($colspan|string_format:'%d')|cat:'"') : ''}
+                    {$width = ($width != '') ? ('width="'|cat:($width|escape)|cat:'"') : ''}
+                    <td class="param_short" {$colspan} {$width} {$title}>
+                        <input class="checkbox" id="setup_form_{$param}" name="{$param}" type="checkbox" value="1" {if $value} checked{/if} /> {**}
+                        {if $text != '' || $image != ''}
+                            <span onclick="Toggle_PageCheckbox('setup_form_{$param}');">
+                                {if $image != ''}
+                                    <img class="icon16x16" src="{$admin_theme|default:''}images/{$image|escape}" />{($text != '') ? ' ' : ''}
+                                {/if}
+                                {$text}
+                            </span>
+                        {/if}
+                    </td>
+                {/if}
+            {/if}
+        {/function}
+
+
+
+        {* <!-- settings_editbox(param, text, title, value, width, colspan, rowspan, size, flat, short, text_width, text_colspan, text_rowspan) = генерация поля ввода настройки сайта --> *}
+        {function name = 'settings_editbox'
+                  param = ''
+                  text = ''
+                  title = ''
+                  value = false
+                  width = ''
+                  colspan = 1
+                  rowspan = 1
+                  size = 0
+                  flat = false
+                  short = true
+                  text_width = ''
+                  text_colspan = 1
+                  text_rowspan = 1}
+            {if $param != ''}
+                {$p = $param|lower}
+                {$param = ($param|regex_replace:'/^def_/iu':'')|escape}
+                {if $param != ''}
+                    {if $value === false}
+                        {$value = ''}
+                        {if isset($settings) && (is_object($settings) || is_array($settings))}
+                            {foreach $settings as $k => $v}
+                                {if $k|lower == $p}
+                                    {$value = $v}
+                                    {break}
+                                {/if}
+                            {/foreach}
+                        {/if}
+                    {/if}
+                    {$title = ($title != '') ? ('title="'|cat:($title|escape)|cat:'"') : ''}
+                    {$colspan = ($colspan|string_format:'%d' > 1) ? ('colspan="'|cat:($colspan|string_format:'%d')|cat:'"') : ''}
+                    {$rowspan = ($rowspan|string_format:'%d' > 1) ? ('rowspan="'|cat:($rowspan|string_format:'%d')|cat:'"') : ''}
+                    {$width = ($width != '') ? ('width="'|cat:($width|escape)|cat:'"') : ''}
+                    {$size = ($size|string_format:'%d' > 0) ? ('size="'|cat:($size|string_format:'%d')|cat:'" style="width: auto;"') : ''}
+                    {$text_colspan = ($text_colspan|string_format:'%d' > 1) ? ('colspan="'|cat:($text_colspan|string_format:'%d')|cat:'"') : ''}
+                    {$text_rowspan = ($text_rowspan|string_format:'%d' > 1) ? ('rowspan="'|cat:($text_rowspan|string_format:'%d')|cat:'"') : ''}
+                    {$text_width = ($text_width != '') ? ('width="'|cat:($text_width|escape)|cat:'"') : ''}
+                    <td class="param{($short) ? '_short' : ''}" {$text_colspan} {$text_rowspan} {$text_width}>
+                        {$text}
+                    </td>
+                    <td class="value{($flat) ? ' value_sheet' : ''}" {$colspan} {$rowspan} {$width} {$title}>
+                        <input class="edit" name="{$param}" {$size} type="text" value="{$value|escape}" />
+                    </td>
+                {/if}
+            {/if}
+        {/function}
+
+
+
+        {* <!-- settings_textarea(param, text, title, value, width, colspan, rowspan, style, flat, text_width, text_colspan, text_rowspan) = генерация поля ввода настройки сайта --> *}
+        {function name = 'settings_textarea'
+                  param = ''
+                  text = ''
+                  title = ''
+                  value = false
+                  width = ''
+                  colspan = 1
+                  rowspan = 1
+                  style = ''
+                  flat = false
+                  text_width = ''
+                  text_colspan = 1
+                  text_rowspan = 1}
+            {if $param != ''}
+                {$p = $param|lower}
+                {$param = ($param|regex_replace:'/^def_/iu':'')|escape}
+                {if $param != ''}
+                    {if $value === false}
+                        {$value = ''}
+                        {if isset($settings) && (is_object($settings) || is_array($settings))}
+                            {foreach $settings as $k => $v}
+                                {if $k|lower == $p}
+                                    {$value = $v}
+                                    {break}
+                                {/if}
+                            {/foreach}
+                        {/if}
+                    {/if}
+                    {$title = ($title != '') ? ('title="'|cat:($title|escape)|cat:'"') : ''}
+                    {$colspan = ($colspan|string_format:'%d' > 1) ? ('colspan="'|cat:($colspan|string_format:'%d')|cat:'"') : ''}
+                    {$rowspan = ($rowspan|string_format:'%d' > 1) ? ('rowspan="'|cat:($rowspan|string_format:'%d')|cat:'"') : ''}
+                    {$width = ($width != '') ? ('width="'|cat:($width|escape)|cat:'"') : ''}
+                    {$style = ($style != '') ? ('style="'|cat:($style|escape)|cat:'"') : ''}
+                    {$text_colspan = ($text_colspan|string_format:'%d' > 1) ? ('colspan="'|cat:($text_colspan|string_format:'%d')|cat:'"') : ''}
+                    {$text_rowspan = ($text_rowspan|string_format:'%d' > 1) ? ('rowspan="'|cat:($text_rowspan|string_format:'%d')|cat:'"') : ''}
+                    {$text_width = ($text_width != '') ? ('width="'|cat:($text_width|escape)|cat:'"') : ''}
+                    <td class="param_high" {$text_colspan} {$text_rowspan} {$text_width}>
+                        {$text}
+                    </td>
+                    <td class="value{($flat) ? ' value_sheet' : ''}" {$colspan} {$rowspan} {$width} {$title}>
+                        <textarea name="{$param}" {$style}>{$value|escape}</textarea>
+                    </td>
+                {/if}
+            {/if}
+        {/function}
+
+
+
+        {* <!-- get_item_string(item, param, def, escaped) = получить значение строкового поля записи --> *}
+        {function name = 'get_item_string'
+                  param = ''
+                  def = ''
+                  escaped = true}
+            {if $param != ''}
+                {$param = $param|lower}
+                {if isset($item) && (is_object($item) || is_array($item))}
+                    {foreach $item as $k => $v}
+                        {if $k|lower == $param}
+                            {$def = trim(preg_replace('/[\s \t\r\n]+/u', ' ', $v))}
+                            {break}
+                        {/if}
+                    {/foreach}
+                {/if}
+            {/if}
+            {if $escaped}
+                {$def|escape}
+            {else}
+                {$def}
+            {/if}
+        {/function}
+
+
+
+        {* <!-- items_checkbox(item, id, param, as_icon, image, text, class, title, width, colspan, rowspan, onchange, options) = генерация флажка записи --> *}
+        {function name = 'items_checkbox'
+                  id = '*'
+                  param = ''
+                  as_icon = false
+                  image = ''
+                  text = ''
+                  class = 'param_short'
+                  title = ''
+                  width = ''
+                  colspan = 1
+                  rowspan = 1
+                  onchange = ''
+                  options = ''}
+            {if $param != ''}
+                {$p = $param|lower}
+                {$param = $param|escape}
+                {if $param != ''}
+                    {$value = false}
+                    {if isset($item) && (is_object($item) || is_array($item))}
+                        {foreach $item as $k => $v}
+                            {if $k|lower == $p}
+                                {$value = $v == true}
+                                {break}
+                            {/if}
+                        {/foreach}
+                    {/if}
+                    {$class = ($class != '') ? (' class="'|cat:($class|escape)|cat:'"') : ''}
+                    {$title = ($title != '') ? (' title="'|cat:($title|escape)|cat:'"') : ''}
+                    {$colspan = ($colspan|string_format:'%d' > 1) ? (' colspan="'|cat:($colspan|string_format:'%d')|cat:'"') : ''}
+                    {$rowspan = ($rowspan|string_format:'%d' > 1) ? (' rowspan="'|cat:($rowspan|string_format:'%d')|cat:'"') : ''}
+                    {$width = ($width != '') ? (' width="'|cat:($width|escape)|cat:'"') : ''}
+                    {$image = $image|escape}
+                    {$image_prefix = ($as_icon) ? 'icon_' : ''}
+                    {$image_suffix = ($as_icon && !$value) ? '_off' : ''}
+                    {$image_suffix = ($as_icon) ? ($image_suffix|cat:'_16x16.png') : ''}
+                    {$onchange = $onchange|replace:'"':'\\"'}
+                    {$hide1 = ($as_icon) ? ' hidden-checkbox' : ''}
+                    {$hide2 = ($as_icon) ? (' onchange="toggleCheckboxIcon(this, this.checked, \''|cat:$image|cat:'\');'|cat:$onchange|cat:'"')
+                                         : (($onchange != '') ? (' onchange="'|cat:$onchange|cat:'"') : '')}
+                    {$options = ($options != '') ? (' '|cat:$options) : ''}
+                    <td{$class}{$colspan}{$rowspan}{$width}{$title}{$options}>
+                        <input class="checkbox{$hide1}" id="items_form_{$id}_{$param}" name="{$param}[{$id}]" type="checkbox" value="1" data-value="{($value) ? 1 : 0}" {if $value} checked{/if}{$hide2} /> {**}
+                        {if $text != '' || $image != ''}
+                            <span onclick="Toggle_PageCheckbox('items_form_{$id}_{$param}');">
+                                {if $image != ''}
+                                    <img class="icon16x16{if $as_icon} icon16x16-key{if !$value} icon16x16-key-off{/if}{/if}" src="{$admin_theme|default:''}images/{$image_prefix}{$image}{$image_suffix}" />{($text != '') ? ' ' : ''}
+                                {/if}
+                                {$text}
+                            </span>
+                        {/if}
+                    </td>
+                {/if}
+            {/if}
+        {/function}
+
+
+
+        {* <!-- hidden_editbox(param, id, value) = генерация скрытого поля ввода --> *}
+        {function name = 'hidden_editbox'
+                  param = ''
+                  id = false
+                  value = ''}
+            {if $param != ''}
+                {eval var = '{$smarty.const.'|cat:$param|cat:'|default:\'\'}'
+                      assign = 'param'}
+                {if $param != ''}
+                    {$value = ($value === true) ? ($inputs[$param]|default:'') : $value}
+                    {$param = $param|escape}
+                    {$id = ($id) ? ('id="items_form_'|cat:$param|cat:'"') : ''}
+
+                    {* <!-- поле ввода --> *}
+                    <input {$id} name="{$param}" type="hidden" value="{$value|escape}" />
+                {/if}
+            {/if}
+        {/function}
+
+
+
+        {* <!-- save_button(width) = кнопка Сохранить формы ввода --> *}
+        {function name = 'save_button'
+                  width = ''}
+            {$width = ($width != '') ? ('width="'|cat:($width|escape)|cat:'"') : ''}
+            <td class="value_box" {$width}>
+                {$param = $smarty.const.REQUEST_PARAM_NAME_SETUP|default:''}
+                <input class="submit" name="{$param|escape}" type="submit" value="Сохранить" />
+            </td>
+        {/function}
+
+
+
+        {* <!-- start_button(text, width) = кнопка Старт формы ввода --> *}
+        {function name = 'start_button'
+                  text = 'Старт'
+                  width = ''}
+            {$width = ($width != '') ? ('width="'|cat:($width|escape)|cat:'"') : ''}
+            <td class="value_box" {$width}>
+                <input class="submit" type="submit" value="{$text|escape}" />
+            </td>
+        {/function}
+
+
+
+        {* <!-- main_title(alt, path) = основной заголовок страницы --> *}
+        {function name = 'main_title'
+                  alt = 'Без названия!'
+                  path = 'Без пути!'}
+            <h1>
+                <div class="path">
+                    <a href="{$admin_site|default:''}" title="Перейти на главную страницу админпанели">
+                        Главная
+                    </a> → {$path|escape}
+                </div>
+
+                {$title = ($title|default:$alt)|escape}
+                {$title = $title|replace:'[b]':'<b style="font-size: 10pt; font-weight: normal;">'}
+                {$title = $title|replace:'[/b]':'</b>'}
+                {$title}
+            </h1>
+        {/function}
+
+
+
+        {* <!-- info_message() = информационное сообщение --> *}
+        {function name = 'info_message'}
+            {if $message|default:'' != ''}
+                <div class="message">
+                    {$message}
+                </div>
+            {/if}
+        {/function}
+
+
+
+        {* <!-- error_message() = сообщение об ошибке --> *}
+        {function name = 'error_message'}
+            {if $error|default:'' != ''}
+                <div class="error">
+                    <b>Ошибка:</b> {$error}
+                </div>
+            {/if}
+        {/function}
+
+
+
+        {* <!-- признак УНИВЕРСАЛЬНЫЕ УЖЕ ПОДКЛЮЧЕНЫ --> *}
+        {$common_functions_included = true scope = 'global'}
+    {/if}
+
+{/strip}

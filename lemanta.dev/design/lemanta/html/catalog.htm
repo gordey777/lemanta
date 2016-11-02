@@ -1,0 +1,64 @@
+{* <!-- главная страница --> *}{strip}
+
+    {$enableHitProducts = TRUE scope=global}
+
+    <div id="main_page_bloks">
+        <div class="block-main">
+            <div class="tel">
+                {echoVar from='config->phone1'}
+            </div>
+            <div class="main-img">
+                <a href="dostavka">
+                    <img src="{theme}images/main1.png" alt="" />
+                </a>
+                <div class="main-img-txt">
+                    <p>Доставка <span>условия и цены</span></p>
+                </div>
+            </div>
+            <div class="line2"></div>
+            <div class="desc">
+                <h3>О нас</h3>
+                <p><span>Lemanta</span> - это интернет-магазин, в котором можно купить стильную, актуальную одежду по очень выгодным ценам!</p>
+            </div>
+        </div>
+
+        <div class="block-main">
+            <div class="tel">
+                {echoVar from='config->phone2'}
+            </div>
+            <div class="main-img">
+                <a href="oplata">
+                    <img src="{theme}images/main2.png" alt="" />
+                </a>
+                <div class="main-img-txt item2">
+                    <p>ОПЛАТА <span>условия и цены</span></p>
+                </div>
+            </div>
+            <div class="line2"></div>
+            <div class="desc">
+                <h3>Оплата</h3>
+                <p>Вы будете приятно удивлены вариантами оплаты. Мы принимает к оплате наличные, безналичные и электронные деньги.</p>
+            </div>
+        </div>
+
+        <div class="block-main">
+            <div class="tel">
+                {echoVar from='config->phone3'}
+            </div>
+            <div class="main-img">
+                <a href="blog">
+                    <img src="{theme}images/main3.png" alt="" />
+                </a>
+                <div class="main-img-txt item3">
+                    <p>Новости</p>
+                </div>
+            </div>
+            <div class="line2"></div>
+            <div class="desc">
+                <h3>Доставка</h3>
+                <p>Доставка осуществляется курьерской службой <span>"Новая Почта"</span>. Сроки доставки 1-3 дня. По прибытию товара Вы будете уведомлены СМС сообщением.</p>
+            </div>
+        </div>
+    </div>
+
+{/strip}

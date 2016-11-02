@@ -1,0 +1,334 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Form - форма ввода                                                      |
+  Версия модуля: 1.1                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $form_body = тело формы                                                       |
+        $form_tpl = или имя файла шаблона формы                                   |
+    $search_input_params = дополнительные опции тега INPUT поиска                 |
+    $login_input_params = дополнительные опции тега INPUT логина                  |
+    $pass_input_params = дополнительные опции тега INPUT пароля                   |
+    $pass2_input_params = дополнительные опции тега INPUT повтора пароля          |
+    $surname_input_params = дополнительные опции тега INPUT фамилии               |
+    $name_input_params = дополнительные опции тега INPUT имени                    |
+    $patronymic_input_params = дополнительные опции тега INPUT отчества           |
+    $phone_input_params = дополнительные опции тега INPUT телефона                |
+    $email_input_params = дополнительные опции тега INPUT емейла                  |
+    $author_input_params = дополнительные опции тега INPUT автора                 |
+    $message_input_params = дополнительные опции тега INPUT сообщения             |
+    $captcha_input_params = дополнительные опции тега INPUT капчи                 |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $keyword = ранее введенный текст в поле поиска                                |
+    $password = ранее введенный текст в поле пароля                               |
+    $item->email = ранее введенный текст в поле логина                            |
+    $item->name = ранее введенный текст в поле фамилии                            |
+    $item->name3 = ранее введенный текст в поле имени                             |
+    $item->name2 = ранее введенный текст в поле отчества                          |
+    $post_phone = ранее введенный текст в поле телефона                           |
+    $post_name = ранее введенный текст в поле автора                              |
+    $post_message = ранее введенный текст в поле сообщения                        |
+    $post_copystop = код контроля репостинга формы                                |
+    $name = ранее введенный текст в поле имени                                    |
+    $email = ранее введенный текст в поле емейла                                  |
+    $message = ранее введенный текст в поле сообщения                             |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Распознает подстановочные метки в контенте формы:                               |
+    [__onsubmit__] = обработчик OnSubmit формы ввода                              |
+    [__search__] = поле ввода ЧТО ИЩЕМ формы поиска                               |
+    [__login__] = поле ввода ЛОГИН формы авторизации и регистрации                |
+    [__pass__] = поле ввода ПАРОЛЬ формы авторизации и регистрации                |
+    [__pass2__] = поле ввода ПОВТОРИТЬ ПАРОЛЬ формы регистрации                   |
+    [__surname__] = поле ввода ФАМИЛИЯ формы регистрации                          |
+    [__name__] = поле ввода ИМЯ формы регистрации                                 |
+    [__patronymic__] = поле ввода ОТЧЕСТВО формы регистрации                      |
+    [__phone__] = поле ввода ТЕЛЕФОН формы обратного звонка                       |
+    [__email__] = поле ввода ЕМЕЙЛ формы обратной связи                           |
+    [__author__] = поле ввода АВТОР формы обратного звонка                        |
+    [__user__] = поле ввода АВТОР формы обратной связи                            |
+    [__message__] = поле ввода СООБЩЕНИЕ формы обратной связи                     |
+    [__comment__] = поле ввода СООБЩЕНИЕ формы комментария                        |
+    [__reason__] = поле ввода СООБЩЕНИЕ формы обратного звонка                    |
+    [__copystop__] = скрытое поле КОНТРОЛЬ РЕПОСТИНГА формы обратного звонка      |
+    [__captcha__] = поле ввода КАПЧА формы регистрации и обратного звонка         |
+    [__captcha_old__] = поле ввода СТАРАЯ КАПЧА формы обратной связи              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/form.htm'            |
+             form_body = строка                                                   |
+                 form_tpl = строка                                                |
+             search_input_params = строка                                         |
+             login_input_params = строка                                          |
+             pass_input_params = строка                                           |
+             pass2_input_params = строка                                          |
+             surname_input_params = строка                                        |
+             name_input_params = строка                                           |
+             patronymic_input_params = строка                                     |
+             phone_input_params = строка                                          |
+             email_input_params = строка                                          |
+             author_input_params = строка                                         |
+             message_input_params = строка                                        |
+             captcha_input_params = строка}                                       |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- если есть тело формы или задано имя файла шаблона формы --> *}
+    {if ($form_body|default:'' != '') || ($form_tpl|default:'' != '')}
+
+
+
+        {* <!-- захватываем вывод формы в переменную $result --> *}
+        {if $form_body|default:'' != ''}
+            {$result = $form_body}
+        {else}
+            {capture assign = 'result'}
+                {include file = $form_tpl}
+            {/capture}
+        {/if}
+
+
+
+        {* <!-- шаблон защиты от сбоя подстановок через инъекцию со стороны пользователя --> *}
+        {$guardian = '/\[__([a-z]+_)*[a-z]+[0-9]?__\]/'}
+
+
+
+        {* <!-- подстановка [__onsubmit__] --> *}
+        {$marker = '[__onsubmit__]'}
+        {$result = $result|replace:$marker:'onsubmit="javascript: Emulate_FormFields_OnFocus(this); return Emulate_BaloonValidateForm(this);"'}
+
+
+
+        {* <!-- подстановка [__search__] --> *}
+        {$marker = '[__search__]'}
+        {$temp = 'что ищем...'}
+        {$params = $search_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="keyword" value="{($keyword|default:$temp)|escape}" format=".+" notice="Введите искомый текст" maxlength="128" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__login__] --> *}
+        {$marker = '[__login__]'}
+        {$temp = 'логин...'}
+        {$params = $login_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="email" value="{($item->email|default:$temp)|escape}" format=".+" notice="Введите логин (емейл)" maxlength="{($smarty.const.DATABASE_USERS_FIELDSIZE_EMAIL|default:256)|string_format:'%d'}" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__pass__] --> *}
+        {$marker = '[__pass__]'}
+        {$temp = ($result|regex_replace:'/^.+?\[__pass2__\].+$/':'' == '') ? 'пароль...' : ''}
+        {$params = $pass_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="password" value="{$password|default:$temp|escape}" format=".+" notice="Введите пароль" maxlength="{($smarty.const.DATABASE_USERS_PASSWORD_MAXSIZE|default:50)|string_format:'%d'}" {if $temp == ''} type="password" {else} type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {/if} {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__pass2__] --> *}
+        {$marker = '[__pass2__]'}
+        {$temp = 'повторите пароль...'}
+        {$params = $pass2_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="password2" value="{$temp|escape}" format=".+" notice="Повторите введенный пароль" maxlength="{($smarty.const.DATABASE_USERS_PASSWORD_MAXSIZE|default:50)|string_format:'%d'}" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__surname__] --> *}
+        {$marker = '[__surname__]'}
+        {$temp = 'фамилия...'}
+        {$params = $surname_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="name" value="{($item->name|default:$temp)|escape}" format=".+" notice="Введите фамилию" maxlength="{(($smarty.const.DATABASE_USERS_FIELDSIZE_NAME|default:256) / 3)|string_format:'%d'}" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__name__] --> *}
+        {$marker = '[__name__]'}
+        {$temp = 'имя...'}
+        {$params = $name_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="name3" value="{($item->name3|default:$temp)|escape}" maxlength="{(($smarty.const.DATABASE_USERS_FIELDSIZE_NAME|default:256) / 3)|string_format:'%d'}" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__patronymic__] --> *}
+        {$marker = '[__patronymic__]'}
+        {$temp = 'отчество...'}
+        {$params = $patronymic_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="name2" value="{($item->name2|default:$temp)|escape}" maxlength="{(($smarty.const.DATABASE_USERS_FIELDSIZE_NAME|default:256) / 3)|string_format:'%d'}" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__phone__] --> *}
+        {$marker = '[__phone__]'}
+        {$temp = '+x (xxx) xxx-xx-xx...'}
+        {$params = $phone_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="post_phone" value="{($post_phone|default:$temp)|escape}" format=".+" notice="Введите номер телефона" maxlength="64" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__email__] --> *}
+        {$marker = '[__email__]'}
+        {$temp = 'емейл...'}
+        {$params = $email_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="email" value="{($email|default:$temp)|escape}" format="email" notice="Введите емейл" maxlength="{($smarty.const.DATABASE_FEEDBACK_FIELDSIZE_EMAIL|default:256)|string_format:'%d'}" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__author__] --> *}
+        {$marker = '[__author__]'}
+        {$temp = 'имя...'}
+        {$params = $author_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="post_name" value="{($post_name|default:$temp)|escape}" maxlength="64" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__user__] --> *}
+        {$marker = '[__user__]'}
+        {$temp = 'имя...'}
+        {$params = $author_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="name" value="{($name|default:$temp)|escape}" format=".*" notice="Введите имя" maxlength="{($smarty.const.DATABASE_FEEDBACK_FIELDSIZE_NAME|default:256)|string_format:'%d'}" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__message__] --> *}
+        {$marker = '[__message__]'}
+        {$temp = 'сообщение...'}
+        {$params = $message_input_params|default:''}
+        {capture assign = 'input'}
+            <textarea name="message" format=".*" notice="Введите текст сообщения" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />{($message|default:$temp)|escape}</textarea>
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__comment__] --> *}
+        {$marker = '[__comment__]'}
+        {$temp = 'комментарий...'}
+        {$params = $message_input_params|default:''}
+        {capture assign = 'input'}
+            <textarea name="post_message" format=".*" notice="Введите текст комментария" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />{($post_message|default:$temp)|escape}</textarea>
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__reason__] --> *}
+        {$marker = '[__reason__]'}
+        {$temp = 'причина...'}
+        {$params = $message_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="post_message" value="{($post_message|default:$temp)|escape}" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__copystop__] --> *}
+        {$marker = '[__copystop__]'}
+        {capture assign = 'input'}
+            <input name="post_copystop" value="{($post_copystop|default:'')|escape}" type="hidden" />
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__captcha__] --> *}
+        {$marker = '[__captcha__]'}
+        {$temp = 'защитный код...'}
+        {$params = $captcha_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="captcha" value="{$temp|escape}" format=".+" notice="Введите защитный код с картинки" maxlength="12" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+            <div class="captcha">
+                <img src="{$site|default:''|escape}captcha.jpg?unique={math equation = 'rand(1, 100000000)'}" />
+            </div>
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- подстановка [__captcha_old__] --> *}
+        {$marker = '[__captcha_old__]'}
+        {$temp = 'защитный код...'}
+        {$params = $captcha_input_params|default:''}
+        {capture assign = 'input'}
+            <input name="captcha_code" value="{$temp|escape}" format=".+" notice="Введите защитный код с картинки" maxlength="12" type="text" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: var v = jQuery.trim(this.value); if ((v == '') || (v == '{$temp|escape}')) this.value = '';" {$params} />
+            <div class="captcha">
+                <img src="{$site|default:''|escape}captcha/image.php?unique={math equation = 'rand(1, 100000000)'}" />
+            </div>
+        {/capture}
+        {$input = $input|regex_replace:$guardian:''}
+        {$result = $result|replace:$marker:$input}
+
+
+
+        {* <!-- выводим форму --> *}
+        {$result}
+
+    {/if}
+
+{/strip}

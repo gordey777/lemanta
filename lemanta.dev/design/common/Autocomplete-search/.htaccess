@@ -1,0 +1,38 @@
+# Impera CMS: security control file
+#
+# ---------------------------------------------------------
+#
+# lock access to all files in this folder
+#
+# ---------------------------------------------------------
+
+<Files "*">
+    Order Deny,Allow
+    Deny from All
+</Files>
+
+
+
+# ---------------------------------------------------------
+#
+# unlock access to html, images, css and js
+#
+# ---------------------------------------------------------
+
+<FilesMatch "\.(html?|css|js|jpe?g|png|gif)$">
+    Order Allow,Deny
+    Allow from All
+</FilesMatch>
+
+
+
+# ---------------------------------------------------------
+#
+# unlock access to search.php
+#
+# ---------------------------------------------------------
+
+<FilesMatch "^search\.php$">
+    Order Allow,Deny
+    Allow from All
+</FilesMatch>

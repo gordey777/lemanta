@@ -1,0 +1,166 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Footer Links - блок ссылок в подвале сайта                              |
+  Версия модуля: 1.2                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $opentag = открывающий тег блока                                              |
+        $boxes = массив блоков (их параметры для модуля menu.htm)                 |
+        $show_account_links = булевой признак "показать блок аккаунт-ссылок"      |
+            $account_links_maxcount = предельное число аккаунт-ссылок             |
+            $account_links_opentag = открывающий тег блока аккаунт-ссылок         |
+                $account_links_a_opentag = открывающий тег аккаунт-ссылки         |
+                    $account_links_a_params = дополнительные опции тега ссылки    |
+                $account_links_a_closetag = закрывающий тег аккаунт-ссылки        |
+            $account_links_closetag = закрывающий тег блока аккаунт-ссылок        |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $menus = массив записей о менюшках сайта                                      |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/footer-links.htm'    |
+             opentag = строка                                                     |
+                 boxes = массив                                                   |
+                 show_account_links = true или false                              |
+                     account_links_maxcount = число                               |
+                     account_links_opentag = строка                               |
+                         account_links_a_opentag = строка                         |
+                             account_links_a_params = строка                      |
+                         account_links_a_closetag = строка                        |
+                     account_links_closetag = строка                              |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {$opentag|default:''}
+
+        {* <!-- блоки ссылок --> *}
+        {if isset($boxes) && is_array($boxes) && !empty($boxes)}
+            {foreach $boxes as $params}
+                {if is_array($params) && !empty($params)}
+
+
+
+                    {* <!-- подключаем элементы из меню --> *}
+                    {include file = '../../../common_parts/AIMatrix/menu.htm'
+
+                             items = $menus|default:false
+
+                             menu_leftname = $params['menu_leftname']|default:''
+                             menu_name_numbering = false
+                             menu_firstnum = 1
+                             menus_count = 1
+
+                             links_maxcount = ((isset($params['links_maxcount'])) ? $params['links_maxcount'] : 5)
+                             links_count_align = ((isset($params['links_count_align'])) ? $params['links_count_align'] : true)
+
+                             menu_opentag = $params['menu_opentag']|default:''
+                                 listing_opentag = $params['listing_opentag']|default:''
+                                     link_opentag = $params['link_opentag']|default:''
+
+                                         a_id = $params['a_id']|default:''
+                                         a_class = $params['a_class']|default:''
+                                         a_active_class = $params['a_active_class']|default:''
+
+                                         a_text_opentag = $params['a_text_opentag']|default:''
+                                             a_text_maxsize = ((isset($params['a_text_maxsize'])) ? $params['a_text_maxsize'] : 32)
+                                         a_text_closetag = $params['a_text_closetag']|default:''
+
+                                     link_closetag = $params['link_closetag']|default:''
+                                 listing_closetag = $params['listing_closetag']|default:''
+                             menu_closetag = $params['menu_closetag']|default:''
+
+                             show_section_links = true
+                             show_category_links = true
+                             show_brand_links = true
+                             show_product_links = true
+                             show_article_links = true
+                             show_news_links = true
+                             show_file_links = true}
+
+                {/if}
+            {/foreach}
+        {/if}
+
+
+
+        {* <!-- ссылки аккаунта --> *}
+        {if isset($show_account_links) && $show_account_links}
+            {$maxcount = $account_links_maxcount|default:5}
+            {if $maxcount > 0}
+                {$params = $account_links_a_params|default:''}
+
+
+
+                {$account_links_opentag|default:''}
+
+                    {$account_links_a_opentag|default:''}
+                        <a href="{$site|default:''|escape}account" {$params}>
+                            Личный кабинет
+                        </a>
+                    {$account_links_a_closetag|default:''}
+
+
+
+                    {if $maxcount > 1}
+                        {$account_links_a_opentag|default:''}
+                            <a href="{$site|default:''|escape}account?tab=history" {$params}>
+                                История заказов
+                            </a>
+                        {$account_links_a_closetag|default:''}
+                    {/if}
+
+
+
+                    {if $maxcount > 2}
+                        {$account_links_a_opentag|default:''}
+                            <a href="{$site|default:''|escape}account?tab=favorites" {$params}>
+                                Мои товары
+                            </a>
+                        {$account_links_a_closetag|default:''}
+                    {/if}
+
+
+
+                    {if $maxcount > 3}
+                        {$account_links_a_opentag|default:''}
+                            <a href="{$site|default:''|escape}account?tab=correspondence" {$params}>
+                                Моя переписка
+                            </a>
+                        {$account_links_a_closetag|default:''}
+                    {/if}
+
+
+
+                    {if $maxcount > 4}
+                        {$account_links_a_opentag|default:''}
+                            <a href="{$site|default:''|escape}defer" {$params}>
+                                Отложенные товары
+                            </a>
+                        {$account_links_a_closetag|default:''}
+                    {/if}
+
+                {$account_links_closetag|default:''}
+
+            {/if}
+
+        {/if}
+
+    {$closetag|default:''}
+
+{/strip}

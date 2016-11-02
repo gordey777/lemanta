@@ -1,0 +1,6 @@
+AuthType Basic
+AuthName "/www/lemanta.com/webstat"
+AuthUserFile /var/www/lemanta/data/etc/9976215.passwd
+<Limit GET POST>
+	require valid-user
+</Limit>

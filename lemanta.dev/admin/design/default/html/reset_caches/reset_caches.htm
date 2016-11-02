@@ -1,0 +1,304 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница очистки кешей                                                  |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $from_page = адрес страницы возврата после операции                           |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $Token = аутентификатор операции                                              |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+    $files_host_suffix = файловый суффикс магазина                                |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.RESETCACHES_MODULELINK_POINTER|default:''}
+    {$section_paramname = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$token_paramname = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+
+
+
+    {* <!-- подключаем модуль закладок --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.RESETCACHES_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.RESETCACHES_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- формируем URL-ы страницы --> *}
+    {$url_main = ($site|default:'')|cat:($admin_folder|default:'')|cat:'/'}
+    {$url_script = $url_main|cat:'index.php'}
+        {* <!-- эти уже с экранированием --> *}
+        {$url_form = ($url_script|escape)|cat:'?'|cat:($section_paramname|escape)|cat:'='|cat:($module_pointer|escape)}
+        {$url_images = ($url_main|escape)|cat:'design/'|cat:(($settings->admin_theme|default:'')|escape)|cat:'/images/'}
+        {* <!-- эти с экранированием и предполагают подстановку справа имени модуля --> *}
+        {$url_goto = ($url_script|escape)|cat:'?'|cat:($section_paramname|escape)|cat:'='}
+        {$url_request = ($url_script|escape)|cat:'?'|cat:($token_paramname|escape)|cat:'='|cat:(($Token|default:'')|escape)|cat:'&'|cat:($section_paramname|escape)|cat:'='}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$url_main|escape}">
+                    Главная
+                </a> → {**}
+
+                Кеши
+            </div>
+
+            {$title|default:'Очистка кешей'}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма записи --> *}
+        <form action="{$url_form}" id="item_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+
+
+                <table align="center" cellpadding="0" cellspacing="10" class="white">
+                    <tr>
+                        <td class="param_high" rowspan="4">
+                            Что сделать:
+                        </td>
+
+
+
+                        {* <!-- флажок Очистить кеш шаблонов клиента --> *}
+                        <td class="param_short" title="Очистить ли кеш шаблонов клиентской стороны">
+
+                            {$param = $smarty.const.RESETCACHES_SMARTYVAR_CLEAR_CLIENT_TPL|default:'clear_client_tpl'}
+                            <input class="checkbox" id="item_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" />
+
+                            <span onclick="javascript: Toggle_PageCheckbox('item_form_{$param|escape}');">
+                                &nbsp;
+                                Очистить кеш шаблонов клиентской стороны сайта
+                            </span>
+                        </td>
+
+
+
+                        {* <!-- инфо о расположении папки кеша --> *}
+                        <td class="value value_sheet" width="100%" title="Расположение папки кеша">
+                            <input class="edit bright-checkbox" readonly type="text" value="{$site|default:''|escape}compiled{$files_host_suffix|default:''|escape}" />
+                        </td>
+
+
+
+                        {* <!-- кнопка Выполнить --> *}
+                        <td class="value_box" title="Выполнить помеченные действия">
+                            <input class="submit" type="submit" value="Выполнить" />
+                        </td>
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- флажок Очистить кеш шаблонов админпанели --> *}
+                        <td class="param_short" title="Очистить ли кеш шаблонов админпанели">
+
+                            {$param = $smarty.const.RESETCACHES_SMARTYVAR_CLEAR_ADMIN_TPL|default:'clear_admin_tpl'}
+                            <input class="checkbox" id="item_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" />
+
+                            <span onclick="javascript: Toggle_PageCheckbox('item_form_{$param|escape}');">
+                                &nbsp;
+                                Очистить кеш шаблонов админпанели
+                            </span>
+                        </td>
+
+
+
+                        {* <!-- инфо о расположении папки кеша --> *}
+                        <td class="value value_sheet" colspan="2" width="100%" title="Расположение папки кеша">
+                            <input class="edit bright-checkbox" readonly type="text" value="{$site|default:''|escape}{$admin_folder|default:''|escape}/compiled{$files_host_suffix|default:''|escape}" />
+                        </td>
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- флажок Очистить кеш БД --> *}
+                        <td class="param_short" title="Очистить ли кеши таблиц базы данных">
+
+                            {$param = $smarty.const.RESETCACHES_SMARTYVAR_CLEAR_DB|default:'clear_db'}
+                            <input class="checkbox" id="item_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" checked />
+
+                            <span onclick="javascript: Toggle_PageCheckbox('item_form_{$param|escape}');">
+                                &nbsp;
+                                Очистить кеши таблиц базы данных
+                            </span>
+                        </td>
+
+
+
+                        {* <!-- инфо о списке таблиц --> *}
+                        <td class="value value_sheet" colspan="2" width="100%" title="Список кешей таблиц">
+                            {capture assign = 'value'}
+                                {$smarty.const.DATABASE_CACHE_CBPRODUCTS_SHORTVERSION_TABLENAME|default:''}, {**}
+                                {$smarty.const.DATABASE_CACHE_CATEGORIES_TABLENAME|default:''}, {**}
+                                {$smarty.const.DATABASE_CACHE_BRANDS_TABLENAME|default:''}, {**}
+                                {$smarty.const.DATABASE_CACHE_USERS_SHORTVERSION_TABLENAME|default:''}, {**}
+                                {$smarty.const.DATABASE_CACHE_MENUS_SHORTVERSION_TABLENAME|default:''}
+                            {/capture}
+                            <input class="edit bright-checkbox" readonly type="text" value="{$value|escape}" />
+                        </td>
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- флажок Очистить кеш шаблонов клиента --> *}
+                        <td class="param_short" colspan="3" title="Инициировать ли проверку таблиц базу данных">
+
+                            {$param = $smarty.const.RESETCACHES_SMARTYVAR_RECHECK_DB|default:'recheck_db'}
+                            <input class="checkbox" id="item_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" checked />
+
+                            <span onclick="javascript: Toggle_PageCheckbox('item_form_{$param|escape}');">
+                                &nbsp;
+                                Инициировать проверку структурного соответствия таблиц базы данных
+                            </span>
+                        </td>
+
+
+
+                    </tr>
+                </table>
+
+
+
+                {* <!-- адрес страницы возврата после операции --> *}
+                {if $from_page|default:'' != ''}
+                    <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|default:''|escape}" type="hidden" value="{$from_page|escape}" />
+                {/if}
+
+
+
+                {* <!-- признак наличия данных об изменениях --> *}
+                <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|default:''|escape}" type="hidden" value="1" />
+
+
+
+                {* <!-- аутентификатор операции --> *}
+                <input name="{$token_paramname|escape}" type="hidden" value="{$Token|default:''|escape}" />
+
+
+
+        </form>
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+
+
+
+            <div class="title">
+                Справка
+            </div>
+
+
+
+            <div>
+                <b>Кеши шаблонов</b>. Существуют отдельно для клиентской стороны сайта и его админпанели. Как правило, {**}
+                очистка не требуется, поскольку движок сам следит за этим. Однако при смене хостинга возможны накладки {**}
+                из-за различия компиляционных условий. Выражаются они в визуальном искажении дизайна сайта. Для устранения {**}
+                таких проблем и созданы два этих флажка.
+            </div>
+
+
+
+            <div>
+                <u>Тонкости</u>: После очистки кеша шаблонов можно заметить, как шаблонизатор Smarty подтормаживает {**}
+                разные страницы сайта, пока не закеширует их компилированные версии. Скорость кеширования (компиляции) {**}
+                зависит от производительности сервера, и на некоторых хостингах замечено было много секундное подтормаживание. {**}
+                Далее скомпилированные страницы открываются с обычной скоростью.
+            </div>
+
+
+
+            <div>
+                <b>Кеши таблиц</b>. Их очисткой через определенные промежутки времени движок занимается самостоятельно. {**}
+                Но не исключены и даже были ситуации, когда переносят базу данных с сервера на сервер вручную по частям. {**}
+                Тогда может получиться, что какие-то сведения в кешах уже устарели, но пока не пройден некий период времени {**}
+                и движок при том не знает, что в сборку кеша кто-то вмешивался, то на сайте информация словно замерзает, {**}
+                показывая не те (не "свежие") данные.
+            </div>
+
+
+
+            <div>
+                <b>Проверка структуры</b>. Движок периодически выполняет такую проверку, например при смене версий. {**}
+                Однако может понадобиться принудительное вмешательство, поэтому создан данный флажок. Суть проверки - {**}
+                убедиться, что структура таблиц не нарушена, то есть все необходимые поля существуют, а сами поля имеют {**}
+                требуемые типы. Инициированная проверка прозрачно стартует в момент следующего открытия любой страницы, {**}
+                и при обнаружении изъянов производится автоматическая коррекция таблиц до желаемой структуры.
+            </div>
+
+
+
+        </div>
+
+
+
+    </div>
+
+{/strip}

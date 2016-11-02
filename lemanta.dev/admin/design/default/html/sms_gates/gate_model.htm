@@ -1,0 +1,334 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: макет страницы модуля SMS-шлюза                                         |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $item = запись о шлюзе                                                        |
+    $title = текст заголовка                                                      |
+    $engine_info = текст информации о протоколе шлюза                             |
+    $official_site = адрес официального сайта (без http://)                       |
+    $balance_sign = знак валюты баланса счета (например руб)                      |
+    $balance_exists = признак "динамическая информация о балансе поддерживается"  |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- маркер имен полей ввода шлюза --> *}
+    {$marker = $item->marker|default:''|escape}
+
+
+
+    {* <!-- опорный класс чисто для поиска частей тела шлюза --> *}
+    {capture assign = 'class'}
+        SMSGATE-{math equation='rand(1, 100000000)'}-reference-class
+    {/capture}
+
+
+
+    {* <!-- инлайновый стиль сокрытия тела отключенного шлюза --> *}
+    {$style = ($item->enabled|default:false) ? '' : 'style="display: none;"'}
+
+
+
+    {* <!-- onclick для переключения видимости тела отключенного шлюза --> *}
+    {$onclick = ($item->enabled|default:false) ? '' : 'onclick="javascript: jQuery(\'.'|cat:$class|cat:'\').toggle();"'}
+
+
+
+    {* <!-- onclick проявления видимости тела отключенного шлюза --> *}
+    {$onclick2 = ($item->enabled|default:false) ? '' : 'onclick="javascript: jQuery(\'.'|cat:$class|cat:'\').show();"'}
+
+
+
+    {* <!-- заголовок --> *}
+    <li class="head_divider" {$onclick}>
+        <div>
+
+            <span class="path">
+                {$engine_info|default:'Не указан протокол взаимодействия!'}
+            </span>
+
+
+
+            {$title|default:'Без названия!'}
+        </div>
+    </li>
+
+
+
+    {* <!-- если есть информационное сообщение --> *}
+    {if $message|default:'' != ''}
+        <div class="message {$class}">
+            {$message}
+        </div>
+    {/if}
+
+
+
+    {* <!-- если есть ошибка --> *}
+    {if $error|default:'' != ''}
+        <div class="error {$class}">
+            <b>Ошибка:</b> {$error}
+        </div>
+    {/if}
+
+
+
+    <table align="center" cellpadding="0" cellspacing="8" class="white" {$onclick2}>
+        <tr>
+
+
+
+            {* <!-- ссылка на официальный сайт --> *}
+            <td class="param_short">
+                Официальный сайт:
+            </td>
+            <td class="param_short" width="33%" title="Перейти на официальный сайт SMS шлюза">
+                <a href="http://{($official_site|default:'не.указан.сайт')|escape}/" target="_blank">
+                    {$official_site|default:'Без ссылки'}
+                </a>
+            </td>
+
+
+
+            {* <!-- флажок Используется --> *}
+            <td class="param_short" width="33%" title="Разрешена ли отправка SMS через этот шлюз">
+
+                {$param = $marker|cat:'enabled'}
+                <input class="checkbox" id="items_form_{$param}" name="{$param}" type="checkbox" value="1" {($item->enabled|default:false) ? 'checked' : ''} />
+                {**} {**}
+
+                <span onclick="javascript: Toggle_PageCheckbox('items_form_{$param}');">
+                    используется
+                </span>
+            </td>
+
+
+
+            {* <!-- поле Баланс счета --> *}
+            <td class="param_short" width="33%" title="Состояние счета">
+                Баланс: {if isset($item->balance) && ($item->balance !== false)}
+                            <b style="color: #000000;">
+                                {$item->balance|string_format:'%1.2f'|replace:',':'.'}
+                            </b> {$balance_sign|default:''}
+                        {else}
+                            <b title="{($balance_exists|default:false) ? 'Не удалось получить динамическую информацию о состоянии счета'
+                                                                       : 'Этот шлюз не предоставляет динамическую информацию о балансе счета'}">
+                                недоступно
+                            </b>
+                        {/if}
+            </td>
+
+
+
+            {* <!-- поле Порядковый номер --> *}
+            <td class="param_short">
+                Номер:
+            </td>
+            <td class="value" title="Порядковый номер шлюза">
+                <input class="edit" name="{$marker}number" size="5" style="width: auto;" type="text" value="{($item->number|default:1)|string_format:'%d'}" />
+            </td>
+
+
+
+            {* <!-- кнопка Сохранить --> *}
+            <td class="value_box" title="Сохранить изменения настроек этого шлюза">
+                <input class="submit" name="{$marker}save" type="submit" value="Сохранить" />
+            </td>
+
+
+
+        </tr>
+    </table>
+
+
+
+    {* <!-- настройки --> *}
+    <table align="center" cellpadding="0" cellspacing="10" class="gray {$class}" {$style}>
+        <tr>
+
+
+
+            {* <!-- поле Сервер --> *}
+            <td class="param_short">
+                Сервер (url):
+            </td>
+            <td class="value" width="1%" title="Протокол сервера шлюза (https или http)">
+                <input class="edit" name="{$marker}protocol" size="4" style="width: auto;" type="text" value="{$item->protocol|default:''|escape}" />
+            </td>
+            <td class="param_short" width="1%">
+                ://
+            </td>
+            <td class="value" colspan="2" width="50%" title="Сервер шлюза">
+                <input class="edit" name="{$marker}server" type="text" value="{$item->server|default:''|escape}" />
+            </td>
+
+
+
+            {* <!-- поле Порт --> *}
+            <td class="param_short">
+                Порт:
+            </td>
+            <td class="value" title="Порт сервера шлюза">
+                <input class="edit" name="{$marker}port" size="8" style="width: auto;" type="text" value="{$item->port|default:''|escape}" />
+            </td>
+
+
+
+            {* <!-- поле Кодировка --> *}
+            <td class="param_short">
+                Кодировка:
+            </td>
+            <td class="value" title="Кодировка сервера шлюза (например UTF-8, например UTF-16BE, например Windows-1251)">
+                <input class="edit" name="{$marker}charset" type="text" value="{$item->charset|default:''|escape}" />
+            </td>
+
+
+
+        </tr>
+        <tr>
+
+
+
+            {* <!-- поле Логин --> *}
+            <td class="param_short">
+                Логин:
+            </td>
+            <td class="value" colspan="3" width="50%" title="Логин доступа к шлюзу">
+                <input class="edit" name="{$marker}login" type="text" value="{$item->login|default:''|escape}" />
+            </td>
+
+
+
+            {* <!-- поле Альфа-имя --> *}
+            <td class="param_short" width="1%">
+              Альфа имя:
+            </td>
+            <td class="value" colspan="4" width="50%" title="Альфа имя (название отправителя)">
+                <input class="edit" name="{$marker}sender" type="text" value="{$item->sender|default:''|escape}" />
+            </td>
+
+
+
+        </tr>
+        <tr>
+
+
+
+            {* <!-- поле Пароль --> *}
+            <td class="param_short">
+                Пароль:
+            </td>
+            <td class="value" colspan="3" width="50%" title="Пароль доступа к шлюзу">
+                <input class="edit" name="{$marker}password" type="password" value="{$item->password|default:''|escape}" />
+            </td>
+
+
+
+            {* <!-- поле Телефон администратора --> *}
+            <td class="param_short" width="1%">
+                Телефон админа:
+            </td>
+            <td class="value" colspan="4" width="50%" title="Список телефонов администратора через запятую для отправки ему уведомления">
+                <input class="edit" name="{$marker}admin_phone" type="text" value="{$item->admin_phone|default:''|escape}" />
+            </td>
+
+
+
+        </tr>
+        <tr>
+
+
+
+            {* <!-- поле Фильтр номеров --> *}
+            <td class="param_short">
+                Только для номеров:
+            </td>
+            <td class="value" colspan="8" title="Список через запятую начал номеров телефонов, на которые разрешено отправлять SMS через шлюз (например 38050, 38099, 7903)">
+                <input class="edit" name="{$marker}filter" type="text" value="{$item->filter|default:''|escape}" />
+            </td>
+
+
+
+        </tr>
+        <tr>
+
+
+
+            {* <!-- поле История --> *}
+            <td class="param_high" style="height: 144px;">
+                История:
+            </td>
+            <td class="value" colspan="8" rowspan="2" title="История использования шлюза">
+                <textarea class="editor_small" readonly style="font-size: 8pt; height: 168px;">{$item->history|default:''|escape}</textarea>
+            </td>
+
+
+
+        </tr>
+        <tr>
+
+
+
+            {* <!-- флажок Используется --> *}
+            <td class="param_short" title="Разрешено ли помещать в историю разъяснение (описание) ошибок">
+
+                {$param = $marker|cat:'explained'}
+                <input class="checkbox" id="items_form_{$param}" name="{$param}" type="checkbox" value="1" {($item->explained|default:false) ? 'checked' : ''} />
+                {**} {**}
+
+                <span onclick="javascript: Toggle_PageCheckbox('items_form_{$param}');">
+                    пояснять ошибки
+                </span>
+            </td>
+        </tr>
+    </table>
+
+
+
+    {* <!-- отправка сообщений --> *}
+    <table align="center" cellpadding="0" cellspacing="8" class="white {$class}" {$style}>
+        <tr>
+
+
+
+            {* <!-- поле Текст сообщения --> *}
+            <td class="param_short">
+                Отправить SMS:
+            </td>
+            <td class="value" width="60%" title="Текст отправляемого SMS">
+                <input class="edit" name="{$marker}text" type="text" value="" />
+            </td>
+
+
+
+            {* <!-- поле Номер получателя --> *}
+            <td class="param_short">
+                на номер:
+            </td>
+            <td class="value" width="40%" title="Номер телефона получателя SMS">
+                <input class="edit" name="{$marker}phone" type="text" value="" />
+            </td>
+
+
+
+            {* <!-- кнопка Отправить --> *}
+            <td class="value_box" title="Отправить SMS через этот шлюз">
+                <input class="submit" name="{$marker}send" type="submit" value="Отправить" onclick="javascript: return confirm('Это приведет к отправке ПЛАТНОЙ SMS на указанный номер. Вы подтверждаете такую операцию?');" />
+            </td>
+
+
+
+        </tr>
+    </table>
+
+{/strip}

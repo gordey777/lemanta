@@ -1,0 +1,25 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница модуля SMS-шлюза AtomPark ePochta SMS                          |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $item = запись о шлюзе                                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {include file = 'sms_gates/gate_model.htm'
+
+             item = $item|default:false
+
+             title = 'SMS шлюз AtomPark ePochta SMS (Мультинациональный)'
+             engine_info = 'работает на Atomic ePochta SMS API'
+             official_site = 'atompark.com'
+
+             balance_sign = 'кредитов'
+             balance_exists = true}
+
+{/strip}

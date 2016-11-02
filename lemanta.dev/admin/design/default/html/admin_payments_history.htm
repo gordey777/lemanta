@@ -1,0 +1,393 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля истории платежей.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о заказах;
+    $all_users = массив с записями о пользователях;
+    $payments = массив с записями о способах оплаты;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    orders = true - вывести эту кнопку
+    orders_phases = true - вывести эту кнопку
+    payments_history = true - вывести эту кнопку
+    credit_programs = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "payments_history"
+           main = true
+           orders = true
+           orders_phases = true
+           payments_history = true
+           credit_programs = true}
+
+  <!-- Подключаем скрипт и файл стилей календаря -->
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.js" type="text/javascript"></script>
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendas.js" type="text/javascript"></script>
+  <link href="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.css" rel="stylesheet" type="text/css">
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Платежи
+      </div>
+      История платежей
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && !empty($message)}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && !empty($error)}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=PaymentsHistory" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <!-- Фильтр -->
+      <table align="center" cellpadding="0" cellspacing="8" class="white">
+        <tr>
+
+          <!-- поле Покупатель -->
+          <td class="param_short">
+            Покупатель
+          </td>
+          <td class="value" width="33%" title="Фильтр: только платежи такого зарегистрированного покупателя">
+
+            <!-- Создаем селектор пользователей -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_USER|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_USER|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              <!-- {*
+              Подключаем субшаблон списка клиентов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список клиентов
+                currents = идентификатор выбранного клиента (модификатор "|default:0" добавлен для обработки отсутствия выбора)
+                selector = true - это будет селектор, а не список клиентов *} -->
+
+              {include file = "../../common_parts/users.htm"
+                       items = $all_users
+                       currents = $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER]|default:0
+                       selector = true}
+            </select>
+          </td>
+
+          <!-- поле Способ оплаты -->
+          <td class="param_short">
+            Оплата
+          </td>
+          <td class="value" width="33%" title="Фильтр: только платежи таким способом оплаты">
+
+            <!-- Создаем селектор способов оплаты -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYMENT|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYMENT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+              {if isset($payments) && !empty($payments)}
+                {foreach item=c from=$payments}
+                  <option value="{$c->payment_method_id|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYMENT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYMENT] == $c->payment_method_id)} selected{/if}>{$c->name|escape}</option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+
+          <!-- поле Искомая дата -->
+          <script language="JavaScript" type="text/javascript">
+            <!--
+            var xcDateFormat = 'yyyy-mm-dd';
+            // -->
+          </script>
+          <td class="param_short">
+            Дата от:
+          </td>
+          <td class="value" width="16%" title="Фильтр: начиная с такой даты (формат даты ГГГГ-ММ-ДД)">
+            <input class="edit" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATEFROM|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATEFROM|escape}" type="text" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATEFROM]|escape|default:''}" onfocus="javascript: showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+          <td class="param_short">
+            до:
+          </td>
+          <td class="value" width="16%" title="Фильтр: до такой даты включительно (формат даты ГГГГ-ММ-ДД)">
+            <input class="edit" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATETO|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATETO|escape}" type="text" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATETO]|escape|default:''}" onfocus="javascript: showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+
+          <!-- флажок Фильтр запускать вручную -->
+          <td class="param_short" title="Включить срабатывание фильтра только по нажатию клавиши 'Найти'">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_manually_16x16.png" style="margin-right: 0px;">
+            </span>
+          </td>
+
+          <!-- кнопка Найти -->
+          <td class="value_box" title="Начать поиск платежей по условиям фильтра">
+            <input class="submit" style="width: auto;" type="submit" value="&nbsp;Найти&nbsp;">
+          </td>
+        </tr>
+
+      </table>
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить&nbsp;
+          </td>
+
+          <!-- флажок Направление сортировки -->
+          <td class="param_short" title="Включить обратный порядок сортировки">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png">
+            </span>
+          </td>
+
+          <!-- флажок Лаконичный режим -->
+          <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Способ сортировки -->
+          <td class="value" width="60%" title="Способ сортировки платежей в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_ORDERS_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_AS_IS)} selected{/if}>по номеру заказа</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_PAYMENT_DATE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_PAYMENT_DATE)} selected{/if}>по дате платежа</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_SUM|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_SUM)} selected{/if}>по сумме</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_PAYMENT_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_PAYMENT_NAME)} selected{/if}>по способу оплаты</option>
+            </select>
+          </td>
+
+          <!-- поле Режим отображения -->
+          <td class="value" width="40%" title="Насколько полно выводить информацию о платежах в списке">
+
+            <!-- Создаем селектор режимов отображения и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.VIEW_MODE_COMPACT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_COMPACT)} selected{/if}>компактно</option>
+              <option value="{$smarty.const.VIEW_MODE_FULL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)} selected{/if}>подробно</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          {if isset($items) && !empty($items) && isset($items[0]->totals_total_amount)}
+            <span title="Общая сумма найденных платежей">
+              на сумму <span>
+                         {($items[0]->totals_total_amount*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                       </span>
+            </span>
+            <span title="Общая сумма валового дохода магазина в найденных платежах">
+              доход <span class="sum_blue">
+                      {($items[0]->totals_amount*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                    </span>
+            </span>
+            <span title="Общая сумма валового дохода доставки в найденных платежах">
+              доставка <span class="sum_brown">
+                         {($items[0]->totals_delivery_price*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                       </span>
+            </span>
+            <span title="Общая сумма потерь на скидке в найденных платежах">
+              потери <span class="sum_warning">
+                       {($items[0]->totals_discount_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                     </span>
+            </span>
+          {/if}
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения и полноты вывода)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <!-- {* В переменной $id запоминаем идентификатор текущей записи *} -->
+            {assign var="id" value=$c->order_id}
+
+            <li class="flatlist">
+              <div class="onerow">
+                {assign var="temp_payment_details" value=$c->payment_details|strip_tags|regex_replace:"'^[\s\r\n]*array[\s\r\n]*\([\s\r\n]*(.*?)[\s\r\n]*\)[\s\r\n]*$'is":"\$1"}
+                {assign var="temp_payment_details" value=$temp_payment_details|regex_replace:"'\s*\'([^\']*)\'\s*=>\s*\'([^\']*)\',[\s\r\n]*'i":"\$1 => '\$2'\r\n"}
+
+                <!-- Микро кнопки справа от названия -->
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_payment{if $temp_payment_details|strip == ""}_off{/if}_16x16.png" title="Выполнен способом: {$c->payment_method|strip_tags|escape|default:'неизвестно'}"{if $temp_payment_details|strip != ""} onmouseout="javascript: jQuery(this).parent().find('div#popupINFO{$smarty.foreach.items.iteration}').hide();" onmouseover="javascript: jQuery(this).parent().find('div#popupINFO{$smarty.foreach.items.iteration}').show().css({literal}{'z-index': 1}{/literal});"{/if}>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Выпадающая панель деталей платежа -->
+                {if $temp_payment_details|strip != ""}
+                  <div class="popup popup_pre_details" id="popupINFO{$smarty.foreach.items.iteration}">
+                    <div class="popup_content">
+                      <div class="title">
+                        <span style="float: right; font-size: 8pt; font-weight: normal;">
+                          {$c->payment_method|strip_tags|escape|default:'неизвестный способ оплаты'}
+                        </span>
+                        Технические детали платежа
+                      </div>
+                      <pre>
+                        {$temp_payment_details|escape}
+                      </pre>
+                    </div>
+                  </div>
+                {/if}
+
+                <!-- Нумерация -->
+                <span class="topic" style="display: inline;">
+                  {if isset($CurrentPage)}
+                    {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                  {else}
+                    {$smarty.foreach.items.iteration}.
+                  {/if}
+                </span>
+
+                <!-- Дата оплаты -->
+                {if $c->payment_date|truncate:10:"":true != "0000-00-00"}
+                  <span class="date" title="Дата платежа: {$c->payment_date|escape}">
+                    {$c->payment_date|truncate:10:"":true|escape}
+                  </span>
+                {else}
+                  <span class="date" title="Дата платежа: не указана">
+                    не указана
+                  </span>
+                {/if}
+
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Потеря на скидке -->
+                <span class="sum sum_warning{if $c->discount_sum|string_format:'%1.2f'|replace:',':'.' == 0} zero{/if}" title="Сумма потери на скидке">
+                  {($c->discount_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                </span>
+
+                <!-- Доход доставки -->
+                <span class="sum sum_brown{if $c->delivery_price|string_format:'%1.2f'|replace:',':'.' == 0} zero{/if}" title="Сумма валового дохода доставки с платежа">
+                  {($c->delivery_price*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                </span>
+
+                <!-- Доход магазина -->
+                <span class="sum sum_blue" title="Сумма валового дохода магазина с платежа">
+                  {($c->amount*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                </span>
+
+                <!-- Сумма платежа -->
+                <span class="sum" title="Сумма платежа">
+                  {($c->total_amount*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                </span>
+
+                <!-- Цель платежа -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}">
+                  Оплата заказа {$id|escape}
+                </a>
+
+              </div>
+
+              <!-- Краткая информация -->
+
+              <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                <!-- дата оплаты -->
+                <div class="line" title="{$c->payment_method|strip_tags|default:'способ оплаты не указан'|escape}">
+                  <span>
+                    способ:
+                  </span>
+                  {$c->payment_method|strip_tags|default:"не указан"|escape}
+                </div>
+
+                <!-- Имя покупателя -->
+                <div class="line" title="{$c->compound_name|strip_tags|default:'покупатель не указан'|escape}">
+                  <span>
+                    покупатель:
+                  </span>
+                  {$c->compound_name|strip_tags|default:"не указан"|escape}
+                </div>
+
+              {/if}
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено платежей{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} (режим: лаконичный){/if}.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Скрипт сокрытия кнопок массовых операций в навигаторе страниц -->
+  {literal}
+    <script language="JavaScript" type="text/javascript">
+      <!--
+      jQuery('div.navigator').find('input.mass_submit').hide();
+      // -->
+    </script>
+  {/literal}

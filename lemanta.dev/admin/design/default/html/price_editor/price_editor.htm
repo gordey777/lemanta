@@ -1,0 +1,980 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: редактор цен                                                            |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $items = массив с записями о категориях с вложенными записями товаров         |
+                 ->category_id = ИД категории                                     |
+                 ->parent = ИД родительской категории                             |
+                 ->name = название                                                |
+                 ->url = URL (относительно корневой папки магазина)               |
+                 ->url_special = признак особого URL (без дефолтного начала)      |
+                 ->url_path = пустая строка или дефолт.начало URL, если не особый |
+                 ->enabled = разрешена ли к показу на клиентской стороне сайта    |
+                 ->filled = имеет ли вложенные товары (свои или в подкатегориях)  |
+                 ->selected = выбрана ли ветка для показа товаров                 |
+                 ->subitems = массив записей о вложенных категориях               |
+                                  ->поля = аналогичны полям массива $items        |
+                 ->products = массив записей о личных товарах категории           |
+                                  ->product_id = ИД товара                        |
+                                  ->category_id = ИД категории                    |
+                                  ->pcode = буквенный код                         |
+                                  ->model = название                              |
+                                  ->url = URL (относительно корневой папки)       |
+                                  ->url_special = признак особого URL             |
+                                  ->url_path = пустая строка или дефолт.начало URL|
+                                  ->enabled = разрешен ли к показу на клиентской  |
+                                  ->variants = массив записей о вариантах товара  |
+                                                   ->variant_id = ИД варианта     |
+                                                   ->product_id = ИД товара       |
+                                                   ->sku = артикул варианта       |
+                                                   ->name = название варианта     |
+                                                   ->price = цена (основн.группа) |
+                                                   ->temp_price = акционная цена  |
+                                                   ->old_price = старая цена      |
+                                                   ->priority_discount = скидка   |
+                                                   ->stock = количество на складе |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+                    ->имя = значение конкретной настройки                         |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.PRICEEDITOR_MODULELINK_POINTER|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.PRICEEDITOR_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.PRICEEDITOR_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    {* <!-- вычисляем текущий курс --> *}
+    {$rate = ($currency->rate_from|default:1) / ($currency->rate_to|default:1)}
+    {$sign = ($currency->sign|default:'?')|escape}
+
+
+
+    {* <!-- стили формы со списком записей --> *}
+    <style>
+        #items_form .table-pricelist {
+            border: 0 solid;
+            border-top: #ccc 1px solid;
+            border-right: #ccc 1px solid;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+            #items_form .table-pricelist td {
+                border: 0 solid;
+                border-left: #ccc 1px solid;
+                border-bottom: #ccc 1px solid;
+                color: #222;
+                font-family: Verdana, Tahoma, Arial;
+                font-size: 8pt;
+                line-height: 20px;
+                margin: 0;
+                padding: 0;
+                text-align: left;
+                vertical-align: top;
+                -moz-box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+
+
+
+            /* строки таблицы */
+
+            #items_form .table-pricelist .row-product:hover,
+            #items_form .table-pricelist .row-variant:hover {
+                background: #f4f4f4;
+            }
+
+            #items_form .table-pricelist .row-category td {
+                background: #eee;
+            }
+
+            #items_form .table-pricelist .row-product td {
+            }
+
+            #items_form .table-pricelist .row-variant td {
+            }
+
+            #items_form .table-pricelist tr.disabled * {
+                color: #ccc !important;
+            }
+
+
+
+            /* заголовки колонок */
+
+            #items_form .table-pricelist .cell-th {
+                background: #ddd !important;
+                color: #aaa;
+                font-size: 8pt;
+                padding: 4px 10px;
+                width: 1px;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+
+
+            /* поле ввода */
+
+            #items_form .table-pricelist td span {
+                display: block;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                position: relative;
+                -moz-box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+
+                #items_form .table-pricelist input[type="text"] {
+                    background: transparent;
+                    border: 0 solid;
+                    outline: 0 solid;
+                    color: #222;
+                    display: block;
+                    font-family: Verdana, Tahoma, Arial;
+                    font-size: 8pt;
+                    font-weight: normal;
+                    line-height: 16px;
+                    height: 24px;
+                    margin: 0;
+                    padding: 5px 10px;
+                    width: 100%;
+                    -moz-box-sizing: border-box;
+                    -webkit-box-sizing: border-box;
+                    box-sizing: border-box;
+                }
+
+                #items_form .table-pricelist span:hover > input[type="text"] {
+                    background: #d0d0d0;
+                }
+
+
+
+            /* поле Название */
+
+            #items_form .table-pricelist .cell-name {
+                padding: 2px 10px;
+                width: 100%;
+            }
+
+                #items_form .table-pricelist .cell-name a {
+                    opacity: 0.4;
+                }
+
+                #items_form .table-pricelist .cell-name a:hover {
+                    opacity: 1.0;
+                }
+
+
+
+            /* поле Буквенный код товара */
+
+            #items_form .table-pricelist .cell-pcode {
+                color: #888;
+                display: none;
+                font-size: 8pt;
+                padding: 2px 10px;
+                width: 1px;
+            }
+
+
+
+            /* поле Артикул варианта товара */
+
+            #items_form .table-pricelist .cell-sku {
+                color: #888;
+                font-size: 8pt;
+                padding: 2px 10px;
+                width: 1px;
+            }
+
+
+
+            /* поле Название варианта товара */
+
+            #items_form .table-pricelist .cell-variant {
+                color: #888;
+                font-size: 8pt;
+                padding: 2px 10px;
+                width: 1px;
+            }
+
+
+
+            /* поле Цены варианта товара */
+
+            #items_form .table-pricelist .cell-price,
+            #items_form .table-pricelist .cell-oldprice,
+            #items_form .table-pricelist .cell-tempprice,
+            #items_form .table-pricelist .cell-discount,
+            #items_form .table-pricelist .cell-stock {
+                background: #fff;
+                width: 1px;
+            }
+
+            #items_form .table-pricelist .cell-price {
+                border-left: #ccc 3px solid;
+            }
+
+            #items_form .table-pricelist .cell-oldprice {
+                background: #fff4f4;
+            }
+
+            #items_form .table-pricelist .cell-tempprice {
+                background: #efe;
+            }
+
+            #items_form .table-pricelist .cell-discount {
+                background: #f8f8f8;
+            }
+
+                #items_form .table-pricelist .cell-price input[type="text"],
+                #items_form .table-pricelist .cell-oldprice input[type="text"],
+                #items_form .table-pricelist .cell-tempprice input[type="text"] {
+                    width: 95px;
+                    max-width: 95px;
+                    min-width: 95px;
+                    text-align: right;
+                }
+
+                #items_form .table-pricelist .cell-discount input[type="text"] {
+                    width: 65px;
+                    max-width: 65px;
+                    min-width: 65px;
+                    text-align: right;
+                }
+
+                #items_form .table-pricelist .cell-stock input[type="text"] {
+                    width: 60px;
+                    max-width: 60px;
+                    min-width: 60px;
+                    text-align: right;
+                }
+
+
+
+            /* фиктивная ячейка */
+
+            #items_form .table-pricelist .cell-dummy + .cell-dummy {
+                border-left: transparent 1px solid;
+            }
+
+            #items_form .table-pricelist .row-variant:not(.last-variant) .cell-dummy {
+                border-bottom: transparent 1px solid;
+            }
+
+
+
+            /* отредактированное поле */
+
+            #items_form .table-pricelist input.changed {
+                color: #44f !important;
+            }
+
+
+
+        /* кнопка Сохранить */
+
+        #items_form input[type="submit"] {
+            background: #ddd;
+            border: #bbb 1px solid;
+            outline: 0px solid;
+            color: #47b;
+            display: block;
+            float: none;
+            font-size: 8pt;
+            margin: 20px 0;
+            padding: 0 10px;
+            text-decoration: none;
+            cursor: pointer;
+            height: 25px;
+            width: 120px;
+        }
+
+        #items_form input[type="submit"]:hover {
+            background: #bbb;
+            border: #999 1px solid;
+            color: #000;
+        }
+    </style>
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$admin_site}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → Цены
+            </div>
+
+            {($title|default:'Редактор цен')|escape}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- row_category(item, level, enabled) = генерация строки категории --> *}
+        {function name = 'row_category'
+                  level = 0
+                  enabled = true}
+
+            {* <!-- url категории --> *}
+            {$url = trim($item->url|default:'')}
+            {$url = ($url != '') ? $url : ((!empty($item->category_id)) ? $item->category_id : '')}
+            {$url = $url|escape}
+
+            <tr class="row-category{($enabled) ? '' : ' disabled'}">
+                <td class="cell-name" colspan="9" style="padding-left: {($level - 1) * 20 + 10}px;">
+
+                    {* <!-- ссылка на клиентскую страницу категории --> *}
+                    <a href="{$site}{($item->url_path|default:'')|escape}{$url}" target="_blank" title="Открыть страницу этой категории на сайте">
+                        <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                    </a>
+
+                    {**} &nbsp; {**}
+
+                    {* <!-- название --> *}
+                    {call get_item_string item = $item
+                                          param = 'name'
+                                          def = 'Без названия!'
+                                          escaped = true}
+                </td>
+            </tr>
+        {/function}
+
+
+
+        {* <!-- row_product(item, level, enabled) = генерация строки товара --> *}
+        {function name = 'row_product'
+                  level = 0
+                  enabled = true}
+
+            {* <!-- url товара --> *}
+            {$url = trim($item->url|default:'')}
+            {$url = ($url != '') ? $url : ((!empty($item->product_id)) ? $item->product_id : '')}
+            {$url = $url|escape}
+
+            {* <!-- извлекаем первый вариант товара --> *}
+            {foreach $item->variants as $variant}
+                {break}
+            {/foreach}
+
+            {$vid = ($variant->variant_id|default:0)|escape}
+
+
+
+            <tr class="row-product{($enabled) ? '' : ' disabled'}">
+                <td class="cell-name" style="padding-left: {$level * 20 + 10}px;">
+
+                    {* <!-- ссылка на клиентскую страницу товара --> *}
+                    <a href="{$site}{($item->url_path|default:'')|escape}{$url}" target="_blank" title="Открыть страницу этого товара на сайте">
+                        <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                    </a>
+
+                    {**} &nbsp; {**}
+
+                    {* <!-- название товара --> *}
+                    {call get_item_string item = $item
+                                          param = 'model'
+                                          def = 'Без названия!'
+                                          escaped = true}
+
+                    {* <!-- скрытое постинговое идентифицирующее поле текущей записи --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_POST|default:''}
+                    <input name="{$param|escape}[{$vid}]" type="hidden" value="" />
+                </td>
+
+
+
+                {* <!-- буквенный код товара --> *}
+                <td class="cell-pcode">
+                    <span>
+                        {call get_item_string item = $item
+                                              param = 'pcode'
+                                              def = ''
+                                              escaped = true}
+                    </span>
+                </td>
+
+
+
+                {* <!-- артикул варианта товара --> *}
+                <td class="cell-sku">
+                    <span>
+                        {call get_item_string item = $variant
+                                              param = 'sku'
+                                              def = ''
+                                              escaped = true}
+                    </span>
+                </td>
+
+
+
+                {* <!-- название варианта товара --> *}
+                <td class="cell-variant">
+                    <span>
+                        {call get_item_string item = $variant
+                                              param = 'name'
+                                              def = ''
+                                              escaped = true}
+                    </span>
+                </td>
+
+
+
+                {* <!-- цена варианта товара --> *}
+                <td class="cell-price">
+                    <span>
+                        {$value = $variant->price|default:0}
+                        {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                        <input name="price[{$vid}]" maxlength="16" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+
+
+
+                {* <!-- старая цена варианта товара --> *}
+                <td class="cell-oldprice">
+                    <span>
+                        {$value = $variant->old_price|default:0}
+                        {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                        {$value = ($value == 0) ? '' : $value}
+                        <input name="old_price[{$vid}]" maxlength="16" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+
+
+
+                {* <!-- акционная цена варианта товара --> *}
+                <td class="cell-tempprice">
+                    <span>
+                        {$value = $variant->temp_price|default:0}
+                        {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                        {$value = ($value == 0) ? '' : $value}
+                        <input name="temp_price[{$vid}]" maxlength="16" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+
+
+
+                {* <!-- наличие варианта товара на складе --> *}
+                <td class="cell-stock">
+                    <span>
+                        {$value = ($variant->stock|default:0)|string_format:'%d'}
+                        <input name="stock[{$vid}]" maxlength="12" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+
+
+
+                {* <!-- приоритетная скидка варианта товара --> *}
+                <td class="cell-discount">
+                    <span>
+                        {$value = $variant->priority_discount|default:-1}
+                        {$value = ($value < 0) ? '' : ($value|string_format:'%1.2f'|replace:',':'.')}
+                        <input name="priority_discount[{$vid}]" maxlength="6" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+            </tr>
+        {/function}
+
+
+
+        {* <!-- row_variant(item, level, enabled, last) = генерация строки варианта товара --> *}
+        {function name = 'row_variant'
+                  level = 0
+                  enabled = true
+                  last = false}
+
+            {call get_item_string item = $item
+                                  param = 'variant_id'
+                                  def = '0'
+                                  escaped = true
+                                  assign = 'vid'}
+
+
+
+            <tr class="row-variant{($enabled) ? '' : ' disabled'}{($last) ? ' last-variant' : ''}">
+                <td class="cell-dummy">
+                    &nbsp;
+
+                    {* <!-- скрытое постинговое идентифицирующее поле текущей записи --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_POST|default:''}
+                    <input name="{$param|escape}[{$vid}]" type="hidden" value="" />
+                </td>
+                <td class="cell-pcode cell-dummy">
+                    &nbsp;
+                </td>
+
+
+
+                {* <!-- артикул варианта товара --> *}
+                <td class="cell-codes cell-sku">
+                    <span>
+                        {call get_item_string item = $item|default:false
+                                              param = 'sku'
+                                              def = ''
+                                              escaped = true}
+                    </span>
+                </td>
+
+
+
+                {* <!-- название варианта товара --> *}
+                <td class="cell-variant">
+                    <span>
+                        {call get_item_string item = $item|default:false
+                                              param = 'name'
+                                              def = ''
+                                              escaped = true}
+                    </span>
+                </td>
+
+
+
+                {* <!-- цена варианта товара --> *}
+                <td class="cell-price">
+                    <span>
+                        {$value = $item->price|default:0}
+                        {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                        <input name="price[{$vid}]" maxlength="16" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+
+
+
+                {* <!-- старая цена варианта товара --> *}
+                <td class="cell-oldprice">
+                    <span>
+                        {$value = $item->old_price|default:0}
+                        {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                        {$value = ($value == 0) ? '' : $value}
+                        <input name="old_price[{$vid}]" maxlength="16" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+
+
+
+                {* <!-- акционная цена варианта товара --> *}
+                <td class="cell-tempprice">
+                    <span>
+                        {$value = $item->temp_price|default:0}
+                        {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                        {$value = ($value == 0) ? '' : $value}
+                        <input name="temp_price[{$vid}]" maxlength="16" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+
+
+
+                {* <!-- наличие варианта товара на складе --> *}
+                <td class="cell-prices cell-stock">
+                    <span>
+                        {$value = ($item->stock|default:0)|string_format:'%d'}
+                        <input name="stock[{$vid}]" maxlength="12" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+
+
+
+                {* <!-- приоритетная скидка варианта товара --> *}
+                <td class="cell-discount">
+                    <span>
+                        {$value = $item->priority_discount|default:-1}
+                        {$value = ($value < 0) ? '' : ($value|string_format:'%1.2f'|replace:',':'.')}
+                        <input name="priority_discount[{$vid}]" maxlength="6" type="text" value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                    </span>
+                </td>
+            </tr>
+        {/function}
+
+
+
+        {* <!-- форма со списком записей --> *}
+        <form action="{$admin_goto}{$module_pointer|escape}" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+
+
+            {* <!-- фильтр --> *}
+            <table align="center" cellpadding="0" cellspacing="8" class="white">
+                <tr>
+
+
+
+                    {* <!-- поле Категория --> *}
+                    <td class="param_short">
+                        <a href="{$admin_goto}Categories" title="Перейти на страницу категорий в админпанели">
+                            Категория
+                        </a>
+                        :
+                    </td>
+                    <td class="value" width="100%" title="Фильтр: только принадлежащие такой категории">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_CATEGORY|default:''}
+                        <select class="thin" id="items_form_{$param|escape}" name="{$param|escape}" onchange="Start_PageRecordsFilter('items_form');">
+                            {$param = $inputs[$param]|default:''}
+                            {if $param == ''}
+                                <option value=""></option>
+                            {/if}
+
+                            {if !empty($items)}
+                                {function name = 'cats_filter_tree' level = 0}
+                                    {foreach $cats as $c}
+                                        {if !empty($c->filled)}
+                                            {$value = $c->category_id|default:''}
+                                            <option value="{$value|escape}" {if $param == $value} selected{/if}>
+                                                {section name=spaces loop=$level}
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                {/section}
+                                                {$c->name|default:'Без названия!'}
+                                            </option>
+                                            {if !empty($c->subitems)}
+                                                {cats_filter_tree cats = $c->subitems level = $level + 1}
+                                            {/if}
+                                        {/if}
+                                    {/foreach}
+                                {/function}
+                                {cats_filter_tree cats = $items}
+                            {/if}
+
+                            <option value="0" style="color: #888" {if $param != '' && $param == 0} selected{/if}>
+                                [весь каталог]
+                            </option>
+                        </select>
+                    </td>
+
+
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- кнопка сброса фильтра --> *}
+            <div class="toolkey">
+                &nbsp;
+            </div>
+
+
+
+            {* <!-- если получены записи о категориях --> *}
+            {if !empty($items)}
+
+                {* <!-- принцип работы подразумевает сначала выбрать категорию в фильтре --> *}
+                {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_CATEGORY|default:''}
+                {if $inputs[$param]|default:'' != ''}
+
+
+
+                    <table class="table-pricelist" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td class="cell-th" nowrap>название</td>
+                            <td class="cell-pcode cell-th" nowrap>код</td>
+                            <td class="cell-th" nowrap>артикул</td>
+                            <td class="cell-th" nowrap>вариант</td>
+                            <td class="cell-price cell-th" nowrap>цена</td>
+                            <td class="cell-th" nowrap>старая</td>
+                            <td class="cell-th" nowrap>акция</td>
+                            <td class="cell-th" nowrap>склад</td>
+                            <td class="cell-th" nowrap>скидка</td>
+                        </tr>
+
+
+
+                        {* <!-- cats_tree(cats, level, enabled, selected) = генерация строк категорий и товаров --> *}
+                        {function name = 'cats_tree'
+                                  level = 1
+                                  enabled = true
+                                  selected = false}
+
+                            {* <!-- перебираем категории --> *}
+                            {foreach $cats as $c}
+                                {if !empty($c->filled)}
+                                    {if $selected || !empty($c->selected)}
+                                        {$real_selected = $selected || !empty($c->selected) &&  $c->selected === true}
+                                        {$enabled_category = $enabled && !empty($c->enabled)}
+                                        {row_category item = $c
+                                                      level = $level
+                                                      enabled = $enabled_category}
+
+
+
+                                        {* <!-- если в категории есть товары --> *}
+                                        {if $real_selected}
+                                            {if !empty($c->products)}
+                                                {foreach $c->products as $r}
+                                                    {$enabled_product = $enabled_category && !empty($r->enabled)}
+                                                    {row_product item = $r
+                                                                 level = $level
+                                                                 enabled = $enabled_product}
+
+
+
+                                                    {* <!-- если у товара несколько вариантов --> *}
+                                                    {if !empty($r->variants) && count($r->variants) > 1}
+                                                        {$i = 0}
+                                                        {foreach $r->variants as $v}
+                                                            {if $i != 0}
+                                                                {row_variant item = $v
+                                                                             level = $level
+                                                                             enabled = $enabled_product
+                                                                             last = $v@last}
+                                                            {/if}
+                                                            {$i = $i + 1}
+                                                        {/foreach}
+                                                    {/if}
+                                                {/foreach}
+                                            {/if}
+                                        {/if}
+
+
+
+                                        {* <!-- обрабатываем вложенные категории --> *}
+                                        {if !empty($c->subitems)}
+                                            {cats_tree cats = $c->subitems
+                                                       level = $level + 1
+                                                       enabled = $enabled_category
+                                                       selected = $real_selected}
+                                        {/if}
+                                    {/if}
+                                {/if}
+                            {/foreach}
+
+                        {/function}
+
+
+
+                        {cats_tree cats = $items}
+                    </table>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    <input class="submit" type="submit" value="Сохранить" onclick="return Start_PageMassPost('items_form');" />
+
+
+
+                    {* <!-- пустой указатель требуемой команды --> *}
+                    {call hidden_editbox param = 'REQUEST_PARAM_NAME_ACTION'
+                                         id = true
+                                         value = ''}
+
+
+
+                    {* <!-- признак отмены постинга --> *}
+                    {call hidden_editbox param = 'REQUEST_PARAM_NAME_IGNORE_POST'
+                                         id = true
+                                         value = '1'}
+
+
+
+                    {* <!-- признак мини постинга (без некоторых полей записи) --> *}
+                    {call hidden_editbox param = 'REQUEST_PARAM_NAME_POST_MINI'
+                                         id = false
+                                         value = '1'}
+
+
+
+                    {* <!-- аутентификатор операции --> *}
+                    {call hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                         id = false
+                                         value = $token}
+
+
+
+                {* <!-- иначе не выбрана категория в фильтре --> *}
+                {else}
+                    <div class="noitems">
+                        Выберите необходимую категорию в фильтре.
+                    </div>
+                {/if}
+
+
+
+            {* <!-- иначе нет категорий --> *}
+            {else}
+                <div class="noitems">
+                    Каталог пустой.
+                </div>
+            {/if}
+
+        </form>
+
+
+
+        {* <!-- вспомогательные скрипты --> *}
+        <script language="JavaScript" type="text/javascript">
+            if (typeof(checkInputboxChanges) != 'function') {
+                function checkInputboxChanges ( ptr ) {
+                    try {
+                        var prev = ptr.defaultValue;
+                        var value = ptr.value;
+                        var changed = value != prev;
+                        jQuery(ptr).removeClass('changed');
+                        if (changed) jQuery(ptr).removeClass('incorrect').addClass('changed');
+                        return changed;
+                    } catch (e) { }
+                    return false;
+                }
+            }
+        </script>
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                Для работы этой страницы необходимо, чтобы в настройках PHP значение {**}
+                параметра <i>max_input_vars</i> было не менее чем число редактируемых {**}
+                строк таблицы, умноженное на количество редактируемых столбцов. {**}
+                Иначе PHP будет отсекать обработку тех "избыточных" input-элементов {**}
+                формы ввода, что содержатся в форме сверх заданного ограничения. {**}
+                В результате это может привести к порче информации, поэтому рекомендуется {**}
+                <a href="{$admin_goto}PHPinfo">убедиться</a>, что упомянутый параметр {**}
+                содержит достаточное значение, а еще лучше с запасом.
+            </div>
+
+
+
+            <div>
+                <b>Фильтр</b> : <b>Категория</b>. Дает возможность работать только со списком {**}
+                товаров конкретной категории и ее подкатегорий. Из этого фильтра исключены {**}
+                пустые категории, чтобы не загромождать фильтр.
+            </div>
+
+            <div>
+                В конце фильтра находится пункт <i>[весь каталог]</i>, чтобы можно было {**}
+                работать с полным списком товаров. Однако следует учесть, что на больших {**}
+                каталогах будет ощущаться замедленная работа браузера, что связано {**}
+                с естественным падением скорости при обработке браузером многострочных {**}
+                таблиц.
+            </div>
+
+
+
+            <div>
+                <b>Скидка</b>. Эта колонка содержит сведения о приоритетных скидках на {**}
+                конкретные товары. Если в этом поле установлен какой-то процент, значит {**}
+                данный товар будет продан именно с такой скидкой, независимо от того, {**}
+                какая величина скидки есть у покупателя. То есть приоритетная скидка {**}
+                всегда имеет приоритет перед пользовательскими скидками и перекрывает {**}
+                их (кстати, на заметку: акционная цена имеет наивысший приоритет и не {**}
+                перекрывается ни одной скидкой).
+            </div>
+
+            <div>
+                Например товар стоит 100 рублей. Предположим, у покупателя сейчас есть {**}
+                скидка 10%. Соответственно он может приобрести товар за 90 рублей. {**}
+                Если теперь в товаре установить приоритетную скидку 1%, тогда товар {**}
+                можно купить только по цене 99 рублей. Если теперь установить акционную {**}
+                цену 95 рублей, товар продастся только по этой цене.
+            </div>
+
+
+
+            <div>
+                <b>Акция</b>. Эта колонка содержит сведения об акционных ценах на {**}
+                конкретные товары. В паре с колонкой "цена" образуют связку, где {**}
+                поле "цена" по смыслу становится подобным полю "старая цена", причем {**}
+                на акционную цену более не распространяются скидки.
+            </div>
+
+
+
+            <div>
+                <b>Старая</b>. Эта колонка содержит сведения о старых ценах на {**}
+                конкретные товары. В паре с колонкой "цена" образуют связку, где {**}
+                поле "цена" по смыслу становится подобным полю "акционная цена", {**}
+                однако на эту цену еще дополнительно могут распространяться {**}
+                пользовательские скидки.
+            </div>
+
+            <div>
+                Если заполнены сразу три поля - цена, старая, акция, - тогда поле {**}
+                "старая" игнорируется и ситуация приравнивается к связке двух полей - {**}
+                цена, акция.
+            </div>
+        </div>
+
+    </div>
+
+{/strip}

@@ -1,0 +1,531 @@
+<!-- {*
+  Impera CMS: шаблон письма администратору об оплате заказа.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Используется в момент принятия оплаты заказа от пользователя. Содержимое шаблона
+  передается электронным письмом на емейл администратора.
+
+  Этот файл шаблона используется, если не найден файл с таким же именем в папке
+  текущего дизайна клиентской стороны сайта (то есть в http://сайт/design/выбранный_дизайн/html).
+
+  Принимает во входных переменных:
+    $for_user = true - письмо для пользователя, иначе для администратора;
+    $post = запись о заказе;
+    $payway_name = название использованного платежного механизма;
+    $settings = настройки сайта;
+    $root_url = безпротокольный адрес корня сайта;
+    $admin_folder = имя папки админпанели.
+
+  ============================================================================
+
+  В письме мы не можем использовать внешнюю таблицу стилей, поэтому
+  просто прикрепляем ее прямо в тело письма. *} -->
+
+  {literal}
+    <style>
+
+      /* Вид заголовка письма */
+      h1       {border:           0px solid;
+                color:            #000000;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        13pt;
+                font-weight:      bold;
+                margin:           10px;
+                padding:          0px;
+                text-align:       left;
+                text-indent:      0px;}
+
+      /* Вид строки текста в письме */
+      p        {border:           0px solid;
+                color:            #000000;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           10px;
+                padding:          0px;
+                text-align:       left;
+                text-indent:      0px;}
+
+      /* Вид справочной части текста в письме */
+      span     {border:           0px solid;
+                color:            #000000;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        8pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          0px;}
+
+      /* Вид ссылок в письме */
+      a        {color:           #0080FF;
+                text-decoration: none;}
+
+      /* Вид ссылок при наведении мышки */
+      a:hover  {color:           #C00000;
+                text-decoration: underline;}
+
+      /* Вид таблицы в письме */
+      table    {border:        #E0E0E0 3px solid;
+                border-right:  #E0E0E0 2px solid;
+                border-bottom: #E0E0E0 2px solid;
+                color:         #000000;
+                font-family:   Verdana, Tahoma, Arial;
+                font-size:     10pt;
+                font-weight:   normal;
+                margin:        10px;
+                max-width:     750px;
+                padding:       0px;
+                width:         750px;}
+
+      /* Вид заголовочных ячеек таблицы (это ячейки слева) */
+      td       {background-color: #F0F0F0;
+                border:           #E0E0E0 0px solid;
+                border-right:     #E0E0E0 1px solid;
+                border-bottom:    #E0E0E0 1px solid;
+                color:            #000000;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          10px;
+                text-align:       left;
+                vertical-align:   top;
+                width:            100px;}
+
+      /* Вид титульных ячеек таблицы (это ячейки сверху) */
+      td.title {background-color: #E8E8E8;
+                border:           #E0E0E0 0px solid;
+                border-right:     #E0E0E0 1px solid;
+                border-bottom:    #E0E0E0 1px solid;
+                color:            #808080;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        8pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          5px 10px;
+                text-align:       center;
+                vertical-align:   middle;
+                white-space:      nowrap;
+                width:            100px;}
+
+      /* Вид информационных ячеек таблицы (это ячейки справа) */
+      td.info  {background-color: #FFFFFF;
+                border:           #E0E0E0 0px solid;
+                border-right:     #E0E0E0 1px solid;
+                border-bottom:    #E0E0E0 1px solid;
+                color:            #000000;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          10px;
+                text-align:       left;
+                vertical-align:   top;
+                width:            100%;}
+
+      /* Вид списочных ячеек таблицы (это ячейки слева) */
+      td.item  {background-color: #F0F0F0;
+                border:           #E0E0E0 0px solid;
+                border-right:     #E0E0E0 1px solid;
+                border-bottom:    #E0E0E0 1px solid;
+                color:            #000000;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          10px;
+                text-align:       left;
+                vertical-align:   top;
+                width:            100%;}
+
+      /* Вид количественных ячеек таблицы (это ячейки справа) */
+      td.sum   {background-color: #FFFFFF;
+                border:           #E0E0E0 0px solid;
+                border-right:     #E0E0E0 1px solid;
+                border-bottom:    #E0E0E0 1px solid;
+                color:            #000000;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          10px;
+                text-align:       right;
+                vertical-align:   top;
+                white-space:      nowrap;
+                width:            auto;}
+
+      /* цветовые классы */
+      .red     {color: #FF0000;}
+      .green   {color: #00A000;}
+      .orange  {color: #FF8000;}
+      .silver  {color: #C0C0C0;}
+
+      /* размерные классы */
+      .stdtext {font-size: 10pt;}
+    </style>
+  {/literal}
+
+  <!-- Выводим заголовок -->
+  <h1>
+    <!-- административные сведения -->
+    {if !isset($for_user) || ($for_user !== true)}
+      {strip}
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Order&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}={$post->order_id|escape}" target="_blank" title="Перейти на страницу заказа в админпанели">
+          Заказ №{$post->order_id|escape}
+        </a>
+      {/strip}
+    {else}
+      Заказ №{$post->order_id|escape}
+    {/if}
+    на сумму {($post->total_amount*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+  </h1>
+
+  <!-- Выводим информационную таблицу -->
+  <table border="0" cellpadding="0" cellspacing="0">
+
+    <!-- поле Имя покупателя -->
+    {if isset($post->compound_name) && ($post->compound_name != "")}
+      <tr>
+        <td>
+          Имя:
+        </td>
+        <td class="info">
+          <!-- административные сведения -->
+          {if !isset($for_user) || ($for_user !== true)}
+            {if isset($post->user_id) && !empty($post->user_id)}
+              {strip}
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Orders&{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|escape}={$smarty.const.SEARCH_ORDERS_COMMAND_USER_ID|escape}{$post->user_id|escape}" target="_blank" title="Перейти на страницу всех заказов этого зарегистрированного пользователя в админпанели">
+                  {$post->compound_name|escape}
+                </a>
+              {/strip}
+            {else}
+              {$post->compound_name|escape}
+            {/if}
+          {else}
+            {$post->compound_name|escape}
+          {/if}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Емейл покупателя -->
+    {if (isset($post->email) && ($post->email != "")) || (isset($post->email2) && ($post->email2 != ""))}
+      <tr>
+        <td>
+          Емейл:
+        </td>
+        <td class="info">
+          {strip}
+            {if isset($post->email) && ($post->email != "")}
+              <!-- административные сведения -->
+              {if !isset($for_user) || ($for_user !== true)}
+                <a href="mailto:{$post->email|escape}" title="Написать письмо этому пользователю">
+                  {$post->email|escape}
+                </a>
+              {else}
+                {$post->email|escape}
+              {/if}
+              {if isset($post->email2) && ($post->email2 != "")}<br>{/if}
+            {/if}
+            {if isset($post->email2) && ($post->email2 != "")}
+              <!-- административные сведения -->
+              {if !isset($for_user) || ($for_user !== true)}
+                <a href="mailto:{$post->email2|escape}" title="Написать письмо этому пользователю">
+                  {$post->email2|escape}
+                </a>
+              {else}
+                {$post->email2|escape}
+              {/if}
+            {/if}
+          {/strip}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Телефон покупателя -->
+    {if (isset($post->phone) && ($post->phone != "")) || (isset($post->phone2) && ($post->phone2 != ""))}
+      <tr>
+        <td>
+          Телефон:
+        </td>
+        <td class="info">
+          {if isset($post->phone) && ($post->phone != "")}
+            {$post->phone|escape}
+            {if isset($post->phone2) && ($post->phone2 != "")}<br>{/if}
+          {/if}
+          {$post->phone2|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле ICQ покупателя -->
+    {if (isset($post->icq) && ($post->icq != "")) || (isset($post->icq2) && ($post->icq2 != ""))}
+      <tr>
+        <td>
+          Номер ICQ:
+        </td>
+        <td class="info">
+          {if isset($post->icq) && ($post->icq != "")}
+            {$post->icq|escape}
+            {if isset($post->icq2) && ($post->icq2 != "")}<br>{/if}
+          {/if}
+          {$post->icq2|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Skype покупателя -->
+    {if (isset($post->skype) && ($post->skype != "")) || (isset($post->skype2) && ($post->skype2 != ""))}
+      <tr>
+        <td>
+          Skype имя:
+        </td>
+        <td class="info">
+          {if isset($post->skype) && ($post->skype != "")}
+            {$post->skype|escape}
+            {if isset($post->skype2) && ($post->skype2 != "")}<br>{/if}
+          {/if}
+          {$post->skype2|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Адрес доставки -->
+    {if (isset($post->compound_address) && ($post->compound_address != "")) || (isset($post->compound_address2) && ($post->compound_address2 != ""))}
+      <tr>
+        <td>
+          Адрес доставки:
+        </td>
+        <td class="info">
+          {if isset($post->compound_address) && ($post->compound_address != "")}
+            {$post->compound_address|escape}
+            {if isset($post->compound_address2) && ($post->compound_address2 != "")}<br><br>{/if}
+          {/if}
+          {$post->compound_address2|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Комментарий -->
+    {if isset($post->comment) && ($post->comment != "")}
+      <tr>
+        <td>
+          Комментарий:
+        </td>
+        <td class="info">
+          {$post->comment|strip_tags|escape|nl2br}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Дата -->
+    {if isset($post->date)}
+      <tr>
+        <td>
+          Дата заказа:
+        </td>
+        <td class="info">
+          {$post->date|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Состояние -->
+    <tr>
+      <td>
+        Состояние:
+      </td>
+      <td class="info">
+        <!-- проверочная ссылка -->
+        <span class="silver" style="float: right;">
+          Состояние заказа можно 
+          {strip}
+            <a href="http://{$root_url|escape}/order/{$post->code|escape}" target="_blank" title="Перети на страницу заказа в клиентской части сайта">
+              проверить здесь
+            </a>.
+          {/strip}
+        </span>
+        <!-- состояние -->
+        {if $post->status == $smarty.const.ORDER_STATUS_NEW}
+          ждет обработки
+        {elseif $post->status == $smarty.const.ORDER_STATUS_PROCESS}
+          в обработке
+        {elseif $post->status == $smarty.const.ORDER_STATUS_DONE}
+          <span class="green stdtext">выполнен</span>
+        {elseif $post->status == $smarty.const.ORDER_STATUS_CANCEL}
+          <span class="red stdtext">аннулирован</span>
+        {/if}
+
+        {if isset($post->orders_phase) && ($post->orders_phase != "")} → {$post->orders_phase|escape}{/if}
+      </td>
+    </tr>
+
+    <!-- поле Состояние оплаты -->
+    <tr>
+      <td>
+        Оплата:
+      </td>
+      <td class="info">
+        {if $post->payment_status == 1}
+          <span class="green stdtext">оплачен&nbsp; {$post->payment_date|escape}</span>
+        {else}
+          <span class="red stdtext">не оплачен</span>
+        {/if}
+      </td>
+    </tr>
+
+  </table>
+
+  <!-- Выводим информационную таблицу -->
+  <table border="0" cellpadding="0" cellspacing="0">
+
+    <!-- Шапка таблицы -->
+    <tr>
+      <td class="title">
+        товар
+      </td>
+      <td class="title">
+        кол-во
+      </td>
+      <td class="title">
+        цена
+      </td>
+      <td class="title">
+        скидка
+      </td>
+      <td class="title">
+        сумма
+      </td>
+    </td>
+
+    <!-- Перечисляем товары заказа -->
+    {if isset($post->products) && !empty($post->products)}
+      {foreach name=products item=r from=$post->products}
+        <tr>
+          <!-- название -->
+          <td class="item">
+            {$r->product_name|escape}
+            {if ($r->variant_name != "") && ($r->variant_name != $r->product_name)}
+              <span class="green">{$r->variant_name|escape}</span>
+            {/if}
+            {if $r->name_properties != ""}
+              <span class="orange">{$r->name_properties|escape}</span>
+            {/if}
+            <br>
+            <!-- административные сведения -->
+            {if !isset($for_user) || ($for_user !== true)}
+              {if $r->url != ""}
+                {strip}
+                  <a href="http://{$root_url|escape}/{if $r->url_special != 1}products/{/if}{$r->url|escape}" target="_blank" style="font-size: 8pt;" title="Перейти на страницу товара в клиентской части сайта">
+                    смотреть
+                  </a> &nbsp;&nbsp;&nbsp;&nbsp;
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Product&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}={$r->product_id|escape}" target="_blank" style="font-size: 8pt;" title="Перейти на страницу товара в админпанели">
+                    редактировать
+                  </a>
+                {/strip}
+              {else}
+                <span class="red">такого товара уже нет в базе сайта</span>
+              {/if}
+            {/if}
+          </td>
+          <!-- количество -->
+          {assign var="quantity" value=$r->quantity}
+          {if $r->quantity < 0}
+            {assign var="quantity" value=$r->quantity*-1}
+          {/if}
+          <td class="sum">
+            {$quantity|escape} шт.
+          </td>
+          <!-- цена -->
+          <td class="sum">
+            {($r->real_price*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+            <!-- административные сведения -->
+            {if !isset($for_user) || ($for_user !== true)}
+              <br><span class="silver">{($r->real_price*$quantity*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</span>
+            {/if}
+          </td>
+          <!-- скидка -->
+          <td class="sum" title="Величина скидки">
+            {if $r->discount|string_format:'%1.2f'|replace:',':'.' != '0.00'}
+              -{$r->discount|string_format:"%1.2f"|replace:",":"."}%
+              <!-- административные сведения -->
+              {if !isset($for_user) || ($for_user !== true)}
+                <br><span class="silver">-{($r->real_price*$quantity*$currency->rate_from/$currency->rate_to-$r->price*$quantity*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}</span>
+              {/if}
+            {else}
+              &nbsp;
+            {/if}
+          </td>
+          <!-- сумма -->
+          <td class="sum">
+            {($r->price*$quantity*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+          </td>
+        </tr>
+      {/foreach}
+    {/if}
+
+    <!-- Способ доставки -->
+    <tr>
+      <td class="item">
+        {$post->delivery_method|default:"способ доставки не указан"|escape}
+      </td>
+      <td class="sum" colspan="3">
+        &nbsp;
+      </td>
+      <td class="sum">
+        {if $post->delivery_price > 0}
+          {($post->delivery_price*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+        {else}
+          бесплатно
+        {/if}
+      </td>
+    </tr>
+
+    <!-- Дополнительная скидка -->
+    <tr>
+      <td class="item">
+        Дополнительная скидка:
+      </td>
+      <td class="sum" colspan="3">
+        &nbsp;
+      </td>
+      <td class="sum">
+        {if $post->discount_sum|string_format:'%1.2f'|replace:',':'.' != '0.00'}
+          -{($post->discount_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+        {else}
+          нет
+        {/if}
+      </td>
+    </tr>
+
+    <!-- административные сведения -->
+    {if !isset($for_user) || ($for_user !== true)}
+      <!-- Фактическая скидка -->
+      <tr>
+        <td class="title" colspan="3" style="text-align: right;">
+          Фактическая скидка по заказу:
+        </td>
+        <td class="sum">
+          -{$post->discount|string_format:"%1.2f"|replace:",":"."}%
+        </td>
+        <td class="sum">
+          &nbsp;
+        </td>
+      </tr>
+    {/if}
+
+  </table>
+
+  <!-- {* Выводим ссылку на сайт, с которого пришло письмо *} -->
+  <br>
+  <p>
+    Это письмо поступило с сайта
+    {strip}
+      <a href="http://{$root_url|escape}/" target="_blank" title="Перейти на главную страницу сайта">
+        {$root_url|escape}
+      </a>
+    {/strip}
+    {if isset($post->now)}
+      &nbsp;<span class="stdtext">{$post->now|escape}</span>
+    {/if}
+  </p>

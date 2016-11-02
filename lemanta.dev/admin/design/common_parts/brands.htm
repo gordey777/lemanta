@@ -1,0 +1,303 @@
+{* <!--
+  Impera CMS: субшаблон списка брендов.
+  Copyright AIMatrix, 2011.
+
+  Подключение (атрибуты разъяснены ниже, необязательные взяты в квадратные скобки):
+    {include file="../../common_parts/brands.htm" items=VAR
+                                                  currents=VAR
+                                                  counter=BOOLEAN
+                                                  topics=BOOLEAN
+                                                  selector=BOOLEAN
+                                                  flatlist=BOOLEAN
+                                                  fullinfo=BOOLEAN
+                                                  editable=BOOLEAN
+                                                  fulledit=BOOLEAN
+                                                  moveedit=BOOLEAN}
+
+    атрибуты:
+      items = переменная, содержащая список брендов;
+      [currents] = переменная с идентификатором или их массивом выбранных брендов;
+      [counter] = true, чтобы элементы имели количество товаров в них;
+      [topics] = true, чтобы элементы имели веточную нумерацию;
+      [selector] = true, чтобы субшаблон вывел элементы для тега <select>;
+      [flatlist] = true, чтобы список был без выпадающих частей,
+                   иначе вложенные элементы станут выпадать при наведении курсора
+                   (этот атрибут игнорируется при selector=true);
+      [fullinfo] = true, чтобы выводилась вся информацию по элементам,
+                   иначе только название и количество товаров у бренда
+                   (этот атрибут игнорируется при selector=true);
+      [editable] = true, чтобы элементы имели кнопки редактирования
+                   (этот атрибут игнорируется при selector=true);
+      [fulledit] = true, чтобы элементы имели полный набор кнопок редактирования,
+                   иначе вывести только кнопку "Удалить"
+                   (этот атрибут игнорируется при selector=true);
+      [moveedit] = true, чтобы элементы имели набор кнопок перемещения по ветвям
+                   (этот атрибут игнорируется при selector=true).
+
+  ============================================================================
+
+  Использованные классы тегов:
+    option, option.empty, option.disabled, option."empty disabled"
+    ul
+      li, li.root
+        span.count, span.empty, span.attach, span.nesting, span.topic
+        a, a.disabled
+          img.microkey_left, img.microkey_right
+        div.info
+          div.param
+            div.value
+              input, input.submit
+
+  ============================================================================
+
+  Сначала с помощью директивы empty() проверяем, существует ли во входном атрибуте
+  items хоть одна запись. Далее, так как на странице может быть расставлено несколько
+  разных списков брендов, с помощью тега {math} генерируем случайный идентификатор
+  для этого списка брендов и с помощью тега {capture} сохраняем его в переменной
+  $object_id, чтобы потом использовать этот идентификатор. Затем тегом {function} выделяем
+  содержимое псевдофункции с именем "show_brands" и там в цикле {foreach} начинаем
+  последовательно выводить элементы массива $items, причем с помощью опции item=c
+  назначаем каждый элемент массива переменной $c. Выводимые элементы заключаем в тег
+  {strip} для удаления ведущих и замыкающих пробелов и переводов строк. Перед выводом
+  элемента проверяем, был ли установлен входной атрибут selector равным TRUE, чтобы
+  вывести элемент в теге <option> или <li> в противном случае. Аналогично проверяем
+  установку входного атрибута editable и связанного с ним атрибута fulledit, чтобы
+  вывести к элементу его кнопки редактирования, и установку входного атрибута counter,
+  чтобы вывести к элементу количество товаров в нем. Затем проверяем, есть ли у текущего
+  элемента вложенные в него, то есть не пуст ли у него массив $c->subbrands. Если
+  он не пустой, рекурсивно вызываем обозначенную псевдофункцию "show_brands",
+  передавая ей массив $c->subbrands в качестве входного параметра, +1 уровень вложенности
+  level вторым параметром и нумерацию topic ветки третим параметром (нумерация веток
+  формируется переменными $iteration, $topic, $this_topic). --> *}
+
+  {if isset($items) && !empty($items)}
+    {capture assign="object_id"}BRANDS{math equation="rand(1, 100000000)"}{/capture}
+
+    {* <!-- объявляем функцию show_brands, которая неявно использует локальные входные параметры $items, $level и $topic
+            (то есть их здесь не объявляем для обхода проблемы сериализации объектов в Smarty3)
+            и которая перебирает все элементы этого параметра (в нем содержится массив брендов) --> *}
+    {function name="show_brands"}
+      {assign var="iteration" value=0}
+      {foreach item=c from=$items}
+        {strip}
+          {assign var="iteration" value=$iteration+1}
+          {capture assign="this_topic"}{$topic}{$iteration}.{/capture}
+
+          {if isset($selector) && ($selector === true)}
+
+            <option value="{$c->brand_id|escape}"{if isset($currents) && ((is_array($currents) && in_array($c->brand_id, $currents)) || (!is_array($currents) && ($c->brand_id == $currents)))} selected{/if}{if !$c->enabled || ($c->products_count < 1)} class="{if $c->products_count < 1}empty {/if}{if !$c->enabled}disabled{/if}"{/if}>
+              {section name="spaces" start=0 loop=$level step=1}&nbsp;&nbsp;&nbsp;&nbsp;{/section}
+              {if isset($topics) && ($topics === true)}{$this_topic} {/if}{$c->name|escape}{if isset($counter) && ($counter === true)} [{$c->products_count} шт.]{/if}
+            </option>
+
+            {if isset($c->subbrands) && !empty($c->subbrands)}
+              {show_brands items=$c->subbrands level=$level+1 topic=$this_topic}
+            {/if}
+
+          {else}
+
+            <li{if isset($c->subbrands) && !empty($c->subbrands)} class="root"{/if}{if (!isset($flatlist) || ($flatlist !== true)) && isset($c->subbrands) && !empty($c->subbrands)} onmouseover="javascript: Switch_{$object_id}('{$c->brand_id|escape}_{$level}', true);" onmouseout="javascript: Switch_{$object_id}('{$c->brand_id|escape}_{$level}', false);"{/if} onDblClick="javascript: jQuery(this).find('ul:first').toggle(); event.cancelBubble = true;">
+              {if isset($editable) && ($editable === true)}
+                <a href="{siteAdmin}{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данный бренд будет удален с сайта. Вы подтверждаете такую операцию?');">
+                  <img class="microkey_right" src="{themeAdmin}images/icon_delete_16x16.png">
+                </a>
+                <img class="microkey_left" src="{themeAdmin}images/placeholder.gif">
+
+                {if isset($fulledit) && ($fulledit === true)}
+                    {if !empty($moveedit)}
+                        <a href="{siteAdmin}{$c->move_first_get|escape}" title="Поставить первым в ветке (текущий вес {$c->order_num|escape})">
+                            <img class="microkey_left" src="{themeAdmin}images/icon_move_first_16x16.png" />
+                        </a>
+                        <a href="{siteAdmin}{$c->move_up_get|escape}" title="Поднять выше в ветке (текущий вес {$c->order_num|escape})">
+                            <img class="microkey_left" src="{themeAdmin}images/icon_move_up_16x16.png" />
+                        </a>
+                        <a href="{siteAdmin}{$c->move_down_get|escape}" title="Опустить ниже в ветке (текущий вес {$c->order_num|escape})">
+                            <img class="microkey_left" src="{themeAdmin}images/icon_move_down_16x16.png" />
+                        </a>
+                        <a href="{siteAdmin}{$c->move_last_get|escape}" title="Поставить последним в ветке (текущий вес {$c->order_num|escape})">
+                            <img class="microkey_left" src="{themeAdmin}images/icon_move_last_16x16.png" />
+                        </a>
+                        <img class="microkey_left" src="{themeAdmin}images/placeholder.gif" />
+
+                        <span class="browsed zero" title="Вес">
+                            {echoVar from='c->order_num'}
+                        </span>
+                    {/if}
+
+                  <a href="{siteAdmin}{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                    <img class="microkey_left" src="{themeAdmin}images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                  </a>
+                  <a href="{siteAdmin}{$c->informative_get|escape}" title="Считать / не считать информативной страницей">
+                    <img class="microkey_left" src="{themeAdmin}images/icon_informative{if $c->informative != 1}_off{/if}_16x16.png">
+                  </a>
+                  <a href="{siteAdmin}{$c->domained_get|escape}" title="Разрешить / запретить собственный субдомен">
+                    <img class="microkey_left" src="{themeAdmin}images/icon_domained{if $c->subdomain_enabled != 1}_off{/if}_16x16.png">
+                  </a>
+                  <a href="{siteAdmin}{$c->hidden_get|escape}" title="Скрыть / открыть для незарегистрированных пользователей">
+                    <img class="microkey_left" src="{themeAdmin}images/icon_hidden{if $c->hidden != 1}_off{/if}_16x16.png">
+                  </a>
+                {/if}
+              {/if}
+
+              {if isset($counter) && ($counter === true) && isset($c->products_count)}
+                <span{if $c->products_count < 1} class="empty" title="Не содержит товаров"{else} class="count" title="Содержит {$c->products_count|escape} товаров{if isset($c->my_products_count) && ($c->my_products_count != $c->products_count)} (из них личных {$c->my_products_count|escape}){/if}"{/if}>
+                  {$c->products_count|escape}
+                </span>
+              {/if}
+
+              {if isset($counter) && ($counter === true)}
+                <span class="count" title="Количество просмотров: {$c->browsed|escape}">
+                  {$c->browsed|escape}
+                </span>
+              {/if}
+
+              {if isset($flatlist) && ($flatlist === true)}
+                {if isset($c->subbrands) && !empty($c->subbrands) && ($c->subbrands|@count > 0)}
+                  <span class="nesting" title="Содержит {$c->subbrands|@count} вложенных">
+                    {$c->subbrands|@count}
+                  </span>
+                {/if}
+                {if isset($c->parents) && ($c->parents|@count > 1)}
+                  <span class="attach" title="Имеет {$c->parents|@count} прикрепления">
+                    {$c->parents|@count}
+                  </span>
+                {/if}
+              {/if}
+
+              {if isset($topics) && ($topics === true)}
+                <span class="topic">
+                  {$this_topic}
+                </span>
+              {/if}
+
+              {if isset($currents) && ((is_array($currents) && in_array($c->brand_id, $currents)) || (!is_array($currents) && ($c->brand_id == $currents)))}
+                {if $c->highlighted}<b>{/if}{$c->name|strip_tags|escape}{if $c->highlighted}</b>{/if}
+              {else}
+                <a href="{siteAdmin}{$c->edit_get|escape}"{if !$c->enabled} class="disabled" title="Не разрешен показ на сайте"{/if}>
+                  {if $c->highlighted}<b>{/if}{$c->name|strip_tags|escape}{if $c->highlighted}</b>{/if}
+                </a>
+              {/if}
+
+              {if isset($fullinfo) && ($fullinfo === true)}
+                &nbsp;
+                <a class="maximize" href="#" onclick="javascript: this.text = Switch_{$object_id}('{$c->brand_id|escape}_{$level}_info', '*') ? '[-]' : '[+]'; return false;" title="Показать / скрыть карточку">[+]</a>
+                <div class="info" id="{$object_id}_{$c->brand_id|escape}_{$level}_info">
+                  <div class="param">
+                    название
+                    <div class="value">
+                      {if isset($fulledit) && ($fulledit === true)}
+                        <input name="name[{$c->brand_id|escape}]" type="text" value="{$c->name|strip_tags|escape}">
+                      {else}
+                        {$c->name|strip_tags|escape|default:"&nbsp;"}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="param">
+                    url
+                    <div class="value">
+                      {if isset($fulledit) && ($fulledit === true)}
+                        <input name="url[{$c->brand_id|escape}]" type="text" value="{$c->url|escape}">
+                      {else}
+                        {$c->url|escape|default:"&nbsp;"}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="param">
+                    субдомен
+                    <div class="value">
+                      {if isset($fulledit) && ($fulledit === true)}
+                        <input name="subdomain[{$c->brand_id|escape}]" type="text" value="{$c->subdomain|escape}">
+                      {else}
+                        {$c->subdomain|escape|default:"&nbsp;"}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="param">
+                    title
+                    <div class="value">
+                      {if isset($fulledit) && ($fulledit === true)}
+                        <input name="meta_title[{$c->brand_id|escape}]" type="text" value="{$c->meta_title|escape}">
+                      {else}
+                        {$c->meta_title|escape|default:"&nbsp;"}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="param">
+                    keywords
+                    <div class="value">
+                      {if isset($fulledit) && ($fulledit === true)}
+                        <input name="meta_keywords[{$c->brand_id|escape}]" type="text" value="{$c->meta_keywords|escape}">
+                      {else}
+                        {$c->meta_keywords|escape|default:"&nbsp;"}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="param">
+                    description
+                    <div class="value">
+                      {if isset($fulledit) && ($fulledit === true)}
+                        <input name="meta_description[{$c->brand_id|escape}]" type="text" value="{$c->meta_description|escape}">
+                      {else}
+                        {$c->meta_description|escape|default:"&nbsp;"}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="param">
+                    вес
+                    <div class="value">
+                      {if isset($fulledit) && ($fulledit === true)}
+                        <input name="order_num[{$c->brand_id|escape}]" type="text" value="{$c->order_num|escape}">
+                      {else}
+                        {$c->order_num|escape|default:"&nbsp;"}
+                      {/if}
+                    </div>
+                  </div>
+                  <div class="param">
+                    id
+                    <div class="value">
+                      {$c->brand_id|escape|default:"&nbsp;"}
+                      {if isset($fulledit) && ($fulledit === true)}
+                        <input class="submit" name="post[{$c->brand_id|escape}]" type="submit" value="ok">
+                      {/if}
+                    </div>
+                  </div>
+                </div>
+              {/if}
+
+              {if isset($c->subbrands) && !empty($c->subbrands)}
+                <ul{if !isset($flatlist) || ($flatlist !== true)} id="{$object_id}_{$c->brand_id|escape}_{$level}" style="display: none; position: absolute; z-index: 1;"{/if}>
+                  {show_brands items=$c->subbrands level=$level+1 topic=$this_topic}
+                </ul>
+              {/if}
+            </li>
+
+          {/if}
+        {/strip}
+      {/foreach}
+    {/function}
+
+    {* <!-- запускаем исполнение объявленной выше функции show_brands,
+            передавая ей в качестве параметра массив брендов $items --> *}
+    {show_brands items=$items level=0 topic=""}
+
+    {if !isset($selector) || ($selector !== true)}
+      {literal}
+        <!-- Скрипт для раскрытия / сокрытия выпадающих элементов -->
+
+        <script language="JavaScript" type="text/javascript">
+          <!--
+          function Switch_{/literal}{$object_id}{literal}(id, state) {
+            var object = document.getElementById('{/literal}{$object_id}{literal}_' + id);
+            if ((typeof(object) == 'object') && (object != null)) {
+              if (state == '*') state = !object.style.display || (object.style.display == 'none');
+              object.style.display = (state == true) ? 'block' : 'none';
+              return state;
+            }
+            return false;
+          }
+          // -->
+        </script>
+      {/literal}
+    {/if}
+
+  {/if}

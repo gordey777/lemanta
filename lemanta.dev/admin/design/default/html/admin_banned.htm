@@ -1,0 +1,244 @@
+{* <!--
+  Impera CMS: шаблон админ модуля страницы запрета доступа.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о запрете доступа;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "card" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    users = true - вывести эту кнопку
+    groups = true - вывести эту кнопку
+    banneds = true - вывести эту кнопку
+    card_banneds = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           users = true
+           groups = true
+           banneds = true
+           card_banneds = true}
+
+  {* <!-- В переменную $id заносим идентификатор запрета доступа или 0 при его отсутствии. --> *}
+
+  {assign var="id" value=$item->ban_id|default:0|escape}
+
+  <!-- Подключаем скрипт и файл стилей календаря -->
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.js" type="text/javascript"></script>
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendas.js" type="text/javascript"></script>
+  <link href="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.css" rel="stylesheet" type="text/css">
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banneds" title="Перейти на страницу запретов доступа в админпанели">Запреты</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id)}
+        {$item->ip|escape|default:"&nbsp;"}
+      {else}
+        Новый запрет доступа
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        &nbsp;
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+
+    {if isset($message) && !empty($message)}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+
+    {if isset($error) && !empty($error)}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о запрете доступа -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banned" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о IP-адресе -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param">
+            IP-адрес:
+          </td>
+          <td class="value" width="100%" title="IP-адрес блокируемого компьютера">
+            <input class="edit" name="ip[{$id}]" type="text" value="{$item->ip|default:''|escape}">
+          </td>
+          <td class="param_short" title="Разрешен ли запрет доступа к использованию на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешен
+            </span>
+          </td>
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Запреты -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+        <tr>
+          <td class="param">
+            Запреты:
+          </td>
+          <td class="param_short">
+            с даты:
+          </td>
+          <td class="value" title="С какой даты запрет вступит в силу (формат ГГГГ-ММ-ДД ЧЧ:ММ:СС)">
+            <script language="JavaScript" type="text/javascript">
+              <!--
+              var xcDateFormat = 'yyyy-mm-dd {$smarty.now|date_format:"%H:%M:%S"}';
+              // -->
+            </script>
+            <input class="edit" name="begin_date[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->begin_date|default:'0000-00-00'|truncate:10:'':true != '0000-00-00'}{$item->begin_date|default:'0000-00-00 00:00:00'|truncate:19:'':true|escape}{/if}" onfocus="javascript: showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+          <td class="param_short">
+            до:
+          </td>
+          <td class="value" title="После какой даты запрет выходит из силы (формат ГГГГ-ММ-ДД ЧЧ:ММ:СС)">
+            <input class="edit" name="end_date[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->end_date|default:'0000-00-00'|truncate:10:'':true != '0000-00-00'}{$item->end_date|default:'0000-00-00 00:00:00'|truncate:19:'':true|escape}{/if}" onfocus="javascript: showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+          <td class="param_short" title="Блокировать ли компьютеру доступ к клиентской стороне сайта">
+            <input class="checkbox" id="item_form_noaccess" name="no_access[{$id}]" type="checkbox"{if isset($item->no_access) && ($item->no_access == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_noaccess');">
+              Нет доступа
+            </span>
+          </td>
+          <td class="param_short" title="Блокировать ли компьютеру доступ к регистрации пользователя">
+            <input class="checkbox" id="item_form_noregister" name="no_register[{$id}]" type="checkbox"{if isset($item->no_register) && ($item->no_register == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_noregister');">
+              Нет регистрации
+            </span>
+          </td>
+          <td class="param_short" title="Отвергать ли прием комментариев и сообщений обратной связи с такого компьютера">
+            <input class="checkbox" id="item_form_nocomment" name="no_comment[{$id}]" type="checkbox"{if isset($item->no_comment) && ($item->no_comment == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_nocomment');">
+              Нет постов
+            </span>
+          </td>
+          <td class="param_short" title="Отвергать ли прием запросов связи с такого компьютера">
+            <input class="checkbox" id="item_form_nocallme" name="no_callme[{$id}]" type="checkbox"{if isset($item->no_callme) && ($item->no_callme == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_nocallme');">
+              Нет связи
+            </span>
+          </td>
+          <td class="param_short" title="Блокировать ли компьютеру доступ к админпанели">
+            <input class="checkbox" id="item_form_noadmin" name="no_admin[{$id}]" type="checkbox"{if isset($item->no_admin) && ($item->no_admin == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_noadmin');">
+              Нет админа
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Заметки -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Заметки:
+          </td>
+          <td class="value" title="Заметки о причинах появления этого запрета доступа">
+            <textarea class="editor_small" name="remark[{$id}]">{$item->remark|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Количество попыток доступа -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param">
+            Попытки доступа:
+          </td>
+          <td class="value" title="Количество попыток доступа с такого компьютера">
+            <input class="edit" name="attempts[{$id}]" size="8" style="width: auto;" type="text" value="{$item->attempts|default:''|escape}">
+          </td>
+          <td class="param_short">
+            Дата последней:
+          </td>
+          <td class="value" width="100%" title="Дата последней попытки доступа">
+            <input class="edit" type="text" readonly value="{if $item->attempts_date|default:'0000-00-00'|truncate:10:'':true != '0000-00-00'}{$item->attempts_date|default:''|escape}{/if}">
+          </td>
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <div class="help">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>IP-адрес</b>. Содержит сетевой адрес блокируемого компьютера. Обязателен к заполнению. Адрес должен быть в формате X.X.X.X,
+        где X - число от 0 до 255. Возможен формат разделенных пробелом цепочки адресов, например Z.Z.Z.Z&nbsp;&nbsp;Y.Y.Y.Y&nbsp;&nbsp;X.X.X.X,
+        если требуется указать прокси-путь до компьютера с адресом X.X.X.X.
+      </div>
+      <div>
+        <b>Использование</b>. Флажок <u>Разрешен</u> определяет, будет ли эта запись использоваться во время работы сайта. Если какую-то запись о
+        запрете доступа нужно временно отключить, ее совсем не обязательно удалять, достаточно просто снять данный флажок. Поведение сайта
+        будет таким, словно этой записи вообще не было. При установке флажка запись снова начнет обрабатываться.
+      </div>
+      <div>
+        <b>Запреты</b>. Опционально заполняемые даты начала и окончания срока действия запрета, а также наборы флажков, воспрещающие конкретные
+        виды доступа к сайту для компьютера с указанным сетевым адресом. Возможные варианты: <u>Нет&nbsp;доступа</u> - блокирует взаимодействие
+        с любой страницей клиентской стороны сайта, <u>Нет&nbsp;регистрации</u> - запрещает взаимодействие со страницей регистрации пользователя,
+        <u>Нет&nbsp;постов</u> - отвергает прием комментариев к товарам, статьям, новостям, а также сообщений со страницы обратной связи,
+        <u>Нет&nbsp;связи</u> - отвергает прием запросов связи (функция "Перезвоните мне"), <u>Нет&nbsp;админа</u> - блокирует взаимодействие
+        с любой страницей админпанели.
+      </div>
+      <div>
+        Важно понимать последствия блокировки доступа в админпанель. Если по какой-то причине нужно запретить доступ туда с компьютера
+        Вашего сотрудника, смотрите внимательно, чтобы случайно не указать IP-адрес своего компьютера, ведь потом Вы не сможете попасть
+        в админпанель. Разблокировка возможна только сторонними скриптами работы с базой данных, например phpMyAdmin.
+      </div>
+      <div>
+        <b>Заметки</b>. Текст в этом поле нигде не используется, потому необязателен к заполнению. Рекомендуется указывать здесь описание причины
+        блокировки в произвольной форме, чтобы позже не гадать, зачем была добавлена эта запись, от кого защищала и в связи с каким обстоятельством.
+      </div>
+      <div>
+        <b>Попытки</b>. Число совершенных попыток доступа с такого компьютера и дата последней попытки. Назначение этих полей информационное,
+        однако поле количества попыток здесь сделано редактируемым, чтобы в случае необходимости иметь возможность сбросить счетчик количества
+        желаемой записи о запрете доступа.
+      </div>
+      <div>
+        <b>Обратите внимание!</b> Система поставляется вместе с инспектором DDoS-атак - он отслеживает распределенные атаки "Отказ
+        в обслуживании", когда сайт атакуют с разных компьютеров с помощью большого количества загрузок его страниц. Этот инспектор
+        снабжен своим механизмом полной блокировки атакующих, причем запреты доступа инспектора имеют приоритет выше, чем блокировки
+        данной страницы.
+      </div>
+    </div>
+
+  </div>

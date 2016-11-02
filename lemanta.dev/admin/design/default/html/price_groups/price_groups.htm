@@ -1,0 +1,239 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: ценовые группы                                                          |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $title = текст заголовка страницы                                             |
+    $items = массив с записями о ценовых группах                                  |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $from_page = адрес страницы возврата после операции                           |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $Token = аутентификатор операции                                              |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$temp_module = $smarty.const.PRICEGROUPS_MODULELINK_POINTER|default:''}
+    {$temp_param = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+
+
+
+    {* <!-- подключаем модуль закладок --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.PRICEGROUPS_MODULETAB_TEXT|default:''
+             me_pointer = $temp_module
+             me_menupath = $smarty.const.PRICEGROUPS_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- формируем URL-ы страницы --> *}
+    {$temp_url_main = (($site|default:'')|cat:($admin_folder|default:'')|cat:'/')}
+    {$temp_url_script = $temp_url_main|cat:'index.php'}
+    {$temp_url_images = ($temp_url_main|escape)|cat:'design/'|cat:($settings->admin_theme|default:''|escape)|cat:'/images/'}
+    {$temp_url_form = $temp_url_script|cat:'?'|cat:$temp_param|cat:'='|cat:$temp_module}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок содержимого --> *}
+        <h1>
+            <div class="path">
+                <a href="{$temp_url_main|escape}">
+                    Главная
+                </a> → Ценовые группы
+            </div>
+            {$title|default:'Ценовые группы'}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма --> *}
+        <form action="{$temp_url_form|escape}" id="items_form" method="post">
+
+
+
+            <table align="center" cellpadding="0" cellspacing="20" class="white">
+
+
+
+                {* <!-- запоминаем имя переменной --> *}
+                {$temp_var = $smarty.const.PRICEGROUPS_SMARTYVAR_ITEMS|default:'items'}
+                {$temp_count = $smarty.const.PRICE_TYPES_MAXCOUNT|default:10|string_format:'%d'}
+
+
+
+                {* <!-- перебираем записи --> *}
+                {section name = 'items'
+                         start = 1
+                         loop = $temp_count + 1}
+
+
+
+                    <tr>
+                        {$temp_index = $smarty.section.items.index}
+                        {$temp_value = (${$temp_var}[$temp_index]|default:'')|regex_replace:'/[\s\t\r\n]+/u':' '|regex_replace:'/^[\s\t\r\n]+/u':''|regex_replace:'/[\s\t\r\n]+$/u':''}
+
+
+
+                        {* <!-- нумерация --> *}
+                        <td class="param_short" title="Порядковый номер группы">
+                            {$temp_index}.
+                        </td>
+
+
+
+                        {* <!-- кнопка Очистить поле --> *}
+                        <td class="param_short" title="Очистить поле">
+                            <img class="icon16x16 icon16x16-key" src="{$temp_url_images}icon_order_canceled_16x16.png" onclick="javascript: jQuery(this).parent().next('td').find('input').val(''); return false;" />
+                        </td>
+
+
+
+                        {* <!-- поле Название группы --> *}
+                        <td class="value value_sheet" width="50%" title="Название ценовой группы" {if !$smarty.section.items.last} colspan="2" {/if}>
+                            <input class="edit" name="{$smarty.const.PRICEGROUPS_POSTVAR_NAME|default:'name'|escape}[{$temp_index}]" maxlength="{$smarty.const.PRICE_TYPE_MAXSIZE|default:40|string_format:'%d'}" type="text" value="{$temp_value|escape}" />
+                        </td>
+
+
+
+                        {* <!-- кнопка Сохранить --> *}
+                        {if $smarty.section.items.last}
+                            <td class="value_box">
+                                <input class="submit" type="submit" value="Сохранить" />
+                            </td>
+                        {/if}
+
+
+
+                        {* <!-- значок Информация --> *}
+                        <td class="param_short">
+                            <img class="icon16x16 icon16x16-key" src="{$temp_url_images}icon_new_off_16x16.png" />
+                        </td>
+
+
+
+                        {* <!-- прежнее название --> *}
+                        <td class="param_short" width="50%" title="Прежнее название группы">
+                            {($temp_value == '') ? 'Ранее не имела названия!' : $temp_value}
+                        </td>
+
+
+
+                    </tr>
+
+
+
+                {/section}
+
+
+
+            </table>
+
+
+
+            {* <!-- адрес страницы возврата после операции --> *}
+            {if $from_page|default:'' != ''}
+                <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|default:''|escape}" type="hidden" value="{$from_page|escape}">
+            {/if}
+
+
+
+            {* <!-- признак наличия данных об изменениях --> *}
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|default:''|escape}" type="hidden" value="1" />
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''|escape}" type="hidden" value="{$Token|default:''|escape}" />
+
+
+
+        </form>
+        <br>
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+
+            <div class="title">
+                Справка
+            </div>
+
+
+
+            <div>
+                В дополнение к назначению зарегистрированным покупателям группы скидок, система поддерживает также {**}
+                ценовые группы числом {$temp_count} штук. Текущая страница соответственно дает возможность редактировать {**}
+                названия этих групп. Последовательность и названия групп произвольны. Назначение групп производится {**}
+                на странице редактирования конкретного пользователя. Назначение цен в разные группы производится {**}
+                на странице редактирования конкретного товара (либо при импорте товаров).
+                <br><br>
+
+                Первая группа считается общей - любой неавторизованный посетитель, а также зарегистрированный покупатель, {**}
+                кому менеджер назначил первую ценовую группу, будет видеть на сайте товарные цены именно этой группы. {**}
+                Зарегистрированный покупатель другой ценовой группы будет видеть свои цены, согласно назначенной группе. {**}
+                Например посетитель ПРОХОЖИЙ видит и покупает товар А по цене X, а покупатель ОПТОВИК видит и покупает тот {**}
+                же товар по цене Y.
+                <br><br>
+
+                Имеется следующее правило: если в ценовой группе у какого-то товара не указана (нулевая) цена, то цена {**}
+                берется из общей (первой) группы.
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+{/strip}

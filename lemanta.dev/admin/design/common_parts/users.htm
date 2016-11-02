@@ -1,0 +1,51 @@
+{* <!--
+  Impera CMS: субшаблон списка клиентов.
+  Copyright AIMatrix, 2011.
+
+  Подключение (атрибуты разъяснены ниже, необязательные взяты в квадратные скобки):
+    {include file="../../common_parts/users.htm" items=VAR
+                                                 currents=VAR
+                                                 selector=BOOLEAN}
+
+    атрибуты:
+      items = переменная, содержащая список клиентов;
+      [currents] = переменная с идентификатором или их массивом выбранных клиентов;
+      [selector] = true, чтобы субшаблон вывел элементы для тега <select>.
+
+  ============================================================================ --> *}
+
+  {if isset($items) && !empty($items)}
+    {strip}
+      {capture assign="object_id"}USERS{math equation="rand(1, 100000000)"}{/capture}
+
+      {* <!-- объявляем функцию show_users, которая неявно использует локальные входные параметры $items, $level и $topic
+              (то есть их здесь не объявляем для обхода проблемы сериализации объектов в Smarty3)
+              и которая перебирает все элементы этого параметра (в нем содержится массив клиентов) --> *}
+      {function name="show_users"}
+        {assign var="iteration" value=0}
+        {foreach item=c from=$items}
+
+          {assign var="iteration" value=$iteration+1}
+          {capture assign="this_topic"}{$topic}{$iteration}.{/capture}
+
+          {if isset($selector) && ($selector === true)}
+
+            <option value="{$c->user_id|escape}"{if isset($currents) && ((is_array($currents) && in_array($c->user_id, $currents)) || (!is_array($currents) && ($c->user_id == $currents)))} selected{/if}{if $c->enabled != 1} class="disabled"{/if}>
+              {section name="spaces" start=0 loop=$level step=1}&nbsp;&nbsp;&nbsp;&nbsp;{/section}
+              {if isset($topics) && ($topics === true)}{$this_topic} {/if}{$c->compound_name|escape}
+            </option>
+
+            {if !empty($c->subusers)}
+              {show_users items=$c->subusers level=$level+1 topic=$this_topic}
+            {/if}
+
+          {/if}
+        {/foreach}
+      {/function}
+
+      {* <!-- запускаем исполнение объявленной выше функции show_users,
+              передавая ей в качестве параметра массив клиентов $items --> *}
+      {show_users items=$items level=0 topic=""}
+
+    {/strip}
+  {/if}

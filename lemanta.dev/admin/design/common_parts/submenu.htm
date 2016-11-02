@@ -1,0 +1,624 @@
+{* <!--
+  Impera CMS: модуль кнопок субменю.
+  Copyright AIMatrix, 2012.
+  http://imperacms.ru/
+
+  Подключение (атрибуты разъяснены ниже, необязательные взяты в квадратные скобки):
+    {include file="../../common_parts/submenu.htm" select=TEXT
+                                                   main=BOOLEAN
+                                                   pages=BOOLEAN
+                                                   news=BOOLEAN
+                                                   articles=BOOLEAN
+                                                   banners=BOOLEAN
+                                                   files=BOOLEAN
+                                                   menus=BOOLEAN
+                                                   modules=BOOLEAN
+                                                   products=BOOLEAN
+                                                   products_kits=BOOLEAN
+                                                   categories=BOOLEAN
+                                                   brands=BOOLEAN
+                                                   properties=BOOLEAN
+                                                   stocks=BOOLEAN
+                                                   orders=BOOLEAN
+                                                   orders_phases=BOOLEAN
+                                                   payments_history=BOOLEAN
+                                                   credit_programs=BOOLEAN
+                                                   users=BOOLEAN
+                                                   groups=BOOLEAN
+                                                   banneds=BOOLEAN
+                                                   comments=BOOLEAN
+                                                   acomments=BOOLEAN
+                                                   ncomments=BOOLEAN
+                                                   feedback=BOOLEAN
+                                                   callme=BOOLEAN
+                                                   countries=BOOLEAN
+                                                   regions=BOOLEAN
+                                                   towns=BOOLEAN
+                                                   schools=BOOLEAN
+                                                   schools_types=BOOLEAN
+                                                   schools_lessons=BOOLEAN
+                                                   schools_classes=BOOLEAN
+                                                   schools_learners=BOOLEAN
+                                                   imports=BOOLEAN
+                                                   export=BOOLEAN
+                                                   backup=BOOLEAN
+                                                   redirects=BOOLEAN
+                                                   mailer=BOOLEAN
+                                                   setup=BOOLEAN
+                                                   currencies=BOOLEAN
+                                                   deliveries=BOOLEAN
+                                                   deliveries_types=BOOLEAN
+                                                   shippings_terms=BOOLEAN
+                                                   payment=BOOLEAN
+                                                   sms=BOOLEAN
+                                                   themes=BOOLEAN
+                                                   templates=BOOLEAN
+                                                   styles=BOOLEAN
+                                                   images=BOOLEAN
+                                                   card_*=BOOLEAN}
+
+    атрибуты:
+      [select] = атрибутивное (то есть одноименное ниже следующим атрибутам)
+                 название выбранной кнопки;
+      [main] = true, чтобы показать кнопку "главная";
+      [pages] = true, чтобы показать кнопку "страницы";
+      [news] = true, чтобы показать кнопку "новости";
+      [articles] = true, чтобы показать кнопку "статьи";
+      [banners] = true, чтобы показать кнопку "баннеры";
+      [files] = true, чтобы показать кнопку "медиа файлы";
+      [menus] = true, чтобы показать кнопку "меню";
+      [modules] = true, чтобы показать кнопку "модули";
+      [products] = true, чтобы показать кнопку "товары";
+      [products_kits] = true, чтобы показать кнопку "комплекты";
+      [categories] = true, чтобы показать кнопку "категории";
+      [brands] = true, чтобы показать кнопку "бренды";
+      [properties] = true, чтобы показать кнопку "свойства";
+      [stocks] = true, чтобы показать кнопку "склады";
+      [orders] = true, чтобы показать кнопку "заказы";
+      [orders_phases] = true, чтобы показать кнопку "стадии";
+      [payments_history] = true, чтобы показать кнопку "платежи";
+      [credit_programs] = true, чтобы показать кнопку "кредиты";
+      [users] = true, чтобы показать кнопку "клиенты";
+      [groups] = true, чтобы показать кнопку "группы";
+      [banneds] = true, чтобы показать кнопку "запреты";
+      [comments] = true, чтобы показать кнопку "отзывы";
+      [acomments] = true, чтобы показать кнопку "комментарии статей";
+      [ncomments] = true, чтобы показать кнопку "комментарии новостей";
+      [feedback] = true, чтобы показать кнопку "переписка";
+      [callme] = true, чтобы показать кнопку "позвоните";
+      [countries] = true, чтобы показать кнопку "страны";
+      [regions] = true, чтобы показать кнопку "области";
+      [towns] = true, чтобы показать кнопку "города";
+      [schools] = true, чтобы показать кнопку "школы";
+      [schools_types] = true, чтобы показать кнопку "типы школ";
+      [schools_lessons] = true, чтобы показать кнопку "предметы";
+      [schools_classes] = true, чтобы показать кнопку "классы";
+      [schools_learners] = true, чтобы показать кнопку "учащиеся";
+      [imports] = true, чтобы показать кнопку "импорт";
+      [export] = true, чтобы показать кнопку "экспорт";
+      [backup] = true, чтобы показать кнопку "бекап";
+      [redirects] = true, чтобы показать кнопку "редиректы";
+      [mailer] = true, чтобы показать кнопку "рассылка";
+      [setup] = true, чтобы показать кнопку "настройки";
+      [currencies] = true, чтобы показать кнопку "валюты";
+      [deliveries] = true, чтобы показать кнопку "доставка";
+      [deliveries_types] = true, чтобы показать кнопку "типы доставки";
+      [shippings_terms] = true, чтобы показать кнопку "сроки отправки";
+      [payment] = true, чтобы показать кнопку "оплата";
+      [sms] = true, чтобы показать кнопку "sms";
+      [themes] = true, чтобы показать кнопку "дизайн";
+      [templates] = true, чтобы показать кнопку "шаблоны";
+      [styles] = true, чтобы показать кнопку "стили";
+      [images] = true, чтобы показать кнопку "картинки";
+      [card_*] = true, чтобы показать кнопку "карточка" возле кнопки с атрибутивным названием *
+               (эта кнопка является не нажимаемой).
+
+  ============================================================================ --> *}{strip}
+
+
+
+    {* <!-- создание disabled-стиля неправомочной ссылки --> *}
+    {function name = 'check_admin_rights_link'
+              module = ''}
+        {if isset($admin_rights) && is_array($admin_rights) && !empty($admin_rights) && !in_array($module|lower, $admin_rights)}
+            style="color: #bbb;"
+        {/if}
+    {/function}
+
+
+
+    {* <!-- установка класса select --> *}
+    {function name = 'check_select_class'
+              button = ''}
+        {if ($select|default:'')|lower == $button|lower}
+            class="select"
+        {/if}
+    {/function}
+
+
+
+    {* <!-- кнопка Карточка --> *}
+    {function name = 'submenu_card_button'}
+        <li {check_select_class button = "card"}>
+            карточка
+        </li>
+    {/function}
+
+
+
+    {* <!-- кнопка --> *}
+    {function name = 'submenu_button'
+              button = ''
+              module = ''
+              text = ''
+              have_card = false}
+
+        {* <!-- если кнопка разрешена во входном параметре --> *}
+        {if ($button == 'me') || (${$button}|default:false === true)}
+            <li {check_select_class button = $button}>
+                <a href="{$temp_url_script}{$module|escape}" {check_admin_rights_link module = $module}>
+                    {$text}
+                </a>
+            </li>
+
+            {* <!-- если модуль имеет страницу Карточка --> *}
+            {if $have_card}
+                {if ${'card_'|cat:$button}|default:false === true}
+                    {submenu_card_button}
+                {/if}
+            {/if}
+        {/if}
+    {/function}
+
+
+
+    {* <!-- адреса страниц --> *}
+    {$temp_url_main = ($site|default:'')|cat:($admin_folder|default:'')|cat:'/'}
+    {$temp_url_script = ($temp_url_main|cat:'index.php?'|cat:($smarty.const.REQUEST_PARAM_NAME_SECTION|default:'')|cat:'=')|escape}
+
+
+
+    <div class="submenu">
+
+        {* <!-- главная страница --> *}
+        {if $main|default:false === true}
+            <li {check_select_class button = "main"}>
+                <a href="{$temp_url_main|escape}" {check_admin_rights_link module = "MainPage"}>
+                    главная
+                </a>
+            </li>
+        {/if}
+
+
+
+        {* <!-- специальные страницы --> *}
+        {submenu_button button = 'pages'
+                        module = 'Sections'
+                        text = 'страницы'
+                        have_card = true}
+
+
+
+        {* <!-- новости --> *}
+        {submenu_button button = 'news'
+                        module = 'News'
+                        text = 'новости'
+                        have_card = true}
+
+
+
+        {* <!-- статьи --> *}
+        {submenu_button button = 'articles'
+                        module = 'Articles'
+                        text = 'статьи'
+                        have_card = true}
+
+
+
+        {* <!-- баннеры --> *}
+        {submenu_button button = 'banners'
+                        module = 'Banners'
+                        text = 'баннеры'
+                        have_card = true}
+
+
+
+        {* <!-- медиафайлы --> *}
+        {submenu_button button = 'files'
+                        module = 'Files'
+                        text = 'файлы'
+                        have_card = true}
+
+
+
+        {* <!-- менюшки сайта --> *}
+        {submenu_button button = 'menus'
+                        module = 'Menus'
+                        text = 'меню'
+                        have_card = true}
+
+
+
+        {* <!-- зарегистрированные модули --> *}
+        {submenu_button button = 'modules'
+                        module = 'Modules'
+                        text = 'модули'
+                        have_card = true}
+
+
+
+        {* <!-- товары --> *}
+        {submenu_button button = 'products'
+                        module = 'Products'
+                        text = 'товары'
+                        have_card = true}
+
+
+
+        {* <!-- комплекты товаров --> *}
+        {submenu_button button = 'products_kits'
+                        module = 'ProductsKits'
+                        text = 'комплекты'
+                        have_card = true}
+
+
+
+        {* <!-- категории --> *}
+        {submenu_button button = 'categories'
+                        module = 'Categories'
+                        text = 'категории'
+                        have_card = true}
+
+
+
+        {* <!-- бренды --> *}
+        {submenu_button button = 'brands'
+                        module = 'Brands'
+                        text = 'бренды'
+                        have_card = true}
+
+
+
+        {* <!-- свойства товаров --> *}
+        {submenu_button button = 'properties'
+                        module = 'Properties'
+                        text = 'свойства'
+                        have_card = true}
+
+
+
+        {* <!-- склады --> *}
+        {submenu_button button = 'stocks'
+                        module = 'Stocks'
+                        text = 'склады'
+                        have_card = true}
+
+
+
+        {* <!-- заказы --> *}
+        {submenu_button button = 'orders'
+                        module = 'Orders'
+                        text = 'заказы'
+                        have_card = true}
+
+
+
+        {* <!-- стадии заказа --> *}
+        {submenu_button button = 'orders_phases'
+                        module = 'OrdersPhases'
+                        text = 'стадии'
+                        have_card = true}
+
+
+
+        {* <!-- платежи --> *}
+        {submenu_button button = 'payments_history'
+                        module = 'PaymentsHistory'
+                        text = 'платежи'
+                        have_card = false}
+
+
+
+        {* <!-- кредитные программы --> *}
+        {submenu_button button = 'credit_programs'
+                        module = 'CreditPrograms'
+                        text = 'кредиты'
+                        have_card = true}
+
+
+
+        {* <!-- зарегистрированные пользователи --> *}
+        {submenu_button button = 'users'
+                        module = 'Users'
+                        text = 'клиенты'
+                        have_card = true}
+
+
+
+        {* <!-- группы скидок --> *}
+        {submenu_button button = 'groups'
+                        module = 'Groups'
+                        text = 'группы'
+                        have_card = true}
+
+
+
+        {* <!-- запреты доступа --> *}
+        {submenu_button button = 'banneds'
+                        module = 'Banneds'
+                        text = 'запреты'
+                        have_card = true}
+
+
+
+        {* <!-- отзывы на товары --> *}
+        {submenu_button button = 'comments'
+                        module = 'Comments'
+                        text = 'отзывы'
+                        have_card = false}
+
+
+
+        {* <!-- комментарии статей --> *}
+        {submenu_button button = 'acomments'
+                        module = 'AComments'
+                        text = 'комментарии'
+                        have_card = false}
+
+
+
+        {* <!-- комментарии новостей --> *}
+        {submenu_button button = 'ncomments'
+                        module = 'NComments'
+                        text = 'комментарии новостей'
+                        have_card = false}
+
+
+
+        {* <!-- переписка --> *}
+        {submenu_button button = 'feedback'
+                        module = 'Feedback'
+                        text = 'переписка'
+                        have_card = false}
+
+
+
+        {* <!-- запросы связи "Позвоните мне" --> *}
+        {submenu_button button = 'callme'
+                        module = 'CallMe'
+                        text = 'позвоните'
+                        have_card = false}
+
+
+
+        {* <!-- страны --> *}
+        {submenu_button button = 'countries'
+                        module = 'Countries'
+                        text = 'страны'
+                        have_card = true}
+
+
+
+        {* <!-- области --> *}
+        {submenu_button button = 'regions'
+                        module = 'Regions'
+                        text = 'области'
+                        have_card = true}
+
+
+
+        {* <!-- города --> *}
+        {submenu_button button = 'towns'
+                        module = 'Towns'
+                        text = 'города'
+                        have_card = true}
+
+
+
+        {* <!-- если СМС дневник не запрещен --> *}
+        {if !isset($config->smsDnevnik_disabled) || !$config->smsDnevnik_disabled}
+
+            {* <!-- учебные заведения --> *}
+            {submenu_button button = 'schools'
+                            module = 'Schools'
+                            text = 'школы'
+                            have_card = true}
+
+
+
+            {* <!-- типы учебных заведений --> *}
+            {submenu_button button = 'schools_types'
+                            module = 'SchoolsTypes'
+                            text = 'типы'
+                            have_card = true}
+
+
+
+            {* <!-- предметы учебных заведений --> *}
+            {submenu_button button = 'schools_lessons'
+                            module = 'SchoolsLessons'
+                            text = 'предметы'
+                            have_card = true}
+
+
+
+            {* <!-- классы учебных заведений --> *}
+            {submenu_button button = 'schools_classes'
+                            module = 'SchoolsClasses'
+                            text = 'классы'
+                            have_card = true}
+
+
+
+            {* <!-- учащиеся --> *}
+            {submenu_button button = 'schools_learners'
+                            module = 'SchoolsLearners'
+                            text = 'учащиеся'
+                            have_card = true}
+        {/if}
+
+
+
+        {* <!-- варианты импорта --> *}
+        {submenu_button button = 'imports'
+                        module = 'Imports'
+                        text = 'импорт'
+                        have_card = true}
+
+
+
+        {* <!-- экспорт --> *}
+        {submenu_button button = 'export'
+                        module = 'Export'
+                        text = 'экспорт'
+                        have_card = false}
+
+
+
+        {* <!-- резервные копии --> *}
+        {submenu_button button = 'backup'
+                        module = 'Backup'
+                        text = 'бекап'
+                        have_card = false}
+
+
+
+        {* <!-- редиректы страниц --> *}
+        {submenu_button button = 'redirects'
+                        module = 'Redirects'
+                        text = 'редиректы'
+                        have_card = false}
+
+
+
+        {* <!-- почтовая рассылка --> *}
+        {submenu_button button = 'mailer'
+                        module = 'Mailer'
+                        text = 'рассылка'
+                        have_card = false}
+
+
+
+        {* <!-- настройки --> *}
+        {submenu_button button = 'setup'
+                        module = 'Setup'
+                        text = 'настройки'
+                        have_card = false}
+
+
+
+        {* <!-- валюты --> *}
+        {submenu_button button = 'currencies'
+                        module = 'Currencies'
+                        text = 'валюты'
+                        have_card = true}
+
+
+
+        {* <!-- способы доставки --> *}
+        {submenu_button button = 'deliveries'
+                        module = 'Deliveries'
+                        text = 'доставка'
+                        have_card = true}
+
+
+
+        {* <!-- типы доставки --> *}
+        {submenu_button button = 'deliveries_types'
+                        module = 'DeliveriesTypes'
+                        text = 'типы'
+                        have_card = true}
+
+
+
+        {* <!-- сроки отправки --> *}
+        {submenu_button button = 'shippings_terms'
+                        module = 'ShippingsTerms'
+                        text = 'сроки'
+                        have_card = true}
+
+
+
+        {* <!-- способы оплаты --> *}
+        {if ($payments|default:false === true) || ($payment|default:false === true)}
+            <li {if ($select|default:"" == "payments") || ($select|default:"" == "payment")}class="select"{/if}>
+                <a href="{$temp_url_script}Payments" {check_admin_rights_link module = "Payments"}>
+                    оплата
+                </a>
+            </li>
+            {if ($card_payments|default:false === true) || ($card_payment|default:false === true)}
+                {submenu_card_button}
+            {/if}
+        {/if}
+
+
+
+        {* <!-- SMS уведомления --> *}
+        {submenu_button button = 'sms'
+                        module = 'SmsGates'
+                        text = 'sms'
+                        have_card = false}
+
+
+
+        {* <!-- дизайны --> *}
+        {submenu_button button = 'themes'
+                        module = 'Themes'
+                        text = 'дизайн'
+                        have_card = false}
+
+
+
+        {* <!-- файлы шаблона --> *}
+        {submenu_button button = 'templates'
+                        module = 'Templates'
+                        text = 'шаблоны'
+                        have_card = false}
+
+
+
+        {* <!-- файлы стилей --> *}
+        {submenu_button button = 'styles'
+                        module = 'Styles'
+                        text = 'стили'
+                        have_card = false}
+
+
+
+        {* <!-- файлы картинок --> *}
+        {submenu_button button = 'images'
+                        module = 'Images'
+                        text = 'картинки'
+                        have_card = false}
+
+
+
+        {* <!-- абстрактная кнопка --> *}
+        {if isset($me)}
+            {if is_array($me) && !empty($me) || is_string($me) && ($me != '')}
+                {if is_string($me)}
+                    {submenu_button button = 'me'
+                                    module = $me_pointer|default:''
+                                    text = $me
+                                    have_card = false}
+                {else}
+                    {foreach $me as $k => $r}
+                        {submenu_button button = 'me'
+                                        module = $me_pointer[$k]|default:''
+                                        text = $r
+                                        have_card = false}
+                        {break}
+                    {/foreach}
+                {/if}
+            {/if}
+        {/if}
+
+
+
+        {* <!-- кнопка Карточка (для страниц старого шаблона) --> *}
+        {if $card|default:false === true}
+            {submenu_card_button}
+        {/if}
+    </div>
+
+{/strip}

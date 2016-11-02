@@ -1,0 +1,93 @@
+{* <!-- ===========================================================================
+                                                                                  |
+    Модуль: Пагинатор страниц.                                                    |
+    ----------------------------------------------------------------------------  |
+                                                                                  |
+    Входные переменные:                                                           |
+        $Pages = список адресов листаемых страниц                                 |
+        $PrevPageUrl = адрес предыдущей страницы (если сейчас не на первой)       |
+        $NextPageUrl = адрес следующей страницы (если сейчас не на последней)     |
+        $AllOnPageUrl = адрес страницы "Все на одной"                             |
+        $CurrentPage = индекс (номер-1) текущей страницы                          |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+    {if !empty($Pages)}
+        {$current = $CurrentPage|default:0}
+        {$CurrentPage = $current scope=global}
+
+        <div class="filter-r">
+            <div class="pagination">
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Ссылка "Назад".                                                |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if !empty($PrevPageUrl)}
+                    {$newPage = $current}
+                    {$PrevPageUrl = preg_replace('!/page[_\-][0-9]+!i', "/page-$newPage", $PrevPageUrl)}
+
+                    <a class="pag-prev" href="{site root=TRUE}{$PrevPageUrl|escape}">
+                        &lt;
+                    </a>
+
+                    {$PrevPageUrl = $PrevPageUrl scope=global}
+                {/if}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Ссылки страниц.                                                |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {foreach $Pages as $i => $url}
+                    {$newPage = $i + 1}
+                    {$url = preg_replace('!/page[_\-][0-9]+!i', "/page-$newPage", $url)}
+
+                    {$class = ($i == $current) ? 'class="pag active"' : ''}
+
+                    {capture assign=lastPageUrl}
+                        {site root=TRUE}{$url|escape}
+                    {/capture}
+
+                    <a {$class} href="{$lastPageUrl}">
+                        {$i + 1}
+                    </a> {**}
+                {/foreach}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Ссылка "Вперед".                                               |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if !empty($NextPageUrl)}
+                    {$newPage = $current + 2}
+                    {$NextPageUrl = preg_replace('!/page[_\-][0-9]+!i', "/page-$newPage", $NextPageUrl)}
+
+                    <a class="pag-next" href="{site root=TRUE}{$NextPageUrl|escape}">
+                        &gt;
+                    </a>
+
+                    {$NextPageUrl = $NextPageUrl scope=global}
+                {/if}
+            </div>
+        </div>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Если это был аякс-запрос URL последней страницы пагинации.             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($smarty.get.ajax)}
+            {if !empty($smarty.get.getlastpage)}
+                {$lastPageUrl = preg_replace('/^(.*?)[\?\#].*$/u', '$1', $lastPageUrl)}
+                {stopPage msg=$lastPageUrl}
+            {/if}
+        {/if}
+    {/if}
+
+{/strip}

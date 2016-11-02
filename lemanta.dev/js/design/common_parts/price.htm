@@ -1,0 +1,657 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+  Модуль: Price - прайс-лист                                                      |
+  Версия модуля: 2.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $items = массив записей о категориях                                          |
+    $price_id = номер выводимого прайс-листа                                      |
+    $discount = величина скидки на цены в каталоге товаров                        |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $currency - запись о текущей валюте клиентской стороны сайта                  |
+    $usd_currency - запись о валюте USD (если используется на сайте)              |
+    $settings - объект настроек сайта                                             |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+
+
+
+    {* <!-- оптимизируем входные параметры --> *}
+    {$price_id = ($price_id|default:1)|string_format:'%d'}
+    {$price_id = ($price_id < 1) ? 1 : $price_id}
+    {$discount = ($discount|default:0)|string_format:'%1.2f'}
+    {$discount = ($discount < 0) ? 0 : $discount}
+    {$discount = ($discount >100) ? 100 : $discount}
+
+
+
+    {* <!-- оптимизируем переменные --> *}
+    {$site = ($site|default:'')|escape}
+    {$sign1 = ($currency->sign|default:'')|escape}
+    {$sign2 = ($usd_currency->sign|default:'')|escape}
+    {$exists_usd = isset($usd_currency) && is_object($usd_currency)}
+
+
+
+    {* <!-- извлекаем название сайта --> *}
+    {$name = (($settings->site_name|default:'Не указано имя сайта!')|strip_tags)|escape}
+
+
+
+    {* <!-- вычисляем курс --> *}
+    {$rate1 = ($currency->rate_from|default:1) / ($currency->rate_to|default:1)}
+    {$rate2 = ($usd_currency->rate_from|default:1) / ($usd_currency->rate_to|default:1)}
+
+
+
+    {* <!-- вычисляем 1 - СКИДКА / 100 --> *}
+    {$rest_factor = 1 - $discount / 100}
+
+
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="Content-Language" content="ru" />
+        <meta name="ProgId" content="Excel.Sheet" />
+
+
+
+        <!--[if gte mso 9]>
+            <xml>
+                <o:DocumentProperties>
+                    <o:LastAuthor>Impera CMS</o:LastAuthor>
+                    <o:LastSaved>2005-01-02T07:46:23Z</o:LastSaved>
+                    <o:Version>10.2625</o:Version>
+                </o:DocumentProperties>
+                <o:OfficeDocumentSettings>
+                    <o:DownloadComponents/>
+                </o:OfficeDocumentSettings>
+            </xml>
+        <![endif]-->
+
+
+
+        {* <!-- стили --> *}
+        <style>
+            table {
+                mso-displayed-decimal-separator: "\.";
+                mso-displayed-thousand-separator: "\ ";
+            }
+
+            @page {
+                margin: 1.0in .75in 1.0in .75in;
+                mso-header-margin: .5in;
+                mso-footer-margin: .5in;
+            }
+
+            tr {
+                mso-height-source: auto;
+            }
+
+            col {
+                mso-width-source: auto;
+            }
+
+
+
+            {* <!-- переводы строк --> *}
+            br {
+                mso-data-placement: same-cell;
+            }
+
+
+
+            {* <!-- общий стиль (родительский для атрибута mso-style-parent) --> *}
+            .style0 {
+                mso-number-format: General;
+                padding-top: 5px;
+                padding-right: 10px;
+                padding-left: 10px;
+                padding-bottom: 5px;
+                text-align: general;
+                vertical-align: middle;
+                white-space: nowrap;
+                mso-rotate: 0;
+                mso-background-source: auto;
+                mso-pattern: auto;
+                color: black;
+                font-size: 10pt;
+                font-weight: normal;
+                font-style: normal;
+                text-decoration: none;
+                font-family: Verdana, Tahoma, Arial;
+                mso-generic-font-family: auto;
+                mso-font-charset: 0;
+                border: none;
+                mso-protection: locked visible;
+                mso-style-name: Normal;
+                mso-style-id: 0;
+            }
+
+
+
+            {* <!-- стиль ячеек --> *}
+            td {
+                mso-style-parent: style0;
+                background: white;
+                mso-pattern: auto none;
+                padding-top: 5px;
+                padding-right: 10px;
+                padding-left: 10px;
+                padding-bottom: 5px;
+                color: black;
+                font-size: 10pt;
+                font-weight: normal;
+                font-style: normal;
+                text-decoration: none;
+                font-family: Verdana, Tahoma, Arial;
+                mso-generic-font-family: auto;
+                mso-font-charset: 0;
+                mso-number-format: General;
+                text-align: general;
+                vertical-align: middle;
+                border: none;
+                mso-background-source: auto;
+                mso-pattern: auto;
+                mso-protection: locked visible;
+                white-space: nowrap;
+                mso-rotate: 0;
+            }
+
+
+
+            {* <!-- ячейка Название сайта --> *}
+            .site_name {
+                mso-style-parent: style0;
+                font-size: 15pt;
+                font-weight: bold;
+                white-space: normal;
+            }
+
+
+
+            {* <!-- ячейка Скидка --> *}
+            .discount {
+                mso-style-parent: style0;
+                font-size: 8pt;
+                text-align: right;
+                vertical-align: bottom;
+                white-space: nowrap;
+            }
+
+
+
+            {* <!-- ячейка Подсказка под скидкой --> *}
+            .discount_hint {
+                mso-style-parent: style0;
+                font-size: 6pt;
+                text-align: right;
+                vertical-align: bottom;
+                white-space: normal;
+            }
+
+
+
+            {* <!-- ячейка Ссылка на сайт --> *}
+            .site_url {
+                mso-style-parent: style0;
+                white-space: normal;
+            }
+
+
+
+            {* <!-- ячейка Номер прайса --> *}
+            .price_number {
+                mso-style-parent: style0;
+                color: gray;
+                font-size: 7pt;
+                text-align: right;
+                white-space: nowrap;
+                width: 50pt;
+            }
+
+
+
+            {* <!-- ячейка Дата прайса --> *}
+            .price_date {
+                mso-style-parent: style0;
+                color: gray;
+                font-size: 7pt;
+                white-space: nowrap;
+            }
+
+
+
+            .category_tr {
+                height: 20pt;
+                mso-height-source: userset;
+            }
+
+
+
+            {* <!-- ячейка в строке категории --> *}
+            .category {
+                mso-style-parent: style0;
+                background: silver;
+                mso-pattern: auto none;
+                border-top: none;
+                border-left: .5pt solid gray;
+                border-right: .5pt solid gray;
+                border-bottom: .5pt solid gray;
+                font-weight: bold;
+                white-space: normal;
+            }
+
+
+
+            {* <!-- ячейка Ссылка на страницу категории --> *}
+            .category_link {
+                mso-style-parent: style0;
+                text-align: center;
+                mso-width-source: userset;
+                width: 30px;
+            }
+
+
+
+            {* <!-- ячейка Порядковый номер товара --> *}
+            .product_num {
+                mso-style-parent: style0;
+                border-top: none;
+                border-left: none;
+                border-right: .5pt solid silver;
+                border-bottom: none;
+                color: silver;
+                font-size: 8pt;
+                text-align: right;
+                mso-width-source: userset;
+            }
+
+
+
+            {* <!-- ячейка Название товара --> *}
+            .product_name {
+                mso-style-parent: style0;
+                border-top: none;
+                border-left: none;
+                border-right: .5pt solid silver;
+                border-bottom: .5pt solid silver;
+                padding-left: 10pt;
+                padding-right: 10pt;
+                mso-width-source: userset;
+                width: 400px;
+                white-space: normal;
+            }
+
+
+
+            {* <!-- ячейка Наличие на складе --> *}
+            .product_quantity {
+                mso-style-parent: style0;
+                border-top: none;
+                border-left: none;
+                border-right: .5pt solid silver;
+                border-bottom: .5pt solid silver;
+                text-align: center;
+                mso-width-source: userset;
+                width: 70pt;
+            }
+
+
+
+            {* <!-- ячейка Цена товара --> *}
+            .product_price {
+                mso-style-parent: style0;
+                border-top: none;
+                border-left: none;
+                border-right: .5pt solid silver;
+                border-bottom: .5pt solid silver;
+                padding-right: 20px;
+                text-align: right;
+                mso-width-source: userset;
+                width: 85pt;
+            }
+
+
+
+            {* <!-- ячейка Цена товара, имеющего приоритетную скидку --> *}
+            .product_price_red {
+                mso-style-parent: style0;
+                border-top: none;
+                border-left: none;
+                border-right: .5pt solid silver;
+                border-bottom: .5pt solid silver;
+                color: red;
+                padding-right: 20px;
+                text-align: right;
+                mso-width-source: userset;
+                width: 85pt;
+            }
+
+
+
+            {* <!-- ссылки в документе --> *}
+            a {
+                font-size: 8pt;
+                text-decoration: none;
+            }
+        </style>
+
+
+
+        <!--[if gte mso 9]>
+            <xml>
+                <x:ExcelWorkbook>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet>
+                            <x:Name>
+                                {$name}
+                            </x:Name>
+                            <x:WorksheetOptions>
+                                <x:Selected/>
+                                <x:ProtectContents>False</x:ProtectContents>
+                                <x:ProtectObjects>False</x:ProtectObjects>
+                                <x:ProtectScenarios>False</x:ProtectScenarios>
+                            </x:WorksheetOptions>
+                        </x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                    <x:WindowHeight>10005</x:WindowHeight>
+                    <x:WindowWidth>10005</x:WindowWidth>
+                    <x:WindowTopX>120</x:WindowTopX>
+                    <x:WindowTopY>135</x:WindowTopY>
+                    <x:ProtectStructure>False</x:ProtectStructure>
+                    <x:ProtectWindows>False</x:ProtectWindows>
+                </x:ExcelWorkbook>
+            </xml>
+        <![endif]-->
+    </head>
+
+
+
+    <body link="blue" vlink="purple">
+        <table x:str border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse; table-layout: fixed;">
+
+
+
+            {* <!-- пустая строка перед началом прайса --> *}
+            <tr>
+                <td colspan="8">
+                    &nbsp;
+                </td>
+            </tr>
+
+
+
+            {* <!-- название сайта, величина скидки --> *}
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td class="site_name" colspan="4">
+                    {$name}
+                </td>
+                <td class="discount" colspan="2">
+                    Скидка: {$discount}%
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+
+
+
+            {* <!-- ссылка на сайт --> *}
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td class="site_url" colspan="2">
+                    <a href="{$site}">
+                        {$site}
+                    </a>
+                </td>
+                <td class="price_number">
+                    Прайс №{$price_id}
+                </td>
+                <td class="price_date">
+                    от {$smarty.now|date_format:'%d-%m-%Y'}
+                </td>
+                <td class="discount_hint" colspan="2">
+                    Цены указаны со скидкой.<br>
+                    Красным - иная скидка.
+                </td>
+                <td>
+                    &nbsp;
+                </td>
+            </tr>
+
+
+
+            {* <!-- пустая строка перед списком товаров --> *}
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td colspan="7" style="border-bottom: .5pt solid gray;">
+                    &nbsp;
+                </td>
+            </tr>
+
+
+
+            {* <!-- если получены записи о категориях --> *}
+            {if isset($items) && is_array($items) && !empty($items)}
+
+
+                {* <!-- объявляем функцию cats_tree(cats, margin, size) --> *}
+                {function name = 'cats_tree'
+                          margin = 10
+                          size = 13}
+
+                    {* <!-- перебираем непустые категории --> *}
+                    {foreach $cats as $c}
+                        {if $c->products_count|default:0 > 0}
+
+
+
+                            {* <!-- строка категории --> *}
+                            <tr class="category_tr">
+
+
+
+                                {* <!-- ссылка на страницу категории --> *}
+                                {$url = ($c->url_special|default:false) ? '' : 'catalog/'}
+                                {$url = $url|cat:($c->url|default:'')}
+                                <td class="category_link">
+                                    <a href="{$site}{$url|escape}" title="Открыть страницу этой категории на сайте">
+                                        см.
+                                    </a>
+                                </td>
+
+
+
+                                {* <!-- название категории --> *}
+                                {$style = ($size == 13) ? 'background: #969696; ' : ''}
+                                {$style = ($size >= 11) ? ('font-size: '|cat:$size|cat:'pt; ') : ''}
+                                {$style = $style|cat:'padding-left: '|cat:$margin|cat:'pt;'}
+                                <td class="category" colspan="3" style="{$style}">
+                                    {($c->name|default:'Без названия!')|escape}
+                                </td>
+
+
+
+                                {* <!-- наличие на складе --> *}
+                                {$exists = isset($c->products) && is_array($c->products) && !empty($c->products)}
+                                {$style = ($exists) ? 'color: gray; font-size: 8pt; font-weight: normal; text-align: center; white-space: nowrap;' : 'border-bottom: none;'}
+                                <td class="category" style="{$style}">
+                                    {($exists) ? 'наличие' : '&nbsp;'}
+                                </td>
+
+
+
+                                {* <!-- заголовок цены --> *}
+                                <td class="category"{if !$exists_usd} colspan="2"{/if} style="{$style}">
+                                    {($exists) ? ('цена, '|cat:$sign1) : '&nbsp;'}
+                                </td>
+
+
+
+                                {* <!-- заголовок цены USD --> *}
+                                {if $exists_usd}
+                                    <td class="category" style="{$style}">
+                                        {($exists) ? ('цена, '|cat:$sign2) : '&nbsp;'}
+                                    </td>
+                                {/if}
+
+
+
+                                {* <!-- пустая ячейка справа --> *}
+                                {$style = ($exists) ? '' : 'style="border-bottom: none;"'}
+                                <td class="category" {$style}>
+                                    &nbsp;
+                                </td>
+                            </tr>
+
+
+
+                            {* <!-- если в категории есть товары --> *}
+                            {if $exists}
+                                {$count = 0}
+                                {foreach $c->products as $r}
+                                    {if isset($r->variants) && is_array($r->variants) && !empty($r->variants)}
+                                        {$count = $count + 1}
+
+                                        {* <!-- варианты товара --> *}
+                                        {$vcount = 0}
+                                        {foreach $r->variants as $v}
+                                            {$vcount = $vcount + 1}
+                                            <tr>
+
+
+
+                                                {* <!-- пустая ячейка слева --> *}
+                                                <td class="category_link">
+                                                    &nbsp;
+                                                </td>
+
+
+
+                                                {* <!-- нумерация --> *}
+                                                <td class="product_num" style="width: 30pt;">
+                                                    {if $vcount > 1}
+                                                        &nbsp;
+                                                    {else}
+                                                        {$count}.
+                                                    {/if}
+                                                </td>
+
+
+
+                                                {* <!-- название, имя варианта --> *}
+                                                {$style = ($vcount > 1) ? 'style="padding-left: 40pt;"' : ''}
+                                                <td class="product_name" colspan="2" {$style}>
+                                                    {($vcount > 1) ? ' → ' : ''}
+                                                    {($r->model|default:'Без названия!')|escape}
+                                                    {if $v->name|default:'' != ''}
+                                                        <br>
+                                                        <b style="color: #339966; font-weight: normal;">
+                                                            {$v->name|escape}
+                                                        </b>
+                                                    {/if}
+                                                </td>
+
+
+
+                                                {* <!-- наличие на складе --> *}
+                                                <td class="product_quantity">
+                                                    {($v->stock|default:0 > 0) ? 'есть' : '-'}
+                                                </td>
+
+
+
+                                                {* <!-- цена --> *}
+                                                {$price = $v->discount_price|default:0}
+                                                {$discount = $v->priority_discount|default:0}
+                                                {$discount = ($discount > 0) && ($discount <= 100)}
+                                                {$factor = ($discount) ? (1 - $v->priority_discount / 100) : $rest_factor}
+                                                {$class = ($discount) ? 'product_price_red' : 'product_price'}
+                                                {$colspan = ($exists_usd) ? '' : 'colspan="2"'}
+                                                <td class="{$class}" {$colspan}>
+                                                    {($price * $factor * $rate1)|string_format:'%1.2f'|replace:',':'.'}
+                                                </td>
+
+
+
+                                                {* <!-- цена USD --> *}
+                                                {if $exists_usd}
+                                                    <td class="{$class}" style="font-size: 8pt; width: 60pt;">
+                                                        {($price * $factor * $rate2)|string_format:'%1.2f'|replace:',':'.'}
+                                                    </td>
+                                                {/if}
+
+
+
+                                                {* <!-- ссылка на страницу товара --> *}
+                                                {$url = ($r->url_special|default:false) ? '' : 'products/'}
+                                                {$url = $url|cat:($r->url|default:'')}
+                                                <td class="category_link">
+                                                    <a href="{$site}{$url|escape}" title="Открыть страницу этого товара на сайте">
+                                                        см.
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {/foreach}
+
+                                    {/if}
+                                {/foreach}
+
+
+
+                                {* <!-- пустая строка между категориями --> *}
+                                <tr>
+                                    <td>
+                                        &nbsp;
+                                    </td>
+                                    <td colspan="7" style="border-bottom: .5pt solid gray;">
+                                        &nbsp;
+                                    </td>
+                                </tr>
+                            {/if}
+
+
+
+                            {* <!-- обрабатываем вложенные категории --> *}
+                            {if isset($c->subcategories) && is_array($c->subcategories) && !empty($c->subcategories)}
+                                {cats_tree cats = $c->subcategories
+                                           margin = $margin + 25
+                                           size = $size - 2}
+                            {/if}
+                        {/if}
+                    {/foreach}
+
+                {/function}
+
+
+
+                {cats_tree cats = $items
+                           margin = 10
+                           size = 13}
+            {/if}
+
+
+
+        </table>
+    </body>
+</html>
+
+{/strip}

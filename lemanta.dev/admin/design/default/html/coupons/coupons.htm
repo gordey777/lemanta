@@ -1,0 +1,1610 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: купоны                                                                  |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $items = массив записей о купонах                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $inputs = массив со значениями некоторых элементов html-формы (фильтры),      |
+              индексированный именами этих элементов                              |
+    $groups = массив записей о группах скидок                                     |
+    $group_ids = массив ИДов (индексирован ИДами) задействованных групп скидок    |
+    $price_ids = массив ИДов (индексирован ИДами) задействованных ценовых групп   |
+    $all_users = массив записей о пользователях                                   |
+    $user_ids = массив ИДов (индексирован ИДами) задействованных пользователей    |
+    $affiliate_ids = массив ИДов (индексирован ИДами) задействованных партнеров   |
+    $printer_ids = массив ИДов (индексирован ИДами) задействованных печатных форм |
+    $from_page = адрес страницы возврата после операции                           |
+    $PagesNavigation = html-контент навигатора страниц                            |
+    $CurrentPageMaxsize = максимальное количество записей на странице             |
+    $CurrentPage = индексный номер текущей страницы                               |
+    $total_items = количество записей на всех страницах                           |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $Token = аутентификатор операции                                              |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.COUPONS_MODULELINK_POINTER|default:''}
+    {$section_paramname = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$token_paramname = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+
+
+
+    {* <!-- подключаем модуль закладок --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.COUPONS_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.COUPONS_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- формируем URL-ы страницы --> *}
+    {$url_main = ($site|default:'')|cat:($admin_folder|default:'')|cat:'/'}
+    {$url_script = $url_main|cat:'index.php'}
+        {* <!-- эти уже с экранированием --> *}
+        {$url_form = ($url_script|escape)|cat:'?'|cat:($section_paramname|escape)|cat:'='|cat:($module_pointer|escape)}
+        {$url_images = ($url_main|escape)|cat:'design/'|cat:(($settings->admin_theme|default:'')|escape)|cat:'/images/'}
+        {* <!-- эти с экранированием и предполагают подстановку справа имени модуля --> *}
+        {$url_goto = ($url_script|escape)|cat:'?'|cat:($section_paramname|escape)|cat:'='}
+        {$url_request = ($url_script|escape)|cat:'?'|cat:($token_paramname|escape)|cat:'='|cat:(($inputs[$token_paramname]|default:'')|escape)|cat:'&'|cat:($section_paramname|escape)|cat:'='}
+
+
+
+    {* <!-- скрипт и файл стилей календаря --> *}
+    <script language="JavaScript" src="{$url_main|escape}js/calendar/calendar.js" type="text/javascript"></script>
+    <script language="JavaScript" src="{$url_main|escape}js/calendar/calendas.js" type="text/javascript"></script>
+    <link href="{$url_main|escape}js/calendar/calendar.css" rel="stylesheet" type="text/css" />
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$url_main|escape}">
+                    Главная
+                </a> → Купоны
+            </div>
+            {$title|default:'Скидочные купоны'}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            <a class="left" href="#settings" onclick="javascript: Show_PageElements('setup_form');" title="Показать настройки сайта, относящиеся к купонам">
+                настройки
+            </a>
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <a href="{$url_request}{$module_pointer|escape}" title="Распечатать купоны текущего списка" onclick="javascript: alert('Пока эта функция не реализована!'); return false;">
+                распечатать
+            </a>
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <a href="{$url_request}{$module_pointer|escape}" title="Сгенерировать серию купонов" onclick="javascript: alert('Пока эта функция не реализована!'); return false;">
+                сгенерировать
+            </a>
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <a href="{$url_request}Coupon" title="Добавить купон">
+                добавить
+            </a>
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма списка записей --> *}
+        <form action="{$url_form}" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+
+
+            {* <!-- фильтр --> *}
+            <table align="center" cellpadding="0" cellspacing="8" class="white">
+                <tr>
+
+
+
+                    {* <!-- поле Назначаемая группа скидок --> *}
+                    <td class="param_short">
+                        <a href="{$url_goto}Groups" title="Перейти на страницу групп скидок в админпанели">
+                            Группа
+                        </a>
+                        :
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: только назначающие такую группу скидок">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_GROUP|default:''}
+                        <select class="thin" id="items_form_{$param|escape}" name="{$param|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+
+                            {if isset($groups) && is_array($groups) && !empty($groups)}
+                                {foreach $groups as $r}
+                                    {$value = $r->group_id|default:''}
+                                    {if isset($group_ids[$value])}
+                                        <option value="{$value|escape}" {if $inputs[$param]|default:false == $value} selected{/if}>
+                                            {$r->name|default:'Без названия!'} &nbsp; &nbsp; [{$group_ids[$value]->count|default:0} шт.]
+                                        </option>
+                                    {/if}
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Назначаемая ценовая группа --> *}
+                    <td class="param_short">
+                        <a href="{$url_goto}PriceGroups" title="Перейти на страницу ценовых групп в админпанели">
+                            Ценовая
+                        </a>
+                        :
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: только назначающие такую ценовую группу">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_PRICEGROUP|default:''}
+                        <select class="thin" id="items_form_{$param|escape}" name="{$param|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+
+                            {section name = 'items' start = 2 loop = $smarty.const.PRICE_TYPES_MAXCOUNT|default:10 + 1}
+                                {$index = $smarty.section.items.index}
+                                {if isset($price_ids[$index - 1])}
+                                    {$field = 'price_type'|cat:$index}
+                                    <option value="{$index - 1}" {if $inputs[$param]|default:false == $index - 1} selected{/if}>
+                                        {$ok = false}
+                                        {foreach $settings as $key => $value}
+                                            {if $key == $field}
+                                                {$ok = true}
+                                                {break}
+                                            {/if}
+                                        {/foreach}
+                                        {$value = ($ok) ? ($value|regex_replace:'/[\s\t\r\n]+/u':' '|regex_replace:'/^[\s\t\r\n]+/u':''|regex_replace:'/[\s\t\r\n]+$/u':'') : ''}
+                                        {($value == '') ? ('Без названия (тип '|cat:$index|cat:')') : $value} &nbsp; &nbsp; [{$price_ids[$index - 1]->count|default:0} шт.]
+                                    </option>
+                                {/if}
+                            {/section}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Искомая строка --> *}
+                    <td class="param_short">
+                        Найти:
+                    </td>
+                    <td class="value" colspan="3" width="33%" title="Фильтр: с таким контрольным кодом или словом в названии купона (не более 4 слов, слова менее 3 символов игнорируются)">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|default:''}
+                        <input class="edit" id="items_form_{$param|escape}" name="{$param|escape}" type="text" value="{($inputs[$param]|default:'')|escape}" />
+                    </td>
+                    <td class="value_box" title="Начать поиск по условиям фильтра">
+                        <input class="submit" style="width: auto;" type="submit" value="&nbsp;Найти&nbsp;" />
+                    </td>
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Погасивший пользователь --> *}
+                    <td class="param_short">
+                        <a href="{$url_goto}Users" title="Перейти на страницу зарегистрированных пользователей в админпанели">
+                            Пользователь
+                        </a>
+                        :
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: только погашенные таким пользователем">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_USER|default:''}
+                        <select class="thin" id="items_form_{$param|escape}" name="{$param|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+
+                            {if isset($all_users) && is_array($all_users) && !empty($all_users)}
+                                {foreach $all_users as $r}
+                                    {$value = $r->user_id|default:''}
+                                    {if isset($user_ids[$value])}
+                                        <option value="{$value|escape}" {if $inputs[$param]|default:false == $value} selected{/if}>
+                                            {$r->compound_name|default:'Без имени!'} &nbsp; &nbsp; [{$user_ids[$value]->count|default:0} шт.]
+                                        </option>
+                                    {/if}
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Назначаемый партнер --> *}
+                    <td class="param_short">
+                        <a href="{$url_goto}Users" title="Перейти на страницу зарегистрированных пользователей в админпанели">
+                            Партнер
+                        </a>
+                        :
+                        
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: только назначающие такого партнера">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_AFFILIATE|default:''}
+                        <select class="thin" id="items_form_{$param|escape}" name="{$param|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+
+                            {if isset($all_users) && is_array($all_users) && !empty($all_users)}
+                                {foreach $all_users as $r}
+                                    {$value = $r->user_id|default:''}
+                                    {if isset($affiliate_ids[$value])}
+                                        <option value="{$value|escape}" {if $inputs[$param]|default:false == $value} selected{/if}>
+                                            {$r->compound_name|default:'Без имени!'} &nbsp; &nbsp; [{$affiliate_ids[$value]->count|default:0} шт.]
+                                        </option>
+                                    {/if}
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- задаем формат даты календаря --> *}
+                    <script language="JavaScript" type="text/javascript">
+                        var xcDateFormat = 'yyyy-mm-dd';
+                    </script>
+
+
+
+                    {* <!-- поле Искомая дата --> *}
+                    <td class="param_short">
+                        Дата от:
+                    </td>
+                    <td class="value" width="16%" title="Фильтр: начиная с такой даты (формат даты ГГГГ-ММ-ДД)">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATEFROM|default:''}
+                        <input class="edit" id="items_form_{$param|escape}" name="{$param|escape}" type="text" value="{($inputs[$param]|default:'')|escape}" onfocus="javascript: xcDateFormat = 'yyyy-mm-dd';
+                                                                                                                                                                                  var set_to = this;
+                                                                                                                                                                                  var get_from = this;
+                                                                                                                                                                                  var default_date = '';
+                                                                                                                                                                                  var anchor_object_id = '';
+                                                                                                                                                                                  var x_offset = 5;
+                                                                                                                                                                                  var y_offset = 5;
+                                                                                                                                                                                  var auto_hide = 1;
+                                                                                                                                                                                  showCalendar('', set_to, get_from, default_date, anchor_object_id, x_offset, y_offset, auto_hide);" />
+                    </td>
+                    <td class="param_short">
+                        до:
+                    </td>
+                    <td class="value" width="16%" title="Фильтр: до такой даты включительно (формат даты ГГГГ-ММ-ДД)">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATETO|default:''}
+                        <input class="edit" id="items_form_{$param|escape}" name="{$param|escape}" type="text" value="{($inputs[$param]|default:'')|escape}" onfocus="javascript: xcDateFormat = 'yyyy-mm-dd';
+                                                                                                                                                                                  var set_to = this;
+                                                                                                                                                                                  var get_from = this;
+                                                                                                                                                                                  var default_date = '';
+                                                                                                                                                                                  var anchor_object_id = '';
+                                                                                                                                                                                  var x_offset = 5;
+                                                                                                                                                                                  var y_offset = 5;
+                                                                                                                                                                                  var auto_hide = 1;
+                                                                                                                                                                                  showCalendar('', set_to, get_from, default_date, anchor_object_id, x_offset, y_offset, auto_hide);" />
+                    </td>
+
+
+
+                    {* <!-- флажок Фильтр запускать вручную --> *}
+                    <td class="param_short" title="Включить срабатывание фильтра только по нажатию клавиши 'Найти'">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|default:''}
+                        {$value = 1}
+                        <input name="{$param|escape}" type="hidden" value="0" />
+
+                        <input class="checkbox" id="items_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="{$value|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');" {($inputs[$param]|default:false == $value) ? "checked" : ''} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('items_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_manually_16x16.png" style="margin-right: 0px;" />
+                        </span>
+                    </td>
+
+
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- сортировщик --> *}
+            <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+                <tr>
+
+
+
+                    {* <!-- флажок Направление сортировки --> *}
+                    <td class="param_short">
+                        упорядочить&nbsp;
+                    </td>
+                    <td class="param_short" title="Включить обратный порядок сортировки">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|default:''}
+                        {$value = $smarty.const.SORT_DIRECTION_DESCENDING|default:''}
+                        <input name="{$param|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|default:''|escape}" />
+
+                        <input class="checkbox" id="items_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="{$value|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');" {($inputs[$param]|default:false == $value) ? "checked" : ''} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('items_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_descending_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Лаконичный режим --> *}
+                    <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|default:''}
+                        {$value = 1}
+                        <input name="{$param|escape}" type="hidden" value="0" />
+
+                        <input class="checkbox" id="items_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="{$value|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');" {($inputs[$param]|default:false == $value) ? "checked" : ''} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('items_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_laconical_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- поле Способ сортировки --> *}
+                    <td class="value" width="70%" title="Способ сортировки в нижеследующем списке">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                        <select class="thin" name="{$param|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_AS_IS|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                как добавлялись
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_CODE|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по контрольному коду
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_NAME|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по названию
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_DISCOUNT|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по разовой скидке
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_GROUP|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по назначаемым группам скидок
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_PRICE|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по назначаемым ценовым группам
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_AFFILIATE|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по назначаемым партнерам
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_USER|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по погасившим пользователям
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_ORDER|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по погасившим заказам
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_COUNT|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по остатку разов использования
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_CREATED|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по дате создания
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_MODIFIED|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по дате исправления
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_EXPIRED|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по дате истечения срока
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_PRINTER|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по печатным формам
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_EMAIL|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по емейлу уведомления
+                            </option>
+
+                            {$value = $smarty.const.SORT_COUPONS_MODE_BY_PHONE|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                по телефону SMS-уведомления
+                            </option>
+
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Режим отображения --> *}
+                    <td class="value" width="30%" title="Насколько полно выводить информацию в списке">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                        <select class="thin" name="{$param|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+
+                            {$value = $smarty.const.VIEW_MODE_COMPACT|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                компактно
+                            </option>
+
+                            {$value = $smarty.const.VIEW_MODE_STANDARD|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                стандартно
+                            </option>
+
+                            {$value = $smarty.const.VIEW_MODE_FULL|default:''}
+                            <option value="{$value|escape}" {($inputs[$param]|default:false == $value) ? "selected" : ''}>
+                                подробно
+                            </option>
+
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- флажок Погашен --> *}
+                    <td class="param_short" title="Фильтр: только имеющие признак 'Погашен'">
+                        &nbsp;
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_DONE|default:''}
+                        {$value = 1}
+                        <input class="checkbox" id="items_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="{$value|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');" {($inputs[$param]|default:false == $value) ? "checked" : ''} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('items_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_done_gray_16x16.png">
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Разрешен --> *}
+                    <td class="param_short" title="Фильтр: только разрешенные к использованию">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|default:''}
+                        {$value = 1}
+                        <input class="checkbox" id="items_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="{$value|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');" {($inputs[$param]|default:false == $value) ? "checked" : ''} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('items_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_enabled_gray_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Удален --> *}
+                    <td class="param_short" title="Фильтр: только удаленные">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_DELETED|default:''}
+                        {$value = 1}
+                        <input class="checkbox" id="items_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="{$value|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');" {($inputs[$param]|default:false == $value) ? "checked" : ''} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('items_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_deleted_gray_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- кнопка сброса фильтра --> *}
+            <div class="toolkey">
+                <span>
+                    найдено <span>
+                                {($total_items|default:0)|string_format:'%d'} шт.
+                            </span>
+                </span>
+
+                {if isset($printer_ids) && is_array($printer_ids) && !empty($printer_ids)}
+                    {$maxcount = 5}
+                    {$index = 1}
+                    {$param = $smarty.const.SEARCH_COUPONS_COMMAND_PRINTER|default:''}
+                    {foreach $printer_ids as $r}
+                        {$value = $r->id|default:'?'}
+
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                        <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$value|escape}');" title="Показать все купоны, распечатываемые с помощью печатной формы {$value|escape}">
+                            принтер{$value} <b style="color: #ccc; font-weight: normal;">[{$r->count|default:0} шт.]</b>
+                        </a>
+
+                        {$index = $index + 1}
+                        {if $index > $maxcount}
+                            {break}
+                        {/if}
+                    {/foreach}
+                {/if}
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                <a href="{$url_script|escape}" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения и полноты вывода)">
+                    сбросить
+                </a>
+            </div>
+
+
+
+            {* <!-- если получен непустой массив записей --> *}
+            {if isset($items) && is_array($items) && !empty($items)}
+
+
+
+                {* <!-- контент навигатора страниц (только если есть несколько листаемых страниц) --> *}
+                {if ($PagesNavigation|default:'' != '') && (($Pages|default:false)|@count > 1)}
+                    {$PagesNavigation}
+                {/if}
+
+
+
+                {* <!-- инициируем переменные визуального выделения --> *}
+                {$now_group_id = ''}
+                {$now_price_id = ''}
+                {$now_user_id = ''}
+                {$now_affiliate_id = ''}
+                {$now_printer = ''}
+                {$now_email = false}
+                    {$now_email_partner = ''}
+                {$now_phone = false}
+                    {$now_phone_partner = ''}
+
+
+
+                {* <!-- перебираем записи --> *}
+                {foreach name = 'items' item = c from = $items}
+
+
+
+                    {* <!-- запоминаем идентификатор текущей записи --> *}
+                    {$id = $c->coupon_id|default:''}
+
+
+
+                    {* <!-- визуальное выделение принадлежности к группе скидок --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                    {if $inputs[$param]|default:false == $smarty.const.SORT_COUPONS_MODE_BY_GROUP|default:''}
+                        {$value = $c->group_id|default:0}
+                        {if $now_group_id !== $value}
+                            {$now_group_id = $value}
+                            <li class="head_divider">
+                                <div>
+                                    {if $value != 0}
+                                        {$c->group_name|default:('Безымянная группа скидок с идентификатором '|cat:$value)}
+                                    {else}
+                                        Не имеет отношения к группе скидок
+                                    {/if}
+                                </div>
+                            </li>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- визуальное выделение принадлежности к ценовой группе --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                    {if $inputs[$param]|default:false == $smarty.const.SORT_COUPONS_MODE_BY_PRICE|default:''}
+                        {$value = $c->price_id|default:0}
+                        {if $now_price_id !== $value}
+                            {$now_price_id = $value}
+                            <li class="head_divider">
+                                <div>
+                                    {if $value != 0}
+                                        {$c->price_name|default:('Безымянная ценовая группа с идентификатором '|cat:$value)}
+                                    {else}
+                                        Не имеет отношения к ценовой группе
+                                    {/if}
+                                </div>
+                            </li>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- визуальное выделение принадлежности к погасившему пользователю --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                    {if $inputs[$param]|default:false == $smarty.const.SORT_COUPONS_MODE_BY_USER|default:''}
+                        {$value = $c->user_id|default:0}
+                        {if $now_user_id !== $value}
+                            {$now_user_id = $value}
+                            <li class="head_divider">
+                                <div>
+                                    {if $value != 0}
+                                        {$c->user_name|default:('Безымянный пользователь с идентификатором '|cat:$value)}
+                                    {else}
+                                        Не имеет отношения к погашению авторизованным пользователем
+                                    {/if}
+                                </div>
+                            </li>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- визуальное выделение принадлежности к партнеру --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                    {if $inputs[$param]|default:false == $smarty.const.SORT_COUPONS_MODE_BY_AFFILIATE|default:''}
+                        {$value = $c->affiliate_id|default:0}
+                        {if $now_affiliate_id !== $value}
+                            {$now_affiliate_id = $value}
+                            <li class="head_divider">
+                                <div>
+                                    {if $value != 0}
+                                        {$c->affiliate_name|default:('Безымянный партнер с идентификатором '|cat:$value)}
+                                    {else}
+                                        Не имеет отношения к партнерам
+                                    {/if}
+                                </div>
+                            </li>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- визуальное выделение принадлежности к печатной форме --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                    {if $inputs[$param]|default:false == $smarty.const.SORT_COUPONS_MODE_BY_PRINTER|default:''}
+                        {$value = $c->printer|default:0}
+                        {if $now_printer !== $value}
+                            {$now_printer = $value}
+                            <li class="head_divider">
+                                <div>
+                                    Печатная форма {$value}
+                                </div>
+                            </li>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- визуальное выделение принадлежности к емейлу --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                    {if $inputs[$param]|default:false == $smarty.const.SORT_COUPONS_MODE_BY_EMAIL|default:''}
+                        {$value = ($c->email|default:'')|lower}
+                        {$key = $c->affiliate_id|default:0}
+                        {$key = ($key != 0) ? 1 : 0}
+                        {if ($now_email !== $value) || ($value == '') && ($now_email_partner !== $key)}
+                            {$now_email = $value}
+                            {$now_email_partner = $key}
+                            <li class="head_divider">
+                                <div>
+                                    {if $value != ''}
+                                        Емейл: {$value}
+                                        {$now_email_partner = ''}
+                                    {else}
+                                        {if $key != 0}
+                                            Не содержит емейл, но указан назначаемый партнер (может быть его емейл)
+                                        {else}
+                                            Не содержит емейл
+                                        {/if}
+                                    {/if}
+                                </div>
+                            </li>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- визуальное выделение принадлежности к телефону --> *}
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_SORT|default:''}
+                    {if $inputs[$param]|default:false == $smarty.const.SORT_COUPONS_MODE_BY_PHONE|default:''}
+                        {$value = ($c->phone|default:'')|lower}
+                        {$key = $c->affiliate_id|default:0}
+                        {$key = ($key != 0) ? 1 : 0}
+                        {if ($now_phone !== $value) || ($value == '') && ($now_phone_partner !== $key)}
+                            {$now_phone = $value}
+                            {$now_phone_partner = $key}
+                            <li class="head_divider">
+                                <div>
+                                    {if $value != ''}
+                                        Телефон: {$value}
+                                        {$now_phone_partner = ''}
+                                    {else}
+                                        {if $key != 0}
+                                            Не содержит телефон, но указан назначаемый партнер (может быть его телефон)
+                                        {else}
+                                            Не содержит телефон
+                                        {/if}
+                                    {/if}
+                                </div>
+                            </li>
+                        {/if}
+                    {/if}
+
+
+
+                    <li class="flatlist thinlist">
+
+
+
+                        {* <!-- флажки Пометить все на удаление / Снять все --> *}
+                        {if $smarty.foreach.items.iteration == 1}
+                            <a href="{$url_script|escape}" title="Пометить на удаление все на этой странице" onclick="javascript: jQuery(this).closest('form').find('li > div > input.delete_items').each(function () { if (!this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 882px; z-index: 1;">
+                                ↓
+                            </a>
+                            <a href="{$url_script|escape}" title="Снять пометки на удаление со всех на этой странице" onclick="javascript: jQuery(this).closest('form').find('li > div > input.delete_items').each(function () { if (this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 890px; z-index: 1;">
+                                ↑
+                            </a>
+
+
+
+                            {* <!-- если включен полный вывод информации о записях --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                            {if $inputs[$param]|default:false == $smarty.const.VIEW_MODE_FULL|default:false}
+
+
+
+                                {* <!-- флажки Пометить все разрешенными / Снять все --> *}
+                                <a href="{$url_script|escape}" title="Пометить разрешенными все на этой странице" onclick="javascript: jQuery(this).closest('form').find('li > div > input.enable_items').each(function () { if (!this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 817px; z-index: 1;">
+                                    ↓
+                                </a>
+                                <a href="{$url_script|escape}" title="Снять пометки разрешенных со всех на этой странице" onclick="javascript: jQuery(this).closest('form').find('li > div > input.enable_items').each(function () { if (this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 825px; z-index: 1;">
+                                    ↑
+                                </a>
+
+
+
+                            {/if}
+                        {/if}
+
+
+
+                        <div class="onerow">
+
+
+
+                            {* <!-- флажок Пометить на удаление --> *}
+                            <input class="checkbox delete_items" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="javascript: Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();" />
+
+
+
+                            {* <!-- кнопка Удалить --> *}
+                            <a href="{$url_script|escape}{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                                <img class="microkey_right" src="{$url_images}icon_delete_16x16.png" />
+                            </a>
+
+
+
+                            {* <!-- признак наличия данных об изменениях конкретной записи --> *}
+                            <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|default:''|escape}[{$id|escape}]" type="hidden" value="" />
+
+
+
+                            <img class="microkey_left" src="{$url_images}placeholder.gif" />
+
+
+
+                            {* <!-- если включен полный вывод информации о записях --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                            {if $inputs[$param]|default:false == $smarty.const.VIEW_MODE_FULL|default:false}
+
+
+
+                                {* <!-- флажок Разрешить / Запретить --> *}
+                                <input class="checkbox gray enable_items" name="enabled[{$id|escape}]" {if $c->enabled|default:false} checked{/if} title="Пометить как разрешенный к использованию" type="checkbox" value="1" onchange="javascript: Show_AcceptChanges_Button();" />
+
+
+
+                            {/if}
+
+
+
+                            {* <!-- кнопка Разрешить / Запретить --> *}
+                            <a href="{$url_script|escape}{$c->enable_get|escape}" title="Разрешить / запретить использование">
+                                <img class="microkey_left" src="{$url_images}icon_enabled{if !$c->enabled|default:false}_off{/if}_16x16.png" />
+                            </a>
+
+
+
+                            <img class="microkey_left" src="{$url_images}placeholder.gif" />
+
+
+
+                            <a href="{$url_script|escape}{$c->copy_get|escape}" title="Создать и редактировать копию">
+                                <img class="microkey_left" src="{$url_images}icon_edit_16x16.png" />
+                            </a>
+
+
+
+                            {* <!-- определяем признак "Погашен" --> *}
+                            {$done = $c->discharged|default:'0000-00-00 00:00:00' != '0000-00-00 00:00:00'}
+
+
+
+                            {* <!-- нумерация --> *}
+                            <span class="topic" style="display: inline;">
+                                {$smarty.foreach.items.iteration + ($CurrentPage|default:0) * ($CurrentPageMaxsize|default:0)}.
+                            </span>
+
+
+
+                            {* <!-- остаток разов использования --> *}
+                            {$value = ($c->count|default:0)|string_format:'%d'}
+                            <span class="count{if $value == 0} zero{/if}" title="Остаток разов использования">
+                                {$value}
+                            </span>
+
+
+
+                            {* <!-- разовая скидка --> *}
+                            {$value = ($c->discount|default:0)|string_format:'%1.2f'|replace:',':'.'}
+                            <span class="count{if $value == 0} zero{/if}" title="Разовая скидка">
+                                {$value}
+
+                                {* <!-- ссылка на поиск --> *}
+                                {$param = $smarty.const.SEARCH_COUPONS_COMMAND_DISCOUNT|default:''}
+                                <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$value|escape}');" title="Показать все купоны с такой разовой скидкой" style="position: absolute; margin-left: 6px;">
+                                    <img src="{$url_images}microicon_showall_9x9.png" />
+                                </a>
+
+                            </span>
+
+
+
+                            {* <!-- групповая скидка --> *}
+                            {$value = ($c->group_discount|default:0)|string_format:'%1.2f'|replace:',':'.'}
+                            <span class="count{if $value == 0} zero{/if}" title="Групповая скидка">
+                                {$value}
+
+                                {* <!-- ссылка на поиск --> *}
+                                {if $c->group_id|default:0 != 0}
+                                    {$param = $smarty.const.SEARCH_COUPONS_COMMAND_GROUP_DISCOUNT|default:''}
+                                    <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$value|escape}');" title="Показать все купоны с такой групповой скидкой" style="position: absolute; margin-left: 6px;">
+                                        <img src="{$url_images}microicon_showall_9x9.png" />
+                                    </a>
+                                {/if}
+                            </span>
+
+
+
+                            <img class="microkey_left" src="{$url_images}placeholder.gif" />
+
+
+
+                            {* <!-- если включен стандартный или полный вывод информации о записях --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                            {if ($inputs[$param]|default:false == $smarty.const.VIEW_MODE_STANDARD|default:false) || ($inputs[$param]|default:false == $smarty.const.VIEW_MODE_FULL|default:false)}
+
+
+
+                                {* <!-- срок действия --> *}
+                                <span class="rating{if $done || !$c->valid|default:false} zero{/if}" title="Срок действия: {($c->expired|default:'Нет данных!')|escape}">
+
+                                    {* <!-- ссылка на поиск --> *}
+                                    {$param = $smarty.const.SEARCH_COUPONS_COMMAND_EXPIRED_DATE|default:''}
+                                    <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$c->expired_date|truncate:10:'':true|escape}');" title="Показать все купоны, срок действия которых истекает такого числа">
+                                        <img src="{$url_images}microicon_showall_9x9.png" />
+                                    </a> &nbsp;
+
+                                    {($c->expired_date|default:'Нет данных!')}
+                                </span>
+
+
+
+                                {* <!-- дата создания --> *}
+                                <span class="rating zero" title="Дата создания: {($c->created|default:'Нет данных!')|escape}">
+
+                                    {* <!-- ссылка на поиск --> *}
+                                    {$param = $smarty.const.SEARCH_COUPONS_COMMAND_CREATED_DATE|default:''}
+                                    <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$c->created|truncate:10:'':true|escape}');" title="Показать все купоны такого числа">
+                                        <img src="{$url_images}microicon_showall_9x9.png" />
+                                    </a> &nbsp;
+
+                                    {($c->created|default:'Нет данных!')|truncate:10:'':true}
+                                </span>
+
+
+
+                            {/if}
+
+
+
+                            {* <!-- название --> *}
+                            <span class="votes" title="Название: {($c->name|default:'Без названия!')|escape}">
+                                {($c->name|default:'Без названия!')|strip_tags|truncate:10:'...':true|escape}
+                            </span>
+
+
+
+                            {* <!-- если включен полный вывод информации о записях --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                            {if $inputs[$param]|default:false == $smarty.const.VIEW_MODE_FULL|default:false}
+
+
+
+                                {* <!-- значок назначения группы скидок --> *}
+                                {if $c->group_id|default:0 != 0}
+                                    <a href="{$url_request}Group&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|default:''|escape}={$c->group_id|escape}">
+                                        <img class="icon16x16" src="{$url_images}icon_credit_16x16.png" title="Назначает группу скидок: {($c->group_name|default:'Без названия!')|escape}" />
+                                    </a>
+
+                                    {* <!-- ссылка на поиск --> *}
+                                    {$param = $smarty.const.SEARCH_COUPONS_COMMAND_GROUP|default:''}
+                                    <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$c->group_id|escape}');" title="Показать все купоны, назначающие такую группу скидок: {($c->group_name|default:'Без названия!')|escape}">
+                                        <img src="{$url_images}microicon_showall_9x9.png" />
+                                    </a>
+                                {else}
+                                    <img class="icon16x16" src="{$url_images}icon_credit_off_16x16.png" title="Не назначает групп скидок" style="margin-right: 14px;" />
+                                {/if} &nbsp;
+
+
+
+                                {* <!-- или значок назначения ценовой группы --> *}
+                                {if $c->price_id|default:0 != 0}
+                                    {$index = $c->price_id + 1}
+                                    {$field = 'price_type'|cat:$index}
+                                    {$ok = false}
+                                    {foreach $settings as $key => $value}
+                                        {if $key == $field}
+                                            {$ok = true}
+                                            {break}
+                                        {/if}
+                                    {/foreach}
+                                    {$value = ($ok) ? ($value|regex_replace:'/[\s\t\r\n]+/u':' '|regex_replace:'/^[\s\t\r\n]+/u':''|regex_replace:'/[\s\t\r\n]+$/u':'') : ''}
+                                    {$value = ($value == '') ? ('Без названия (тип '|cat:$index|cat:')') : $value}
+
+                                    <a href="{$url_goto}PriceGroups">
+                                        <img class="icon16x16" src="{$url_images}icon_payment_16x16.png" title="Назначает ценовую группу: {$value|escape}" />
+                                    </a>
+
+                                    {* <!-- ссылка на поиск --> *}
+                                    {$param = $smarty.const.SEARCH_COUPONS_COMMAND_PRICE|default:''}
+                                    <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$c->price_id|escape}');" title="Показать все купоны, назначающие такую ценовую группу: {$value|escape}">
+                                        <img src="{$url_images}microicon_showall_9x9.png" />
+                                    </a>
+                                {else}
+                                    <img class="icon16x16" src="{$url_images}icon_payment_off_16x16.png" title="Не назначает ценовых групп" style="margin-right: 14px;" />
+                                {/if} &nbsp;
+
+
+
+                                {* <!-- или значок назначения партнера --> *}
+                                {if $c->affiliate_id|default:0 != 0}
+                                    <a href="{$url_request}User&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|default:''|escape}={$c->affiliate_id|escape}">
+                                        <img class="icon16x16" src="{$url_images}icon_registered_16x16.png" title="Назначает партнера: {($c->affiliate_name|default:'Нет имени!')|escape}" />
+                                    </a>
+
+                                    {* <!-- ссылка на поиск --> *}
+                                    {$param = $smarty.const.SEARCH_COUPONS_COMMAND_AFFILIATE|default:''}
+                                    <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{$c->affiliate_id|escape}');" title="Показать все купоны, назначающие такого партнера: {($c->affiliate_name|default:'Нет имени!')|escape}">
+                                        <img src="{$url_images}microicon_showall_9x9.png" />
+                                    </a>
+                                {else}
+                                    <img class="icon16x16" src="{$url_images}icon_registered_off_16x16.png" title="Не назначает партнера" style="margin-right: 14px;" />
+                                {/if} &nbsp;
+
+
+
+                            {/if}
+
+
+
+                            {* <!-- если включен стандартный или полный вывод информации о записях --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                            {if ($inputs[$param]|default:false == $smarty.const.VIEW_MODE_STANDARD|default:false) || ($inputs[$param]|default:false == $smarty.const.VIEW_MODE_FULL|default:false)}
+
+
+
+                                {* <!-- значок погашения --> *}
+                                {if $done}
+                                    <img class="icon16x16" src="{$url_images}icon_done_16x16.png" title="Последнее погашение было {$c->discharged|escape} {($c->order_id|default:0 != 0) ? ('при оформлении заказа '|cat:$c->order_id) : (($c->user_id|default:0 != 0) ? ('при регистрации пользователя с идентификатором '|cat:$c->user_id) : 'по неизвестным обстоятельствам')}" />
+
+                                    {* <!-- ссылка на поиск --> *}
+                                    {$param = $smarty.const.SEARCH_COUPONS_COMMAND_DISCHARGED_DATE|default:''}
+                                    <a href="{$url_script|escape}" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$param|escape}{($c->discharged|default:'0000-00-00')|truncate:10:'':true|escape}');" title="Показать все купоны, погашенные такого числа">
+                                        <img src="{$url_images}microicon_showall_9x9.png" />
+                                    </a>
+
+
+
+                                {* <!-- или значок истечения срока --> *}
+                                {elseif !$c->valid|default:false}
+                                    {if $c->count|default:0 > 0}
+                                        <img class="icon16x16" src="{$url_images}icon_required_16x16.png" title="Срок действия истек {($c->expired|default:'Нет данных!')|escape}" style="margin-right: 14px;" />
+                                    {else}
+                                        <img class="icon16x16" src="{$url_images}icon_required_16x16.png" title="Не задано количество разов использования" style="margin-right: 14px;" />
+                                    {/if}
+
+
+
+                                {* <!-- или значок ожидания --> *}
+                                {else}
+                                    <img class="icon16x16" src="{$url_images}icon_awaited_off_16x16.png" style="margin-right: 14px;" />
+                                {/if} &nbsp;
+
+
+
+                            {/if}
+
+
+
+                            {* <!-- контрольный код --> *}
+                            <a href="{$url_script|escape}{$c->edit_get|escape}" {if !$c->enabled|default:false} class="disabled_item"{/if} title="{($c->code|default:'Код не указан!')|escape}">
+                                {($c->code|default:'Код не указан!')|strip_tags|truncate:32:'...':true|escape}
+                            </a>
+
+
+
+                        </div>
+                    </li>
+
+
+
+                {/foreach}
+
+
+
+                {* <!-- адрес страницы возврата после операции --> *}
+                {if $from_page|default:'' != ''}
+                    <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|default:''|escape}" type="hidden" value="{$from_page|escape}" />
+                {/if}
+
+
+
+                {* <!-- пустой указатель требуемой команды --> *}
+                {$param = $smarty.const.REQUEST_PARAM_NAME_ACTION|default:''}
+                <input id="items_form_{$param|escape}" name="{$param|escape}" type="hidden" value="" />
+
+
+
+                {* <!-- признак отмены постинга --> *}
+                {$param = $smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|default:''}
+                <input id="items_form_{$param|escape}" name="{$param|escape}" type="hidden" value="1" />
+
+
+
+                {* <!-- признак мини постинга (без некоторых полей записи) --> *}
+                <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|default:''|escape}" type="hidden" value="1" />
+
+
+
+                {* <!-- аутентификатор операции --> *}
+                <input name="{$token_paramname|escape}" type="hidden" value="{$inputs[$token_paramname]|default:''|escape}" />
+
+
+
+                {* <!-- контент навигатора страниц --> *}
+                {$PagesNavigation|default:''}
+
+
+
+            {* <!-- если массив записей пустой --> *}
+            {else}
+
+
+
+                <div class="noitems">
+                    Не найдено купонов
+
+                    {$param = $smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|default:''}
+                    {if $inputs[$param]|default:false}
+                        {**} {**}
+                        (режим: лаконичный)
+                    {/if}
+                    .
+                </div>
+
+
+
+            {/if}
+
+
+
+        </form>
+        <br>
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box" style="display: none;">
+
+
+
+            <div class="title">
+                Справка
+            </div>
+
+
+
+            <div>
+                <b>Количества</b>. В выпадающих списках фильтра, а также ссылках <u>принтерN</u> количества записей {**}
+                <u>[N шт.]</u> подсчитаны без учета текущего состояния фильтра. Чтобы администратор видел, сколько вообще {**}
+                записей есть в базе данных с таким параметром.
+            </div>
+            <br />
+            <br />
+
+
+
+            <div class="title">
+                О старых шаблонах корзины и страницы регистрации
+            </div>
+
+
+
+            <div>
+                Чтобы скидочные купоны работали в старых шаблонах, созданных до появления этого модуля, необходимо внести {**}
+                в шаблоны следующие правки. Суть работы этих правок состоит в добавлении поля ввода купона в соответствующую {**}
+                форму ввода, если именно для нее настройки модуля не запрещают использовать купоны.
+            </div>
+
+
+
+            <div>
+                <b>Первая правка</b> касается страницы регистрации (файл <u>registration.tpl</u>). Найдите форму ввода в этом {**}
+                файле и в нужное место формы добавьте следующий фрагмент кода. Удалите оберточные комментарии или замените {**}
+                тегами, используемыми для полей ввода в вашей форме. Проверьте наличие требуемого класса у поля ввода.
+            </div>
+
+
+
+            {literal}
+                <pre>
+{* &lt;!-- если купоны не запрещены для регистрации --&gt; *}
+{if !$settings-&gt;coupons_registration_disabled|default:false}
+
+    &lt;!-- обертка --&gt;
+
+        &lt;!-- обертка надписи --&gt;
+            Код купона:
+        &lt;!-- /обертка надписи --&gt;
+
+        &lt;!-- обертка поля ввода --&gt;
+            &lt;input name="coupon" maxlength="32" type="text" value="{$item-&gt;coupon|default:''|escape}" /&gt;
+        &lt;!-- /обертка поля ввода --&gt;
+
+    &lt;!-- /обертка --&gt;
+
+{/if}
+                </pre>
+            {/literal}
+
+
+
+            <div>
+                <b>Вторая правка</b> касается страницы корзины (файл <u>cart.tpl</u>). Подобным образом вставьте следующий {**}
+                фрагмент внутрь формы ввода.
+            </div>
+
+
+
+            {literal}
+                <pre>
+{* &lt;!-- если купоны не запрещены для корзины --&gt; *}
+{if !$settings-&gt;coupons_cart_disabled|default:false}
+
+    &lt;!-- обертка --&gt;
+
+        &lt;!-- обертка надписи --&gt;
+            Код купона:
+        &lt;!-- /обертка надписи --&gt;
+
+        &lt;!-- обертка поля ввода --&gt;
+            &lt;input name="coupon" maxlength="32" type="text" value="{$coupon|default:''|escape}" /&gt;
+        &lt;!-- /обертка поля ввода --&gt;
+
+    &lt;!-- /обертка --&gt;
+
+{/if}
+                </pre>
+            {/literal}
+
+
+
+        </div>
+
+
+
+        {* <!-- форма настроек модуля --> *}
+        <a name="settings"></a>
+
+        <form action="{$url_form}" id="setup_form" method="post" {($error|default:"" == '') ? 'style="display: none;"' : ''}>
+
+
+
+            <br>
+            <h1>
+                Настройки
+            </h1>
+            <br>
+
+
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+
+
+
+                    {* <!-- поле Записей на странице --> *}
+                    <td class="param_short">
+                        Записей на странице админпанели:
+                    </td>
+                    <td class="value" colspan="2" title="Количество записей в списке админпанели (в пределах от {($smarty.const.ITEMS_PER_PAGE_MINIMAL_VALUE|default:1)|escape} до {($smarty.const.ITEMS_PER_PAGE_MAXIMAL_VALUE|default:500)|escape})">
+                        <input class="edit" name="coupons_num_admin" size="10" style="width: auto;" type="text" value="{($settings->coupons_num_admin|default:50)|escape}" />
+                    </td>
+
+
+
+                    {* <!-- флажок Запрещен для регистрации --> *}
+                    <td class="param_short" colspan="4" title="Убрать ли поле ввода купона в форме регистрации покупателя" width="1%">
+
+                        {$param = 'coupons_registration_disabled'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            Не принимать при регистрации покупателя
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Запрещен для корзины --> *}
+                    <td class="param_short" title="Убрать ли поле ввода купона в корзине" width="1%">
+
+                        {$param = 'coupons_cart_disabled'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            Не принимать в корзине
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    <td class="value_box" width="1%">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_SETUP|default:''}
+                        <input class="submit" name="{$param|escape}" type="submit" value="Сохранить" />
+                    </td>
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Максимальное число печати многоразовых --> *}
+                    <td class="param_short">
+                        Многоразовые печатать не более шт.:
+                    </td>
+                    <td class="value" colspan="2" title="Предельное число печати дублей многоразового купона в одной распечатке">
+                        <input class="edit" name="coupons_max_print" size="10" style="width: auto;" type="text" value="{($settings->coupons_max_print|default:20)|escape}" />
+                    </td>
+
+
+
+                    {* <!-- флажок Шаблон генерации кода --> *}
+                    <td class="param_short" colspan="4" width="1%">
+                        Шаблон генерации контрольного кода купона:
+                    </td>
+                    <td class="value" colspan="2" title="Шаблон генерации кода купона (* - случайное число от 0 до 9 или заглавная английская буква, # - случайное число, &amp; - случайная заглавная английская буква)">
+                        <input class="edit" name="coupons_code_pattern" maxlength="32" type="text" value="{($settings->coupons_code_pattern|default:'**** **** **** ****')|escape}" />
+                    </td>
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    <td class="param_short">
+                        Уведомлять админа о регистрации по:
+                    </td>
+
+
+
+                    {* <!-- флажок Уведомлять админа по емейлу о регистрации --> *}
+                    <td class="param_short" title="Уведомлять ли админа по емейлу об активности по купону: регистрация нового пользователя">
+
+                        {$param = 'coupons_reg_notify_admin_by_email'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} &nbsp;{**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_email_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Уведомлять админа по СМС о регистрации --> *}
+                    <td class="param_short" title="Уведомлять ли админа по SMS об активности по купону: регистрация нового пользователя">
+
+                        {$param = 'coupons_reg_notify_admin_by_sms'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_sms_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    <td class="param_short" width="1%">
+                        и партнера:
+                    </td>
+
+
+
+                    {* <!-- флажок Уведомлять партнера по емейлу о регистрации --> *}
+                    <td class="param_short" width="1%" title="Уведомлять ли партнера по емейлу об активности по купону: регистрация нового пользователя">
+
+                        {$param = 'coupons_reg_notify_affiliate_by_email'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} &nbsp;{**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_email_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Уведомлять партнера по СМС о регистрации --> *}
+                    <td class="param_short" width="1%" title="Уведомлять ли партнера по SMS об активности по купону: регистрация нового пользователя">
+
+                        {$param = 'coupons_reg_notify_affiliate_by_sms'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_sms_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Тема уведомления о регистрации --> *}
+                    <td class="value" colspan="3" style="width: 50%;" title="Тема уведомления о регистрации (* - код использовавшегося купона, & - адрес сайта)">
+                        <input class="edit" name="coupons_reg_notify_subject" type="text" value="{($settings->coupons_reg_notify_subject|default:'Активность по купону *: регистрация пользователя на сайте &')|escape}" />
+                    </td>
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    <td class="param_short">
+                        Уведомлять админа о таком заказе:
+                    </td>
+
+
+
+                    {* <!-- флажок Уведомлять админа по емейлу о заказе --> *}
+                    <td class="param_short" title="Уведомлять ли админа по емейлу об активности по купону: оформление заказа">
+
+                        {$param = 'coupons_order_notify_admin_by_email'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} &nbsp;{**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_email_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Уведомлять админа по СМС о заказе --> *}
+                    <td class="param_short" title="Уведомлять ли админа по SMS об активности по купону: оформление заказа">
+
+                        {$param = 'coupons_order_notify_admin_by_sms'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_sms_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    <td class="param_short" width="1%">
+                        и партнера:
+                    </td>
+
+
+
+                    {* <!-- флажок Уведомлять партнера по емейлу о заказе --> *}
+                    <td class="param_short" width="1%" title="Уведомлять ли партнера по емейлу об активности по купону: оформление заказа">
+
+                        {$param = 'coupons_order_notify_affiliate_by_email'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} &nbsp;{**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_email_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Уведомлять партнера по СМС о заказе --> *}
+                    <td class="param_short" width="1%" title="Уведомлять ли партнера по SMS об активности по купону: оформление заказа">
+
+                        {$param = 'coupons_order_notify_affiliate_by_sms'}
+                        {$checked = ''}
+                        {foreach $settings as $key => $value}
+                            {if $key == $param}
+                                {$checked = ($value) ? 'checked' : ''}
+                                {break}
+                            {/if}
+                        {/foreach}
+                        <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                        {**} {**}
+
+                        <span onclick="javascript: Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                            <img class="icon16x16" src="{$url_images}icon_sms_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Тема уведомления о заказе --> *}
+                    <td class="value" colspan="3" style="width: 50%;" title="Тема уведомления о заказе (* - код купона, # - номер заказа, $ - сумма заказа, & - адрес сайта)">
+                        <input class="edit" name="coupons_order_notify_subject" type="text" value="{($settings->coupons_order_notify_subject|default:'Активность по купону *: оформлен заказ # на сумму $ на сайте &')|escape}" />
+                    </td>
+
+
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            <input name="{$token_paramname|escape}" type="hidden" value="{$inputs[$token_paramname]|default:''|escape}" />
+
+
+
+        </form>
+
+
+
+    </div>
+
+{/strip}

@@ -1,0 +1,274 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: просмотр заголовков страницы                                            |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $item_id = URL страницы                                                       |
+    $items = 3-элементный массив строк извлеченных заголовков страницы:           |
+                 индекс 0 = серверные заголовки                                   |
+                 индекс 1 = заголовки html                                        |
+                 индекс 2 = ссылки канонизации                                    |
+    $csid_enabled = булевой признак "удерживать cookie-сеанс"                     |
+    $csid_value = скрытое значение "ИД cookie-сеанса"                             |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.HEADERS_MODULELINK_POINTER|default:''}
+    {$section_paramname = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$token_paramname = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.HEADERS_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.HEADERS_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        {call main_title alt = 'Просмотр заголовков страницы'
+                         path = 'Заголовки'}
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {call info_message}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {call error_message}
+
+
+
+        {* <!-- форма настроек --> *}
+        <form action="{$admin_goto}{$module_pointer|escape}" method="post">
+
+
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+
+
+
+                    {* <!-- поле URL --> *}
+                    <td class="param_short">
+                        URL страницы:
+                    </td>
+                    <td class="value value_sheet" width="100%" title="Полный адрес интересуемой веб страницы">
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_ITEMID|default:''}
+                        {$url = ${$param}|default:''}
+                        <input class="edit" name="{$param|escape}" type="text" value="{$url|escape}" />
+                    </td>
+
+
+
+                    {* <!-- флажок Удерживать сеанс --> *}
+                    <td class="param_short" title="Нужно ли имитировать удержание cookie-сеанса">
+                        {$param = 'csid_enabled'}
+                        <input name="{$param}" type="hidden" value="0" />
+                        <input class="checkbox" id="items_form_{$param}" name="{$param}" type="checkbox" {(${$param}|default:false) ? "checked" : ''} value="1" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_{$param}');">
+                            Сеансовый
+                        </span>
+
+
+
+                        {* <!-- ИД cookie-сеанса --> *}
+                        {call hidden_editbox param = 'csid_value'
+                                             id = false
+                                             value = $csid_value|default:0}
+                    </td>
+
+
+
+                    {* <!-- кнопка Старт --> *}
+                    {call start_button text = 'Просмотреть'
+                                       width = '1%'}
+
+
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- если нужно вывести список заголовков --> *}
+            {if $url != '' && isset($items)}
+                <h2>
+                    Серверные заголовки
+                </h2>
+                <br>
+
+                {if isset($items[0]) && is_array($items[0]) && !empty($items[0])}
+                    {foreach $items[0] as $item}
+                        {$item = $item|escape}
+                        <li class="flatlist thinlist">
+                            <div class="onerow">
+                                <a onclick="return false;" title="{$item}">
+                                    {$item}
+                                </a>
+                            </div>
+                        </li>
+                    {/foreach}
+                {else}
+                    <div class="noitems">
+                        Отсутствуют для исследуемой страницы.
+                    </div>
+                {/if}
+
+
+
+                {* <!-- список заголовков HTML --> *}
+                <h2>
+                    Заголовки HTML
+                </h2>
+                <br>
+
+                {if isset($items[1]) && is_array($items[1]) && !empty($items[1])}
+                    {foreach $items[1] as $item}
+                        {$item = $item|escape}
+                        <li class="flatlist thinlist">
+                            <div class="onerow">
+                                <a onclick="return false;" title="{$item}">
+                                    {$item}
+                                </a>
+                            </div>
+                        </li>
+                    {/foreach}
+                {else}
+                    <div class="noitems">
+                        Отсутствуют на исследуемой странице.
+                    </div>
+                {/if}
+
+
+
+                {* <!-- ссылки канонизации --> *}
+                <h2>
+                    Канонизация страницы
+                </h2>
+                <br>
+
+                {if isset($items[2]) && is_array($items[2]) && !empty($items[2])}
+                    {foreach $items[2] as $item}
+                        {$item = $item|escape}
+                        <li class="flatlist thinlist">
+                            <div class="onerow">
+                                <a onclick="return false;" title="{$item}">
+                                    {$item}
+                                </a>
+                            </div>
+                        </li>
+                    {/foreach}
+                {else}
+                    <div class="noitems">
+                        Не применялась на исследуемой странице.
+                    </div>
+                {/if}
+            {/if}
+
+
+
+            {* <!-- признак постинга формы --> *}
+            {call hidden_editbox param = 'REQUEST_PARAM_NAME_POST'
+                                 id = false
+                                 value = 1}
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            {call hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                 id = false
+                                 value = $token}
+        </form>
+        <br />
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                <b>URL страницы</b>. В это поле скопируйте полный адрес страницы {**}
+                вашего сайта, чьи заголовки вы хотите просмотреть.
+            </div>
+
+            <div>
+                <b>Сеансовый</b>. Флажок управляет имитацией сеанса, словно интересующую {**}
+                страницу открывает тот же человек, что только к ней обращался. При {**}
+                отключенном флажке каждый просмотр заголовков будет выглядеть так, {**}
+                будто страницу каждый раз открывает другой человек.
+            </div>
+
+            <div>
+                <b>Серверные заголовки</b>. Эта секция появляется после ввода адреса {**}
+                интересуемой веб страницы. Представляет собой список "невидимых" {**}
+                заголовков, поступивших со стороны сайта до первого тега html-разметки.
+            </div>
+
+            <div>
+                <b>Заголовки HTML</b>. Эта секция также появляется после ввода адреса {**}
+                веб страницы. Представляет собой список meta-заголовков, обнаруженных {**}
+                в теле документа страницы.
+            </div>
+
+            <div>
+                <b>Канонизация страницы</b>. Если на странице существует тег канонизации {**}
+                ее адреса, эта секция показывает канонизируемый адрес.
+            </div>
+
+            <div>
+                <u>Важно</u>: Анализируя заголовки, помните, серверные приоритетнее {**}
+                заголовков HTML. Ни один html-заголовок не может перекрыть своим {**}
+                значением уже присланный одноименный серверный заголовок.
+            </div>
+        </div>
+
+    </div>
+
+{/strip}

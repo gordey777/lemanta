@@ -1,0 +1,290 @@
+{* <!--
+  Impera CMS: шаблон админ модуля редиректов страниц.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = записи о редиректах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    imports = true - вывести эту кнопку
+    export = true - вывести эту кнопку
+    backup = true - вывести эту кнопку
+    redirects = true - вывести эту кнопку
+    mailer = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "redirects"
+           main = true
+           imports = true
+           export = true
+           backup = true
+           redirects = true
+           mailer = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Редиректы
+      </div>
+      Редиректы страниц
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    {* <!-- Если во входной переменной $message есть текст информационного сообщения --> *}
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    {* <!-- Если во входной переменной $error есть текст сообщения об ошибке --> *}
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о записи -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Redirects" id="item_form" method="post">
+
+      <table align="center" cellpadding="0" cellspacing="20" class="white" id="redirects">
+        {if isset($items) && !empty($items)}
+          {foreach name=items item=r from=$items}
+            <tr>
+
+              <!-- нумерация -->
+              <td class="param_short" title="Перетащить строку">
+                &#8226;
+              </td>
+
+              {if is_array($r) && isset($r[$smarty.const.field_REDIRECT_ENABLED])
+              && isset($r[$smarty.const.field_REDIRECT_REMOVE_QUERYPARAMS])
+              && isset($r[$smarty.const.field_REDIRECT_USE_REGEXP])
+              && isset($r[$smarty.const.field_REDIRECT_FROM_URL])
+              && isset($r[$smarty.const.field_REDIRECT_TO_URL])
+              && isset($r[$smarty.const.field_REDIRECT_TYPE])}
+
+                <!-- флажок Разрешен -->
+                <td class="param_short" title="Разрешен ли этот редирект">
+                  <input class="checkbox hidden-checkbox" id="lines_{$smarty.foreach.items.iteration}_enabled" name="lines[{$smarty.foreach.items.iteration}][enabled]" type="checkbox"{if $r[$smarty.const.field_REDIRECT_ENABLED]} checked{/if} value="1" onchange="javascript: Toggle_CheckboxIcon(this, this.checked, 'enabled');">
+                  <span onclick="javascript: Toggle_PageCheckbox('lines_{$smarty.foreach.items.iteration}_enabled');">
+                    <img class="icon16x16 icon16x16-key{if !$r[$smarty.const.field_REDIRECT_ENABLED]} icon16x16-key-off{/if}" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if !$r[$smarty.const.field_REDIRECT_ENABLED]}_off{/if}_16x16.png">
+                  </span>
+                </td>
+
+                <!-- поле Устаревший url -->
+                <td class="value value_sheet" width="50%" title="Устаревший адрес (зависимо от флажка справа, укажите адрес стандартно или в формате регулярных выражений)">
+                  <input class="edit" name="lines[{$smarty.foreach.items.iteration}][url]" type="text" value="{$r[$smarty.const.field_REDIRECT_FROM_URL]|default:''|escape}">
+                </td>
+
+                <!-- флажок Использовать регулярные выражения -->
+                <td class="param_short" title="Записаны ли адреса в формате регулярных выражений">
+                  <input class="checkbox hidden-checkbox" id="lines_{$smarty.foreach.items.iteration}_regexp" name="lines[{$smarty.foreach.items.iteration}][regexp]" type="checkbox"{if $r[$smarty.const.field_REDIRECT_USE_REGEXP]} checked{/if} value="1" onchange="javascript: Toggle_CheckboxIcon(this, this.checked, 'redirect');">
+                  <span onclick="javascript: Toggle_PageCheckbox('lines_{$smarty.foreach.items.iteration}_regexp');">
+                    <img class="icon16x16 icon16x16-key{if !$r[$smarty.const.field_REDIRECT_USE_REGEXP]} icon16x16-key-off{/if}" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_redirect{if !$r[$smarty.const.field_REDIRECT_USE_REGEXP]}_off{/if}_16x16.png">
+                  </span>
+                </td>
+
+                <!-- поле Новый url -->
+                <td class="value value_sheet" width="50%" title="Новый адрес (зависимо от флажка слева, укажите адрес стандартно или в подстановочном формате регулярных выражений)">
+                  <input class="edit" name="lines[{$smarty.foreach.items.iteration}][to_url]" type="text" value="{$r[$smarty.const.field_REDIRECT_TO_URL]|default:''|escape}">
+                </td>
+
+                <!-- флажок Убирать параметры запроса -->
+                <td class="param_short" title="Убирать ли параметры запроса из URL перед проверкой">
+                  <input class="checkbox hidden-checkbox" id="lines_{$smarty.foreach.items.iteration}_unquery" name="lines[{$smarty.foreach.items.iteration}][unquery]" type="checkbox"{if $r[$smarty.const.field_REDIRECT_REMOVE_QUERYPARAMS]} checked{/if} value="1" onchange="javascript: Toggle_CheckboxIcon(this, this.checked, 'cut');">
+                  <span onclick="javascript: Toggle_PageCheckbox('lines_{$smarty.foreach.items.iteration}_unquery');">
+                    <img class="icon16x16 icon16x16-key{if !$r[$smarty.const.field_REDIRECT_REMOVE_QUERYPARAMS]} icon16x16-key-off{/if}" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_cut{if !$r[$smarty.const.field_REDIRECT_REMOVE_QUERYPARAMS]}_off{/if}_16x16.png">
+                  </span>
+                </td>
+
+                <!-- поле Тип редиректа -->
+                <td class="value value_sheet" title="Тип редиректа">
+                  <select name="lines[{$smarty.foreach.items.iteration}][type]" style="width: 50px;">
+                    <option value="301"{if isset($r[$smarty.const.field_REDIRECT_TYPE]) && ($r[$smarty.const.field_REDIRECT_TYPE] == 301)} selected{/if}>301 страница имеет новый адрес</option>
+                    <option value="403"{if isset($r[$smarty.const.field_REDIRECT_TYPE]) && ($r[$smarty.const.field_REDIRECT_TYPE] == 403)} selected{/if}>403 доступ к странице закрыт</option>
+                    <option value="404"{if isset($r[$smarty.const.field_REDIRECT_TYPE]) && ($r[$smarty.const.field_REDIRECT_TYPE] == 404)} selected{/if}>404 страница не найдена</option>
+                    <option value="410"{if isset($r[$smarty.const.field_REDIRECT_TYPE]) && ($r[$smarty.const.field_REDIRECT_TYPE] == 410)} selected{/if}>410 страница удалена</option>
+                  </select>
+                </td>
+
+              {elseif !is_array($r) && ($r|strip_tags|strip != "")}
+
+                <!-- поле Комментарий -->
+                <td class="value value_header" colspan="6" width="100%" title="Комментарий">
+                  <input class="edit" name="lines[{$smarty.foreach.items.iteration}][url]" type="text" value="{$r|default:''|escape}">
+                </td>
+              {/if}
+
+              <!-- флажок Используется -->
+              <td class="param_short" title="Использовать ли эту строку">
+                <input class="checkbox hidden-checkbox" checked id="lines_{$smarty.foreach.items.iteration}_used" name="lines[{$smarty.foreach.items.iteration}][used]" type="checkbox" value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);">
+                <span onclick="javascript: Toggle_PageCheckbox('lines_{$smarty.foreach.items.iteration}_used');">
+                  <img class="icon16x16 icon16x16-key" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_done_16x16.png">
+                </span>
+              </td>
+            </tr>
+          {/foreach}
+        {/if}
+      </table>
+
+      <!-- кнопка Добавить редирект -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_short">
+            <a href="#" title="Добавить редирект" onclick="javascript: return Append_RedirectTableRow('redirects', true);">
+              добавить редирект
+            </a>
+          </td>
+          <td class="param_short">
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          </td>
+
+          <!-- кнопка Добавить раздел -->
+          <td class="param_short" width="100%">
+            <a href="#" title="Добавить комментарий" onclick="javascript: return Append_RedirectTableRow('redirects', false);">
+              добавить комментарий
+            </a>
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Запускаем скрипт передвигания элементов -->
+      {literal}
+        <script language="JavaScript" type="text/javascript">
+          <!--
+          Make_TableRows_Sortable('redirects');
+
+          function Toggle_CheckboxIcon (object, checked, icon) {
+            var url = '{/literal}http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_' +
+                      icon +
+                      (checked ? '' : '_off') +
+                      '_16x16.png{literal}';
+            object = jQuery(object).parent().find('span').find('img');
+            if ((typeof(object) == 'object') && (object != null) && ('length' in object) && (object.length > 0)) object = object[0];
+            if ((typeof(object) == 'object') && (object != null) && ('src' in object)) {
+              object.src = url;
+              if (checked) {
+                jQuery(object).removeClass('icon16x16-key-off');
+              } else {
+                jQuery(object).addClass('icon16x16-key-off');
+              }
+            }
+          }
+
+          // добавление строки редиректа в таблицу редиректов
+          //   table_id = идентификатор таблицы
+          //   as_field = булевой признак "добавить строку для редиректа", иначе "добавить строку для раздела"
+
+          function Append_RedirectTableRow (table_id, as_field) {
+
+            // находим таблицу на странице
+            var object = document.getElementById(table_id);
+            if ((typeof(object) == 'object') && (object != null)) {
+
+              // получаем все объекты строк в этой таблице
+              var tr = jQuery(object).find('tr');
+              var num = tr.length;
+              if (num >= 0) {
+                num++;
+                if (num <= {/literal}{$smarty.const.REDIRECT_RECORDS_MAXCOUNT|escape}{literal}) {
+
+                  // формируем контент новой строки таблицы
+                  var html = '<td class="param_short" title="Перетащить строку">' +
+                               '&#8226;' +
+                             '</td>' +
+
+                             (as_field
+
+                             ? '<td class="param_short" title="Разрешен ли этот редирект">' +
+                                 '<input class="checkbox hidden-checkbox" id="lines_' + num + '_enabled" checked name="lines[' + num + '][enabled]" type="checkbox" value="1" onchange="javascript: Toggle_CheckboxIcon(this, this.checked, \'enabled\');">' +
+                                 '<span onclick="javascript: Toggle_PageCheckbox(\'lines_' + num + '_enabled\');">' +
+                                   '<img class="icon16x16 icon16x16-key" src="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled_16x16.png{literal}">' +
+                                 '</span>' +
+                               '</td>' +
+                               '<td class="value value_sheet" width="50%" title="Устаревший адрес (зависимо от флажка справа, укажите адрес стандартно или в формате регулярных выражений)">' +
+                                 '<input class="edit" name="lines[' + num + '][url]" type="text" value="">' +
+                               '</td>' +
+                               '<td class="param_short" title="Записаны ли адреса в формате регулярных выражений">' +
+                                 '<input class="checkbox hidden-checkbox" id="lines_' + num + '_regexp" name="lines[' + num + '][regexp]" type="checkbox" value="1" onchange="javascript: Toggle_CheckboxIcon(this, this.checked, \'redirect\');">' +
+                                 '<span onclick="javascript: Toggle_PageCheckbox(\'lines_' + num + '_regexp\');">' +
+                                   '<img class="icon16x16 icon16x16-key icon16x16-key-off" src="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_redirect_off_16x16.png{literal}">' +
+                                 '</span>' +
+                               '</td>' +
+                               '<td class="value value_sheet" width="50%" title="Новый адрес (зависимо от флажка слева, укажите адрес стандартно или в подстановочном формате регулярных выражений)">' +
+                                 '<input class="edit" name="lines[' + num + '][to_url]" type="text" value="">' +
+                               '</td>' +
+                               '<td class="param_short" title="Убирать ли параметры запроса из URL перед проверкой">' +
+                                 '<input class="checkbox hidden-checkbox" id="lines_' + num + '_unquery" checked name="lines[' + num + '][unquery]" type="checkbox" value="1" onchange="javascript: Toggle_CheckboxIcon(this, this.checked, \'cut\');">' +
+                                 '<span onclick="javascript: Toggle_PageCheckbox(\'lines_' + num + '_unquery\');">' +
+                                   '<img class="icon16x16 icon16x16-key" src="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_cut_16x16.png{literal}">' +
+                                 '</span>' +
+                               '</td>' +
+                               '<td class="value" title="Тип редиректа">' +
+                                 '<select name="lines[' + num + '][type]" style="width: 50px;">' +
+                                   '<option value="301">301 страница имеет новый адрес</option>' +
+                                   '<option value="403">403 доступ к странице закрыт</option>' +
+                                   '<option value="404">404 страница не найдена</option>' +
+                                   '<option value="410">410 страница удалена</option>' +
+                                 '</select>' +
+                               '</td>'
+
+                             : '<td class="value value_header" colspan="6" width="100%" title="Комментарий">' +
+                                 '<input class="edit" name="lines[' + num + '][url]" type="text" value="">' +
+                               '</td>'
+                             ) +
+
+                             '<td class="param_short" title="Использовать ли эту строку">' +
+                               '<input class="checkbox hidden-checkbox" checked id="lines_' + num + '_used" name="lines[' + num + '][used]" type="checkbox" value="1" onchange="javascript: Toggle_TableRowTransparency(this, this.checked, 0.3);">' +
+                               '<span onclick="javascript: Toggle_PageCheckbox(\'lines_' + num + '_used\');">' +
+                                 '<img class="icon16x16 icon16x16-key" src="{/literal}http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_done_16x16.png{literal}">' +
+                               '</span>' +
+                             '</td>';
+
+                  // добавляем контент новой строки в таблицу
+                  jQuery(object).append('<tr>' + html + '</tr>');
+
+                } else {
+                  alert('Добавление нового редиректа отклонено, так как это превысит лимит их допустимого количества ({/literal}{$smarty.const.REDIRECT_RECORDS_MAXCOUNT|escape}{literal} строк, влкючая комментарии)!');
+                }
+              }
+            }
+
+            // возвращаем FALSE (для вызывающих функцию из обработчика события OnClick элемента <a>)
+            return false;
+          }
+          // -->
+        </script>
+      {/literal}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}" type="hidden" value="1">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+  </div>

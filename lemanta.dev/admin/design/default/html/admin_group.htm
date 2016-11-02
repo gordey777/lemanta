@@ -1,0 +1,276 @@
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           users = true
+           groups = true
+           banneds = true
+           card = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?section=Groups">Группы</a>
+        → Редактирование
+      </div>
+      {if $Group->group_id|default:0 != 0}
+        {$Group->name|escape}
+      {else}
+        {if $Group->authorized|default:1 == 1}
+          Новая группа
+        {else}
+          Новая внегрупповая скидка
+        {/if}
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    <!-- {*
+    Если во входной переменной $error есть текст сообщения об ошибке,
+    выводим это сообщение. *} -->
+
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+  {literal}
+    <style>
+      select, .input3, .input4, .input5 {color: #000000; font-family: Verdana, Tahoma, Arail; font-size: 10pt;}
+    </style>
+  {/literal}
+
+          <form name="group" method="post">
+            <div id="over">
+              <div id="over_left" style="width: 97%;">
+                <table align="center" cellpadding="0" cellspacing="0" width="100%">
+                  <tr>
+                    <td class="model">
+                      Название
+                    </td>
+                    <td class="m_t" width="100%">
+                      <p>
+                        <input class="input3" name="name" style="width: 100%;" type="text" value="{$Group->name|default:''|escape}" pattern=".{literal}{1,}{/literal}" notice="Введите название">
+                      </p>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding-top: 5px; padding-bottom: 5px;">
+                        {if $Group->authorized|default:1 == 1}
+                          название группы
+                        {else}
+                          название внегрупповой скидки
+                        {/if}
+                      </div>
+                    </td>
+                    {if $Group->authorized|default:1 == 1}
+                      <td class="m_t" nowrap>
+                        <p>
+                          &nbsp;&nbsp;
+                          <span style="font-size: 14pt;" title="Назначить ли группу новому зарегистрированному пользователю">
+                            <input name="auto_assign" style="width: 20px;" type="checkbox" value="1"{if $Group->auto_assign|default:0 == 1} checked{/if}>
+                            Автоназначаемая
+                          </span>
+                        </p>
+                      </td>
+                    {/if}
+                  </tr>
+                  <tr>
+                    <td class="model">
+                      Скидка
+                    </td>
+                    <td class="m_t"{if $Group->authorized|default:1 == 1} colspan="2"{/if}>
+                      <p style="font-size: 10pt;">
+                        <input class="input5" name="discount" type="text" value="{$Group->discount|default:0|escape}"> %
+                        {if $Group->authorized|default:1 == 0}
+                          &nbsp;&nbsp;
+                          <b>при заказе на сумму от</b>&nbsp;
+                          <input class="input5" name="from_sum" style="width: 100px;" type="text" value="{if $Group->from_sum|default:0 > 0}{($Group->from_sum*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'}{else}0.00{/if}"> {$currency->sign|escape}
+                        {/if}
+                      </p>
+                      <div style="color: #C0C0C0; font-size: 8pt; padding-top: 5px; padding-bottom: 5px;">
+                        {if $Group->authorized|default:1 == 1}
+                          действует для товаров с не установленной приоритетной скидкой
+                        {else}
+                          величина и при какой сумме заказа начинает действовать
+                        {/if}
+                      </div>
+                    </td>
+                  </tr>
+                  {if $Group->authorized|default:1 == 1}
+                    <tr>
+                      <td class="model" nowrap>
+                        Следующая группа&nbsp;&nbsp;
+                      </td>
+                      <td class="m_t"{if $Group->authorized|default:1 == 1} colspan="2"{/if}>
+                        <p>
+                          <select name="next_group_id" style="width: 100%;">
+                            <option value="0">
+                              &nbsp;
+                            </option>
+                            {foreach item=item from=$Groups}
+                              {if $item->first}
+                                <option value="{$item->group_id|escape}"{if $Group->next_group_id|default:0 == $item->group_id} selected{/if}>
+                                  {$item->name|escape}
+                                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                  скидка {$item->discount|escape} %
+                                  {if $item->next}
+                                    {if $item->next_group_sum > 0}
+                                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                      следующая при
+                                      {($item->next_group_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                                      {if $item->next_group_orders > 0}
+                                        {if $item->next_group_condition}ИЛИ{else}И{/if}
+                                        {$item->next_group_orders|escape} заказов
+                                      {/if}
+                                      {if $item->next_group_products > 0}
+                                        {if $item->next_group_condition2}ИЛИ{else}И{/if}
+                                        {$item->next_group_products|escape} товаров
+                                      {/if}
+                                    {else}
+                                      {if $item->next_group_orders > 0}
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        следующая при
+                                        {$item->next_group_orders|escape} заказов
+                                        {if $item->next_group_products > 0}
+                                          {if $item->next_group_condition2}ИЛИ{else}И{/if}
+                                          {$item->next_group_products|escape} товаров
+                                        {/if}
+                                      {else}
+                                        {if $item->next_group_products > 0}
+                                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                          следующая при
+                                          {$item->next_group_products|escape} товаров
+                                        {else}
+                                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                          неопределённые условия
+                                        {/if}
+                                      {/if}
+                                    {/if}
+                                  {/if}
+                                </option>
+
+                                {if isset($item->next) && !empty($item->next)}
+                                  {function name="subgroups_list"}
+                                    <option value="{$subitem->group_id|escape}"{if $Group->next_group_id|default:0 == $subitem->group_id} selected{/if}>
+                                      {section name=sp loop=$level}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{/section}
+                                      {$subitem->name|escape}
+                                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                      скидка {$subitem->discount|escape} %
+                                      {if $subitem->next}
+                                        {if $subitem->next_group_sum > 0}
+                                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                          следующая при
+                                          {($subitem->next_group_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                                          {if $subitem->next_group_orders > 0}
+                                            {if $subitem->next_group_condition}ИЛИ{else}И{/if}
+                                            {$subitem->next_group_orders|escape} заказов
+                                          {/if}
+                                          {if $subitem->next_group_products > 0}
+                                            {if $subitem->next_group_condition2}ИЛИ{else}И{/if}
+                                            {$subitem->next_group_products|escape} товаров
+                                          {/if}
+                                        {else}
+                                          {if $subitem->next_group_orders > 0}
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            следующая при
+                                            {$subitem->next_group_orders|escape} заказов
+                                            {if $subitem->next_group_products > 0}
+                                              {if $subitem->next_group_condition2}ИЛИ{else}И{/if}
+                                              {$subitem->next_group_products|escape} товаров
+                                            {/if}
+                                          {else}
+                                            {if $subitem->next_group_products > 0}
+                                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                              следующая при
+                                              {$subitem->next_group_products|escape} товаров
+                                            {else}
+                                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                              неопределённые условия
+                                            {/if}
+                                          {/if}
+                                        {/if}
+                                      {/if}
+                                    </option>
+                                    {if isset($subitem->next) && !empty($subitem->next)}
+                                      {subgroups_list subitem=$subitem->next level=$level+1}
+                                    {/if}
+                                  {/function}
+
+                                  {subgroups_list subitem=$item->next level=1}
+                                {/if}
+                              {/if}
+                            {/foreach}
+                          </select>
+                        </p>
+                        <div style="color: #C0C0C0; font-size: 8pt; padding-top: 5px; padding-bottom: 5px;">
+                          в какую группу автоматически перейдёт покупатель при выполнении следующих ниже условий
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="model" nowrap>
+                        При накоплении
+                      </td>
+                      <td class="m_t"{if $Group->authorized|default:1 == 1} colspan="2"{/if}>
+                        <p style="font-size: 10pt;">
+                          <input class="input4" name="next_group_sum" style="width: 150px;" type="text" value="{if $Group->next_group_sum|default:0 > 0}{($Group->next_group_sum * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'}{/if}"> {$currency->sign|default:''|escape}
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          <span style="font-size: 14pt;" title="Снятый флажок обозначает условие И">
+                            <input name="next_group_condition" style="width: 20px;" type="checkbox" value="1"{if $Group->next_group_condition|default:0 == 1} checked{/if}>
+                            или
+                          </span>
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          <input class="input4" name="next_group_orders" style="width: 60px;" type="text" value="{if $Group->next_group_orders|default:0 > 0}{$Group->next_group_orders|escape}{/if}"> заказов
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          <span style="font-size: 14pt;" title="Снятый флажок обозначает условие И">
+                            <input name="next_group_condition2" style="width: 20px;" type="checkbox" value="1"{if $Group->next_group_condition2|default:0 == 1} checked{/if}>
+                            или
+                          </span>
+                          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          <input class="input4" name="next_group_products" style="width: 60px;" type="text" value="{if $Group->next_group_products|default:0 > 0}{$Group->next_group_products|escape}{/if}"> товаров
+                        </p>
+                        <div style="color: #C0C0C0; font-size: 8pt; padding-top: 5px; padding-bottom: 5px;">
+                          при какой сумме платежей и/или количестве сделанных заказов и/или количестве приобретённых товаров покупатель перейдёт в другую группу
+                        </div>
+                      </td>
+                    </tr>
+                  {/if}
+                </table>
+                <p style="padding-top: 10px;">
+                  <input name="authorized" type="hidden" value="{$Group->authorized|default:'1'|escape}">
+                  <input class="submit" type="submit" value="&nbsp;Сохранить&nbsp;">
+                </p>
+                <div style="clear: both; float: none; font-family: Verdana, Tahoma, Arial; font-size: 10pt; padding-top: 15px; text-align: justify; text-indent: 32px;">
+                  При редактировании <b>группы</b> указывается величина скидки, применяемой к заказам авторизованных
+                  (зашедших на сайт по своему логину) покупателей, принадлежащих данной группе. Такая
+                  скидка распространяется на все товары с неустановленной приоритетной скидкой для них. Если
+                  у конкретного товара задана приоритетная скидка, этот товар будет рассчитан согласно его
+                  скидке, остальные товары в заказе покупателя будут рассчитаны согласно скидке для группы
+                  этого покупателя.
+                </div>
+                <div style="clear: both; float: none; font-family: Verdana, Tahoma, Arial; font-size: 10pt; text-align: justify; text-indent: 32px;">
+                  Скидка для группы не меняется в зависимости от суммы текущего заказа покупателя, и на весь
+                  заказ действует постоянная скидка. Можно задать условия, при которых покупатель автоматически
+                  переводится в следующую группу (пока в пакете расширений нет поддержки такого автоперехода!).
+                  Тогда лишь со следующего заказа для этого покупателя начнёт действовать новая скидка.
+                </div>
+                <div style="clear: both; float: none; font-family: Verdana, Tahoma, Arial; font-size: 10pt; text-align: justify; text-indent: 32px;">
+                  Существует второй вариант скидок - <b>внегрупповые</b>. Они применяются к заказам неавторизованных покупателей
+                  или тех из авторизованных, кто не отнесён к какой-либо группе покупателей. Внегрупповые скидки уже
+                  зависят от суммы текущего заказа. То есть в процессе того, как покупатель добавляет товары в заказ,
+                  из перечня внегрупповых скидок выбирается подходящая к итоговой сумме заказа.
+                </div>
+                <div style="clear: both; float: none; font-family: Verdana, Tahoma, Arial; font-size: 10pt; text-align: justify; text-indent: 32px;">
+                  Внегрупповые скидки аналогично не распространяются на товары с установленной приоритетной скидкой.
+                  Если такой товар оказывается в заказе, скидка для него рассчитывается своя, а внегрупповая скидка
+                  действует на итоговую сумму заказа за вычетом цены товара с приоритетной скидкой.
+                </div>
+              </div>
+            </div>
+        </form>
+  </div>

@@ -1,0 +1,432 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка медиафайлов.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о медиафайлах;
+    $menus = массив с записями о меню сайта;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "files" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    pages = true - вывести эту кнопку
+    news = true - вывести эту кнопку
+    articles = true - вывести эту кнопку
+    banners = true - вывести эту кнопку
+    files = true - вывести эту кнопку
+    menus = true - вывести эту кнопку
+    modules = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "files"
+           main = true
+           pages = true
+           news = true
+           articles = true
+           banners = true
+           files = true
+           menus = true
+           modules = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Файлы
+      </div>
+      Страницы медиа файлов
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        <a class="left" href="#settings" onclick="javascript: Show_PageElements('setup_form');" title="Показать настройки сайта, относящиеся к медиа файлам">
+          настройки
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=File&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить страницу медиа файла">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Files" id="items_form" method="post">
+
+      <!-- Фильтр -->
+      <table align="center" cellpadding="0" cellspacing="8" class="white">
+        <tr>
+          <td class="param_short">
+            Раздел
+          </td>
+          <td class="value" width="50%" title="Фильтр: только принадлежащие такому разделу сайта">
+
+            <!-- Создаем селектор разделов сайта -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SECTION|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+              <option value="1"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SECTION] == "1")} selected{/if}>Основной</option>
+            </select>
+          </td>
+          <td class="param_short">
+            Меню
+          </td>
+          <td class="value" width="50%" title="Фильтр: только принадлежащие такому меню сайта">
+
+            <!-- Создаем селектор меню сайта -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+              {if isset($menus)}
+                {foreach item=c from=$menus}
+                  <option value="{$c->menu_id|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU] == $c->menu_id)} selected{/if}>{$c->name|escape}</option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить
+          </td>
+          <td class="value" width="100%" title="Способ сортировки страниц медиа файлов в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_FILES_MODE_AS_IS}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_FILES_MODE_AS_IS)} selected{/if}>как расставлены</option>
+              <option value="{$smarty.const.SORT_FILES_MODE_BY_HEADER}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_FILES_MODE_BY_HEADER)} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_FILES_MODE_BY_CREATED}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_FILES_MODE_BY_CREATED)} selected{/if}>по дате добавления</option>
+              <option value="{$smarty.const.SORT_FILES_MODE_BY_MODIFIED}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_FILES_MODE_BY_MODIFIED)} selected{/if}>по дате исправления</option>
+              <option value="{$smarty.const.SORT_FILES_MODE_BY_BROWSED}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_FILES_MODE_BY_BROWSED)} selected{/if}>по количеству просмотров</option>
+              <option value="{$smarty.const.SORT_FILES_MODE_BY_URL}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_FILES_MODE_BY_URL)} selected{/if}>по url (адресу страницы медиа файла)</option>
+            </select>
+          </td>
+
+          <!-- Флажки фильтра -->
+          <td class="param_short" title="Фильтр: только скрытые от незарегистрированных пользователей">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}');">
+              скрыта
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только разрешенные к показу на сайте">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+              разрешена
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только загружавшиеся файлами">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_FILED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_FILED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_FILED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_FILED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_FILED|escape}');">
+              с файлами
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с SEO текстом">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}');">
+              с SEO текстом
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {assign var="now_menu" value=false}
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <!-- Визуальное выделение принадлежности к меню -->
+            {if $now_menu !== $c->menu}
+              {assign var="now_menu" value=$c->menu}
+              <li class="head_divider">
+                <div>
+                  {if $c->menu != ""}
+                    {$c->menu|escape}
+                  {else}
+                    Вне любого меню
+                  {/if}
+                </div>
+              </li>
+            {/if}
+
+            <li class="flatlist">
+
+              <!-- Микро кнопки справа от названия в меню -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная страница медиа файла будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_FILES_MODE_AS_IS)}
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_first_get|escape}" title="Поставить первой в ветке (текущий вес {$c->order_num|escape})">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_first_16x16.png">
+                </a>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_up_get|escape}" title="Поднять выше в ветке (текущий вес {$c->order_num|escape})">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_up_16x16.png">
+                </a>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_down_get|escape}" title="Опустить ниже в ветке (текущий вес {$c->order_num|escape})">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_down_16x16.png">
+                </a>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_last_get|escape}" title="Поставить последней в ветке (текущий вес {$c->order_num|escape})">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_last_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+              {/if}
+
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->hidden_get|escape}" title="Скрыть / открыть для незарегистрированных пользователей">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_hidden{if $c->hidden != 1}_off{/if}_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              <!-- Нумерация -->
+              <span class="topic" style="display: inline;">
+                {if isset($CurrentPage)}
+                  {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                {else}
+                  {$smarty.foreach.items.iteration}.
+                {/if}
+              </span>
+
+              <!-- Количество просмотров -->
+              <span class="browsed" title="Количество просмотров: {$c->browsed|escape}">
+                {$c->browsed|escape}
+              </span>
+
+              <!-- Название в меню -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="Заголовок: {$c->header|escape}">
+                {$c->name|escape}
+              </a>
+
+              <!-- Краткая информация -->
+
+              <!-- теги -->
+              {if isset($c->tags) && ($c->tags != "")}
+                <div class="line" title="Теги: {$c->tags|escape}">
+                  <span>
+                    теги:
+                  </span>
+                  {$c->tags|escape}
+                </div>
+              {/if}
+
+              <!-- описание -->
+              {if isset($c->description) && ($c->description|strip_tags|replace:"&nbsp;":" "|strip != "")}
+                <div class="line" title="{$c->description|strip_tags|replace:"&nbsp;":" "|escape}">
+                  <span>
+                    описание:
+                  </span>
+                  {$c->description|strip_tags|replace:"&nbsp;":" "|escape}
+                </div>
+              {/if}
+
+              <div class="line{if $c->enabled != 1} gray{/if}">
+                <span>
+                  адрес:
+                </span>
+                {if $c->enabled == 1}
+                  <a href="http://{$root_url|escape}/media/{$c->url|escape}" title="Перейти на страницу медиа файла в клиентской части сайта">
+                    http://{$root_url|escape}/media/{$c->url|escape}
+                  </a>
+                {else}
+                  http://{$root_url|escape}/media/{$c->url|escape}
+                {/if}
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено страниц медиа файлов.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка страницы медиа файлов по конкретным параметрам.
+        Поля фильтра можно сочетать произвольно, они объединены функцией И.
+      </div>
+      <div>
+        Страница медиа файла содержит текст описания, в нем вполне возможно указать любые ссылки на скачивание файлов, даже находящихся вне
+        сайта. В то же время в страницу медиа файла можно загрузить файлы для их хранения и скачивания с сайта. Чтобы иметь возможность выделить страницы
+        медиа файлов, в которые производилась именно загрузка файлов, предназначено поле фильтра "<u>с&nbsp;файлами</u>". Оно дает возможность выделить
+        такие страницы, не уточняя притом факт, реально ли используются загруженные в них файлы или просто хранятся на сайте для прочих целей.
+      </div>
+      <div>
+        <b>Упорядочение</b>. По умолчанию способ сортировки страниц медиа файлов в списке на данной странице равен "<u>как&nbsp;расставлены</u>".
+        В случае смены способа сортировки он запоминается на время текущего сеанса.
+      </div>
+      <div>
+        В отличие от других способов упорядочения, способ "<u>как&nbsp;расставлены</u>" отключает сортировку и предоставляет функции перемещения
+        страниц медиа файлов по ветви меню, в котором они находятся. Эта расстановка основана на так называемых весах элементов - символических
+        числах первостепенности одной записи перед другой. Чем больше число, тем выше в ветви своего меню размещается страница медиа файла в списке,
+        упорядоченном таким образом.
+      </div>
+      <div>
+        <b>Принадлежность</b>. При любом способе сортировки список страниц медиа файлов, строго сохраняя выбранную упорядоченность, визуально
+        отмечается принадлежностью участков списка к конкретным меню сайта. Кроме того, в списке указаны не заголовки страниц медиа файлов, а их
+        названия в меню (иными словами, названия пунктов меню). Наведением курсора на это название можно просмотреть, как будет озаглавлена
+        страница медиа файла при ее посещении пользователем.
+      </div>
+    </div>
+
+    <!-- Форма соответствующих модулю настроек сайта -->
+    <a name="settings"></a>
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Files" enctype="multipart/form-data" id="setup_form" method="post"{if empty($error)} style="display: none;"{/if}>
+      <br>
+      <h1>
+        Настройки
+      </h1>
+      <br>
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_short" title="Использовать ли визуальный редактор при редактировании страниц медиа файлов">
+            <input class="checkbox" id="setup_form_wysiwyg_disabled" name="files_wysiwyg_disabled" type="checkbox"{if isset($settings->files_wysiwyg_disabled) && ($settings->files_wysiwyg_disabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_wysiwyg_disabled');">
+              Отключить wysiwyg-редактор:
+            </span>
+          </td>
+          <td class="value" width="100%" title="Как обрабатывать текст при отключенном визуальном редакторе">
+            <select name="files_wysiwyg_disabled_mode">
+              <option value="{$smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_NO_ACTION|escape}"{if $settings->files_wysiwyg_disabled_mode == $smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_NO_ACTION} selected{/if}>в тексте ничего не менять, не трогать разметочные теги</option>
+              <option value="{$smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_ALL_TAGS_CLEAR|escape}"{if $settings->files_wysiwyg_disabled_mode == $smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_ALL_TAGS_CLEAR} selected{/if}>из текста удалять все теги, пустые строки и лишние пробелы</option>
+            </select>
+          </td>
+          <td class="param_short" colspan="3" title="Разрешить ли системе заполнять пустые поля мета информации">
+            <input class="checkbox" id="setup_form_meta_autofill" name="files_meta_autofill" type="checkbox"{if isset($settings->files_meta_autofill) && ($settings->files_meta_autofill == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_meta_autofill');">
+              Автозаполнение полей мета тегов
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            Сортировать в меню стороны клиента:
+          </td>
+          <td class="value" title="Как упорядочить список страниц медиа файлов, сформированный для клиентской стороны">
+            <select name="files_sort_method">
+              <option value="{$smarty.const.SORT_FILES_MODE_AS_IS|escape}"{if $settings->files_sort_method == $smarty.const.SORT_FILES_MODE_AS_IS} selected{/if}>как расставлены в админпанели</option>
+              <option value="{$smarty.const.SORT_FILES_MODE_BY_HEADER|escape}"{if $settings->files_sort_method == $smarty.const.SORT_FILES_MODE_BY_HEADER} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_FILES_MODE_BY_CREATED|escape}"{if $settings->files_sort_method == $smarty.const.SORT_FILES_MODE_BY_CREATED} selected{/if}>по дате добавления</option>
+              <option value="{$smarty.const.SORT_FILES_MODE_BY_BROWSED|escape}"{if $settings->files_sort_method == $smarty.const.SORT_FILES_MODE_BY_BROWSED} selected{/if}>по количеству просмотров</option>
+            </select>
+          </td>
+          <td class="param_short" colspan="2">
+            Префикс папки:
+          </td>
+          <td class="value" title="Префикс папки с файлами страниц медиа файлов">
+            <input class="edit" name="files_files_folder_prefix" type="text" value="{$settings->files_files_folder_prefix|escape|default:''}">
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            Оглавление списка на стороне клиента:
+          </td>
+          <td class="value" title="Оглавление списка страниц медиа файлов на стороне клиента">
+            <input class="edit" name="files_main_title" type="text" value="{$settings->files_main_title|escape|default:''}">
+          </td>
+          <td class="param_short" colspan="2">
+            Название в навигаторе:
+          </td>
+          <td class="value" title="Путевое название списка страниц медиа файлов в навигаторе на стороне клиента">
+            <input class="edit" name="files_main_path" type="text" value="{$settings->files_main_path|escape|default:''}">
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            Мета описание страницы списка:
+          </td>
+          <td class="value" colspan="4" title="Описание в мета информации страницы списка медиа файлов на стороне клиента">
+            <input class="edit" name="files_main_description" type="text" value="{$settings->files_main_description|escape|default:''}">
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            Ключевые мета слова страницы списка:
+          </td>
+          <td class="value" colspan="3" title="Ключевые слова в мета информации страницы списка медиа файлов на стороне клиента">
+            <input class="edit" name="files_main_keywords" type="text" value="{$settings->files_main_keywords|escape|default:''}">
+          </td>
+          <td class="value_box">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_SETUP|escape}" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+    </form>
+
+  </div>

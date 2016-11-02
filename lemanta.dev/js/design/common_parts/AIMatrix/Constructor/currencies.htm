@@ -1,0 +1,116 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Currencies - блок выбора валют                                          |
+  Версия модуля: 1.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $opentag = открывающий тег блока                                              |
+        $form_params = дополнительные опции тега формы                            |
+            $title_opentag = открывающий тег заголовка                            |
+                $title = заголовок                                                |
+            $title_closetag = закрывающий тег заголовка                           |
+            $select_opentag = открывающий тег поля выбора                         |
+                $select_params = дополнительные опции тега поля выбора            |
+            $select_closetag = закрывающий тег поля выбора                        |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $currencies = массив записей о валютах сайта                                  |
+    $currency = запись о текущей валюте клиентской стороны сайта                  |
+    $smarty.session = массив параметров сеанса                                    |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/currencies.htm'      |
+             opentag = строка                                                     |
+             form_params = строка                                                 |
+             title_opentag = строка                                               |
+             title = строка                                                       |
+             title_closetag = строка                                              |
+             select_opentag = строка                                              |
+             select_params = строка                                               |
+             select_closetag = строка                                             |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {$opentag|default:''}
+
+        <form method="post" {$form_params|default:""}>
+
+
+
+            {* <!-- заголовок --> *}
+            {if $title|default:'' != ''}
+                {$title_opentag|default:''}
+                    {$title}
+                {$title_closetag|default:''}
+            {/if}
+
+
+
+            {* <!-- формируем теговую опцию "инструменты админа" --> *}
+            {$admintools = ($smarty.session.admin|default:'' == 'admin') ? 'tooltip="currency"' : ''}
+
+
+
+            {* <!-- селектор валют --> *}
+            {$select_opentag|default:''}
+                <select name="currency_id" onchange="javascript: jQuery(this).closest('form').submit();" {$admintools} {$select_params|default:""}>
+
+
+
+                    {* <!-- перебираем валюты сайта --> *}
+                    {if isset($currencies) && is_array($currencies) && !empty($currencies)}
+                        {foreach $currencies as $c}
+
+
+
+                            {* <!-- флаг selected для выбранной валюты --> *}
+                            {$selected = ($currency->currency_id|default:'' == $c->currency_id|default:'') ? 'selected' : ''}
+
+
+
+                            {* <!-- выводим опцию выбора валюты --> *}
+                            <option value="{$c->currency_id|default:''|escape}" {$selected}>
+                                {$c->name|default:'безымянная'}
+                            </option>
+
+                        {/foreach}
+
+
+
+                    {* <!-- иначе список валют пуст --> *}
+                    {else}
+
+                        <option value="">
+                            пусто
+                        </option>
+
+                    {/if}
+
+
+
+                </select>
+            {$select_closetag|default:''}
+
+
+
+        </form>
+
+    {$closetag|default:''}
+
+{/strip}

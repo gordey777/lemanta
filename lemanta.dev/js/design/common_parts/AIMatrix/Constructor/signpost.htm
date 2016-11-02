@@ -1,0 +1,192 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Signpost - блок ссылок разводки по страницам                            |
+  Версия модуля: 1.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $opentag = открывающий тег блока                                              |
+        $link_opentag_hit = открывающий тег элемента "хиты"                       |
+        $link_opentag_newest = открывающий тег элемента "новинки"                 |
+        $link_opentag_actional = открывающий тег элемента "акционные"             |
+        $link_opentag_awaited = открывающий тег элемента "ожидаемые"              |
+        $link_opentag_ordered = открывающий тег элемента "покупаемые"             |
+        $link_opentag_commented = открывающий тег элемента "обсуждаемые"          |
+        $link_opentag_quickorder = открывающий тег элемента "оптовый заказ"       |
+        $link_opentag_configurator = открывающий тег элемента "собрать комплект"  |
+        $link_opentag_media = открывающий тег элемента "медиа файлы"              |
+        $link_opentag_stocks = открывающий тег элемента "склады"                  |
+        $link_opentag_callme = открывающий тег элемента "позвоните мне"           |
+            $a_params = дополнительные опции тега ссылки                          |
+            $a_text_hit = текст ссылки "хиты"                                     |
+            $a_text_newest = текст ссылки "новинки"                               |
+            $a_text_actional = текст ссылки "акционные"                           |
+            $a_text_awaited = текст ссылки "ожидаемые"                            |
+            $a_text_ordered = текст ссылки "покупаемые"                           |
+            $a_text_commented = текст ссылки "обсуждаемые"                        |
+            $a_text_quickorder = текст ссылки "оптовый заказ"                     |
+            $a_text_configurator = текст ссылки "собрать комплект"                |
+            $a_text_media = текст ссылки "медиа файлы"                            |
+            $a_text_stocks = текст ссылки "склады"                                |
+            $a_text_callme = текст ссылки "позвоните мне"                         |
+        $link_closetag = закрывающий тег элемента списка                          |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $settings = объект настроек сайта                                             |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {$url = ($site|default:''|escape)|cat:'catalog?'|cat:($smarty.const.REQUEST_PARAM_NAME_CATALOG_MODE|default:''|escape)|cat:'='}
+
+
+
+    {$opentag|default:''}
+
+        {* <!-- если в настройках сайта разрешен блок хитов продаж на главной --> *}
+        {if !isset($settings->products_main_hit_enabled) || $settings->products_main_hit_enabled}
+            {if $a_text_hit|default:'' != ''}
+                {$link_opentag_hit|default:''}
+                    <a href="{$url}{$smarty.const.CATALOG_MODE_REQUEST_PARAM_VALUE_HIT|default:''|escape}" {$a_params|default:""}>
+                        {$a_text_hit}
+                    </a>
+                {$link_closetag|default:''}
+            {/if}
+        {/if}
+
+
+
+        {* <!-- если в настройках сайта разрешен блок новинок на главной --> *}
+        {if !isset($settings->products_main_newest_enabled) || $settings->products_main_newest_enabled}
+            {if $a_text_newest|default:'' != ''}
+                {$link_opentag_newest|default:''}
+                    <a href="{$url}{$smarty.const.CATALOG_MODE_REQUEST_PARAM_VALUE_NEWEST|default:''|escape}" {$a_params|default:""}>
+                        {$a_text_newest}
+                    </a>
+                {$link_closetag|default:''}
+            {/if}
+        {/if}
+
+
+
+        {* <!-- если в настройках сайта разрешен блок акционных товаров на главной --> *}
+        {if !isset($settings->products_main_actional_enabled) || $settings->products_main_actional_enabled}
+            {if $a_text_actional|default:'' != ''}
+                {$link_opentag_actional|default:''}
+                    <a href="{$url}{$smarty.const.CATALOG_MODE_REQUEST_PARAM_VALUE_ACTIONAL|default:''|escape}" {$a_params|default:""}>
+                        {$a_text_actional}
+                    </a>
+                {$link_closetag|default:''}
+            {/if}
+        {/if}
+
+
+
+        {* <!-- если в настройках сайта разрешен блок ожидаемых товаров на главной --> *}
+        {if !isset($settings->products_main_awaited_enabled) || $settings->products_main_awaited_enabled}
+            {if $a_text_awaited|default:'' != ''}
+                {$link_opentag_awaited|default:''}
+                    <a href="{$url}{$smarty.const.CATALOG_MODE_REQUEST_PARAM_VALUE_AWAITED|default:''|escape}" {$a_params|default:""}>
+                        {$a_text_awaited}
+                    </a>
+                {$link_closetag|default:''}
+            {/if}
+        {/if}
+
+
+
+        {* <!-- если в настройках сайта разрешен блок недавно покупавшихся товаров на главной --> *}
+        {if !isset($settings->products_main_ordered_enabled) || $settings->products_main_ordered_enabled}
+            {if $a_text_ordered|default:'' != ''}
+                {$link_opentag_ordered|default:''}
+                    <a href="{$url}{$smarty.const.CATALOG_MODE_REQUEST_PARAM_VALUE_ORDERED|default:''|escape}" {$a_params|default:""}>
+                        {$a_text_ordered}
+                    </a>
+                {$link_closetag|default:''}
+            {/if}
+        {/if}
+
+
+
+        {* <!-- если в настройках сайта разрешен блок недавно обсуждавшихся товаров на главной --> *}
+        {if !isset($settings->products_main_commented_enabled) || $settings->products_main_commented_enabled}
+            {if $a_text_commented|default:'' != ''}
+                {$link_opentag_commented|default:''}
+                    <a href="{$url}{$smarty.const.CATALOG_MODE_REQUEST_PARAM_VALUE_COMMENTED|default:''|escape}" {$a_params|default:""}>
+                        {$a_text_commented}
+                    </a>
+                {$link_closetag|default:''}
+            {/if}
+        {/if}
+
+
+
+        {* <!-- ссылка Оптовый заказ --> *}
+        {if $a_text_quickorder|default:'' != ''}
+            {$link_opentag_quickorder|default:''}
+                <a href="{$site|default:''|escape}quickorder" {$a_params|default:""}>
+                    {$a_text_quickorder}
+                </a>
+            {$link_closetag|default:''}
+        {/if}
+
+
+
+        {* <!-- ссылка Конфигуратор --> *}
+        {if $a_text_configurator|default:'' != ''}
+            {$link_opentag_configurator|default:''}
+                <a href="{$site|default:''|escape}configurator" {$a_params|default:""}>
+                    {$a_text_configurator}
+                </a>
+            {$link_closetag|default:''}
+        {/if}
+
+
+
+        {* <!-- ссылка Медиа файлы --> *}
+        {if $a_text_media|default:'' != ''}
+            {$link_opentag_media|default:''}
+                <a href="{$site|default:''|escape}media" {$a_params|default:""}>
+                    {$a_text_media}
+                </a>
+            {$link_closetag|default:''}
+        {/if}
+
+
+
+        {* <!-- ссылка Наши склады --> *}
+        {if $a_text_stocks|default:'' != ''}
+            {$link_opentag_stocks|default:''}
+                <a href="{$site|default:''|escape}stocks" {$a_params|default:""}>
+                    {$a_text_stocks}
+                </a>
+            {$link_closetag|default:''}
+        {/if}
+
+
+
+        {* <!-- ссылка Позвоните мне --> *}
+        {if $a_text_callme|default:'' != ''}
+            {$link_opentag_callme|default:''}
+                <a href="{$site|default:''|escape}callme" {$a_params|default:""}>
+                    {$a_text_callme}
+                </a>
+            {$link_closetag|default:''}
+        {/if}
+
+    {$closetag|default:''}
+
+{/strip}

@@ -1,0 +1,93 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Search - блок поиска                                                    |
+  Версия модуля: 1.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $opentag = открывающий тег блока                                              |
+        $form_params = дополнительные опции тега формы                            |
+            $title_opentag = открывающий тег заголовка                            |
+                $title = заголовок                                                |
+            $title_closetag = закрывающий тег заголовка                           |
+            $input_opentag = открывающий тег поля ввода                           |
+                $input_params = дополнительные опции тега поля ввода              |
+            $input_closetag = закрывающий тег поля ввода                          |
+            $a_opentag = открывающий тег ссылки (кнопки)                          |
+                $a_params = дополнительные опции тега ссылки                      |
+                $a_text = текст ссылки                                            |
+            $a_closetag = закрывающий тег ссылки                                  |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $keyword = ранее введенный искомый текст                                      |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/search.htm'          |
+             opentag = строка                                                     |
+             form_params = строка                                                 |
+             title_opentag = строка                                               |
+             title = строка                                                       |
+             title_closetag = строка                                              |
+             input_opentag = строка                                               |
+             input_params = строка                                                |
+             input_closetag = строка                                              |
+             a_opentag = строка                                                   |
+             a_params = строка                                                    |
+             a_text = строка                                                      |
+             a_closetag = строка                                                  |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {$opentag|default:''}
+
+        <form action="{$site|default:''|escape}search" method="post" {$form_params|default:""}>
+
+
+
+            {* <!-- заголовок --> *}
+            {if $title|default:'' != ''}
+                {$title_opentag|default:''}
+                    {$title}
+                {$title_closetag|default:''}
+            {/if}
+
+
+
+            {* <!-- поле ввода --> *}
+            {$input_opentag|default:''}
+                {$temp = 'что ищем...'}
+                <input name="keyword" type="text" value="{$keyword|default:$temp|escape}" {$input_params|default:""} format=".+" notice="Введите искомый текст" onblur="javascript: if (jQuery.trim(this.value) == '') this.value = '{$temp|escape}';" onfocus="javascript: if (this.value == '{$temp|escape}') this.value = '';" />
+            {$input_closetag|default:''}
+
+
+
+            {* <!-- кнопка Найти --> *}
+            {$a_opentag|default:''}
+                <a href="{$site|default:''|escape}" onclick="javascript: var object = jQuery(this).closest('form'); object = object[0]; Emulate_FormFields_OnFocus(object); if (Emulate_BaloonValidateForm(object)) jQuery(object).submit(); return false;" {$a_params|default:""}>
+                    {$a_text|default:'Найти'}
+                </a>
+            {$a_closetag|default:''}
+
+
+
+        </form>
+
+    {$closetag|default:''}
+
+{/strip}

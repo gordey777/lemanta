@@ -1,0 +1,168 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Listing - блок листинга записей                                         |
+  Версия модуля: 1.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $items = массив записей                                                       |
+    $maxcount = предельное число выводимых записей                                |
+    $opentag = открывающий тег блока                                              |
+        $title_opentag = открывающий тег заголовка                                |
+            $title_a_href = url ссылки заголовка                                  |
+            $title_a_params = дополнительные опции ссылки заголовка               |
+                $title = заголовок                                                |
+        $title_closetag = закрывающий тег заголовка                               |
+        $box_opentag = открывающий тег контейнера списка                          |
+            $listing_opentag = открывающий тег списка                             |
+                $link_opentag = открывающий тег элемента списка                   |
+                    $includes = массив подключаемых частей элемента               |
+                $link_closetag = закрывающий тег элемента списка                  |
+            $listing_closetag = закрывающий тег списка                            |
+        $box_closetag = закрывающий тег контейнера списка                         |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    нет                                                                           |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/listing.htm'         |
+             items = массив                                                       |
+             maxcount = число                                                     |
+             opentag = строка                                                     |
+                 title_opentag = строка                                           |
+                     title_a_href = строка                                        |
+                     title_a_params = строка                                      |
+                         title = строка                                           |
+                 title_closetag = строка                                          |
+                 box_opentag = строка                                             |
+                     listing_opentag = строка                                     |
+                         link_opentag = строка                                    |
+                             includes = массив строк                              |
+                         link_closetag = строка                                   |
+                     listing_closetag = строка                                    |
+                 box_closetag = строка                                            |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- если получен непустой массив записей --> *}
+    {if isset($items) && is_array($items) && !empty($items)}
+
+
+
+        {* <!-- захватываем вывод в переменную $result --> *}
+        {capture assign = 'result'}
+
+
+
+            {* <!-- перебираем незапрещенные записи, не более заданного количества --> *}
+            {$count = $maxcount|default:1000000}
+            {foreach $items as $r}
+
+                {if $count > 0}
+
+                    {if !isset($r->enabled) || $r->enabled}
+
+
+
+                        {$link_opentag|default:''}
+
+
+
+                            {* <!-- последовательно вызываем указанные: часть или модуль($item) --> *}
+                            {if isset($includes) && is_array($includes) && !empty($includes)}
+                                {foreach $includes as $i}
+                                    {if is_string($i) && ($i|regex_replace:'/[\s\t\r\n]/':'' != '')}
+                                        {if $i|regex_replace:'/[^<>]/':'' != ''}
+                                            {$i}
+                                        {else}
+                                            {include file = $i
+                                                     item = $r}
+                                        {/if}
+                                    {/if}
+                                {/foreach}
+                            {/if}
+
+
+
+                        {$link_closetag|default:''}
+
+
+
+                        {* <!-- +1 запись вывели --> *}
+                        {$count = $count - 1}
+
+
+
+                    {/if}
+
+                {/if}
+
+            {/foreach}
+
+
+
+        {/capture}
+
+
+
+        {* <!-- если захваченный вывод не пустой, выводим --> *}
+        {if $result|regex_replace:'/[\s\t\r\n]/':'' != ''}
+
+            {$opentag|default:''}
+
+
+
+                {* <!-- заголовок --> *}
+                {if $title|default:'' != ''}
+
+                    {$title_opentag|default:''}
+
+                        {if $title_a_href|default:'' != ''}
+                            <a href="{$title_a_href|default:''|escape}" {$title_a_params|default:""}>
+                                {$title}
+                            </a>
+                        {else}
+                            {$title}
+                        {/if}
+
+                    {$title_closetag|default:''}
+
+                {/if}
+
+
+
+                {* <!-- контейнер списка --> *}
+                {$box_opentag|default:''}
+
+                    {$listing_opentag|default:''}
+
+                        {$result}
+
+                    {$listing_closetag|default:''}
+
+                {$box_closetag|default:''}
+
+
+
+            {$closetag|default:''}
+
+        {/if}
+
+    {/if}
+
+{/strip}

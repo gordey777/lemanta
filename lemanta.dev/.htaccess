@@ -1,0 +1,1371 @@
+# Impera CMS: файл динамичной настройки веб сервера для клиентской части магазина.
+#
+# ============================================================================
+#
+# Если PHP запущен как модуль веб сервера Apache, задаем некоторые настройки PHP: ограничение
+# на использование памяти, сжатие отдаваемых клиенту страниц, степень сжатия
+#
+# <IfModule mod_php5.c>
+
+    php_value  memory_limit    64M
+    php_value  max_input_vars  12000
+
+    # php_value zlib.output_compression On      #_ZLIB_MARKER
+    # php_value zlib.output_compression_level 9 #_ZLIB_MARKER
+
+# </IfModule>
+
+
+
+# ----------------------------------------------------------------------------
+#
+# Данное условие IfModule специально закомментировано, чтобы заключенные в него
+# инструкции mod_rewrit-а работали не только на Apache-серверах
+#
+# <IfModule rewrite_module>
+
+    # Включаем модуль mod_rewrite
+
+    RewriteEngine  on
+
+
+
+    # Точка синхронизации 1С и Мой Склад
+
+    RewriteRule  ^cml/?$  admin/index.php?section=CommerceML  [NC,L,QSA]
+
+# </IfModule>
+#
+# ----------------------------------------------------------------------------
+
+
+
+# ----------------------------------------------------------------------------
+#
+# Убрать старые адреса
+
+    RewriteRule  ^catalog/Svitera-zhenskie$                 /zhenskaya-odezhda/svitera  [R=301,L,QSA]
+    RewriteRule  ^catalog/Vechernie-platya$                 /zhenskaya-odezhda/platya/vechernie  [R=301,L,QSA]
+    RewriteRule  ^catalog/Sarafany$                         /zhenskaya-odezhda/platya/sarafany  [R=301,L,QSA]
+    RewriteRule  ^catalog/Povsednevnye-platya$              /zhenskaya-odezhda/platya/povsednevnye  [R=301,L,QSA]
+    RewriteRule  ^catalog/Letnie-platya$                    /zhenskaya-odezhda/platya/letnie  [R=301,L,QSA]
+    RewriteRule  ^catalog/Koktejlnye-platya$                /zhenskaya-odezhda/platya/kokteylnye  [R=301,L,QSA]
+    RewriteRule  ^catalog/zhenskaya-odezhda/platya$         /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^catalog/Balnye-platya$                    /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kostyumy$                         /zhenskaya-odezhda/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^catalog/Koftochki-futbolki$               /zhenskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^catalog/zhenskaja_odezhda$                /zhenskaya-odezhda  [R=301,L,QSA]
+    RewriteRule  ^catalog/YUbki$                            /zhenskaya-odezhda  [R=301,L,QSA]
+    RewriteRule  ^catalog/Nakidki$                          /zhenskaya-odezhda  [R=301,L,QSA]
+    RewriteRule  ^catalog/Futbolki$                         /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Muzhskaya-odezhda$                /muzhskaya-odezhda  [R=301,L,QSA]
+    RewriteRule  ^catalog/YUbki-detskie$                    /detskaya-odezhda/yubki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Sarafany-detskie$                 /detskaya-odezhda/sarafany  [R=301,L,QSA]
+    RewriteRule  ^catalog/Koktejlnye-platya$                /zhenskaya-odezhda/platya/kokteylnye  [R=301,L,QSA]
+
+  # RewriteRule  ^zhenskaya-odezhda/platya$                 /zhenskaya-odezhda/platya  [R=301,L,QSA]
+
+    RewriteRule  ^catalog/Balnye-platya$                    /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kostyumy$                         /zhenskaya-odezhda/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^catalog/Koftochki-futbolki$               /zhenskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Plashchi$                         /detskaya-odezhda/plashchi  [R=301,L,QSA]
+    RewriteRule  ^catalog/Svitera$                          /detskaya-odezhda/dlya-malchikov/svitera  [R=301,L,QSA]
+    RewriteRule  ^catalog/SHorty-dlya-malchikov$            /detskaya-odezhda/dlya-malchikov/shorty  [R=301,L,QSA]
+    RewriteRule  ^catalog/Rubashki$                         /detskaya-odezhda/dlya-malchikov/rubashki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kurtki-dlya-malchikov$            /detskaya-odezhda/dlya-malchikov/kurtki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kostyumy-trojki-dlya-malchikov$   /detskaya-odezhda/dlya-malchikov/kostyumy-troyki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kostyumy-dlya-malchikov$          /detskaya-odezhda/dlya-malchikov/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kostyumy-zimnie-malchik$          /detskaya-odezhda/dlya-malchikov/kombinezony  [R=301,L,QSA]
+    RewriteRule  ^catalog/Dzhinsy-dlya-malchikov$           /detskaya-odezhda/dlya-malchikov/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^catalog/Bryuki-na-flise$                  /detskaya-odezhda/dlya-malchikov/bryuki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Bryuki-dlya-malchikov$            /detskaya-odezhda/dlya-malchikov/bryuki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Bridzhi-dlya-malchikov$           /detskaya-odezhda/dlya-malchikov/bryuki  [R=301,L,QSA]
+    RewriteRule  ^catalog/odezhda_dlja_malchikov$           /detskaya-odezhda/dlya-malchikov  [R=301,L,QSA]
+    RewriteRule  ^catalog/Majki-dlya-malchikov$             /detskaya-odezhda/dlya-malchikov  [R=301,L,QSA]
+    RewriteRule  ^catalog/Svitera-dlya-devochek$            /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^catalog/SHorty-dlya-devochek$             /detskaya-odezhda/dlya-devochek/shorty  [R=301,L,QSA]
+    RewriteRule  ^catalog/Platya$                           /detskaya-odezhda/dlya-devochek/platya  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kurtki-dlya-devochek$             /detskaya-odezhda/dlya-devochek/kurtki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kostyumy-trojki-dlya-devochek$    /detskaya-odezhda/dlya-devochek/kostyumy-troyki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kostyumy-dlya-devochek$           /detskaya-odezhda/dlya-devochek/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^catalog/Kostyumy-zimnie-devochka$         /detskaya-odezhda/dlya-devochek/kombinezony  [R=301,L,QSA]
+    RewriteRule  ^catalog/Dzhinsy-dlya-devochek$            /detskaya-odezhda/dlya-devochek/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^catalog/Dzhinsy-na-flise$                 /detskaya-odezhda/dlya-devochek/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^catalog/Bryuki-dlya-devochek$             /detskaya-odezhda/dlya-devochek/bryuki  [R=301,L,QSA]
+    RewriteRule  ^catalog/Bridzhi-dlya-devochek$            /detskaya-odezhda/dlya-devochek/bridzhi  [R=301,L,QSA]
+    RewriteRule  ^catalog/odezhda_dlja_devochek$            /detskaya-odezhda/dlya-devochek  [R=301,L,QSA]
+    RewriteRule  ^catalog/Tuniki-majki-koftochki$           /detskaya-odezhda/dlya-devochek  [R=301,L,QSA]
+    RewriteRule  ^catalog/Losiny$                           /detskaya-odezhda/dlya-devochek  [R=301,L,QSA]
+    RewriteRule  ^news/ZHenskie-vetrovki-i-verhnyaya-odezhda-dlya-zhenshchin-aktualnye-trendy-etogo-sezona$  /blog/zhenskie-vetrovki-i-verhnyaya-odezhda-dlya-zhenshchin-aktualnye-trendy-etogo-sezona  [R=301,L,QSA]
+    RewriteRule  ^news/ZHenskaya-odezhda-optom-formiruem-assortiment-tovara-v-magazine$     /blog/zhenskaya-odezhda-optom-formiruem-assortiment-tovara-v-magazine  [R=301,L,QSA]
+    RewriteRule  ^ZHenskaya-futbolka-universalnyj-predmet-garderoba$                        /blog/zhenskaya-futbolka-universalnyj-predmet-garderoba  [R=301,L,QSA]
+    RewriteRule  ^Vysokokachestvennaya-odezhda-dlya-zhenshchin-po-samym-dostupnym-cenam$    /blog/vysokokachestvennaya-odezhda-dlya-zhenshchin-po-samym-dostupnym-cenam  [R=301,L,QSA]
+    RewriteRule  ^Pokupka-zhenskoj-odezhdy-v-internet-magazinah-na-chto-vazhno-obratit-vnimanie$  /blog/pokupka-zhenskoj-odezhdy-v-internet-magazinah-na-chto-vazhno-obratit-vnimanie  [R=301,L,QSA]
+    RewriteRule  ^news/Modnaya-odezhda-dlya-zhenshchin-aktualnye-fasony-etogo-goda$         /blog/modnaya-odezhda-dlya-zhenshchin-aktualnye-fasony-etogo-goda  [R=301,L,QSA]
+    RewriteRule  ^news/Kupit-ofisnoe-plate$                                                 /blog/kupit-ofisnoe-plate  [R=301,L,QSA]
+    RewriteRule  ^news/Kakuyu-odezhdu-vybrat-v-etom-sezone$                                 /blog/kakuyu-odezhdu-vybrat-v-etom-sezone  [R=301,L,QSA]
+    RewriteRule  ^news/Kak-vybrat-zhenskuyu-odezhdu-dlya-korporativa$                       /blog/kak-vybrat-zhenskuyu-odezhdu-dlya-korporativa  [R=301,L,QSA]
+    RewriteRule  ^news/Detskie-sarafany-krasivaya-i-praktichnaya-odezhda-dlya-devochek$     /blog/detskie-sarafany-krasivaya-i-praktichnaya-odezhda-dlya-devochek  [R=301,L,QSA]
+    RewriteRule  ^news/Detskie-dzhinsy-universalnyj-predmet-garderoba-dlya-malysha-lyubogo-vozrasta$  /blog/detskie-dzhinsy-universalnyj-predmet-garderoba-dlya-malysha-lyubogo-vozrasta  [R=301,L,QSA]
+    RewriteRule  ^news/Detskaya-verhnyaya-odezhda-vybiraem-kurtku-i-vetrovku-dlya-rebenka$  /blog/detskaya-verhnyaya-odezhda-vybiraem-kurtku-i-vetrovku-dlya-rebenka  [R=301,L,QSA]
+    RewriteRule  ^news/Detskaya-shkolnaya-forma$                                            /blog/detskaya-shkolnaya-forma  [R=301,L,QSA]
+    RewriteRule  ^news/Detskaya-odezhda-optom-vozmozhnost-realnoj-ekonomii-dlya-roditelej$  /blog/detskaya-odezhda-optom-vozmozhnost-realnoj-ekonomii-dlya-roditelej  [R=301,L,QSA]
+    RewriteRule  ^news/Detskaya-odezhda-kak-gramotno-podobrat-garderob-rebenka$             /blog/detskaya-odezhda-kak-gramotno-podobrat-garderob-rebenka  [R=301,L,QSA]
+    RewriteRule  ^news/Bluzki-i-yubki-kak-element-delovogo-stilya-podbiraem-pravilnye-sochetaniya$  /blog/bluzki-i-yubki-kak-element-delovogo-stilya-podbiraem-pravilnye-sochetaniya  [R=301,L,QSA]
+
+    RewriteRule  ^products/Plate-5g-1190dh$  /products/atlasnoe-koktejlnoe-plate-golubogo-cveta-bez-rukavov-1190  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5f-1190dh$  /products/atlasnoe-koktejlnoe-plate-krasnogo-cveta-bez-rukavov-1190  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-2j-8289os$  /products/effektnaya-futbolka-belogo-cveta-s-korotkim-rukavom-8289  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-5j-8289os$  /products/effektnaya-futbolka-rozovogo-cveta-s-korotkim-rukavom-8289  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3s-10573fd$  /products/effektnaya-futbolka-rozovogo-cveta-s-printom-i-korotkim-rukavom-10573  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-7j-8289os$  /products/effektnaya-futbolka-serogo-cveta-s-korotkim-rukavom-8289  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3j-8289os$  /products/effektnaya-futbolka-svetlo-rozovogo-cveta-s-korotkim-rukavom-8289  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-4j-8289os$  /products/effektnaya-futbolka-zheltogo-cveta-s-korotkim-rukavom-8289  [R=301,L,QSA]
+    RewriteRule  ^products/Rubashka-4g-51014ov$  /products/effektnaya-rubashka-belogo-cveta-51014  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3s-1527df$  /products/effektnoe-beloe-plate-s-rozami-i-yubkoj-v-polosku-1527  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9d-1256ka$  /products/effektnoe-koktejlnoe-plate-chernogo-cveta-bez-rukavov-1256  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5i-109ns$  /products/effektnoe-koktejlnoe-plate-krasnogo-cveta-s-dlinnym-rukavom-109  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7r-1347sl$  /products/effektnoe-koktejlnoe-plate-rozovogo-cveta-bez-rukavov-1347  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9p-1222ld$  /products/effektnoe-koktejlnoe-plate-s-cvetami-1222  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3u-82581ps$  /products/effektnoe-koktejlnoe-plate-s-cvetami-i-dlinnym-rukavom-82581  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7i-869os$  /products/effektnoe-koktejlnoe-plate-s-printom-i-dlinnym-rukavom-869  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4e-1263sa$  /products/effektnoe-koktejlnoe-plate-sinego-cveta-bez-rukavov-1263  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4g-1348ma$  /products/effektnoe-koktejlnoe-plate-v-polosku-s-korotkim-rukavom-1348  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8t-1571ns$  /products/effektnoe-legkoe-plate-chernogo-cveta-s-rozami-1571  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1k-1045a$  /products/effektnoe-legkoe-plate-s-printom-bez-rukavov-1045  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4a-1224eh$  /products/effektnoe-ofisnoe-plate-s-cvetami-i-dlinnym-rukavom-1224  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8s-3023lf$  /products/effektnoe-povsednevnoe-plate-serogo-cveta-s-cvetami-3023  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7x-1194nd$  /products/effektnoe-vechernee-plate-chernogo-cveta-v-polosku-s-dlinnym-rukavom-1194  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-902$  /products/effektnye-dzhinsy-sinego-cveta-na-flise-pryamye-902  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-9t-11993ol$  /products/effektnyj-sviter-sinego-cveta-v-polosku-11993  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-1d-653kx$  /products/elegantnaya-kurtka-belogo-cveta-s-mehom-653  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-1d-653ks$  /products/elegantnaya-kurtka-chernogo-cveta-s-mehom-653  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7a-15B-5Amg$  /products/elegantnaya-parka-serogo-cveta-15b-5a  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-8a-15B-5Amg$  /products/elegantnaya-parka-sinego-cveta-15b-5a  [R=301,L,QSA]
+    RewriteRule  ^products/Rubashka-8f-50712nd$  /products/elegantnaya-rubashka-belogo-cveta-50712  [R=301,L,QSA]
+    RewriteRule  ^products/Rubashka-4g-50781ov$  /products/elegantnaya-rubashka-serogo-cveta-s-ornamentom-50781  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5j-615nw$  /products/elegantnaya-teplaya-kurtka-sinego-cveta-615  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6r-1343df$  /products/elegantnoe-foisnoe-plate-krasnogo-cveta-bez-rukavov-1343  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7k-10283gq$  /products/elegantnoe-koktejlnoe-plate-sinego-cveta-s-printom-bez-rukavov-10283  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5p-1548dk$  /products/elegantnoe-plate-serogo-cveta-s-krasnym-kruzhevom-1548  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9d-1143pf$  /products/elegantnoe-vechernee-plate-belogo-cveta-s-dlinnym-rukavom-1143  [R=301,L,QSA]
+    RewriteRule  ^products/Majka-6j-1203pd$  /products/elegantnoe-vechernee-plate-chernogo-cveta-s-kruzhevom-1203  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7m-C1590-1hs$  /products/elegantnye-bryuki-chernogo-cveta-c1590-1  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-na-flise-YL1598$  /products/elegantnye-bryuki-chernogo-cveta-na-flise-yl1598  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7u-3305hs$  /products/elegantnye-dzhinsy-chernogo-cveta-3305  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-903$  /products/elegantnye-dzhinsy-sinego-cveta-na-flise-pryamye-903  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-YL21262$  /products/elegantnye-dzhinsy-sinego-cveta-na-flise-yl21262  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-408sd$  /products/elegantnye-dzhinsy-sinego-cveta-s-poyasom-408  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9t-605sd$  /products/elegantnye-dzhinsy-sinego-cveta-s-pryamoj-shtaninoj-605  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9t-815sd$  /products/elegantnye-dzhinsy-sinego-cveta-s-zauzhennoj-shtaninoj-815  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-6s-12021dx$  /products/elegantnye-shorty-v-kletku-s-poyasom-12021  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-8s-14-6ol$  /products/elegantnyj-sviter-golubogo-cveta-14-6  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1r-1202et$  /products/interesnoe-koktejlnoe-plate-chernogo-cveta-s-dlinnym-rukavom-1202  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7z-8801vf$  /products/klassicheskie-bryuki-chernogo-cveta-8801  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-6u-3306hs$  /products/klassicheskie-dzhinsy-chernogo-cveta-3306  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-03$  /products/klassicheskie-dzhinsy-sinego-cveta-03  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-YL23285$  /products/klassicheskie-dzhinsy-sinego-cveta-na-flise-yl23285  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9t-602sd$  /products/klassicheskie-dzhinsy-sinego-cveta-s-zauzhennoj-shtaninoj-602  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8z-1168hr$  /products/koketlivoe-koktejlnoe-plate-krasnogo-cveta-s-uzorom-1168  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5f-13041df$  /products/koketlivoe-legkoe-plate-mentolovogo-cveta-s-otkrytymi-plechami-13041  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2d-1219of$  /products/koketlivoe-legkoe-plate-sinego-cveta-v-goroshek-1219  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7u-1311la$  /products/koketlivoe-povsednevnoe-plate-rozovogo-cveta-bez-rukavov-1311  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8h-9412cr$  /products/koketlivoe-povsednevnoe-plate-serogo-cveta-s-uzorom-9412  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9t-1341kq$  /products/koketlivoe-povsednevnoe-plate-v-polosku-bez-rukavov-1341  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9h-317ms$  /products/koketlivoe-vechernee-plate-chernogo-cveta-s-bolero-i-dlinnym-rukavom-317  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4$  /products/koketlivoe-vechrnee-plate-persikovogo-cveta-na-bretelkah-4  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-7x-3351ks$  /products/koketlivye-bridzhi-golubogo-cveta-s-bantikom-3351  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-7z-1525ds$  /products/koketlivyj-sarafan-v-cherno-beluyu-kletku-1525  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-8w-305na$  /products/koketlivyj-sviter-rozovogo-cveta-305  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4g-17618te$  /products/koketlivyj-velvetovyj-kostyum-golubogo-cveta-17618  [R=301,L,QSA]
+    RewriteRule  ^products/YUbka-8j-4336ls$  /products/krasivaya-dzhinsovaya-yubka-s-uzorom-4336  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3j-8326os$  /products/krasivaya-futbolka-biryuzovogo-cveta-s-medvedem-8326  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-9j-8326os$  /products/krasivaya-futbolka-golubogo-cveta-s-medvedem-8326  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-4j-8326os$  /products/krasivaya-futbolka-sinego-cveta-s-medvedem-8326  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3r-10573fd$  /products/krasivaya-futbolka-zelenogo-cveta-s-korotkim-rukavom-10573  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-4o-1308ak$  /products/krasivaya-kofta-krasnogo-cveta-v-polosku-1308  [R=301,L,QSA]
+    RewriteRule  ^products/Koftochka-6j-1193yt-DREAMS-sinyaya$  /products/krasivaya-koftochka-dreams-sinego-cveta-s-dlinnym-rukavom-1193  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4t-922ya$  /products/krasivaya-kurtka-rozovogo-cveta-s-cvetami-922  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4e-779op$  /products/krasivaya-kurtka-rozovogo-cveta-s-uzorom-779  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7t-922ya$  /products/krasivaya-kurtka-sinego-cveta-s-cvetami-922  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7a-66-281mg$  /products/krasivaya-legkaya-kurtka-golubogo-cveta-66-281  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-9a-66-281mg$  /products/krasivaya-legkaya-kurtka-krasnogo-cveta-66-281  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-2a-66-281mg$  /products/krasivaya-legkaya-kurtka-zheltogo-cveta-66-281  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-2a-801mg$  /products/krasivaya-parka-sinego-cveta-801  [R=301,L,QSA]
+    RewriteRule  ^products/Rubashka-3z-51022ps$  /products/krasivaya-rubashka-belogo-cveta-s-ornamentom-51022  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-6u-13030ja$  /products/krasivaya-teplaya-kurtka-zelenogo-cveta-13030  [R=301,L,QSA]
+    RewriteRule  ^products/Vetrovka-s-batnikom-7p-1616ds$  /products/krasivaya-vetrovka-s-batnikom-golubogo-cveta-1616  [R=301,L,QSA]
+    RewriteRule  ^products/Vetrovka-s-batnikom-5p-1616ds$  /products/krasivaya-vetrovka-s-batnikom-zelenogo-cveta-1616  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4w-1528vo$  /products/krasivoe-beloe-plate-s-yarkimi-rozami-1528  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5s-797jf$  /products/krasivoe-koktejlnoe-plate-sinego-cveta-bez-rukavov-797  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3v-1236so$  /products/krasivoe-koktejlnoe-plate-sinego-cveta-s-dlinnym-rukavom-1236  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4d-858js$  /products/krasivoe-koktelnoe-plate-zelenogo-cveta-s-uzorom-858  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4i-1344sh$  /products/krasivoe-legkoe-plate-mentolovogo-cveta-bez-rukavov-1344  [R=301,L,QSA]
+    RewriteRule  ^products/Tunika-3r-15792la$  /products/krasivoe-plate-tunika-krasnogo-cveta-s-babochkami-15792  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4h-1139ek$  /products/krasivoe-povsednevnoe-plate-kletku-s-cvetami-1139  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8x-1264ta$  /products/krasivoe-povsednevnoe-plate-sinego-cveta-s-cvetami-1264  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7t-315gf$  /products/krasivoe-vechernee-plate-sinego-cveta-s-dlinnym-rukavom-315  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8k-502cs$  /products/krasivye-dzhinsovye-bridzhi-golubogo-cveta-502  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-1c-1613os$  /products/krasivye-dzhinsy-golubogo-cveta-1613  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-02$  /products/krasivye-dzhinsy-sinego-cveta-na-flise-pryamye-02  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-YL23287$  /products/krasivye-dzhinsy-sinego-cveta-na-flise-yl23287  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-3p-1215lz$  /products/krasivye-dzhinsy-sinego-cveta-na-rezinke-1215  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-6p-1210ms$  /products/krasivye-dzhinsy-sinego-cveta-na-shnurke-1210  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-402sd$  /products/krasivye-dzhinsy-sinego-cveta-s-poyasom-402  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-501sd$  /products/krasivye-dzhinsy-sinego-cveta-s-pryamoj-shtaninoj-501  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8d-303sh$  /products/krasivye-dzhinsy-sinego-cveta-s-uzorom-303  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-820sd$  /products/krasivye-dzhinsy-sinego-cveta-s-zauzhennoj-shtaninoj-820  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-2s-12043jx$  /products/krasivye-shorty-v-kletku-s-poyasom-12043  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-2k-9809hp$  /products/krasivye-teplye-losiny-chernogo-cveta-s-uzorom-9809  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8s-2232al$  /products/krasivyj-kostyum-golubogo-cveta-s-uzorom-2232  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3s-3674wd$  /products/krasivyj-kostyum-krasnogo-cveta-s-babochkoj-3674  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3s-3292qd$  /products/krasivyj-kostyum-krasnogo-cveta-s-uzorom-3292  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4u-2246vj$  /products/krasivyj-kostyum-persikovogo-cveta-s-uzorom-i-cvetami-2246  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3s-3601wd$  /products/krasivyj-kostyum-rozovogo-cveta-s-devochkoj-3601  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4s-3292qd$  /products/krasivyj-kostyum-rozovogo-cveta-s-uzorom-3292  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4z-2246os$  /products/krasivyj-kostyum-rozovogo-cveta-s-uzorom-i-cvetami-2246  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-6s-2232al$  /products/krasivyj-kostyum-sinego-cveta-s-uzorom-2232  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5b-7050dl$  /products/krasivyj-kostyum-sirenevogo-cveta-7050  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-3y-327ja$  /products/krasivyj-sviter-pod-gorlo-v-polosku-327  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-6s-1307mx$  /products/krasivyj-sviter-serogo-cveta-1307  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5k-030df$  /products/krasivyj-teplyj-kostyum-030  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4s-501fz$  /products/krasivyj-teplyj-kostyum-bezhevogo-cveta-501  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4i-509sr$  /products/krasivyj-teplyj-kostyum-krasnogo-cveta-509  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8a-66-186rm$  /products/krasivyj-teplyj-kostyum-persikovogo-cveta-66-186  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4s-501fd$  /products/krasivyj-teplyj-kostyum-rozovogo-cveta-501  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4s-501fa$  /products/krasivyj-teplyj-kostyum-zelenogo-cveta-501  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4i-509sj$  /products/krasivyj-teplyj-kostyum-zheltogo-cveta-509  [R=301,L,QSA]
+    RewriteRule  ^products/Plashch-5w-3173go$  /products/krasivyy-plashch-serogo-cveta-s-kapyushonom-3173  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9r-1535fk$  /products/krasochnaya-koftochka-krasnogo-cveta-s-cvetami-1535  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6d-820ba$  /products/legkoe-plate-oranzhevogo-cveta-bez-rukavov-820  [R=301,L,QSA]
+    RewriteRule  ^products/Koftochka-5r-119dl-TEAMO$  /products/milaya-koftochka-teamo-v-polosku-krasno-belaya-s-dlinnym-rukavom-119  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7s-66-253xc$  /products/milaya-kurtka-krasnogo-cveta-s-cvetami-i-mehom-66-253  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7s-66-253vr$  /products/milaya-kurtka-rozovogo-cveta-s-cvetami-i-mehom-66-253  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7s-66-253xr$  /products/milaya-kurtka-sinego-cveta-s-cvetami-i-mehom-66-253  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4h-12543xp$  /products/miloe-koktejlnoe-plate-belogo-cveta-v-goroshek-bez-rukavov-12543  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3x-9056vk$  /products/miloe-koktejlnoe-plate-bezhevogo-cveta-s-uzorom-9056  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3g-1322pa$  /products/miloe-legkoe-plate-golubogo-cveta-bez-rukavov-1322  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3s-1238da$  /products/miloe-legkoe-plate-korallovogo-cveta-s-cvetami-1238  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7p-10051rx$  /products/miloe-legkoe-plate-rozovogo-cveta-s-cvetami-10051  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2g-1167ks$  /products/miloe-ofisnoe-plate-bezhevogo-cveta-s-cvetami-1167  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5g-1167dj$  /products/miloe-ofisnoe-plate-s-cvetami-i-dlinnym-rukavom-1167  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7t-1001bf$  /products/miloe-ofisnoe-plate-s-uzorom-i-korotkim-rukavom-1001  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5u-1099wm$  /products/miloe-ofisnoe-plate-v-kruzhechek-s-dlinnymi-rukavami-1099  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1d-68030zu$  /products/miloe-plate-golubogo-cveta-s-babochkami-68030  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9t-1551nu$  /products/miloe-plate-v-cherno-beluyu-kletku-s-mimozami-1551  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8h-591kd$  /products/miloe-povsednevnoe-plate-chernogo-cveta-s-dlinnym-rukavom-591  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5a-1173ks$  /products/miloe-vechernee-plate-s-uzorom-i-dlinnym-rukavom-1173  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-YL23283$  /products/milye-dzhinsy-sinego-cveta-na-flise-yl23283  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-6t-305ns$  /products/milye-dzhinsy-sinego-cveta-s-kristallami-305  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-8d-1004wm$  /products/milye-legkie-losiny-fioletovogo-cveta-1004  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-3d-1004wm$  /products/milye-legkie-losiny-serogo-cveta-1004  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-7d-1002wm$  /products/milye-legkie-losiny-zheltogo-cveta-1002  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-2k-9809hf$  /products/milye-teplye-losiny-sinego-cveta-s-uzorom-9809  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5z-7150de$  /products/milyj-kostyum-golubogo-cveta-7150  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9z-7150de$  /products/milyj-kostyum-zelenogo-cveta-7150  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-DREAMS-korallovyj$  /products/milyj-sviter-dreams-korallovogo-cveta-s-dlinnym-rukavom-dreams-1193  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-GARFILD-goluboj$  /products/milyj-sviter-garfild-golubogo-cveta-11934  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4i-7119xr$  /products/milyj-sviter-korichnevogo-cveta-s-ornamentom-7119  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-6t-7119gf$  /products/milyj-sviter-krasnogo-cveta-s-ornamentom-7119  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4p-15ol$  /products/milyj-sviter-rozovogo-cveta-15  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4p-17ol$  /products/milyj-sviter-rozovogo-cveta-s-kristallami-17  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4s-085tw$  /products/milyj-sviter-rozovogo-cveta-v-polosku-085  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-6t-7119lf$  /products/milyj-sviter-serogo-cveta-s-ornamentom-7119  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-3y-322ja$  /products/milyj-sviter-serogo-cveta-v-golubuyu-polosku-322  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4s-085ty$  /products/milyj-sviter-serogo-cveta-v-polosku-085  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-3y-327jd$  /products/milyj-sviter-serogo-cveta-v-polosku-327  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4y-322ja$  /products/milyj-sviter-serogo-cveta-v-sinyuyu-polosku-322  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4p-16ol$  /products/milyj-sviter-sinego-cveta-s-kristallami-16  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-3y-327jo$  /products/milyj-sviter-sinego-cveta-v-polosku-327  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4p-14-81ol$  /products/milyj-sviter-zelenogo-cveta-14-81  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-6t-7119sf$  /products/milyj-sviter-zelenogo-cveta-s-ornamentom-7119  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4l-66-255rd$  /products/milyj-teplyj-kostyum-rozovogo-cveta-66-255  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8e-66-257ja$  /products/milyj-teplyj-kostyum-sinego-cveta-s-cvetami-66-257  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4l-66-255sd$  /products/milyj-teplyj-kostyum-sirenevogo-cveta-66-255  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-3f-137113ls$  /products/milyy-rozovyy-sarafan-na-pugovicah-13711  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-5j-8328os$  /products/modnaya-futbolka-golubogo-cveta-s-orlom-8328  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-4j-8327os$  /products/modnaya-futbolka-golubogo-cveta-s-printom-volkov-8327  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-9j-8328os$  /products/modnaya-futbolka-korichnevogo-cveta-s-korotkim-rukavom-8328  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-1j-8328os$  /products/modnaya-futbolka-serogo-cveta-s-orlom-8328  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-8j-8327os$  /products/modnaya-futbolka-serogo-cveta-s-printom-volkov-8327  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-2j-8327os$  /products/modnaya-futbolka-sinego-cveta-s-printom-volkov-8327  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-9j-8327os$  /products/modnaya-futbolka-svetlo-sinego-cveta-s-printom-volkov-8327  [R=301,L,QSA]
+    RewriteRule  ^products/Koftochka-3z-1193la-DREAMS-cherno-belaya$  /products/modnaya-koftochka-dreams-v-polosku-cherno-belogo-cvetov-s-dlinnym-rukavom-1193  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4t-973ya$  /products/modnaya-kurtka-golubogo-cveta-s-ornamentom-973  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4t-961ya$  /products/modnaya-kurtka-sinego-cveta-s-ornamentom-961  [R=301,L,QSA]
+    RewriteRule  ^products/Majka-3e-10581fd-New-York$  /products/modnaya-majka-chernogo-cveta-s-printom-bez-rukavov-10581  [R=301,L,QSA]
+    RewriteRule  ^products/Parka-4p-F39cx$  /products/modnaya-parka-sinego-cveta-s-kapyushonom-f39  [R=301,L,QSA]
+    RewriteRule  ^products/Parka-6p-F39cx$  /products/modnaya-parka-zelenogo-cveta-s-kapyushonom-f39  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-4f-50442sa$  /products/modnaya-sportivnaya-kofta-serogo-cveta-50442  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-4f-50442sc$  /products/modnaya-sportivnaya-kofta-zheltogo-cveta-50442  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3g-9818da$  /products/modnaya-teplaya-kofta-chernogo-cveta-9818  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-8e-BM542sd$  /products/modnaya-teplaya-kurtka-golubogo-cveta-s-kapyushonom-bm542  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-6p-503ga$  /products/modnaya-teplaya-kurtka-serogo-cveta-s-mehom-503  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5e-BM542sd$  /products/modnaya-teplaya-kurtka-sinego-cveta-s-kapyushonom-bm542  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-3w-66-267ds$  /products/modnaya-teplaya-kurtka-zheltogo-cveta-66-267  [R=301,L,QSA]
+    RewriteRule  ^products/Batnik-8q-02ds$  /products/modnaya-tolstovka-chernogo-cveta-02  [R=301,L,QSA]
+    RewriteRule  ^products/Batnik-8q-16ds$  /products/modnaya-tolstovka-golubogo-cveta-16  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-1c-1615os$  /products/modnaya-vetrovka-s-batnikom-zelenogo-cveta-1615  [R=301,L,QSA]
+    RewriteRule  ^products/Vetrovka-6g-811op$  /products/modnaya-vetrovka-sinego-cveta-v-polosku-811  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1k-12542rr$  /products/modnoe-koktejlnoe-plate-s-uzorom-bez-rukavov-12542  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4z-1121re$  /products/modnoe-koktejlnoe-plate-s-zeleno-chernym-uzorom-s-dlinnym-rukavom-1121  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9f-309fk$  /products/modnoe-koktejlnoe-plate-serogo-cveta-s-dlinnym-rukavom-309  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7e-1347sl$  /products/modnoe-koktejlnoe-plate-sinego-cveta-bez-rukavov-1347  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6j-1034kd$  /products/modnoe-koktejlnoe-plate-zheltogo-cveta-bez-rukavov-1034  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9f-755ao$  /products/modnoe-ofisnoe-plate-sinego-cveta-s-dlinnym-rukavom-755  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4s-1215ks$  /products/modnoe-ofisnoe-plate-zheltogo-cveta-s-poyasom-1215  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2s-1559le$  /products/modnoe-plate-chernogo-cveta-v-goroh-1559  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8w-1240oi$  /products/modnoe-povsednevnoe-plate-belogo-cveta-s-uzorom-1240  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1w-339ss$  /products/modnoe-povsednevnoe-plate-sinego-cveta-s-dlinnym-rukavom-339  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6d-3002yt$  /products/modnoe-vechernee-plate-chernogo-cveta-s-korotkim-rukavom-3002  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-3u-78003tu$  /products/modnye-bridzhi-golubogo-cveta-78003  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7m-C0hs$  /products/modnye-bryuki-chernogo-cveta-c0  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-na-flise-J15011$  /products/modnye-bryuki-chernogo-cveta-na-flise-j15011  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-3c-SU802vf$  /products/modnye-bryuki-chernogo-cveta-su802  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-5e-6166ip$  /products/modnye-dzhinsovye-bridzhi-golubogo-cveta-6166  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8k-QF316cs$  /products/modnye-dzhinsovye-bridzhi-golubogo-cveta-na-rezinke-qf316  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-6f-243sj$  /products/modnye-dzhinsovye-shorty-243  [R=301,L,QSA]
+    RewriteRule  ^products/Vetrovka-s-batnikom-7p-1615ds$  /products/modnye-dzhinsy-sinego-cveta-1615  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-6617$  /products/modnye-dzhinsy-sinego-cveta-na-flise-6617  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-905$  /products/modnye-dzhinsy-sinego-cveta-na-flise-pryamye-905  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-407sd$  /products/modnye-dzhinsy-sinego-cveta-s-poyasom-407  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-504sd$  /products/modnye-dzhinsy-sinego-cveta-s-pryamoj-shtaninoj-504  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9d-306ns$  /products/modnye-dzhinsy-sinego-cveta-s-shirokim-poyasom-306  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5a-603go$  /products/modnye-dzhinsy-sinego-cveta-s-zauzhennoy-shtaninoy-603  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7r-25100tz$  /products/modnye-legkie-bryuki-bezhevogo-cveta-s-poyasom-25100  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-3c-SUT805-2vf$  /products/modnye-povsednevnye-bryuki-chernogo-cveta-sut805-2  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-9w-Z-208dl$  /products/modnye-shorty-sine-oranzhevogo-cveta-s-uzorom-9218  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-6s-12044jx$  /products/modnye-shorty-v-kletku-12044  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-3s-12046jx$  /products/modnye-shorty-v-kletku-korichnevogo-cveta-12046  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-2s-12046jx$  /products/modnye-shorty-v-kletku-oranzhevogo-cveta-12046  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-4v-6101rt$  /products/modnye-teplye-dzhinsy-sinego-cveta-6101  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-7o-89540xz$  /products/modnye-teplye-losiny-chernogo-cveta-s-kristallami-89540  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-na-flise-SU8801$  /products/modnye-uteplennye-bryuki-chernogo-cveta-su8801  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-na-flise-ST005$  /products/modnye-uteplennye-bryuki-sinego-cveta-st005  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-8805$  /products/modnye-uteplennye-dzhinsy-sinego-cveta-na-rezinke-8805  [R=301,L,QSA]
+    RewriteRule  ^products/Batnik-6w-5009mu$  /products/modnyj-batnik-golubogo-cveta-s-risunkom-5009  [R=301,L,QSA]
+    RewriteRule  ^products/Batnik-5w-5009mu$  /products/modnyj-batnik-sinego-cveta-s-risunkom-5009  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5a-4022hb$  /products/modnyj-kostyum-krasno-golubogo-cveta-4022  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-1w-2276jc$  /products/modnyj-kostyum-persikovogo-cveta-s-cvetami-2276  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-6j-2234sa$  /products/modnyj-kostyum-persikovogo-cveta-s-uzorom-2234  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3w-2276jc$  /products/modnyj-kostyum-rozovogo-cveta-s-cvetami-2276  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-6j-2278sa$  /products/modnyj-kostyum-rozovogo-cveta-s-uzorom-2278  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5x-4022vs$  /products/modnyj-kostyum-sero-korichnevogo-cveta-4022  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-2s-4022hb$  /products/modnyj-kostyum-sero-zelenogo-cveta-4022  [R=301,L,QSA]
+    RewriteRule  ^products/Letnij-kostyum-6r-30090eo$  /products/modnyj-legkij-kostyum-belo-golubogo-cveta-s-printom-30090  [R=301,L,QSA]
+    RewriteRule  ^products/Letnij-kostyum-8r-1188eo$  /products/modnyj-legkij-kostyum-sero-golubogo-cveta-1188  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-poplin-4y-69rj$  /products/modnyj-sarafan-rozovogo-cveta-s-uzorom-69  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-plisse-5x-219bg$  /products/modnyj-sarafan-zelenogo-cveta-bez-rukavov-219  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3s-3801wd$  /products/modnyj-sportivnyj-kostyum-golubogo-cveta-3801  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7u-CT3323xs$  /products/modnyj-sportivnyj-kostyum-serogo-cveta-ct3323  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8y-CT3317sd$  /products/modnyj-sportivnyj-kostyum-sinego-cveta-ct3317  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-GARFILD-korallovyj$  /products/modnyj-sviter-garfild-krasnogo-cveta-11934  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-5t-176901fd$  /products/modnyj-sviter-polo-serogo-cveta-v-polosku-176901  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-3s-1307vs$  /products/modnyj-sviter-sinego-cveta-1307  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7y-518-5ps$  /products/modnyj-teplyj-kostyum-golubogo-cveta-518-5  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8a-66-186qm$  /products/modnyj-teplyj-kostyum-rozovogo-cveta-66-186  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7y-518-5pz$  /products/modnyj-teplyj-kostyum-sinego-cveta-518-5  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8a-66-186qf$  /products/modnyj-teplyj-kostyum-sirenevogo-cveta-66-186  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4g-1036kf$  /products/modnyj-velvetovyj-kostyum-korichnevogo-cveta-1036  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-1h-16008ds$  /products/modnyy-sarafan-chernogo-cveta-16008  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-7z-10573fd$  /products/molodezhnaya-futbolka-sinego-cveta-s-korotkim-rukavom-10573  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-3e-89026uv$  /products/molodezhnaya-kurtka-chernogo-cveta-89026  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-3e-89026uf$  /products/molodezhnaya-kurtka-golubogo-cveta-89026  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-6w-66-271ds$  /products/molodezhnaya-legkaya-kurtka-golubogo-cveta-66-271  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-2w-66-271ds$  /products/molodezhnaya-legkaya-kurtka-sinego-cveta-66-271  [R=301,L,QSA]
+    RewriteRule  ^products/Majka-3e-10583fd$  /products/molodezhnaya-majka-chernogo-cveta-s-printom-bez-rukavov-10583  [R=301,L,QSA]
+    RewriteRule  ^products/Koftochka-4p-1193ol-s-kruzhevom$  /products/molodezhnaya-povsednevnaya-koftochka-v-polosku-s-kruzhevom-i-dlinnym-rukavom-1193  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5w-66-267ds$  /products/molodezhnaya-teplaya-kurtka-rozovogo-cveta-66-267  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7i-1349ka$  /products/molodezhnoe-koktejlnoe-plate-sinego-cveta-s-korotkim-rukavom-1349  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4u-1319gw$  /products/molodezhnoe-legkoe-plate-v-polosku-bez-rukavov-1319  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7u-3304hs$  /products/molodezhnye-dzhinsy-chernogo-cveta-3304  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8o-FB673cx$  /products/molodezhnye-dzhinsy-golubogo-cveta-fb673  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-4v-6105rt$  /products/molodezhnye-dzhinsy-sinego-cveta-6105  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-906$  /products/molodezhnye-dzhinsy-sinego-cveta-na-flise-pryamye-906  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-YL23281$  /products/molodezhnye-dzhinsy-sinego-cveta-na-flise-yl23281  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-3r-09oi$  /products/molodezhnye-dzhinsy-sinego-cveta-s-zauzhennoy-shtaninoy-09  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-5521$  /products/molodezhnye-uteplennye-dzhinsy-sinego-cveta-na-rezinke-5521  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3s-CT2913wd$  /products/molodezhnyj-sportivnyj-kostyum-serogo-cveta-ct2913  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-5t-17497fd$  /products/molodezhnyj-sviter-polo-serogo-cveta-v-polosku-17497  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9x-12999ak$  /products/molodyozhnye-dzhinsy-golubogo-cveta-s-shirokim-poyasom-12999  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-2z-866-9ma$  /products/molodzhnaya-kurtka-sinego-cveta-866-9  [R=301,L,QSA]
+    RewriteRule  ^products/Komplekt-1a-3082re$  /products/naryadnoe-koktejlnoe-plate-chernogo-cveta-s-dlinnym-rukavom-3082  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8p-1168hr$  /products/naryadnoe-koktejlnoe-plate-zelenogo-cveta-s-uzorom-1168  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2b-1167ks$  /products/naryadnoe-ofisnoe-plate-korallovogo-cveta-s-uzorom-1167  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9i-1594es$  /products/naryadnoe-plate-belogo-cveta-s-bantom-1594  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9i-1234oa$  /products/naryadnoe-povsednevnoe-plate-golubogo-cveta-s-cvetami-1234  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8o-9054kg$  /products/naryadnoe-povsednevnoe-plate-s-uzorom-9054  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1k-324a$  /products/naryadnoe-vechernee-plate-chernogo-cveta-s-dlinnym-rukavom-324  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8u-13052sd$  /products/naryadnoe-vechernee-plate-zelenogo-cveta-s-otkrytymi-plechami-13052  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-na-flise-WE049$  /products/naryadnye-bryuki-chernogo-cveta-na-flise-we049  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-YL23286$  /products/naryadnye-dzhinsy-sinego-cveta-na-flise-yl23286  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-3e-951oj$  /products/neobychnaya-kurtka-persikovogo-cveta-s-bantami-951  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-9w-89004cg$  /products/neobychnaya-teplaya-kurtka-chernogo-cveta-89004  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-9w-89004cn$  /products/neobychnaya-teplaya-kurtka-golubogo-cveta-89004  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-6u-13007ja$  /products/neobychnaya-teplaya-kurtka-zelenogo-cveta-13007  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6j-221ct$  /products/neobychnoe-atlasnoe-plate-s-uzorom-221  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-s-58.1ea$  /products/neobychnoe-koktejlnoe-plate-s-uzorom-i-dlinnym-rukavom-58.1  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3m-9452kf$  /products/neobychnoe-koktejlnoe-plate-sinego-cveta-s-cvetami-9452  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6l-1269fk$  /products/neobychnoe-kotkejlnoe-plate-chernogo-cveta-s-korotkim-rukavom-1269  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7e-1338vd$  /products/neobychnoe-legkoe-plate-v-polosku-bez-rukavov-1338  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6s-1642cn$  /products/neobychnoe-plate-golubogo-cveta-s-poyasom-i-risunkom-1642  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-7g-1562ds$  /products/neobychnoe-plate-sarafan-v-cherno-beluyu-polosku-1562  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4o-936dg$  /products/neobychnoe-povsednevnoe-plate-chernogo-cveta-s-uzorom-936  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2q-1333ia$  /products/neobychnoe-povsednevnoe-plate-v-polosku-bez-rukavov-1333  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9h-12443na$  /products/neobychnoe-povsednevnoe-plate-v-polosku-s-korotkim-rukavom-12443  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-2n-8123pd$  /products/neobychnye-bridzhi-golubogo-cveta-s-molniyami-8123  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8k-7204cs$  /products/neobychnye-dzhinsovye-bridzhi-golubogo-cveta-na-rezinke-7204  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-04$  /products/neobychnye-dzhinsy-golubogo-cveta-s-uzorom-clm-04  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-4c-03vf$  /products/neobychnye-dzhinsy-sinego-cveta-na-flise-pryamye-03  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7z-L-01ex$  /products/neobychnye-dzhinsy-sinego-cveta-na-rezinke-701  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7r-99004tz$  /products/neobychnye-legkie-bryuki-bezhevogo-cveta-s-poyasom-99004  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-4e-9813ga$  /products/neobychnye-teplye-losiny-serogo-cveta-9813  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-8807$  /products/neobychnye-uteplennye-dzhinsy-sinego-cveta-na-rezinke-8807  [R=301,L,QSA]
+    RewriteRule  ^products/Batnik-6w-5019mu$  /products/neobychnyj-batnik-belogo-cveta-s-kotikami-5019  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7h-7134ke$  /products/neobychnyj-kostyum-golubogo-cveta-7134  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3u-2220al$  /products/neobychnyj-kostyum-golubogo-cveta-s-ornamentom-2220  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-6g-7134sm$  /products/neobychnyj-kostyum-krasno-sinego-cveta-7134  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9u-7134vj$  /products/neobychnyj-kostyum-zeleno-serogo-cveta-7134  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8s-2220al$  /products/neobychnyj-kostyum-zelenogo-cveta-s-ornamentom-2220  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-plisse-5t-219bg$  /products/neobychnyj-sarafan-golubogo-cveta-bez-rukavov-219  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-3r-270dv$  /products/neobychnyj-sviter-belogo-cveta-s-cvetami-270  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4r-270dv$  /products/neobychnyj-sviter-serogo-cveta-s-cvetami-270  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7k-031ma$  /products/neobychnyj-teplyj-kostyum-031  [R=301,L,QSA]
+    RewriteRule  ^products/Plashch-5w-3175go$  /products/neobychnyy-plashch-serogo-cveta-s-kapyushonom-3175  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-1h-16004ds$  /products/neobychnyy-sarafan-chernogo-cveta-16004  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8w-1322pa$  /products/neordinarnoe-legkoe-plate-rozovogo-cveta-bez-rukavov-1322  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-4b-10573fd$  /products/nezhnaya-futbolka-golubogo-cveta-s-korotkim-rukavom-10573  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6w-1345pd$  /products/nezhnoe-koktejlnoe-plate-zheltogo-cveta-v-goroh-1345  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7z-1311la$  /products/nezhnoe-legkoe-plate-golubogo-cveta-bez-rukavov-1311  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4i-13321sh$  /products/nezhnoe-povsednevnoe-plate-v-polosku-bez-rukavov-13321  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6m-3001ta$  /products/nezhnoe-vechernee-plate-rozovogo-cveta-s-dlinnym-rukavom-3001  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7e-1546bu$  /products/ocharovatelnoe-beloe-plate-s-sirenevymi-cvetami-1546  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1d-68029zu$  /products/ocharovatelnoe-plate-golubogo-cveta-v-goroh-68029  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5h-8902ds$  /products/originalnaya-dvuhstoronnyaya-kurtka-chernogo-i-zheltogo-cveta-8902  [R=301,L,QSA]
+    RewriteRule  ^products/YUbka-6y-4326sk$  /products/originalnaya-dzhinsovaya-yubka-s-uzorom-4326  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3e-0fd$  /products/originalnaya-futbolka-chernogo-cveta-s-korotkim-rukavom-0  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-9g-10573fd$  /products/originalnaya-futbolka-zheltogo-cveta-s-korotkim-rukavom-10573  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-8w-1312so$  /products/originalnaya-kofta-serogo-cveta-1312  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7b-1312ro$  /products/originalnaya-kofta-sinego-cveta-1312  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-8h-13030kd$  /products/originalnaya-kurtka-chernogo-cveta-13030  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5f-66-217ya$  /products/originalnaya-kurtka-rozovogo-cveta-s-cvetami-66-217  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-6g-8281db$  /products/originalnaya-kurtka-rozovogo-cveta-s-mehom-8281  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4d-16-12bx$  /products/originalnaya-legkaya-kurtka-krasnogo-cveta-s-babochkami-16-12  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4d-16-20bx$  /products/originalnaya-legkaya-kurtka-sinego-cveta-s-cvetami-16-20  [R=301,L,QSA]
+    RewriteRule  ^products/Majka-4h-1197ma$  /products/originalnaya-majka-belogo-cveta-s-ornamentom-1197  [R=301,L,QSA]
+    RewriteRule  ^products/Majka-2h-1197ma$  /products/originalnaya-majka-serogo-cveta-s-ornamentom-1197  [R=301,L,QSA]
+    RewriteRule  ^products/Rubashka-zhiletka$  /products/originalnaya-rubashka-zhiletka-serogo-cveta-2222  [R=301,L,QSA]
+    RewriteRule  ^products/Vetrovka-6g-788wg$  /products/originalnaya-vetrovka-krasnogo-cveta-788  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5j-9452fl$  /products/originalnoe-koktejlnoe-plate-golubogo-cveta-s-uzorom-9452  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3t-11842as$  /products/originalnoe-koktejlnoe-plate-s-cvetami-i-dlinnym-rukavom-11842  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6w-1251ro$  /products/originalnoe-koktejlnoe-plate-s-uzorom-i-korotkim-rukavom-1251  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2k-1258cq$  /products/originalnoe-koktejlnoe-plate-sinego-cveta-s-printom-bez-rukavov-1258  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3f-1238jo$  /products/originalnoe-koktejlnoe-plate-sinego-cveta-v-polosku-1238  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5z-1332la$  /products/originalnoe-legkoe-plate-v-polosku-s-cvetami-1332  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4i-321lj$  /products/originalnoe-ofisnoe-plate-serogo-cveta-s-dlinnym-rukavom-321  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4o-1215ks$  /products/originalnoe-ofisnoe-plate-zeleno-chernogo-cveta-s-dlinnymi-rukavami-1216  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4r-A3092js$  /products/originalnoe-plate-belogo-cveta-a3092  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6c-1315kz$  /products/originalnoe-plate-late-korichnevogo-cveta-bez-rukavov-1315  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6y-221ct$  /products/originalnoe-plate-rozovogo-cveta-s-uzorom-221  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4r-A3092je$  /products/originalnoe-plate-serogo-cveta-a3092  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9y-2795zj$  /products/originalnoe-povsednevnoe-plate-tunika-chernogo-cveta-2795  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5k-1334wh$  /products/originalnoe-vechernee-plate-belogo-cveta-s-cvetami-1334  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8u-5200dw$  /products/originalnye-bridzhi-golubogo-cveta-s-shirokim-poyasom-5200  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-9f-15912gr$  /products/originalnye-bryuki-chernogo-cveta-s-uzorom-15912  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8k-7203cs$  /products/originalnye-dzhinsovye-bridzhi-golubogo-cveta-na-rezinke-7203  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5g-164ls$  /products/originalnye-dzhinsy-golubogo-cveta-s-kristallami-164  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-901$  /products/originalnye-dzhinsy-sinego-cveta-na-flise-pryamye-901  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-3p-0lz$  /products/originalnye-dzhinsy-sinego-cveta-na-shnurke-0  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8t-302ns$  /products/originalnye-dzhinsy-sinego-cveta-s-shirokim-poyasom-302  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-9w-Z-210dl$  /products/originalnye-shorty-golubogo-cveta-9210  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-8q-888js$  /products/originalnye-shorty-golubogo-cveta-s-cvetami-888  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-4d-902js$  /products/originalnye-shorty-krasnogo-cveta-s-cvetami-902  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-4d-903js$  /products/originalnye-shorty-rozovogo-cveta-s-cvetami-903  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-4d-906js$  /products/originalnye-shorty-sinego-cveta-s-cvetami-906  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-4e-9813gb$  /products/originalnye-tyoplye-losiny-serogo-cveta-s-uzorom-9813  [R=301,L,QSA]
+    RewriteRule  ^products/Korset-s-yubkoj-2s-362t8a-3621ks$  /products/originalnyj-korset-s-yubkoj-rozovogo-cveta-362  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4s-2282af$  /products/originalnyj-kostyum-golubogo-cveta-2282  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8s-2282al$  /products/originalnyj-kostyum-zelenogo-cveta-2282  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-plisse-5r-219bg$  /products/originalnyj-sarafan-rozovogo-cveta-bez-rukavov-219  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-9p-253ci$  /products/originalnyj-sviter-belogo-cveta-s-cvetami-253  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-GARFILD-rozovyj$  /products/originalnyj-sviter-garfild-rozovogo-cveta-11934  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4p-14-8ol$  /products/originalnyj-sviter-rozovogo-cveta-14-8  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-9o-253ci$  /products/originalnyj-sviter-rozovogo-cveta-s-cvetami-253  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-5f-1308ks$  /products/originalnyj-sviter-serogo-cveta-1308  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9w-66-202ss$  /products/originalnyj-teplyj-kostyum-golubogo-cveta-s-uzorom-66-202  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9w-66-202ps$  /products/originalnyj-teplyj-kostyum-oranzhevogo-cveta-s-uzorom-66-202  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9w-66-202po$  /products/originalnyj-teplyj-kostyum-sinego-cveta-s-uzorom-66-202  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-1h-3668ds$  /products/originalnyy-sarafan-chernogo-cveta-3668  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7m-C1592-1hs$  /products/populyarnye-bryuki-chernogo-cveta-c1592-1  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7r-1347oz$  /products/potryasayushchee-koktejlnoe-plate-zelenogo-cveta-bez-rukavov-1347  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8n-1200rt$  /products/roskoshnoe-koktejlnoe-plate-s-cvetami-i-dlinnym-rukavom-1200  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7e-315gf$  /products/roskoshnoe-vechernee-plate-sirenevogo-cveta-s-dlinnym-rukavom-315  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7u-dh103hs$  /products/roskoshnye-dzhinsy-chernogo-cveta-dh103  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-262sd$  /products/roskoshnye-dzhinsy-sinego-cveta-s-zauzhennoj-shtaninoj-262  [R=301,L,QSA]
+    RewriteRule  ^products/Bluzka-2y-1549ck$  /products/shikarnaya-shifonovaya-bluzka-s-dlinnym-rukavom-1549  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9f-1178ks$  /products/shikarnoe-koktejlnoe-plate-s-printom-i-dlinnym-rukavom-1178  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8s-315gf$  /products/shikarnoe-vechernee-plate-belogo-cveta-s-dlinnym-rukavom-315  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8u-88-3dw$  /products/shikarnye-bridzhi-sinego-cveta-s-kristallami-88-3  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-7a-906lz$  /products/shikarnye-dzhinsy-sinego-cveta-906  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9t-816sd$  /products/shikarnye-dzhinsy-sinego-cveta-s-zauzhennoj-shtaninoj-816  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7m-SU801hs$  /products/shikarnye-povsednevnye-bryuki-chernogo-cveta-su801  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-6s-12046jx$  /products/shikarnye-shorty-v-kletku-s-poyasom-12046  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3e-10573fd$  /products/stilnaya-futbolka-belogo-cveta-s-korotkim-rukavom-10573  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3e-10571fd-New-York$  /products/stilnaya-futbolka-new-york-chernogo-cveta-s-korotkim-rukavom-10571  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-5n-2598sj$  /products/stilnaya-kofta-serogo-cveta-v-polosku-2598  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-5n-2598hj$  /products/stilnaya-kofta-sinego-cveta-v-polosku-2598  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7e-66-172op$  /products/stilnaya-kurtka-golubogo-cveta-s-poyasom-66-172  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5e-BM519sd$  /products/stilnaya-kurtka-serogo-cveta-s-kapyushonom-bm519  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-2y-1009ed$  /products/stilnaya-kurtka-sinego-cveta-s-polosami-1009  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4t-977ya$  /products/stilnaya-kurtka-sinego-cveta-s-uzorom-977  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-1w-6601ds$  /products/stilnaya-legkaya-kurtka-krasnogo-cveta-6601  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5w-6601ds$  /products/stilnaya-legkaya-kurtka-sinego-cveta-6601  [R=301,L,QSA]
+    RewriteRule  ^products/Rubashka-2n-51008ms$  /products/stilnaya-rubashka-belogo-cveta-s-ornamentom-51008  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-9a-07mg$  /products/stilnaya-sportivnaya-kurtka-golubogo-cveta-07  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-2a-07mg$  /products/stilnaya-sportivnaya-kurtka-sinego-cveta-07  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3g-9820db$  /products/stilnaya-teplaya-kofta-chernogo-cveta-9820  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3g-9820ds$  /products/stilnaya-teplaya-kofta-rozovogo-cveta-9820  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3g-9818db$  /products/stilnaya-teplaya-kofta-serogo-cveta-9818  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5h-89029ls$  /products/stilnaya-teplaya-kurtka-chernogo-cveta-s-kapyushonom-89029  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-3r-8826te$  /products/stilnaya-teplaya-kurtka-krasnogo-cveta-8826  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-2r-8826te$  /products/stilnaya-teplaya-kurtka-zelenogo-cveta-8826  [R=301,L,QSA]
+    RewriteRule  ^products/Batnik-8q-05ds$  /products/stilnaya-tolstovka-chernogo-cveta-05  [R=301,L,QSA]
+    RewriteRule  ^products/Batnik-7q-05ds$  /products/stilnaya-tolstovka-serogo-cveta-05  [R=301,L,QSA]
+    RewriteRule  ^products/Batnik-4q-05ds$  /products/stilnaya-tolstovka-sinego-cveta-05  [R=301,L,QSA]
+    RewriteRule  ^products/Vetrovka-4r-816op$  /products/stilnaya-vetrovka-sinego-cveta-816  [R=301,L,QSA]
+    RewriteRule  ^products/ZHiletka-5r-2814ps$  /products/stilnaya-zhiletka-chernogo-cveta-2814  [R=301,L,QSA]
+    RewriteRule  ^products/ZHiletka-6r-2814ps$  /products/stilnaya-zhiletka-serogo-cveta-2814  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6q-1268jo$  /products/stilnoe-koktejlnoe-plate-belogo-cveta-bez-rukavov-1268  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2b-1166dm$  /products/stilnoe-koktejlnoe-plate-s-printom-i-poyasom-1166  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4r-1121re$  /products/stilnoe-koktejlnoe-plate-s-rozovo-chernym-uzorom-s-dlinnym-rukavom-1121  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5j-1067hu$  /products/stilnoe-koktejlnoe-plate-sinego-cveta-s-uzorom-1067  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2x-1343df$  /products/stilnoe-koktejlnoe-plate-zheltogo-cveta-bez-rukavov-1343  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6u-1540sl$  /products/stilnoe-legkoe-plate-zheltogo-cveta-1540  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3w-1312so$  /products/stilnoe-ofisnoe-plate-belogo-cveta-bez-rukavov-1312  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2t-329we$  /products/stilnoe-ofisnoe-plate-serogo-cveta-s-dlinnym-rukavom-329  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4g-1327sr$  /products/stilnoe-plyazhnoe-plate-v-polosku-i-goroh-1327  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3i-1296ps$  /products/stilnoe-povsednevnoe-plate-v-polosku-s-korotkim-rukavom-1296  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-5g-487ip$  /products/stilnye-bridzhi-golubogo-cveta-487  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-4a-5201tf$  /products/stilnye-bridzhi-golubogo-cveta-s-kristallami-5201  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-na-flise-YL1595$  /products/stilnye-bryuki-chernogo-cveta-na-flise-yl1595  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8k-506cs$  /products/stilnye-dzhinsovye-bridzhi-golubogo-cveta-506  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8k-QF8271cs$  /products/stilnye-dzhinsovye-bridzhi-golubogo-cveta-na-rezinke-qf8271  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-9d-36664oy$  /products/stilnye-dzhinsovye-shorty-36664  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8o-FB687cx$  /products/stilnye-dzhinsy-golubogo-cveta-fb687  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-YL21263$  /products/stilnye-dzhinsy-sinego-cveta-na-flise-yl21263  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-502sd$  /products/stilnye-dzhinsy-sinego-cveta-s-pryamoj-shtaninoj-502  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-4x-304sh$  /products/stilnye-dzhinsy-sinego-cveta-s-shirokim-poyasom-304  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-4v-6103rt$  /products/stilnye-dzhinsy-sinego-cveta-so-strazami-6103  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-3e-241ip$  /products/stilnye-legkie-bridzhi-golubogo-cveta-na-rezinke-241  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-4c-805-1vf$  /products/stilnye-povsednevnye-bryuki-chernogo-cveta-805-1  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-3s-12044jx$  /products/stilnye-shorty-v-kletku-12044  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-6s-12038jx$  /products/stilnye-shorty-v-kletku-s-poyasom-12038  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-5i-88926of$  /products/stilnye-teplye-losiny-chernogo-cveta-88926  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-8806$  /products/stilnye-uteplennye-dzhinsy-sinego-cveta-na-rezinke-8806  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4s-12938dw$  /products/stilnyj-barhatnyj-kostyum-chernogo-cveta-12938  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4s-8813dw$  /products/stilnyj-kostyum-bezhevogo-cveta-8813  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5f-2298sb$  /products/stilnyj-kostyum-golubogo-cveta-2298  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8s-2270al$  /products/stilnyj-kostyum-sinego-cveta-2270  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4f-2298sb$  /products/stilnyj-kostyum-sinego-cveta-2298  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5z-7050dl$  /products/stilnyj-kostyum-sirenevogo-cveta-7050  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5s-2270al$  /products/stilnyj-kostyum-zelenogo-cveta-2270  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-GARFILD-seryj$  /products/stilnyj-sviter-garfild-serogo-cveta-11934  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-6k-176703pd$  /products/stilnyj-sviter-polo-serogo-cveta-176703  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4s-174804pd$  /products/stilnyj-sviter-polo-serogo-cveta-v-polosku-174804  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4s-176207pd$  /products/stilnyj-sviter-polo-sine-zelenogo-cveta-176207  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-5t-175506fd$  /products/stilnyj-sviter-polo-sinego-cveta-v-polosku-175506  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-6k-176606pd$  /products/stilnyj-sviter-polo-v-polosku-176606  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4s-175706pd$  /products/stilnyj-sviter-polo-zheltogo-cveta-175706  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7k-031mz$  /products/stilnyj-teplyj-kostyum-031  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9t-603sd$  /products/stilnyj-teplyj-kostyum-biryuzovogo-cveta-s-mehom-603  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4k-030df$  /products/stilnyj-teplyj-kostyum-golubogo-cveta-030  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5a-603eo$  /products/stilnyj-teplyj-kostyum-golubogo-cveta-s-mehom-603  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5a-603ef$  /products/stilnyj-teplyj-kostyum-oranzhevogo-cveta-s-mehom-603  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-2h-16013ds$  /products/stilnyy-sarafan-chernogo-cveta-16013  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3e-10572fd$  /products/trendovaya-futbolka-sinego-cveta-s-korotkim-rukavom-10572  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-3y-10573fd$  /products/trendovaya-futbolka-sinego-cveta-s-printom-i-korotkim-rukavom-10573  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-1a-66-275mg$  /products/trendovaya-legkaya-kurtka-golubogo-cveta-66-275  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-8w-16-15xc$  /products/trendovaya-legkaya-kurtka-krasnogo-cveta-16-15  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4w-16-15xc$  /products/trendovaya-legkaya-kurtka-rozovogo-cveta-16-15  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-2a-66-275mg$  /products/trendovaya-legkaya-kurtka-sinego-cveta-66-275  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-3a-66-275mg$  /products/trendovaya-legkaya-kurtka-zheltogo-cveta-66-275  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-1w-A519sa$  /products/trendovaya-parka-bezhevogo-cveta-a519  [R=301,L,QSA]
+    RewriteRule  ^products/Parka-7p-F52cx$  /products/trendovaya-parka-bezhevogo-cveta-s-kapyushonom-f52  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-4e-BM519sd$  /products/trendovaya-parka-sinego-cveta-a519  [R=301,L,QSA]
+    RewriteRule  ^products/Parka-3p-F52cx$  /products/trendovaya-parka-sinego-cveta-s-kapyushonom-f52  [R=301,L,QSA]
+    RewriteRule  ^products/Parka-4p-F52cx$  /products/trendovaya-parka-zelenogo-cveta-s-kapyushonom-f52  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-4f-50584sc$  /products/trendovaya-sportivnaya-kofta-serogo-cveta-50584  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1q-1098wq$  /products/trendovoe-koktejlnoe-plate-sinego-cveta-s-dlinnym-rukavom-1098  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5j-1263sa$  /products/trendovoe-legkoe-plate-zheltogo-cveta-bez-rukavov-1263  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8r-1095tr$  /products/trendovoe-ofisnoe-plate-belogo-cveta-s-uzorom-1095  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6n-1123me$  /products/trendovoe-ofisnoe-plate-serogo-cveta-s-uzorom-1123  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-6a-1100ov$  /products/trendovye-bridzhi-golubogo-cveta-so-shnurovkoy-1100  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-7m-1593-1hs$  /products/trendovye-bryuki-chernogo-cveta-1593-1  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-8k-501cs$  /products/trendovye-dzhinsovye-bridzhi-golubogo-cveta-501  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-2k-QF316cs$  /products/trendovye-dzhinsovye-bridzhi-golubogo-cveta-na-rezinke-qf316  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-3e-36661ip$  /products/trendovye-dzhinsovye-shorty-36661  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5d-1612kx$  /products/trendovye-dzhinsy-golubogo-cveta-1612  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8o-FB680cx$  /products/trendovye-dzhinsy-golubogo-cveta-fb680  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-2c-607lz$  /products/trendovye-dzhinsy-sinego-cveta-607  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-6620$  /products/trendovye-dzhinsy-sinego-cveta-na-flise-6620  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-na-flise-907$  /products/trendovye-dzhinsy-sinego-cveta-na-flise-pryamye-907  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8f-1212lq$  /products/trendovye-dzhinsy-sinego-cveta-na-shnurke-1212  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-5t-503sd$  /products/trendovye-dzhinsy-sinego-cveta-s-pryamoj-shtaninoj-503  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9t-604sd$  /products/trendovye-dzhinsy-sinego-cveta-s-zauzhennoy-shtaninoy-604  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-2s-12030jx$  /products/trendovye-shorty-v-kletku-12030  [R=301,L,QSA]
+    RewriteRule  ^products/SHorty-3s-12030jx$  /products/trendovye-shorty-v-kletku-s-poyasom-12030  [R=301,L,QSA]
+    RewriteRule  ^products/Bryuki-na-flise-SU8802$  /products/trendovye-uteplennye-bryuki-chernogo-cveta-su8802  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9j-2262sa$  /products/trendovyj-kostyum-golubogo-cveta-2262  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9z-2262de$  /products/trendovyj-kostyum-sinego-cveta-2262  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3j-2262sh$  /products/trendovyj-kostyum-zelenogo-cveta-2262  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9w-1569xk$  /products/trendovyj-sarafan-belogo-cveta-s-krasnym-poyasom-1569  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-2r-12039ye$  /products/trendovyj-sviter-serogo-cveta-12039  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5k-031df$  /products/udobnyj-teplyj-kostyum-031  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-8k-030df$  /products/udobnyj-teplyj-kostyum-serogo-cveta-030  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-2w-10573fd$  /products/yarkaya-futbolka-rozovogo-cveta-s-printom-i-korotkim-rukavom-10573  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9u-1203pa$  /products/yarkaya-majka-belogo-cveta-s-printom-1203  [R=301,L,QSA]
+    RewriteRule  ^products/Bridzhi-9w-Z-209dl$  /products/yarkie-shorty-zelenogo-cveta-s-uzorom-9219  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7y-1241oa$  /products/yarkij-kostyum-cherno-belogo-cveta-s-cvetami-i-dlinnym-rukavom-1241  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-5t-175909fd$  /products/yarkij-sviter-polo-zheltogo-cveta-v-polosku-175909  [R=301,L,QSA]
+    RewriteRule  ^products/Svitshot-9e-15703ma$  /products/yarkij-svitshot-krasnogo-cveta-s-dlinnym-rukavom-15703  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3i-9568ka$  /products/yarkoe-koktejlnoe-plate-belogo-cveta-s-cvetami-bez-rukavov-9568  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1r-1197$  /products/yarkoe-koktejlnoe-plate-belogo-cveta-s-dlinnym-rukavom-1197  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6c-1228me$  /products/yarkoe-koktejlnoe-plate-s-cvetami-1228  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6k-10212co$  /products/yarkoe-koktejlnoe-plate-s-printom-i-dlinnym-rukavom-10212  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-5l-1323ma$  /products/yarkoe-koktejlnoe-plate-v-polosku-bez-rukavov-1323  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8o-1071vk$  /products/yarkoe-koktejlnoe-plate-zheltogo-cveta-s-cvetami-1071  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9o-1309pa$  /products/yarkoe-legkoe-plate-belogo-cveta-s-korotkim-rukavom-1309  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6s-1009mc$  /products/yarkoe-legkoe-plate-bez-rukavov-1009  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1t-10281hu$  /products/yarkoe-plate-s-printom-i-korotkim-rukavom-10281  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8j-1595df$  /products/yarkoe-plate-zheltogo-cveta-s-kruzhevnym-nizom-1595  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1y-1281ia$  /products/yarkoe-vechernee-asimmetrichnoe-plate-zheltogo-cveta-s-korotkim-rukavom-1281  [R=301,L,QSA]
+    RewriteRule  ^products/Tunika-3e-1540od$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Tunika-3b-1558sl$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Tunika-2b-1558sl$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Sviter-4s-085tm$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-poplin-1r-19te$  /detskaya-odezhda/sarafany  [R=301,L,QSA]
+    RewriteRule  ^products/Sarafan-6u-QS-612Scq$  /detskaya-odezhda/sarafany  [R=301,L,QSA]
+    RewriteRule  ^products/Rubashka-3s-STEEsd$  /detskaya-odezhda/dlya-malchikov  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-9l-2755ms$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-8u-3023lf$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-7w-1133op$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6y-1501gx$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-6s-E3013us$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4t-BZL031ra$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4g-9053ja$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-4e-8513hn$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3z-1192yt$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3r-1537ts$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-3$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2x-HC058us$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2v-319ty$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2sr-319ty$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2s-319iu$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2r-CQ2136io$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2r-319iu$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2p-HC058us$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2c-586kl$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-2b-319it$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1w-339sd$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1t-5531po$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1f-XY2516la$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Plate-1d-B3230jw$  /zhenskaya-odezhda/platya  [R=301,L,QSA]
+    RewriteRule  ^products/Majka-6o-2313tu$  /detskaya-odezhda/dlya-devochek  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-9o-018xz$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-8o-019xz$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-7o-89242xz$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-7o-14006xz$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-7o-018xz$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-5o-019xz$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-5o-018xz$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-4o-019xz$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Losiny-3j-89540dt$  /detskaya-odezhda/dlya-devochek/losiny  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7y-18401nd$  /detskaya-odezhda/dlya-devochek/kurtki  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-7a-19mg$  /detskaya-odezhda/dlya-devochek/kurtki  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5s-7-26of$  /detskaya-odezhda/dlya-devochek/kurtki  [R=301,L,QSA]
+    RewriteRule  ^products/Kurtka-5h-7-26of$  /detskaya-odezhda/dlya-devochek/kurtki  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9u-2007vj$  /detskaya-odezhda/dlya-malchikov/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-3a-L-01ex$  /detskaya-odezhda/dlya-malchikov/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7q-SNoi$  /detskaya-odezhda/dlya-malchikov/kombinezony  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-6a-L-01ex$  /detskaya-odezhda/dlya-malchikov/kombinezony  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5u-1920cy$  /detskaya-odezhda/dlya-malchikov/kombinezony  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-7n-280kd3t-232oj$  /zhenskaya-odezhda/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5k-155715571df$  /detskaya-odezhda/dlya-devochek/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5k-152215221df$  /detskaya-odezhda/dlya-devochek/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-5j-2304vs$  /detskaya-odezhda/dlya-devochek/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-4g-2300kf$  /detskaya-odezhda/dlya-devochek/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-2g-2300kf$  /detskaya-odezhda/dlya-devochek/kostyumy  [R=301,L,QSA]
+    RewriteRule  ^products/Kostyum-9j-2304sa$  /detskaya-odezhda/dlya-devochek/kostyumy-troyki  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-9v-8811dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-9s-8811dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-9s-8808dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-8s-8835dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-8s-8534dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-7y-8810dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-7a-8810dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-6s-8835dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-5s-8826dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-4s-8808dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-4s-8808di$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3y-A5383dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3y-2863dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3y-2863ds$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3y-2863dks$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-3s-8534dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-2s-8835dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Kofta-2s-8826dz$  /detskaya-odezhda/dlya-devochek/svitera  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-5x-1161-3pa$  /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-5x-1161-14pa$  /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-5x-1161-11pa$  /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-4z-1161pa$  /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-4z-1161-9pa$  /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-4z-1161-8pa$  /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-2z-1161qw$  /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^products/Futbolka-1z-1161-23dl$  /muzhskaya-odezhda/futbolki  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-9d-834ns$  /detskaya-odezhda/dlya-devochek/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8s-23282cs$  /detskaya-odezhda/dlya-devochek/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8s-21266cs$  /detskaya-odezhda/dlya-devochek/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-8s-21265cs$  /detskaya-odezhda/dlya-devochek/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-6y-301ms$  /detskaya-odezhda/dlya-devochek/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-4g-170ep$  /detskaya-odezhda/dlya-devochek/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-3p-A23lz$  /detskaya-odezhda/dlya-malchikov/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-3e-01js$  /detskaya-odezhda/dlya-malchikov/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-2d-01124ns$  /detskaya-odezhda/dlya-malchikov/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Dzhinsy-7d-01123ns$  /detskaya-odezhda/dlya-malchikov/dzhinsy  [R=301,L,QSA]
+    RewriteRule  ^products/Bluzka-8b-6125hs$  /detskaya-odezhda/dlya-devochek  [R=301,L,QSA]
+    RewriteRule  ^products/Bluzka-8b-5401hs$  /detskaya-odezhda/dlya-devochek  [R=301,L,QSA]
+    RewriteRule  ^products/Bluzka-8b-50698Ahs$  /detskaya-odezhda/dlya-devochek  [R=301,L,QSA]
+
+
+
+# ----------------------------------------------------------------------------
+#
+# Используем другой модуль карты сайта вместо стандартного модуля
+
+    RewriteCond  %{QUERY_STRING}  ^(.*&)?module=Sitemap(&.*?)?$
+    RewriteRule  ^index\.php$     index.php?%1module=SitemapNetpeak%2  [NC,L]
+
+# ----------------------------------------------------------------------------
+#
+# Анти много слешевый редирект (например http://site.com/path/////page-name)
+
+    RewriteCond %{REQUEST_URI}   ^(.*?)[/\\\\][/\\\\]+(.*?)$
+    RewriteRule ^.*$             %1/%2  [R=301,L,QSA]
+
+# ----------------------------------------------------------------------------
+#
+# Убрать теневые страницы каталога
+
+    RewriteCond %{REQUEST_URI}  ^/catalog/  [NC]
+    RewriteRule ^.*$            /           [R=301,L,QSA]
+
+# ----------------------------------------------------------------------------
+#
+# Убрать теневую страницу главной
+
+    RewriteCond %{REQUEST_URI}  ^[/\\\\]sections[/\\\\]mainpage[/\\\\]?$  [NC]
+    RewriteRule ^.*$            http://%{HTTP_HOST}/                      [R=301,L,QSA]
+
+# ----------------------------------------------------------------------------
+#
+# Пагинация и брендовая часть URL через дефисы
+
+    RewriteCond %{REQUEST_URI}        /page_[0-9]+$  [NC]
+    RewriteRule ^(.*/page)_([0-9]+)$  $1-$2          [R=301,L,QSA]
+
+    RewriteCond %{REQUEST_URI}                 ^(/[^/\\\\]+)+/filter_.+$  [NC]
+    RewriteRule ^((/[^/\\\\]+)+/filter)_(.+)$  $1-$3                      [R=301,L,QSA]
+
+# ----------------------------------------------------------------------------
+#
+# Убрать тень первой страницы пагинации
+
+    RewriteCond %{REQUEST_URI}         /page[_\-][0-1]$        [NC]
+    RewriteRule ^(.*)/page[_\-][0-1]$  http://%{HTTP_HOST}/$1  [R=301,L,QSA]
+    
+# ----------------------------------------------------------------------------
+#
+# Анти верхне регистровый редирект (например http://site.com/Path/Page-Name)
+#
+# ВАЖНО: действует при условии, что в конфигурации сервера или VirtualHost
+#        прописана следующая директива:
+#
+#            RewriteMap  lc  int:tolower
+#
+
+    RewriteCond  %{REQUEST_URI}  [A-Z]
+    RewriteCond  %{REQUEST_URI}  !\.(jpe?g|png|gif|ico|mp4|ttf|svg|woff2?|eot|js|css|pdf|doc|zip|mp3|wav)$  [NC]
+    RewriteRule  ^(.*)$          /${lc:$1}  [R=301,L,QSA]
+
+# ----------------------------------------------------------------------------
+#
+# Слеш-БезСлеш редирект
+
+    RewriteCond  %{REQUEST_URI}  ^/.*/$
+    RewriteCond  %{REQUEST_URI}  !^/admin/$
+    RewriteRule  ^(.*?)/+$       http://%{HTTP_HOST}/$1  [R=301,L,QSA]
+
+
+
+# ------------------ AIMatrix DDoS inspector (начало) ------------------------
+#
+# Работает только если на веб сервере запущен модуль SetEnvIf
+
+<IfModule setenvif_module>
+
+    # Для включение инспектора установите в следующей строке INSPECTOR_STATE=on
+    # Для отключение установите INSPECTOR_STATE=off
+    #
+    SetEnvIf REMOTE_ADDR ^.*$ INSPECTOR_STATE=off
+
+
+
+    # Инициируем в окружении переменную типа пользователя значением "незнакомец"
+    #
+    SetEnvIf INSPECTOR_STATE ^.*$ USER_NATURE=stranger
+
+
+
+    # Проверяем IP подключившегося компьютера на принадлежность к клиентам сайта
+    # (ниже сразу за опорной строкой перечисляются все строки пропуска по IP-адресу
+    # одна за другой, в результате при обнаружении соответствия IP-адреса какой-то
+    # из этих строк установится переменная окружения USER_NATURE в значение client).
+    #
+    # Важно! Не перемещайте эти строки, не передвигайте, они заполняются скриптом-инспектором!
+    # Важно! Не удаляйте и не изменяйте опциональные timestamp-комментарии в конце
+    # этих строк, на них опирается скрипт-инспектор!
+    #
+    # Формат пропускающих строк (в квадратных скобках указана опциональная часть):
+    # SetEnvIf REMOTE_ADDR ^client_ip USER_NATURE=client [# timestamp # дата]
+    #
+    # DDoS inspector CLIENT IPs LIST (не удаляйте эту строку, она опорная для скрипта-инспектора)
+
+
+
+    # Проверяем IP подключившегося компьютера на принадлежность к атакующим
+    # (ниже сразу за опорной строкой перечисляются все строки блокирования по IP-адресу
+    # одна за другой, в результате при обнаружении соответствия IP-адреса какой-то
+    # из этих строк установится переменная окружения USER_NATURE в значение bad или же
+    # в значение ignore для записей, созданных режимом пропуска лишь единственно обслуживаемых
+    # хостов).
+    #
+    # Важно! Не перемещайте эти строки, не передвигайте, они заполняются скриптом-инспектором!
+    # Важно! Не удаляйте и не изменяйте опциональные timestamp-комментарии в конце
+    # этих строк, на них опирается скрипт-инспектор!
+    #
+    # Формат блокирующих строк (в квадратных скобках опциональная часть):
+    # SetEnvIf REMOTE_ADDR ^bad_ip USER_NATURE=bad [# timestamp # дата # имя хоста]
+    #
+    # DDoS inspector BAD IPs LIST (не удаляйте эту строку, она опорная для скрипта-инспектора)
+
+
+
+    # Проверяем IP подключившегося компьютера на принадлежность к поисковым роботам
+    # (ниже сразу за опорной строкой перечисляются все строки пропуска роботов по IP-адресу
+    # одна за другой, в результате при обнаружении соответствия IP-адреса какой-то
+    # из этих строк установится переменная окружения USER_NATURE в значение spider).
+    #
+    # Важно! Не перемещайте эти строки, не передвигайте, они заполняются скриптом-инспектором!
+    #
+    # Формат строк пропуска поисковых роботов (в квадратных скобках опциональная часть):
+    # SetEnvIf REMOTE_ADDR ^spider_ip USER_NATURE=spider [# имя хоста # дата]
+    #
+    # DDoS inspector SPIDER IPs LIST (не удаляйте эту строку, она опорная для скрипта-инспектора)
+
+
+
+    # ----------------------------------------------------------------------------
+    #
+    # Данное условие IfModule специально закомментировано, чтобы заключенные в него
+    # инструкции mod_rewrit-а работали не только на Apache-серверах
+    #
+    # <IfModule rewrite_module>
+
+        # Если это атакующий компьютер, запрещаем доступ
+
+        RewriteCond  %{env:INSPECTOR_STATE}  ^on$            [NC]
+        RewriteCond  %{env:USER_NATURE}      ^(bad|ignore)$  [NC]
+        RewriteRule  ^.*$                    -               [F,L]
+
+
+
+        # Если это еще не проверенный посетитель (не клиент сайта и не поисковый робот),
+        # отправляем на верификацию к скрипту-инспектору
+
+        RewriteCond  %{env:INSPECTOR_STATE}  ^on$                         [NC]
+        RewriteCond  %{env:USER_NATURE}      !^(client|spider)$           [NC]
+        RewriteRule  ^.*$                    AIMatrix_DDoS_inspector.php  [NC,L,QSA]
+
+
+
+        # Если это проверенный посетитель (клиент сайта или поисковый робот) обращается
+        # к скрипту-инспектору, задаем редирект на корень папки
+
+        RewriteCond  %{env:INSPECTOR_STATE}              ^on$                    [NC]
+        RewriteCond  %{env:USER_NATURE}                  ^(client|spider)$       [NC]
+        RewriteRule  ^(.*)AIMatrix_DDoS_inspector\.php$  http://%{HTTP_HOST}/$1  [R=301,NC,L,QSA]
+
+    # </IfModule>
+    #
+    # ----------------------------------------------------------------------------
+
+</IfModule>
+
+# ------------------ AIMatrix DDoS inspector (конец) -------------------------
+
+
+
+# Стандартной кодировкой принимаем UTF-8
+
+AddDefaultCharset  UTF-8
+
+
+
+# При отсутствии документа перенаправляем на такой url
+
+ErrorDocument  404  /sections/404
+
+
+
+# ----------------------------------------------------------------------------
+#
+# Данное условие IfModule специально закомментировано, чтобы заключенные в него
+# инструкции mod_rewrit-а работали не только на Apache-серверах
+#
+# <IfModule rewrite_module>
+
+    # Если хост имеет вид www.нечто и входной url не robots.txt и не папка admin,
+    # тогда задаем 301-й редирект на страницу вида http://нечто/входной_url
+
+    RewriteCond  %{HTTP_HOST}    ^www\.(.+)$             [NC]
+    RewriteCond  %{REQUEST_URI}  !^/robots\.txt$         [NC]
+    RewriteCond  %{REQUEST_URI}  !^(/.+)?/admin(/.+)?/$  [NC]
+	RewriteCond  %{REQUEST_URI}  !^(/.+)?/webstat(/.+)?/$  [NC]
+    RewriteRule  ^(.*)$          http://%1/$1            [R=301,L,QSA]
+
+
+
+    # Если входной url равен /путь/index.php без параметров, задаем 301-й редирект на страницу http://сайт/путь/
+    # (следующие 3 команды закомментированы, так как на некоторых серверах срабатывают ложно)
+
+    # RewriteCond  %{REQUEST_URI}   ^/([^/]+/)*index\.php$  [NC]
+    # RewriteCond  %{QUERY_STRING}  !^.+$                   [NC]
+    # RewriteRule  ^(.*)$           http://%{HTTP_HOST}/%1  [R=301,L,QSA]
+
+
+
+    # Если входной url оканчивается слешем и содержит папку (catalog или products или ... или stocks),
+    # и не содержит папку (admin или на конце папку page_ЧИСЛО, cart, compare, quickБУКВЫ),
+    # и хост не равен localhost, тогда задаем 301-й редирект на страницу вида http://сайт/входной_url
+    # без слеша на конце.
+
+    RewriteCond  %{REQUEST_URI}  ^/.+/$
+    RewriteCond  %{REQUEST_URI}  ^(/.+)?/(catalog|products|items|kits|brands|articles|news|sections|media|stocks)(/.+)?/$  [NC]
+    RewriteCond  %{REQUEST_URI}  !^(/.+)?/admin(/.+)?/$                                                                    [NC]
+    RewriteCond  %{REQUEST_URI}  !^(/.+)?/page[_\-][0-9]+/$                                                                [NC]
+    RewriteCond  %{REQUEST_URI}  !^(/.+)?/cart/$                                                                           [NC]
+    RewriteCond  %{REQUEST_URI}  !^(/.+)?/compare/$                                                                        [NC]
+    RewriteCond  %{REQUEST_URI}  !^(/.+)?/quick[a-z]*/$                                                                    [NC]
+    RewriteCond  %{HTTP_HOST}    !^localhost$                                                                              [NC]
+    RewriteRule  ^(.*)/$         http://%{HTTP_HOST}/$1                                                                    [R=301,L,QSA]
+
+
+
+    # Если обращаются к файлам редиректов, запрещаем доступ
+
+    RewriteRule  ^redirects[^/]*?\.txt$  -  [F,L]
+
+
+
+    # Если входной url указывает на физическую папку или файл сайта, прекратить преобразование
+    # (когда входной url совпадает с преобразованным, обработка прерывается)
+
+    RewriteCond  %{REQUEST_FILENAME}  -d
+    RewriteCond  %{REQUEST_URI}       !^(.*/)?captcha/?$  [NC]
+    RewriteRule  ^(.*)$               -                   [L]
+
+    RewriteCond  %{REQUEST_FILENAME}  -f
+    RewriteCond  %{REQUEST_URI}       !^.+\.class\.php(/.*)?$      [NC]
+    RewriteCond  %{REQUEST_URI}       !^(.*/)?captcha/image\.php$  [NC]
+    RewriteRule  ^(.*)$               -                            [L]
+
+
+
+    # Далее задаем правила (по одному в строке) для преобразования человеко-понятных url страниц.
+    # Формат записи: что ищем во входном url, каким сделать выходной url, вспомогательные флаги правила.
+    # Значения флагов:
+    #   NC  = не обращать внимание на регистр символов входного url,
+    #   L   = ничего больше не выполнять до конца файла,
+    #   QSA = прикрепить к выходному url входные параметры запроса
+    #
+    # ----------------------------------------------------------------------------
+    #
+    # Защитный код
+
+    RewriteRule  ^captcha/?$           index.php?module=Captcha  [NC,L,QSA]
+    RewriteRule  ^captcha\.(jpg|php)$  index.php?module=Captcha  [NC,L,QSA]
+    RewriteRule  ^captcha/image\.php$  index.php?module=Captcha  [NC,L,QSA]
+
+
+
+    # Конфигуратор и быстрый заказ
+
+    RewriteRule  ^configurator/?$  index.php?module=Configurator              [NC,L,QSA]
+    RewriteRule  ^quickorder/?$    index.php?module=Configurator&cataloged=1  [NC,L,QSA]
+
+
+
+    # Импорт
+
+    RewriteRule  ^import/?$                        index.php?module=Import                       [NC,L,QSA]
+    RewriteRule  ^import/([^/]+(/[^/]+)*)/info/?$  index.php?module=Import&url=$1&import_info=1  [NC,L,QSA]
+    RewriteRule  ^import/([^/]+(/[^/]+)*)/?$       index.php?module=Import&url=$1                [NC,L,QSA]
+
+
+
+    # Медиа файлы
+
+    RewriteRule  ^media/?$                                    index.php?module=Files                 [NC,L,QSA]
+    RewriteRule  ^media/page[_\-]([^/]+)/?$                   index.php?module=Files&page=$1         [NC,L,QSA]
+    RewriteRule  ^media/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=Files&url=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^media/([^/]+(/[^/]+)*)/?$                   index.php?module=Files&url=$1          [NC,L,QSA]
+
+
+
+    # Страны, области, города
+
+    RewriteRule  ^countries/?$                                    index.php?module=Countries               [NC,L,QSA]
+    RewriteRule  ^countries/page[_\-]([^/]+)/?$                   index.php?module=Countries&page=$1       [NC,L,QSA]
+    RewriteRule  ^countries/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=Country&url=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^countries/([^/]+(/[^/]+)*)/?$                   index.php?module=Country&url=$1          [NC,L,QSA]
+    RewriteRule  ^regions/?$                                      index.php?module=Regions                 [NC,L,QSA]
+    RewriteRule  ^regions/page[_\-]([^/]+)/?$                     index.php?module=Regions&page=$1         [NC,L,QSA]
+    RewriteRule  ^regions/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$    index.php?module=Region&url=$1&page=$3   [NC,L,QSA]
+    RewriteRule  ^regions/([^/]+(/[^/]+)*)/?$                     index.php?module=Region&url=$1           [NC,L,QSA]
+    RewriteRule  ^towns/?$                                        index.php?module=Towns                   [NC,L,QSA]
+    RewriteRule  ^towns/page[_\-]([^/]+)/?$                       index.php?module=Towns&page=$1           [NC,L,QSA]
+    RewriteRule  ^towns/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$      index.php?module=Town&url=$1&page=$3     [NC,L,QSA]
+    RewriteRule  ^towns/([^/]+(/[^/]+)*)/?$                       index.php?module=Town&url=$1             [NC,L,QSA]
+
+
+
+    # Склады
+
+    RewriteRule  ^stocks/?$                                    index.php?module=Stocks                [NC,L,QSA]
+    RewriteRule  ^stocks/page[_\-]([^/]+)/?$                   index.php?module=Stocks&page=$1        [NC,L,QSA]
+    RewriteRule  ^stocks/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=Stock&url=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^stocks/([^/]+(/[^/]+)*)/?$                   index.php?module=Stock&url=$1          [NC,L,QSA]
+
+
+
+    # Оплата ВКонтакте
+
+    RewriteRule  ^vk_fail/?$     index.php?module=Order&vk=fail&quickcontent=1     [NC,L,QSA]
+    RewriteRule  ^vk_process/?$  index.php?module=Order&vk=process&quickcontent=1  [NC,L,QSA]
+    RewriteRule  ^vk_success/?$  index.php?module=Order&vk=success&quickcontent=1  [NC,L,QSA]
+
+
+
+    # Каталог товаров
+
+    RewriteRule  ^catalog/?$                   index.php?module=Catalog          [NC,L,QSA]
+    RewriteRule  ^catalog/page[_\-]([^/]+)/?$  index.php?module=Catalog&page=$1  [NC,L,QSA]
+
+
+
+    # Бренды
+
+    RewriteRule  ^brands/?$                                    index.php?module=Products                   [NC,L,QSA]
+    RewriteRule  ^brands/page[_\-]([^/]+)/?$                   index.php?module=Products&page=$1           [NC,L,QSA]
+    RewriteRule  ^brands/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=Products&brand=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^brands/([^/]+(/[^/]+)*)/?$                   index.php?module=Products&brand=$1          [NC,L,QSA]
+
+
+
+    # Товары
+
+    RewriteRule  ^catalog/([^/]+(/[^/]+)*)/filter[_\-]([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=Products&category=$1&brand=$3&page=$5  [NC,L,QSA]
+    RewriteRule  ^catalog/([^/]+(/[^/]+)*)/filter[_\-]([^/]+(/[^/]+)*)/?$                   index.php?module=Products&category=$1&brand=$3          [NC,L,QSA]
+    RewriteRule  ^catalog/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$                              index.php?module=Products&category=$1&page=$3           [NC,L,QSA]
+    RewriteRule  ^catalog/([^/]+(/[^/]+)*)/?$                                               index.php?module=Products&category=$1                   [NC,L,QSA]
+
+    RewriteRule  ^(products|items)/?$                   index.php?module=Products          [NC,L,QSA]
+    RewriteRule  ^(products|items)/page[_\-]([^/]+)/?$  index.php?module=Products&page=$2  [NC,L,QSA]
+
+
+
+    # Страница товара
+
+    RewriteRule  ^(products|items)/([^/]+(/[^/]+)*)/?$  index.php?module=Product&url=$2  [NC,L,QSA]
+
+
+
+    # Комплекты товаров
+
+    RewriteRule  ^kits/?$                   index.php?module=ProductsKits          [NC,L,QSA]
+    RewriteRule  ^kits/page[_\-]([^/]+)/?$  index.php?module=ProductsKits&page=$1  [NC,L,QSA]
+    RewriteRule  ^kits/([^/]+(/[^/]+)*)/?$  index.php?module=ProductsKit&kit=$1    [NC,L,QSA]
+
+
+
+    # Сравнение товаров
+
+    RewriteRule  ^compare(?:\.class\.php)?/?$                          index.php?module=Compare                        [NC,L,QSA]
+    RewriteRule  ^compare(?:\.class\.php)?/quick/?$                    index.php?module=Compare&quickcontent=1         [NC,L,QSA]
+    RewriteRule  ^compare(?:\.class\.php)?/remove/([^/]+(/[^/]+)*)/?$  index.php?module=Compare&remove_url=$1          [NC,L,QSA]
+    RewriteRule  ^compare(?:\.class\.php)?/quick/([^/]+(/[^/]+)*)/?$   index.php?module=Compare&url=$1&quickcontent=1  [NC,L,QSA]
+    RewriteRule  ^compare(?:\.class\.php)?/([^/]+(/[^/]+)*)/?$         index.php?module=Compare&url=$1                 [NC,L,QSA]
+
+
+
+    # Поиск товаров
+
+    RewriteRule  ^search(?:\.class\.php)?/?$                                    index.php?module=Search                     [NC,L,QSA]
+    RewriteRule  ^search(?:\.class\.php)?/page[_\-]([^/]+)/?$                   index.php?module=Search&page=$1             [NC,L,QSA]
+    RewriteRule  ^search(?:\.class\.php)?/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=Search&keyword=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^search(?:\.class\.php)?/([^/]+(/[^/]+)*)/?$                   index.php?module=Search&keyword=$1          [NC,L,QSA]
+
+    RewriteRule  ^tags/?$                                    index.php?module=Search                 [NC,L,QSA]
+    RewriteRule  ^tags/page[_\-]([^/]+)/?$                   index.php?module=Search&page=$1         [NC,L,QSA]
+    RewriteRule  ^tags/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=Search&tag=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^tags/([^/]+(/[^/]+)*)/?$                   index.php?module=Search&tag=$1          [NC,L,QSA]
+
+
+
+    # Статические страницы
+
+    RewriteRule  ^sections/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?section=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^sections/([^/]+(/[^/]+)*)/?$                   index.php?section=$1          [NC,L,QSA]
+
+
+
+    # Статьи
+
+    RewriteRule  ^articles(?:\.class\.php)?/?$                                    index.php?module=Articles                 [NC,L,QSA]
+    RewriteRule  ^articles(?:\.class\.php)?/page[_\-]([^/]+)/?$                   index.php?module=Articles&page=$1         [NC,L,QSA]
+    RewriteRule  ^articles(?:\.class\.php)?/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=Articles&url=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^articles(?:\.class\.php)?/([^/]+(/[^/]+)*)/?$                   index.php?module=Articles&url=$1          [NC,L,QSA]
+
+
+
+    # Новости
+
+    RewriteRule  ^news/?$                                    index.php?module=News                     [NC,L,QSA]
+    RewriteRule  ^news/page[_\-]([^/]+)/?$                   index.php?module=News&page=$1             [NC,L,QSA]
+    RewriteRule  ^news/([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?module=NewsItem&url=$1&page=$3  [NC,L,QSA]
+    RewriteRule  ^news/([^/]+(/[^/]+)*)/?$                   index.php?module=NewsItem&url=$1          [NC,L,QSA]
+
+
+
+    # Корзина, отложенные товары
+
+    RewriteRule  ^cart(?:\.class\.php)?/?$                      index.php?module=Cart                                              [NC,L,QSA]
+    RewriteRule  ^cart(?:\.class\.php)?/add/([^/]+)/?$          index.php?module=Cart&product_id=$1                                [NC,L,QSA]
+    RewriteRule  ^cart(?:\.class\.php)?/delete/([^/]+)/?$       index.php?module=Cart&delete_product_id=$1                         [NC,L,QSA]
+    RewriteRule  ^cart(?:\.class\.php)?/quick/?$                index.php?module=Cart&quickcontent=1                               [NC,L,QSA]
+    RewriteRule  ^cart(?:\.class\.php)?/quickadd/([^/]+)/?$     index.php?module=Cart&product_id=$1&quickcontent=1                 [NC,L,QSA]
+    RewriteRule  ^cart(?:\.class\.php)?/quickdelete/([^/]+)/?$  index.php?module=Cart&delete_product_id=$1&quickcontent=1          [NC,L,QSA]
+    RewriteRule  ^defer/?$                                      index.php?module=Cart&defer=1                                      [NC,L,QSA]
+    RewriteRule  ^defer/add/([^/]+)/?$                          index.php?module=Cart&defer=1&product_id=$1                        [NC,L,QSA]
+    RewriteRule  ^defer/delete/([^/]+)/?$                       index.php?module=Cart&defer=1&delete_product_id=$1                 [NC,L,QSA]
+    RewriteRule  ^defer/quick/?$                                index.php?module=Cart&defer=1&quickcontent=1                       [NC,L,QSA]
+    RewriteRule  ^defer/quickadd/([^/]+)/?$                     index.php?module=Cart&defer=1&product_id=$1&quickcontent=1         [NC,L,QSA]
+    RewriteRule  ^defer/quickdelete/([^/]+)/?$                  index.php?module=Cart&defer=1&delete_product_id=$1&quickcontent=1  [NC,L,QSA]
+
+
+
+    # Мгновенный заказ
+
+    RewriteRule  ^fulminant-order/([^/]+)/([^/]+)/?$  index.php?module=FulminantOrder&product_id=$1&variant_id=$2  [NC,L,QSA]
+
+
+
+    # Заказы
+
+    RewriteRule  ^order(?:\.class\.php)?/([^/]+)/?$  index.php?module=Order&order_code=$1  [NC,L,QSA]
+    RewriteRule  ^order(?:\.class\.php)?/?$          index.php?module=Order                [NC,L,QSA]
+
+
+
+    # Аутентификация пользователя и его аккаунт
+
+    RewriteRule  ^logout/?$                                     index.php?module=Logout           [NC,L,QSA]
+    RewriteRule  ^login(?:\.class\.php)?/remind/?$              index.php?module=LoginRemind      [NC,L,QSA]
+    RewriteRule  ^login(?:\.class\.php)?/?$                     index.php?module=Login            [NC,L,QSA]
+    RewriteRule  ^registration(?:\.class\.php)?/?$              index.php?module=Registration     [NC,L,QSA]
+    RewriteRule  ^account(?:\.class\.php)?/?$                   index.php?module=Account          [NC,L,QSA]
+    RewriteRule  ^account(?:\.class\.php)?/([^/]+(/[^/]+)*)/?$  index.php?module=Account&page=$1  [NC,L,QSA]
+
+
+
+    # Информация для внешних сервисов
+
+    RewriteRule  ^robots(_[\.a-z0-9\-]+)?\.txt$   index.php?module=Robots                           [NC,L,QSA]
+    RewriteRule  ^sitemap\.xml$                   index.php?module=Sitemap&format=google            [NC,L,QSA]
+    RewriteRule  ^pricelist\.xls$                 index.php?module=Pricelist                        [NC,L,QSA]
+    RewriteRule  ^yandex(_[\.a-z0-9\-_]*)?\.xml$  index.php?module=Pricelist&format=yandex&nums=$1  [NC,L,QSA]
+    RewriteRule  ^hotline(_[0-9_]*)?\.xml$        index.php?module=Hotline&nums=$1                  [NC,L,QSA]
+    RewriteRule  ^priceua(_[0-9_]*)?\.xml$        index.php?module=Priceua&nums=$1                  [NC,L,QSA]
+    RewriteRule  ^privatmarket(_[0-9_]*)?\.xml$   index.php?module=PrivatMarket&nums=$1             [NC,L,QSA]
+    RewriteRule  ^rss/?$                          index.php?module=Rss                              [NC,L,QSA]
+    RewriteRule  ^informer/?$                     index.php?module=Rss&mode=informer                [NC,L,QSA]
+
+
+
+    # Обратная связь, запрос связи, подключение к уведомлениям
+
+    RewriteRule  ^feedback(?:\.class\.php)?/?$                                     index.php?module=Feedback                                     [NC,L,QSA]
+    RewriteRule  ^callme/?$                                                        index.php?module=CallMe                                       [NC,L,QSA]
+    RewriteRule  ^notify/?$                                                        index.php?module=NotifyMe                                     [NC,L,QSA]
+    RewriteRule  ^notify/(exist|product|article|newsitem|user|all)/?$              index.php?module=NotifyMe&type=$1                             [NC,L,QSA]
+    RewriteRule  ^notify/(exist|product|article|newsitem|user)/([^/]+)/?$          index.php?module=NotifyMe&type=$1&object_id=$2                [NC,L,QSA]
+    RewriteRule  ^notify/(exist|product|article|newsitem|user)/([^/]+)/([^/]+)/?$  index.php?module=NotifyMe&type=$1&object_id=$2&variant_id=$3  [NC,L,QSA]
+
+
+
+    # Скачивание файла
+
+    RewriteRule  ^order(?:\.class\.php)?/([^/]+)/([^/]+)/?$  objects/download.php?order_code=$1&file=$2  [NC,L,QSA]
+
+
+
+    # Особый URL. Проверяем его самым последним, чтобы не перекрыть преобразование остальных URL.
+    # Так как цепочка условий (RewriteCond) действует только для следующего правила (RewriteRule),
+    # повторяем проверку дважды: в первом случае для многостраничного содержимого и во втором -
+    # для одностраничного или основной (первой) страницы многостраничного.
+
+    RewriteCond  %{REQUEST_URI}                         !^/([^/]+/)*?401\.shtml$                                                               [NC]
+    RewriteCond  %{REQUEST_URI}                         !^/([^/]+/)*(admin|design|js|connectors|sounds)(/[^/]+)*/?$                            [NC]
+    RewriteCond  %{REQUEST_URI}                         !^/([^/]+/)*(cart|compare)(/[^/]+)*/?$                                                 [NC]
+    RewriteCond  %{REQUEST_URI}                         !^/([^/]+/)*[^/]*(images|files)(/[^/]+)*/?$                                            [NC]
+    RewriteCond  %{REQUEST_URI}                         !^/([^/]+/)*[^/]+\.(php|js|css|xml|yml|txt|chm|rtf|docx?|xlsx?)$                       [NC]
+    RewriteCond  %{REQUEST_URI}                         !^/([^/]+/)*[^/]+\.(gif|jpe?g|png|bmp|swf|zip|rar|avi|mpe?g|mp[0-9]|mkv|wmv|wav|wma)$  [NC]
+    RewriteRule  ^([^/]+(/[^/]+)*)/page[_\-]([^/]+)/?$  index.php?special_url=$1&page=$3                                                       [NC,L,QSA]
+
+    RewriteCond  %{REQUEST_URI}        !^/([^/]+/)*?401\.shtml$                                                               [NC]
+    RewriteCond  %{REQUEST_URI}        !^/([^/]+/)*(admin|design|js|connectors|sounds)(/[^/]+)*/?$                            [NC]
+    RewriteCond  %{REQUEST_URI}        !^/([^/]+/)*(cart|compare)(/[^/]+)*/?$                                                 [NC]
+    RewriteCond  %{REQUEST_URI}        !^/([^/]+/)*[^/]*(images|files)(/[^/]+)*/?$                                            [NC]
+    RewriteCond  %{REQUEST_URI}        !^/([^/]+/)*[^/]+\.(php|js|css|xml|yml|txt|chm|rtf|docx?|xlsx?)$                       [NC]
+    RewriteCond  %{REQUEST_URI}        !^/([^/]+/)*[^/]+\.(gif|jpe?g|png|bmp|swf|zip|rar|avi|mpe?g|mp[0-9]|mkv|wmv|wav|wma)$  [NC]
+    RewriteRule  ^([^/]+(/[^/]+)*)/?$  index.php?special_url=$1                                                               [NC,L,QSA]
+
+# </IfModule>
+#
+# ----------------------------------------------------------------------------
+
+# Редиректы
+# RewriteCond %{REQUEST_URI} !\?
+# RewriteCond %{REQUEST_URI} !\&
+# RewriteCond %{REQUEST_URI} !\=
+# RewriteCond %{REQUEST_URI} !\.
+# RewriteCond %{REQUEST_URI} ![^\/]$
+# RewriteRule ^(.*)\/$ /$1 [R=301,L]
+# Redirect 301 /sections/mainpage/ /
+
+
+# ----------------------------------------------------------------------------
+#
+# Настройки кеширования
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # устанавливаем значения кэширования по умолчанию
+    ExpiresDefault                                "access plus 12 hour"
+
+    # кеширование манифестов
+    ExpiresByType  text/cache-manifest            "access plus 0 seconds"
+
+    # кеширование  html страниц
+    ExpiresByType  text/html                      "access plus 1 hour"
+    ExpiresByType  application/xhtml+xml          "access plus 1 hour"
+    ExpiresByType  application/xml-dtd            "access plus 1 hour"
+
+    # кеширование дизайна: стили, скрипты
+    ExpiresByType  text/css                       "access plus 1 week"
+    ExpiresByType  text/javascript                "access plus 1 week"
+    ExpiresByType      application/javascript     "access plus 1 week"
+    ExpiresByType      application/x-javascript   "access plus 1 week"
+    ExpiresByType  text/x-jquery-tmpl             "access plus 1 week"
+
+    # кеширование дизайна: веб-шрифты
+    ExpiresByType  image/svg+xml                  "access plus 1 month"
+    ExpiresByType  application/x-font-ttf         "access plus 1 month"
+    ExpiresByType  application/x-font-woff        "access plus 1 month"
+    ExpiresByType      application/font-woff      "access plus 1 month"
+    ExpiresByType      application/x-woff         "access plus 1 month"
+    ExpiresByType      application/octet-stream   "access plus 1 day"
+    ExpiresByType  application/vnd.ms-fontobject  "access plus 1 month"
+
+    # кеширование динамических данные
+    ExpiresByType  text/xml                       "access plus 0 seconds"
+    ExpiresByType      application/xml            "access plus 0 seconds"
+    ExpiresByType  application/json               "access plus 0 seconds"
+
+    # кеширование rss потока
+    ExpiresByType  application/atom+xml           "access plus 1 hour"
+    ExpiresByType  application/rss+xml            "access plus 1 hour"
+
+    # кеширование ярлыковой иконки
+    ExpiresByType  image/x-icon                   "access plus 1 week"
+    ExpiresByType      image/ico                  "access plus 1 week"
+    ExpiresByType      image/vnd.microsoft.icon   "access plus 1 week"
+
+    # кеширование медиа файлов: картинки
+    ExpiresByType  image/bmp                      "access plus 1 week"
+    ExpiresByType  image/gif                      "access plus 1 week"
+    ExpiresByType  image/jpg                      "access plus 1 week"
+    ExpiresByType      image/jpeg                 "access plus 1 week"
+    ExpiresByType      image/pjpeg                "access plus 1 week"
+    ExpiresByType  image/png                      "access plus 1 week"
+    ExpiresByType  image/svg+xml                  "access plus 1 week"
+    ExpiresByType  image/tiff                     "access plus 1 week"
+
+    # кеширование медиа файлов: аудио
+    ExpiresByType  audio/amr                      "access plus 1 week"
+    ExpiresByType  audio/basic                    "access plus 1 week"
+    ExpiresByType  audio/midi                     "access plus 1 week"
+    ExpiresByType  audio/mp4                      "access plus 1 week"
+    ExpiresByType  audio/mpeg                     "access plus 1 week"
+    ExpiresByType  audio/ogg                      "access plus 1 week"
+    ExpiresByType      application/ogg            "access plus 1 week"
+    ExpiresByType  audio/x-aiff                   "access plus 1 week"
+    ExpiresByType  audio/x-mpegurl                "access plus 1 week"
+    ExpiresByType  audio/x-ms-wma                 "access plus 1 week"
+    ExpiresByType  audio/x-wav                    "access plus 1 week"
+    ExpiresByType      audio/vnd.wave             "access plus 1 week"
+
+    # кеширование медиа файлов: видео
+    ExpiresByType  application/x-dvi              "access plus 1 week"
+    ExpiresByType  video/jpeg                     "access plus 1 week"
+    ExpiresByType  video/mpv                      "access plus 1 week"
+    ExpiresByType  video/mpeg                     "access plus 1 week"
+    ExpiresByType  video/quicktime                "access plus 1 week"
+    ExpiresByType  video/vnd.mpegurl              "access plus 1 week"
+    ExpiresByType  video/x-msvideo                "access plus 1 week"
+    ExpiresByType  application/x-shockwave-flash  "access plus 1 week"
+
+    # кеширование документов
+    ExpiresByType  text/csv                       "access plus 1 week"
+    ExpiresByType  application/vnd.ms-excel       "access plus 1 week"
+    ExpiresByType      application/vnd.openxmlformats-officedocument.spreadsheetml.sheet  "access plus 1 week"
+    ExpiresByType  image/vnd.djvu                 "access plus 1 week"
+    ExpiresByType  application/msword             "access plus 1 week"
+    ExpiresByType      application/vnd.openxmlformats-officedocument.wordprocessingml.document  "access plus 1 week"
+    ExpiresByType  text/plain                     "access plus 1 week"
+    ExpiresByType  application/pdf                "access plus 1 week"
+    ExpiresByType  application/postscript         "access plus 1 week"
+    ExpiresByType  application/vnd.ms-powerpoint  "access plus 1 week"
+    ExpiresByType      application/vnd.openxmlformats-officedocument.presentationml.presentation  "access plus 1 week"
+    ExpiresByType  text/rtf                       "access plus 1 week"
+    ExpiresByType      application/rtf            "access plus 1 week"
+
+    # кеширование архивов
+    ExpiresByType  application/x-gtar             "access plus 1 week"
+    ExpiresByType  application/x-rar-compressed   "access plus 1 week"
+    ExpiresByType  application/x-tar              "access plus 1 week"
+    ExpiresByType  application/gzip               "access plus 1 week"
+    ExpiresByType      application/x-gzip         "access plus 1 week"
+    ExpiresByType  application/zip                "access plus 1 week"
+</IfModule>

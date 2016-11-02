@@ -1,0 +1,86 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Powered Bar - нижняя полоса сайта                                       |
+  Версия модуля: 1.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $opentag = открывающий тег блока                                              |
+        $show_rss = булевой признак "показывать ссылку на RSS ленту"              |
+            $rss_image = имя файла пиктограммы RSS ленты (по умолчанию rss.png)   |
+        $designer = имя дизайнера                                                 |
+        $designer_site = ссылка на сайт дизайнера                                 |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $settings = объект настроек сайта                                             |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/powered.htm'         |
+             opentag = строка                                                     |
+             show_rss = true или false                                            |
+             rss_image = строка                                                   |
+             designer = строка                                                    |
+             designer_site = строка                                               |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {$opentag|default:''}
+
+        {* <!-- ссылка на RSS ленту --> *}
+        {if isset($show_rss) && $show_rss}
+            <span title="RSS лента" style="float: left; margin: -5px 15px 0px 0px;">
+                <a href="{$site|default:''|escape}rss">
+                    <img src="{$theme|default:''|escape}images/{$rss_image|default:'rss.png'|escape}" />
+                </a>
+            </span>
+        {/if}
+
+
+
+        <span title="версия движка: {$smarty.const.IMPERA_CMS_CURRENT_VERSION|default:'Нет данных!'|escape}" style="float: right; font-size: 8pt; margin: 0px 0px 0px 30px; opacity: 0.4;" onmouseover="javascript: this.style.opacity = 1.0;" onmouseout="javascript: this.style.opacity = 0.4;">
+            <a href="http://imperacms.ru/" target="_blank" style="font-size: 8pt;" rel="nofollow">
+                Скрипт магазина
+            </a> - Impera CMS
+        </span>
+
+
+
+        {* <!-- дизайнер --> *}
+        {if $designer|default:'' != ''}
+            <span style="float: right; font-size: 8pt; margin: 0px 0px 0px 30px; opacity: 0.4;" onmouseover="javascript: this.style.opacity = 1.0;" onmouseout="javascript: this.style.opacity = 0.4;">
+                Дизайн от <a href="{$designer_site|default:''|escape}" target="_blank" style="font-size: 8pt;" rel="nofollow">
+                              {$designer}
+                          </a>
+            </span>
+        {/if}
+
+
+
+        {* <!-- копирайт, год и название сайта --> *}
+        <span>
+            &copy; {$smarty.now|date_format:'%Y'} <a href="{$site|default:''|escape}">
+                                                      {$settings->site_name|default:'Без названия!'}
+                                                  </a>
+        </span>
+
+    {$closetag|default:''}
+
+{/strip}

@@ -1,0 +1,1124 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница способа оплаты                                                 |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $title = текст заголовка страницы                                             |
+    $items = массив с записями об товарах                                         |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $item = запись о способе оплаты                                               |
+    $deliveries = массив записей о способах доставки                              |
+    $Currencies = массив записей о валютах сайта                                  |
+    $MainCurrency = запись о базовой валюте сайта                                 |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../common_parts/submenu.htm'
+             select = 'card'
+             main = true
+             setup = true
+             currencies = true
+             deliveries = true
+             deliveries_types = true
+             shippings_terms = true
+             payment = true
+             sms = true
+             card = true}
+
+
+
+    {* <!-- адрес корня админпанели --> *}
+    {$site = ($site|default:'')|escape}
+    {$admin_site = $site|cat:(($admin_folder|default:'')|escape)|cat:'/'}
+    {$admin_script = $admin_site|cat:'index.php'}
+
+
+
+    {* <!-- адрес для перехода в админпанели (ожидает справа имя модуля) --> *}
+    {$param = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$param = $param|regex_replace:'/[=\?#]/':''}
+    {$admin_goto = $admin_script|cat:'?'|cat:($param|escape)|cat:'='}
+
+
+
+    {* <!-- запоминаем идентификатор текущей записи --> *}
+    {$id = $item->payment_method_id|default:0}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$admin_site}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → <a href="{$admin_goto}Payments" title="Перейти на страницу способов оплаты в админпанели">
+                           Оплата
+                       </a> → {(!empty($id)) ? 'Редактирование' : 'Новый'}
+            </div>
+
+            {$name = ($item->name|default:'Без названия!')|escape}
+            {(!empty($id)) ? $name : 'Новый способ оплаты'}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- поля ввода надписей для модуля Квитанция --> *}
+        <style>
+            .input_label {
+                border: 0 solid;
+                box-sizing: border-box;
+                -moz-box-sizing: border-box;
+                color: #aaa;
+                font-family: Verdana, Tahoma, Arial;
+                font-size: 8pt;
+                margin: 3px 0 0 0;
+                padding: 0 2px;
+                width: 100%;
+            }
+        </style>
+
+
+
+        {* <!-- форма --> *}
+        <form action="{$admin_goto}Payment" enctype="multipart/form-data" id="item_form" name="payment_method" method="post">
+
+
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+                {* <!-- поле Название --> *}
+                <tr>
+                    <td class="param">
+                        Название:
+                    </td>
+                    <td class="value value_sheet" colspan="2" width="60%" title="Название способа оплаты">
+                        <input class="edit" name="name[{$id}]" type="text" value="{($item->name|default:'')|escape}" format=".+" notice="Введите название" />
+                    </td>
+
+
+
+                    {* <!-- поле Способы доставки --> *}
+                    <td class="value value_sheet" rowspan="4" width="40%" style="vertical-align: top;">
+                        <table align="center" cellpadding="0" cellspacing="10" class="white">
+                            <tr>
+                                <td class="param_short">
+                                    <b>
+                                        Возможные способы доставки:
+                                    </b>
+                                </td>
+                            </tr>
+                            {if isset($deliveries) && is_array($deliveries) && !empty($deliveries)}
+                                {foreach $deliveries as $r}
+                                    {$name = ($r->name|default:'Без названия!')|escape}
+                                    <tr>
+                                        <td class="param_short" title="{$name}">
+                                            &nbsp; &nbsp; &nbsp;
+                                            {$value = $r->delivery_method_id|default:0}
+                                            {$enabled = false}
+                                            {if !empty($value)}
+                                                {if isset($item->delivery_methods) && is_array($item->delivery_methods) && !empty($item->delivery_methods)}
+                                                    {foreach $item->delivery_methods as $r2}
+                                                        {if $r2->delivery_method_id|default:0 == $value}
+                                                            {$enabled = true}
+                                                            {break}
+                                                        {/if}
+                                                    {/foreach}
+                                                {/if}
+                                            {/if}
+                                            {$value = $value|escape}
+                                            <input class="checkbox" id="item_form_deliveries_{$value}" name="deliveries[{$id}][{$value}]" type="checkbox" value="1" {if $enabled} checked{/if} />
+
+                                            <span onclick="Toggle_PageCheckbox('item_form_deliveries_{$value}');" style="display: inline-block; margin: 0 0 -2px 0; width: 300px; overflow: hidden;">
+                                                &nbsp;
+                                                {$name}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                {/foreach}
+                            {/if}
+                        </table>
+                    </td>
+                </tr>
+
+
+
+                {* <!-- поле Валюта --> *}
+                <tr>
+                    <td class="param">
+                        Валюта:
+                    </td>
+                    <td class="value value_sheet" width="60%" title="Валюта">
+                        <select name="currency_id[{$id}]">
+                            {if isset($Currencies) && is_array($Currencies) && !empty($Currencies)}
+                                {$param = $item->currency_id|default:0}
+                                {foreach $Currencies as $r}
+                                    {$value = $r->currency_id|default:0}
+                                    {$sign = ($MainCurrency->sign|default:'')|escape}
+                                    <option value="{$value|escape}" {($value == $param) ? "selected" : ""}>
+                                        {$rate_from = ($r->rate_from|default:0) * 1}
+                                        {$rate_to = ($r->rate_to|default:0) * 1}
+                                        {($r->name|default:'Без названия!')|escape} ({$rate_from} {($r->sign|default:'')|escape} = {$rate_to} {$sign})
+                                    </option>
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- флажок Разрешен --> *}
+                    <td class="param_short" title="Разрешен ли способ оплаты" width="1%">
+                        <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox" {if $item->enabled|default:false} checked{/if} value="1" />
+
+                        <span onclick="Toggle_PageCheckbox('item_form_enabled');">
+                            &nbsp;
+                            Разрешен
+                        </span>
+                    </td>
+                </tr>
+
+
+
+                {* <!-- поле Модуль --> *}
+                <tr>
+                    <td class="param">
+                        Модуль:
+                    </td>
+                    <td class="value value_sheet" width="60%" title="Какой платежный модуль используется">
+                        {$value = $item->module|default:''}
+                        <select name="module[{$id}]" onchange="Show_Module_Params(this.value);">
+                            <option value="">
+                                Ручная обработка
+                            </option>
+
+                            <option value="myaccount" {if $value == "myaccount"} selected{/if}>
+                                Внутренний счет покупателя
+                            </option>
+
+                            <option value="webmoney" {if $value == "webmoney"} selected{/if}>
+                                WebMoney
+                            </option>
+
+                            <option value="rbkmoney" {if $value == "rbkmoney"} selected{/if}>
+                                RBK Money (RUpay)
+                            </option>
+
+                            <option value="onpay" {if $value == "onpay"} selected{/if}>
+                                OnPay
+                            </option>
+
+                            <option value="liqpay" {if $value == "liqpay"} selected{/if}>
+                                LiqPAY
+                            </option>
+
+                            <option value="privat24" {if $value == "privat24"} selected{/if}>
+                                Приват24 (Украина, ПриватБанк)
+                            </option>
+
+                            <option value="upc" {if $value == "upc"} selected{/if}>
+                                Украинский процессинговый центр
+                            </option>
+
+                            <option value="robokassa" {if $value == "robokassa"} selected{/if}>
+                                Robokassa
+                            </option>
+
+                            <option value="assist" {if $value == "assist"} selected{/if}>
+                                Assist
+                            </option>
+
+                            <option value="receipt" {if $value == "receipt"} selected{/if}>
+                                Формирование квитанции
+                            </option>
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    <td class="value_box" title="Сохранить изменения и перейти в список" width="1%">
+                        <input class="submit" type="submit" value="Сохранить" />
+                    </td>
+                </tr>
+
+
+
+                {* <!-- поле Настройки модуля --> *}
+                <tr>
+                    <td class="param_high">
+                        Настройки:
+                    </td>
+                    <td class="value" colspan="2" width="60%">
+
+
+
+                        {* <!-- для Ручной обработки --> *}
+                        <table id="no_params" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    Этот модуль не имеет настроек.
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {$params = (isset($item->params) && !is_string($item->params)) ? $item->params : []}
+
+
+
+                        {* <!-- для Liqpay --> *}
+                        <table id="liqpay" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = $smarty.const.LIQPAY_DEFAULT_GATE_URL|default:''}
+                                <td class="value value_sheet" colspan="2" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.liqpay_gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][liqpay][liqpay_gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    ID мерчанта:
+                                </td>
+                                <td class="value value_sheet" colspan="2" width="100%">
+                                    {$value = $params.liqpay_merchant_id|default:''}
+                                    <input class="edit" name="params[{$id}][liqpay][liqpay_merchant_id]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Ключ:
+                                </td>
+                                <td class="value value_sheet" colspan="2" width="100%">
+                                    {$value = $params.liqpay_secret_key|default:''}
+                                    <input class="edit" name="params[{$id}][liqpay][liqpay_secret_key]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    В терминале:
+                                </td>
+                                <td class="value value_sheet" colspan="2" width="100%">
+                                    {$value = $params.liqpay_through_terminal|default:false}
+                                    <select name="params[{$id}][liqpay][liqpay_through_terminal]" title="Принимать ли оплату только наличными через терминалы самообслуживания ПриватБанка или только с пластиковой карты / внутреннего счета LiqPAY">
+                                        <option value="1" {if $value}selected{/if}>
+                                            да
+                                        </option>
+                                        <option value="0" {if !$value}selected{/if}>
+                                            нет
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    срок оплаты:
+                                </td>
+                                <td class="value value_sheet">
+                                    {$value = ($params.liqpay_exp_time|default:0)|string_format:'%d'}
+                                    {$value = ($value > 0) ? $value : 36}
+                                    <input class="edit" name="params[{$id}][liqpay][liqpay_exp_time]" style="width: 50px;" title="Предельный срок ожидания платежа через терминал" type="text" value="{$value}" />
+                                </td>
+                                <td class="param" width="100%">
+                                    часов
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {* <!-- для Приват24 --> *}
+                        <table id="privat24" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = $smarty.const.PRIVAT24_DEFAULT_GATE_URL|default:''}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.privat24_gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][privat24][privat24_gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    ID мерчанта:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.privat24_merchant_id|default:''}
+                                    <input class="edit" name="params[{$id}][privat24][privat24_merchant_id]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Ключ:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.privat24_secret_key|default:''}
+                                    <input class="edit" name="params[{$id}][privat24][privat24_secret_key]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {* <!-- для Webmoney --> *}
+                        <table id="webmoney" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = $smarty.const.WEBMONEY_DEFAULT_GATE_URL|default:''}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.webmoney_gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][webmoney][webmoney_gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Кошелек:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.wm_merchant_purse|default:''}
+                                    <input class="edit" name="params[{$id}][webmoney][wm_merchant_purse]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Ключ:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.wm_secret_key|default:''}
+                                    <input class="edit" name="params[{$id}][webmoney][wm_secret_key]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL успеха:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.success_url|default:''}
+                                    <input class="edit" name="params[{$id}][webmoney][success_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL отказа:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.fail_url|default:''}
+                                    <input class="edit" name="params[{$id}][webmoney][fail_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {* <!-- для RBK Money --> *}
+                        <table id="rbkmoney" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = $smarty.const.RBKMONEY_DEFAULT_GATE_URL|default:''}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][rbkmoney][gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    ID мерчанта:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.merchant_id|default:''}
+                                    <input class="edit" name="params[{$id}][rbkmoney][merchant_id]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Ключ:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.secret_key|default:''}
+                                    <input class="edit" name="params[{$id}][rbkmoney][secret_key]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Язык шлюза:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию ru = русский">
+                                    {$value = $params.language|default:''}
+                                    <input class="edit" name="params[{$id}][rbkmoney][language]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL успеха:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.success_url|default:''}
+                                    <input class="edit" name="params[{$id}][rbkmoney][success_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL отказа:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.fail_url|default:''}
+                                    <input class="edit" name="params[{$id}][rbkmoney][fail_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {* <!-- для OnPay --> *}
+                        <table id="onpay" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = $smarty.const.ONPAY_DEFAULT_GATE_URL|default:''}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][onpay][gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    ID мерчанта:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.merchant_id|default:''}
+                                    <input class="edit" name="params[{$id}][onpay][merchant_id]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Ключ:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.secret_key|default:''}
+                                    <input class="edit" name="params[{$id}][onpay][secret_key]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL успеха:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.success_url|default:''}
+                                    <input class="edit" name="params[{$id}][onpay][success_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL отказа:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.fail_url|default:''}
+                                    <input class="edit" name="params[{$id}][onpay][fail_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {* <!-- для Robokassa --> *}
+                        <table id="robokassa" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = $smarty.const.ROBOKASSA_DEFAULT_GATE_URL|default:''}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][robokassa][gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Логин:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.robokassa_login|default:''}
+                                    <input class="edit" name="params[{$id}][robokassa][robokassa_login]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>							
+                            <tr>
+                                <td class="param_short">
+                                    Ключ 1:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.robokassa_password1|default:''}
+                                    <input class="edit" name="params[{$id}][robokassa][robokassa_password1]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>							
+                            <tr>
+                                <td class="param_short">
+                                    Ключ 2:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.robokassa_password2|default:''}
+                                    <input class="edit" name="params[{$id}][robokassa][robokassa_password2]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>							
+                            <tr>
+                                <td class="param_short">
+                                    Язык шлюза:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.robokassa_language|default:''}
+                                    <select name="params[{$id}][robokassa][robokassa_language]">
+                                        <option value="ru" {if $value == "ru"}selected{/if}>
+                                            Русский
+                                        </option>
+                                        <option value="en" {if $value == "en"}selected{/if}>
+                                            Английский
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>							
+                        </table>
+
+
+
+                        {* <!-- для Assist --> *}
+                        <table id="assist" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = $smarty.const.ASSIST_DEFAULT_GATE_URL|default:''}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][assist][gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Код магазина:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.assist_shop_id|default:''}
+                                    <input class="edit" name="params[{$id}][assist][assist_shop_id]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>							
+                            <tr>
+                                <td class="param_short">
+                                    Списание:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.assist_delay|default:false}
+                                    <select name="params[{$id}][assist][assist_delay]">
+                                        <option value="0" {if !$value}selected{/if}>
+                                            Сразу
+                                        </option>
+                                        <option value="1" {if $value}selected{/if}>
+                                            После подтверждения
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>							
+                            <tr>
+                                <td class="param_short">
+                                    Язык шлюза:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.assist_language|default:false}
+                                    <select name="params[{$id}][assist][assist_language]">
+                                        <option value="0" {if !$value}selected{/if}>
+                                            Русский
+                                        </option>
+                                        <option value="1" {if $value}selected{/if}>
+                                            Английский
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>							
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Принимать:
+                                </td>
+                                <td class="param_short" width="100%">
+                                    <input class="checkbox" name="params[{$id}][assist][assist_card_payments]" type="checkbox" {if $params.assist_card_payments|default:false}checked{/if} value="1" /> Банковские карты<br /><br />
+                                    {*
+                                    {$value = $params.assist_card_types|default:0}
+                                    <select name="params[{$id}][assist][assist_card_types]">
+                                       <option value="0" {if $value == 0}selected{/if}>Любые</option>
+                                       <option value="1" {if $value == 1}selected{/if}>VISA</option>
+                                       <option value="2" {if $value == 2}selected{/if}>EC/MC</option>
+                                       <option value="3" {if $value == 3}selected{/if}>DCL</option>
+                                       <option value="4" {if $value == 4}selected{/if}>JCB</option>
+                                       <option value="5" {if $value == 5}selected{/if}>AMEX</option>
+                                    </select>
+                                    <br />
+                                    *}
+                                    &nbsp; &nbsp; &nbsp; <input class="checkbox" name="params[{$id}][assist][assist_webmoney_payments]" type="checkbox" {if $params.assist_webmoney_payments|default:false}checked{/if} value="1" /> Webmoney<br /><br />
+                                    &nbsp; &nbsp; &nbsp; <input class="checkbox" name="params[{$id}][assist][assist_paycash_payments]" type="checkbox" {if $params.assist_paycash_payments|default:false}checked{/if} value="1" /> PayCash<br /><br />
+                                    &nbsp; &nbsp; &nbsp; <input class="checkbox" name="params[{$id}][assist][assist_eport_payments]" type="checkbox" {if $params.assist_eport_payments|default:false}checked{/if} value="1" /> EPort<br /><br />
+                                    &nbsp; &nbsp; &nbsp; <input class="checkbox" name="params[{$id}][assist][assist_epbeeline_payments]" type="checkbox" {if $params.assist_epbeeline_payments|default:false}checked{/if} value="1" /> Eport Билайн<br /><br />
+                                    &nbsp; &nbsp; &nbsp; <input class="checkbox" name="params[{$id}][assist][assist_assist_payments]" type="checkbox" {if $params.assist_assist_payments|default:false}checked{/if} value="1" /> Assist ID
+                                </td>
+                            </tr>							
+                            <tr>
+                                <td class="param_short">
+                                    URL успеха:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.success_url|default:''}
+                                    <input class="edit" name="params[{$id}][assist][success_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL отказа:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.fail_url|default:''}
+                                    <input class="edit" name="params[{$id}][assist][fail_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {* <!-- для Украинский процессинговый центр --> *}
+                        <table id="upc" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = $smarty.const.UPC_DEFAULT_GATE_URL|default:''}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.upc_gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][upc][upc_gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Язык шлюза:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.locale|default:''}
+                                    <select name="params[{$id}][upc][locale]">
+                                        <option value="ru" {if $value == "ru"} selected{/if}>
+                                            Русский
+                                        </option>
+                                        <option value="en" {if $value == "en"} selected{/if}>
+                                            Английский
+                                        </option>
+                                        <option value="uk" {if $value == "uk"} selected{/if}>
+                                            Украинский
+                                        </option>
+                                        <option value="fr" {if $value == "fr"} selected{/if}>
+                                            Французский
+                                        </option>
+                                        <option value="de" {if $value == "de"} selected{/if}>
+                                            Немецкий
+                                        </option>
+                                        <option value="hr" {if $value == "hr"} selected{/if}>
+                                            Хорватский
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    ID мерчанта:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.merchant_id|default:''}
+                                    <input class="edit" name="params[{$id}][upc][merchant_id]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    ID терминала:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.terminal_id|default:''}
+                                    <input class="edit" name="params[{$id}][upc][terminal_id]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    SSL ключ:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="Путь к файлу ключа (относительно корневой папки магазина)">
+                                    {$value = $params.ssl_key_file|default:''}
+                                    <input class="edit" name="params[{$id}][upc][ssl_key_file]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Сертификат УПЦ:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="Путь к файлу сертификата (относительно корневой папки магазина)">
+                                    {$value = $params.ssl_cert_file|default:''}
+                                    <input class="edit" name="params[{$id}][upc][ssl_cert_file]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {* <!-- для Внутреннего счета --> *}
+                        <table id="myaccount" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = 'http://сайт/connectors/myaccount.php'}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][myaccount][gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL успеха:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.success_url|default:''}
+                                    <input class="edit" name="params[{$id}][myaccount][success_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    URL отказа:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="По умолчанию используется URL страницы оплачиваемого заказа (http://сайт/order/хеш-код)">
+                                    {$value = $params.fail_url|default:''}
+                                    <input class="edit" name="params[{$id}][myaccount][fail_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                        </table>
+
+
+
+                        {* <!-- для Квитанции --> *}
+                        <table id="receipt" align="center" cellpadding="0" cellspacing="10" class="white" style="display: none;">
+                            <tr>
+                                <td class="param_short">
+                                    URL шлюза:
+                                </td>
+                                {$value = 'http://сайт/connectors/receipt.php'}
+                                <td class="value value_sheet" width="100%" title="Пустое поле означает использовать стандартный URL шлюза ({$value|escape})">
+                                    {$value = $params.gate_url|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][gate_url]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Назначение:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.purpose|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][purpose]" type="text" value="{$value|escape}" title="Если поле оставить пустым, будет считаться что равно Оплата заказа № НОМЕР" />
+                                    <br />
+                                    {$value = $params.purpose_label|default:'(наименование платежа)'}
+                                    <input class="input_label" name="params[{$id}][receipt][purpose_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Плательщик:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.payer_name|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][payer_name]" type="text" value="{$value|escape}" title="Если поле оставить пустым, будет подставлено ФИО покупателя" />
+                                    <br />
+                                    {$value = $params.payer_name_label|default:'Ф.И.О. плательщика'}
+                                    <input class="input_label" name="params[{$id}][receipt][payer_name_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Код:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.payer_inn|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][payer_inn]" type="text" value="{$value|escape}" title="Если поле оставить пустым, будет подставлен ИНН покупателя" />
+                                    <br />
+                                    {$value = $params.payer_inn_label|default:'(номер лицевого счета (код) плательщика)'}
+                                    <input class="input_label" name="params[{$id}][receipt][payer_inn_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Адрес:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.payer_address|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][payer_address]" type="text" value="{$value|escape}" title="Если поле оставить пустым, будет подставлен адрес покупателя" />
+                                    <br />
+                                    {$value = $params.payer_address_label|default:'Адрес плательщика'}
+                                    <input class="input_label" name="params[{$id}][receipt][payer_address_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Получатель:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.recipient|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][recipient]" type="text" value="{$value|escape}" />
+                                    <br />
+                                    {$value = $params.recipient_label|default:'(наименование получателя платежа)'}
+                                    <input class="input_label" name="params[{$id}][receipt][recipient_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    ИНН:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.inn|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][inn]" type="text" value="{$value|escape}" />
+                                    <br />
+                                    {$value = $params.inn_label|default:'(ИНН получателя платежа)'}
+                                    <input class="input_label" name="params[{$id}][receipt][inn_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Счет:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.account|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][account]" type="text" value="{$value|escape}" />
+                                    <br />
+                                    {$value = $params.account_label|default:'(номер счета получателя платежа)'}
+                                    <input class="input_label" name="params[{$id}][receipt][account_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Банк:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.bank|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][bank]" type="text" value="{$value|escape}" />
+                                    <br />
+                                    {$value = $params.bank_label|default:'(наименование банка получателя платежа)'}
+                                    <input class="input_label" name="params[{$id}][receipt][bank_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    БИК:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.bik|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][bik]" type="text" value="{$value|escape}" />
+                                    <br />
+                                    {$value = $params.bik_label|default:'БИК'}
+                                    <input class="input_label" name="params[{$id}][receipt][bik_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short" style="vertical-align: top;">
+                                    Кор. счет:
+                                </td>
+                                <td class="value value_sheet" width="100%">
+                                    {$value = $params.correspondent_account|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][correspondent_account]" type="text" value="{$value|escape}" />
+                                    <br />
+                                    {$value = $params.correspondent_account_label|default:'(номер кор./сч. банка получателя платежа)'}
+                                    <input class="input_label" name="params[{$id}][receipt][correspondent_account_label]" type="text" value="{$value|escape}" title="Надпись этого поля в квитанции" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Валюта:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="Денежный знак">
+                                    {$value = $params.banknote|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][banknote]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="param_short">
+                                    Копейка:
+                                </td>
+                                <td class="value value_sheet" width="100%" title="Знак копеек">
+                                    {$value = $params.pense|default:''}
+                                    <input class="edit" name="params[{$id}][receipt][pense]" type="text" value="{$value|escape}" />
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+
+
+                {* <!-- поле Описание --> *}
+                <tr>
+                    <td class="param_high">
+                        Описание:
+                    </td>
+                    <td class="{if $settings->payments_wysiwyg_disabled|default:false}value value_sheet{else}value_box{/if}" colspan="3">
+                        <textarea class="editor_small" name="description[{$id}]" style="height: 150px; width: 778px;">{($item->description|default:'')|escape}</textarea>
+                    </td>
+                </tr>
+            </table>
+
+
+
+            {* <!-- адрес страницы возврата после операции --> *}
+            {if $from_page|default:'' != ''}
+                {$param = $smarty.const.REQUEST_PARAM_NAME_FROM|default:''}
+                <input name="{$param|escape}" type="hidden" value="{$from_page|escape}" />
+            {/if}
+
+
+
+            {* <!-- признак наличия данных об изменениях --> *}
+            {$param = $smarty.const.REQUEST_PARAM_NAME_POST|default:''}
+            <input name="{$param|escape}[{$id}]" type="hidden" value="" />
+
+
+
+            {* <!-- идентификатор оперируемой записи --> *}
+            {$param = $smarty.const.REQUEST_PARAM_NAME_ITEMID|default:''}
+            <input name="{$param|escape}" type="hidden" value="{$id}" />
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            {$param = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+            {$value = $Token|default:''}
+            <input name="{$param|escape}" type="hidden" value="{$value|escape}" />
+
+        </form>
+
+
+
+        {* <!-- блок справки --> *}
+        <div class="help">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                <b>Настройки : URL шлюза</b>. По умолчанию каждый платежный модуль использует {**}
+                некий свой стандартный URL, характерный для конкретной платежной системы. И как правило, {**}
+                заполнение данного поля не требуется, а стандартный URL можно увидеть в выпадающей {**}
+                подсказке при наведении курсора на поле. Однако со временем платежная система может {**}
+                сменить URL, и тогда появляется возможность быстро подстроиться под новшество платежной {**}
+                системы, не дожидаясь обновленного модуля, который бы учитывал новый URL.
+            </div>
+
+
+
+            <div>
+                <b>Настройки : URL успеха</b>. Часть платежных систем позволяет в конце {**}
+                завершенной оплаты отправить плательщика на страницу успешной оплаты на сайте {**}
+                магазина. Как правило, это поле оставляют пустым, и тогда плательщик возвратится {**}
+                на страницу заказа. Если же вам требуется возвратить его на определенную страницу, {**}
+                укажите здесь полный URL этой страницы, например <i>http://ваш.сайт/thank-you</i>.
+            </div>
+
+
+
+            <div>
+                <b>Настройки : URL отказа</b>. Поле по значению похоже на поле "URL успеха", {**}
+                только касается ситуации, когда плательщик начал оплату, но потом отказался {**}
+                по какой-то причине или платежной системой обнаружена какая-то ошибка. Тогда {**}
+                плательщик либо возвратится на страницу заказа, либо на ту страницу сайта, {**}
+                полный URL который вы укажете в этом поле.
+            </div>
+        </div>
+
+    </div>
+
+
+
+    {* <!-- скрипт показа настроек модуля --> *}
+    <script language="JavaScript" type="text/javascript">
+
+        function Show_Module_Params ( id ) {
+            var object = null;
+            var objects = new Array('liqpay',
+                                    'privat24',
+                                    'onpay',
+                                    'webmoney',
+                                    'robokassa',
+                                    'rbkmoney',
+                                    'assist',
+                                    'upc',
+                                    'myaccount',
+                                    'receipt',
+                                    'no_params');
+            for (var i = 0; i < objects.length; i++) {
+                object = document.getElementById(objects[i]);
+                if ((typeof(object) == 'object') && (object != null) && ('style' in object)) {
+                    object.style.display = 'none';
+                }
+            }
+            if (id == '') id = 'no_params';
+            object = window.document.getElementById(id);
+            if ((typeof(object) == 'object') && (object != null) && ('style' in object)) {
+                object.style.display = 'block';
+            }
+        }
+
+        Show_Module_Params(jQuery('form[name="payment_method"]').find('select[name^="module"]').val());
+    </script>
+
+
+
+    {* <!-- редактор TinyMCE --> *}
+    {include file = '../../common_parts/tinymce.htm'
+             disabled_state = $settings->payments_wysiwyg_disabled|default:false}
+
+{/strip}

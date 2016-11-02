@@ -1,0 +1,576 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка специальных страниц.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о специальных страницах;
+    $all_users = массив с записями о пользователях;
+    $users_list = одноуровневый массив с теми же записями о пользователях;
+    $menus = массив с записями о меню сайта;
+    $modules = массив с записями о зарегистрированных модулях;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "pages" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    pages = true - вывести эту кнопку
+    news = true - вывести эту кнопку
+    articles = true - вывести эту кнопку
+    banners = true - вывести эту кнопку
+    files = true - вывести эту кнопку
+    menus = true - вывести эту кнопку
+    modules = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "pages"
+           main = true
+           pages = true
+           news = true
+           articles = true
+           banners = true
+           files = true
+           menus = true
+           modules = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Страницы
+      </div>
+      Специальные страницы
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        <a class="left" href="#settings" onclick="javascript: Show_PageElements('setup_form');" title="Показать настройки сайта, относящиеся к специальным страницам">
+          настройки
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Section&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить специальную страницу">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Sections" id="items_form" method="post">
+
+      <!-- Фильтр -->
+      <table align="center" cellpadding="0" cellspacing="8" class="white">
+        <tr>
+          <td class="param_short">
+            Меню
+          </td>
+          <td class="value" width="50%" title="Фильтр: только принадлежащие такому меню сайта">
+
+            <!-- Создаем селектор меню сайта -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+              {if isset($menus)}
+                {foreach item=c from=$menus}
+                  <option value="{$c->menu_id|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MENU] == $c->menu_id)} selected{/if}>{$c->name|escape}</option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+          <td class="param_short">
+            Тип
+          </td>
+          <td class="value" width="50%" title="Фильтр: только такого типа">
+
+            <!-- Создаем селектор типов (модулей) -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MODULE|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MODULE|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+              {if isset($modules)}
+                {foreach item=c from=$modules}
+                  {if $c->valuable == 1}
+                    <option value="{$c->module_id|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MODULE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MODULE] == $c->module_id)} selected{/if}>{$c->name|escape}</option>
+                  {/if}
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            Администратор
+          </td>
+          <td class="value" colspan="3" width="100%" title="Фильтр: только администрируемые таким человеком">
+
+            <!-- Создаем селектор пользователей -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_USER|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_USER|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+              <option value="0"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER] == "0")} selected{/if}>Администратор</option>
+
+              <!-- {*
+              Подключаем субшаблон списка клиентов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список клиентов
+                currents = идентификатор выбранного клиента (модификатор "|default:0" добавлен для обработки отсутствия выбора)
+                selector = true - это будет селектор, а не список клиентов *} -->
+
+              {include file = "../../common_parts/users.htm"
+                       items = $all_users
+                       currents = $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER]|default:0
+                       selector = true}
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить
+          </td>
+          <td class="value" width="100%" title="Способ сортировки специальных страниц в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_AS_IS}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_AS_IS)} selected{/if}>как расставлены</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_HEADER}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_BY_HEADER)} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_CREATED}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_BY_CREATED)} selected{/if}>по дате добавления</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_MODIFIED}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_BY_MODIFIED)} selected{/if}>по дате исправления</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_BROWSED}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_BY_BROWSED)} selected{/if}>по количеству просмотров</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_URL}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_BY_URL)} selected{/if}>по url (адресу специальной страницы)</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_OBJECTS}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_BY_OBJECTS)} selected{/if}>по подключаемым плагинам</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_MODULE}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_BY_MODULE)} selected{/if}>по типу контента</option>
+            </select>
+          </td>
+
+          <!-- Флажки фильтра -->
+          <td class="param_short" title="Фильтр: только скрытые от незарегистрированных пользователей">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_HIDDEN|escape}');">
+              скрыта
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только разрешенные к показу на сайте">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+              разрешена
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только загружавшиеся изображениями">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}');">
+              с картинками
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с SEO текстом">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}');">
+              с SEO текстом
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с особым URL">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_URLSPECIAL|escape}');">
+              с особым URL
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только с подключаемыми плагинами">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_OBJECTED|escape}');">
+              с плагинами
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {assign var="now_menu" value=false}
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <!-- Визуальное выделение принадлежности к меню -->
+            {if $now_menu !== $c->menu}
+              {assign var="now_menu" value=$c->menu}
+              <li class="head_divider">
+                <div>
+                  {if $c->menu != ""}
+                    {$c->menu|escape}
+                  {else}
+                    Вне любого меню
+                  {/if}
+                </div>
+              </li>
+            {/if}
+
+            <li class="flatlist">
+
+              <!-- Микро кнопки справа от названия в меню -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная специальная страница будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_AS_IS)}
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_first_get|escape}" title="Поставить первым в ветке (текущий вес {$c->order_num|escape})">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_first_16x16.png">
+                </a>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_up_get|escape}" title="Поднять выше в ветке (текущий вес {$c->order_num|escape})">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_up_16x16.png">
+                </a>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_down_get|escape}" title="Опустить ниже в ветке (текущий вес {$c->order_num|escape})">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_down_16x16.png">
+                </a>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_last_get|escape}" title="Поставить последним в ветке (текущий вес {$c->order_num|escape})">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_last_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+              {/if}
+
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->hidden_get|escape}" title="Скрыть / открыть для незарегистрированных пользователей">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_hidden{if $c->hidden != 1}_off{/if}_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              <!-- Нумерация -->
+              <span class="topic" style="display: inline;">
+                {if isset($CurrentPage)}
+                  {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                {else}
+                  {$smarty.foreach.items.iteration}.
+                {/if}
+              </span>
+
+              <!-- Количество просмотров -->
+              <span class="browsed" title="Количество просмотров: {$c->browsed|escape}">
+                {$c->browsed|escape}
+              </span>
+
+              <!-- Значок использования динамически подключаемых плагинов -->
+              {if $c->objects != ""}
+                <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_objected_16x16.png" title="Содержит подключаемые плагины: {$c->objects|escape}">
+              {/if}
+
+              <!-- Название в меню -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="Заголовок: {$c->header|escape}">
+                {$c->name|escape}
+              </a>
+
+              <!-- Краткая информация -->
+              {if $c->module != ""}
+                <div class="line">
+                  <span>
+                    тип:
+                  </span>
+                  {$c->module|escape}
+                </div>
+              {/if}
+
+              {if isset($users_list) && !empty($c->user_id) && (!isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER]) || empty($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER]))}
+                {assign var="now_user_id" value=$c->user_id}
+                <div class="line">
+                  <span>
+                    админ:
+                  </span>
+                  {$users_list.$now_user_id->compound_name|escape}
+                </div>
+              {/if}
+
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_SECTIONS_MODE_BY_OBJECTS)}
+                {if $c->objects != ""}
+                  <div class="line">
+                    <span>
+                      плагины:
+                    </span>
+                    {$c->objects|escape}
+                  </div>
+                {/if}
+              {/if}
+
+              <!-- теги -->
+              {if isset($c->tags) && ($c->tags != "")}
+                <div class="line" title="Теги: {$c->tags|escape}">
+                  <span>
+                    теги:
+                  </span>
+                  {$c->tags|escape}
+                </div>
+              {/if}
+
+              <!-- описание -->
+              {if isset($c->body) && ($c->body|strip_tags|replace:"&nbsp;":" "|strip != "")}
+                <div class="line" title="{$c->body|strip_tags|replace:"&nbsp;":" "|escape}">
+                  <span>
+                    описание:
+                  </span>
+                  {$c->body|strip_tags|replace:"&nbsp;":" "|escape}
+                </div>
+              {/if}
+
+              <div class="line{if $c->enabled != 1} gray{/if}">
+                <span>
+                  адрес:
+                </span>
+                {if $c->enabled == 1}
+                  <a href="http://{$root_url|escape}/{$c->url_path|escape}{$c->url|escape}" title="Перейти на специальную страницу в клиентской части сайта">
+                    http://{$root_url|escape}/{$c->url_path|escape}{$c->url|escape}
+                  </a>
+                {else}
+                  http://{$root_url|escape}/{$c->url_path|escape}{$c->url|escape}
+                {/if}
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено специальных страниц.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка специальные страницы по конкретным параметрам.
+        Поля фильтра можно сочетать произвольно, они объединены функцией И.
+      </div>
+      <div>
+        В принципе часть изображений или вообще все они могут быть загружены в специальную страницу не обязательно для использования в ее тексте, а например
+        как элементы ее фотогалереи. Поэтому поле фильтра "<u>с&nbsp;картинками</u>" дает возможность выделить специальные страницы, в которые производилась
+        именно загрузка изображений, не уточняя притом факт, реально ли используются картинки или просто хранятся на сайте для прочих целей.
+      </div>
+      <div>
+        Поле фильтра "<u>с&nbsp;особым&nbsp;URL</u>" выделяет статьи с произвольно заданным адресом страницы, то есть не содержащим в начале
+        адреса специальных включений (например sections/), идентифицирующих разновидность запрошенного контента. Всякий URL статьи не может
+        быть похожим на URL другой статьи, однако особым URL допустимо перекрываться с особыми URL других разновидностей контента сайта. В этом
+        случае установлен следующий приоритет владения конфликтующим адресом: специальная страница, товар, категория, бренд, статья, новость.
+      </div>
+      <div>
+        Поле фильтра "<u>с&nbsp;плагинами</u>" выделяет специальные страницы, в которые во время создания или редактирования специальной страницы было предписано
+        динамически подключать программные модули (плагины, расширяющие функционал) при просмотре специальной страницы посетителем сайта. Здесь
+        фильтрацией также не уточняется, действительно ли существуют файлы плагинов на сайте. Визуально специальные страницы с подключаемыми плагинами отмечаются
+        в списке соответствующим значком перед названием специальной страницы. Наведение курсора на значок демонстрирует перечень плагинов, подключаемых
+        конкретно к этой специальной странице. Так как возможно подключать любые сторонние плагины, указываются не их названия, а классы модулей.
+      </div>
+      <div>
+        <b>Упорядочение</b>. По умолчанию способ сортировки специальных страниц в списке на данной странице равен "<u>как&nbsp;расставлены</u>".
+        В случае смены способа сортировки он запоминается на время текущего сеанса.
+      </div>
+      <div>
+        В отличие от других способов упорядочения, способ "<u>как&nbsp;расставлены</u>" отключает сортировку и предоставляет функции перемещения
+        специальных страниц по ветви меню, в котором они находятся. Эта расстановка основана на так называемых весах элементов - символических
+        числах первостепенности одной записи перед другой. Чем больше число, тем выше в ветви своего меню размещается специальная страница в списке,
+        упорядоченном таким образом.
+      </div>
+      <div>
+        <b>Принадлежность</b>. При любом способе сортировки список специальных страниц, строго сохраняя выбранную упорядоченность, визуально
+        отмечается принадлежностью участков списка к конкретным меню сайта. Кроме того, в списке указаны не заголовки специальных страниц, а их
+        названия в меню (иными словами, названия пунктов меню). Наведением курсора на это название можно просмотреть, как будет озаглавлена
+        специальная страница при ее посещении пользователем.
+      </div>
+    </div>
+
+    <!-- Форма соответствующих модулю настроек сайта -->
+    <a name="settings"></a>
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Sections" enctype="multipart/form-data" id="setup_form" method="post"{if empty($error)} style="display: none;"{/if}>
+      <br>
+      <h1>
+        Настройки
+      </h1>
+      <br>
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high" rowspan="5">
+            Водяной знак:
+            <center>
+              <img class="watermark" src="http://{$root_url|escape}/{$admin_folder|escape}/{$settings->sections_files_folder_prefix|escape}{$smarty.const.ADMIN_IMAGES_FOLDER_REFERENCE|escape}{$smarty.const.SECTIONS_CLASS_WATERMARK_FILENAME|escape}?{math equation='rand(1, 1000000000)'}" title="Используемое изображение водяного знака для загружаемых в специальную страницу картинок">
+            </center>
+          </td>
+          <td class="value" colspan="4" width="100%" title="Какой файл изображения водяного знака требуется взять с Вашего компьютера (объем файла не более {($smarty.const.WATERMARK_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт)">
+            <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.WATERMARK_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+            <input class="edit" name="watermark_filename" type="file">
+          </td>
+          <td class="param_short">
+            Наложить:
+          </td>
+          <td class="value" title="Как накладывать водяной знак (производится без масштабирования водяного знака)">
+            <select name="sections_watermark_location">
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTTOP|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTTOP} selected{/if}>слева вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTERTOP|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTERTOP} selected{/if}>в центре вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTTOP|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTTOP} selected{/if}>справа вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTCENTER|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTCENTER} selected{/if}>слева в центре</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTER|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTER} selected{/if}>по центру</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTCENTER|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTCENTER} selected{/if}>справа в центре</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTBOTTOM|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTBOTTOM} selected{/if}>слева внизу</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTERBOTTOM|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTERBOTTOM} selected{/if}>в центре внизу</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTBOTTOM|escape}"{if $settings->sections_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTBOTTOM} selected{/if}>справа внизу</option>
+            </select>
+          </td>
+          <td class="param_short">
+            Видимость:
+          </td>
+          <td class="value" title="Видимость знака на картинке (чем меньше число, тем прозрачнее)">
+            <select name="sections_watermark_transparency">
+              {section name="value" start=$smarty.const.SETTINGS_MINIMAL_WATERMARK_TRANSPARENCY loop=$smarty.const.SETTINGS_MAXIMAL_WATERMARK_TRANSPARENCY+1}
+                <option value="{$smarty.section.value.index}"{if $settings->sections_watermark_transparency == $smarty.section.value.index} selected{/if}>
+                  {$smarty.section.value.index}%
+                </option>
+              {/section}
+            </select>
+          </td>
+          <td class="param_short" title="Добавлять ли водяной знак на загружаемые изображения">
+            <input class="checkbox" id="setup_form_watermark_enabled" name="sections_watermark_enabled" type="checkbox"{if isset($settings->sections_watermark_enabled) && ($settings->sections_watermark_enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_watermark_enabled');">
+              Разрешен
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            Качество:
+          </td>
+          <td class="value" width="100%" title="Качество картинок и миниатюр в процентах (чем меньше число, тем хуже качество и меньше размер файла)">
+            <input class="edit" name="sections_images_quality" type="text" value="{$settings->sections_images_quality|escape|default:''}">
+          </td>
+          <td class="param_short">
+            Размеры картинок:
+          </td>
+          <td class="value" title="Предельная ширина картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_IMAGES_WIDTH|escape} до {$smarty.const.SETTINGS_MAXIMAL_IMAGES_WIDTH|escape})">
+            <input class="edit" name="sections_images_width" size="6" style="width: auto;" type="text" value="{$settings->sections_images_width|escape|default:''}">
+          </td>
+          <td class="value" title="Предельная высота картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_IMAGES_HEIGHT|escape} до {$smarty.const.SETTINGS_MAXIMAL_IMAGES_HEIGHT|escape})">
+            <input class="edit" name="sections_images_height" size="6" style="width: auto;" type="text" value="{$settings->sections_images_height|escape|default:''}">
+          </td>
+          <td class="param_short">
+            Размеры миниатюр:
+          </td>
+          <td class="value" title="Предельная ширина уменьшенных картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_THUMBNAIL_WIDTH|escape} до {$smarty.const.SETTINGS_MAXIMAL_THUMBNAIL_WIDTH|escape})">
+            <input class="edit" name="sections_thumbnail_width" size="6" style="width: auto;" type="text" value="{$settings->sections_thumbnail_width|escape|default:''}">
+          </td>
+          <td class="value" title="Предельная высота уменьшенных картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_THUMBNAIL_HEIGHT|escape} до {$smarty.const.SETTINGS_MAXIMAL_THUMBNAIL_HEIGHT|escape})">
+            <input class="edit" name="sections_thumbnail_height" size="6" style="width: auto;" type="text" value="{$settings->sections_thumbnail_height|escape|default:''}">
+          </td>
+          <td class="param_short" title="Подгонять ли размеры меньших изображений до указанных размеров">
+            <input class="checkbox" id="setup_form_images_exactly" name="sections_images_exactly" type="checkbox"{if isset($settings->sections_images_exactly) && ($settings->sections_images_exactly == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_images_exactly');">
+              Точно
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" colspan="3" title="Использовать ли визуальный редактор при редактировании специальных страниц">
+            <input class="checkbox" id="setup_form_wysiwyg_disabled" name="sections_wysiwyg_disabled" type="checkbox"{if isset($settings->sections_wysiwyg_disabled) && ($settings->sections_wysiwyg_disabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_wysiwyg_disabled');">
+              Отключить wysiwyg-редактор:
+            </span>
+          </td>
+          <td class="value" colspan="3" title="Как обрабатывать текст при отключенном визуальном редакторе">
+            <select name="sections_wysiwyg_disabled_mode">
+              <option value="{$smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_NO_ACTION|escape}"{if $settings->sections_wysiwyg_disabled_mode == $smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_NO_ACTION} selected{/if}>в тексте ничего не менять, не трогать разметочные теги</option>
+              <option value="{$smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_ALL_TAGS_CLEAR|escape}"{if $settings->sections_wysiwyg_disabled_mode == $smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_ALL_TAGS_CLEAR} selected{/if}>из текста удалять все теги, пустые строки и лишние пробелы</option>
+            </select>
+          </td>
+          <td class="param_short" colspan="3" title="Разрешить ли системе заполнять пустые поля мета информации">
+            <input class="checkbox" id="setup_form_meta_autofill" name="sections_meta_autofill" type="checkbox"{if isset($settings->sections_meta_autofill) && ($settings->sections_meta_autofill == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_meta_autofill');">
+              Автозаполнение полей мета тегов
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" colspan="3">
+            Сортировать в меню стороны клиента:
+          </td>
+          <td class="value" colspan="3" title="Как упорядочить список специальных страниц, сформированный для клиентской стороны">
+            <select name="sections_sort_method">
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_AS_IS|escape}"{if $settings->sections_sort_method == $smarty.const.SORT_SECTIONS_MODE_AS_IS} selected{/if}>как расставлены в админпанели</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_HEADER|escape}"{if $settings->sections_sort_method == $smarty.const.SORT_SECTIONS_MODE_BY_HEADER} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_CREATED|escape}"{if $settings->sections_sort_method == $smarty.const.SORT_SECTIONS_MODE_BY_CREATED} selected{/if}>по дате добавления</option>
+              <option value="{$smarty.const.SORT_SECTIONS_MODE_BY_BROWSED|escape}"{if $settings->sections_sort_method == $smarty.const.SORT_SECTIONS_MODE_BY_BROWSED} selected{/if}>по количеству просмотров</option>
+            </select>
+          </td>
+          <td class="param_short">
+            Префикс:
+          </td>
+          <td class="value" title="Префикс папки с картинками специальных страниц">
+            <input class="edit" name="sections_files_folder_prefix" type="text" value="{$settings->sections_files_folder_prefix|escape|default:''}">
+          </td>
+          <td class="value_box">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_SETUP|escape}" type="submit" value="Сохранить">
+          </td>
+        </tr>
+        <tr>
+          <td colspan="9"><!-- // --></td>
+        </tr>
+      </table>
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+    </form>
+
+  </div>

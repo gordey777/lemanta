@@ -1,0 +1,135 @@
+{* <!-- мини карточка товара --> *}{strip}
+
+    {if !empty($item)}
+        <div class="cat-bl product">
+            <div class="cat-img">
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Фотография товара.                                             |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {findImage type=product assign=image}
+
+                <div class="image">
+                    <a href="{url}" title="{itemTitle}">
+                        <img src="{$image.url}" alt="{$image.alt|escape}" title="{$image.desc|escape}" />
+                    </a>
+                </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Флажки товара.                                                 |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if !empty($item->newest)}
+                    <div class="lenta-new"></div>
+                {elseif $item->category_plural|lower == 'распродажа'}
+                    <div class="lenta-r"></div>
+                {/if}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Микро разметка.                                                |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if !empty($schemaOrg)}
+                    <div itemscope itemtype="http://schema.org/Product" style="display: none !important">
+                        {if !empty($item->brand)}
+                            <span itemprop="brand">
+                                {$item->brand}
+                            </span>
+                        {/if}
+
+                        <span itemprop="name">{name}</span>
+
+                        <img src="{$image.url}" alt="" itemprop="image" />
+
+                        <span itemprop="description">
+                            {annotation assign=value}
+                            {plainText from=value}
+                        </span>
+
+                        <span itemprop="mpn">
+                            {$item->pcode|default:$item->variants[0]->sku|default:''}
+                        </span>
+
+                        {* <!-- span itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+                            <span itemprop="ratingValue">4.4</span>
+                            <span itemprop="reviewCount">89</span>
+                        </span --> *}
+
+                        <span itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+                            <meta itemprop="priceCurrency" content="{$main_currency->code|default:''|escape}" />
+                            <span itemprop="price">
+                                {discountPrice signed=FALSE}
+                            </span>
+                            {if $helper->maybeSale($item)}
+                                <link itemprop="availability" href="http://schema.org/InStock" />
+                            {/if}
+                        </span>
+                    </div>
+                {/if}
+            </div>
+
+            {if !empty($item->variants)}
+                <div class="cat-desc">
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Название товара и цена (первого варианта).                 |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    {discountPrice signed=FALSE assign=price}
+
+                    <div class="cat-desc-l">
+                        <a href="{url}" class="cat-name" itemprop="name" title="{itemTitle}">
+                            {name}
+                        </a>
+
+                        <span class="cat-price">
+                            {intval($price)} {sign}
+                        <span>
+                    </div>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Если товар можно продавать, показываем кнопки.             |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    {if $helper->maybeSale($item)}
+                        {$v = reset($item->variants)}
+                        {$vid = $v->variant_id|default:''|escape}
+
+                        <div class="zakaz" style="display: none">
+                            {if empty($noQuickOrder)}
+                                <img src="{theme}images/buy2.png" alt="" />
+                                <a href="{url}" data-id="{$vid}">
+                                    Быстрый заказ
+                                </a>
+                            {else}
+                                {name}
+                            {/if}
+                        </div>
+
+                        <div class="buy">
+                            <a data-href="{cartUrl}" onclick="return gotoHref(this)">
+                                <img src="{theme}images/buy.png" alt="" />
+                            </a>
+                        </div>
+                    {else}
+                        <div class="zakaz" style="display: none">
+                            Нет в наличии
+                        </div>
+                    {/if}
+                </div>
+            {/if}
+        </div>
+    {/if}
+
+{/strip}

@@ -1,0 +1,563 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Category Map - карта категории / бренда                                 |
+  Версия модуля: 1.2                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $item = запись о категории/бренде или массив записей о категориях/брендах     |
+    $maxcount = предельное число выводимых записей                                |
+    $submaxcount = предельное число выводимых вложенных записей                   |
+    $show_empty = булевой признак "показывать и пустые"                           |
+    $no_image = имя (относительно папки images шаблона) картинки "нет фото"       |
+    $opentag = открывающий тег блока                                              |
+        $listing_opentag = открывающий тег списка                                 |
+            $listing_hider_opentag = открывающий тег спрятанной области списка    |
+                $link_separator = разделитель элементов списка                    |
+                $link_opentag = открывающий тег элемента списка                   |
+                    $info_opentag = открывающий тег информации об элементе        |
+                        $show_icon = булевой признак "показывать иконку"          |
+                            $icon_opentag = открывающий тег картинки              |
+                                $icon_a_params = дополн.опции тега ссылки картинки|
+                                $icon_img_params = дополнительные опции тега IMG  |
+                            $icon_closetag = закрывающий тег картинки             |
+                        $show_name = булевой признак "показывать название"        |
+                            $name_opentag = открывающий тег названия              |
+                                $name_maxsize = предельный размер названия        |
+                                $name_a_params = дополнит.опции тега ссылки назв. |
+                            $name_closetag = закрывающий тег названия             |
+                        $show_descr = булевой признак "показывать описание"       |
+                            $descr_opentag = открывающий тег описания             |
+                                $descr_maxsize = предельный размер описания       |
+                            $descr_closetag = закрывающий тег описания            |
+                    $info_closetag = закрывающий тег информации об элементе       |
+                    $show_sublisting = булевой признак "показывать подсписки"     |
+                        $sublisting_opentag = открывающий тег подсписка           |
+                            $sublisting_hider_opentag = открыв.тег спрят.области  |
+                                $sublink_separator = разделитель элементов        |
+                                $sublink_opentag = открыв.тег элемента подсписка  |
+                                    $subinfo_opentag = открыв.тег информ.об элем. |
+                                        $show_subicon = бул.признак "показ.иконку"|
+                                            $subicon_opentag = открыв.тег картинки|
+                                                $subicon_a_params = дополн.опции A|
+                                                $subicon_img_params = доп.опц.IMG |
+                                            $subicon_closetag = закр.тег картинки |
+                                        $show_subname = бул.признак "показ.назв." |
+                                            $subname_opentag = открыв.тег названия|
+                                                $subname_maxsize = предел.размер  |
+                                                $subname_a_params = допол.опции A |
+                                            $subname_closetag = закр.тег названия |
+                                        $show_subdescr = бул.признак "показ.назв."|
+                                            $subdescr_opentag = откр.тег описания |
+                                                $subdescr_maxsize = предел.размер |
+                                            $subdescr_closetag = закр.тег описания|
+                                    $subinfo_closetag = закрыв.тег информ.об элем.|
+                                $sublink_closetag = закрыв.тег элемента подсписка |
+                            $sublisting_hider_closetag = закр.тег спрят.области   |
+                        $sublisting_closetag = закрывающий тег подсписка          |
+                        $sublisting_moretag = тег кнопки ВСЕ подсписка            |
+                $link_closetag = закрывающий тег элемента списка                  |
+            $listing_hider_closetag = закрывающий тег спрятанной области списка   |
+        $listing_closetag = закрывающий тег списка                                |
+        $listing_moretag = тег кнопки ВСЕ списка                                  |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $user = запись об авторизованном пользователе, если есть                      |
+    $theme = url папки текущего шаблона клиентской стороны сайта                  |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/category-map.htm'    |
+             item = запись или массив записей                                     |
+             maxcount = число                                                     |
+             submaxcount = число                                                  |
+             show_empty = true или false                                          |
+             no_image = строка                                                    |
+             opentag = строка                                                     |
+                 listing_opentag = строка                                         |
+                     listing_hider_opentag = строка                               |
+                         link_separator = строка                                  |
+                         link_opentag = строка                                    |
+                             info_opentag = строка                                |
+                                 show_icon = true или false                       |
+                                     icon_opentag = строка                        |
+                                         icon_a_params = строка                   |
+                                         icon_img_params = строка                 |
+                                     icon_closetag = строка                       |
+                                 show_name = true или false                       |
+                                     name_opentag = строка                        |
+                                         name_maxsize = число                     |
+                                         name_a_params = строка                   |
+                                     name_closetag = строка                       |
+                                 show_descr = true или false                      |
+                                     descr_opentag = строка                       |
+                                         descr_maxsize = число                    |
+                                     descr_closetag = строка                      |
+                             info_closetag = строка                               |
+                             show_sublisting = true или false                     |
+                                 sublisting_opentag = строка                      |
+                                     sublisting_hider_opentag = строка            |
+                                         sublink_separator = строка               |
+                                         sublink_opentag = строка                 |
+                                             subinfo_opentag = строка             |
+                                                 show_subicon = true или false    |
+                                                     subicon_opentag = строка     |
+                                                         subicon_a_params = строка|
+                                                         subicon_img_params = стр.|
+                                                     subicon_closetag = строка    |
+                                                 show_subname = true или false    |
+                                                     subname_opentag = строка     |
+                                                         subname_maxsize = число  |
+                                                         subname_a_params = строка|
+                                                     subname_closetag = строка    |
+                                                 show_subdescr = true или false   |
+                                                     subdescr_opentag = строка    |
+                                                         subdescr_maxsize = число |
+                                                     subdescr_closetag = строка   |
+                                             subinfo_closetag = строка            |
+                                         sublink_closetag = строка                |
+                                     sublisting_hider_closetag = строка           |
+                                 sublisting_closetag = строка                     |
+                                 sublisting_moretag = строка                      |
+                         link_closetag = строка                                   |
+                     listing_hider_closetag = строка                              |
+                 listing_closetag = строка                                        |
+                 listing_moretag = строка                                         |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- если получена запись о категории/бренде с подкатегориями --> *}
+    {if isset($item->subcategories) && is_array($item->subcategories) && !empty($item->subcategories)
+    || isset($item->subbrands) && is_array($item->subbrands) && !empty($item->subbrands)
+    || isset($item) && is_array($item) && !empty($item)}
+
+
+
+        {* <!-- обрабатываем входной параметр $name_maxsize --> *}
+        {$name_maxsize = ($name_maxsize|default:80)|string_format:'%d'}
+        {$name_maxsize = ($name_maxsize >= 1) ? $name_maxsize : 80}
+
+
+
+        {* <!-- обрабатываем входной параметр $descr_maxsize --> *}
+        {$descr_maxsize = ($descr_maxsize|default:256)|string_format:'%d'}
+        {$descr_maxsize = ($descr_maxsize >= 1) ? $descr_maxsize : 256}
+
+
+
+        {* <!-- обрабатываем входной параметр $subname_maxsize --> *}
+        {$subname_maxsize = ($subname_maxsize|default:40)|string_format:'%d'}
+        {$subname_maxsize = ($subname_maxsize >= 1) ? $subname_maxsize : 40}
+
+
+
+        {* <!-- обрабатываем входной параметр $subdescr_maxsize --> *}
+        {$subdescr_maxsize = ($subdescr_maxsize|default:256)|string_format:'%d'}
+        {$subdescr_maxsize = ($subdescr_maxsize >= 1) ? $subdescr_maxsize : 256}
+
+
+
+        {* <!-- обрабатываем входной параметр $no_image --> *}
+        {$no_image = $no_image|default:'no_foto.jpg'}
+
+
+
+        {* <!-- признак "это запись категории (не бренда)" --> *}
+        {if is_array($item)}
+            {$is_category = false}
+            {foreach $item as $r}
+                {$is_category = $is_category || isset($r->category_id)}
+            {/foreach}
+        {else}
+            {$is_category = isset($item->category_id)}
+        {/if}
+
+
+
+        {* <!-- функция извлечения имени иконки ($item, $no_image, $is_category) --> *}
+        {function name = 'category_map_icon_image'
+                  no_image = 'no_foto.jpg'
+                  is_category = true}
+
+            {$pattern = '/^[\s\t\r\n]*(.*?)[\s\t\r\n]*$/'}
+            {$folder = ($is_category) ? (($smarty.const.ADMIN_CATEGORIES_CLASS_UPLOAD_FOLDER|default:'')|cat:'/')
+                                      : (($smarty.const.ADMIN_BRANDS_CLASS_UPLOAD_FOLDER|default:'')|cat:'/')}
+
+            {* <!-- может в загруженных фото? --> *}
+            {$img = ($item->icon|default:'')|regex_replace:$pattern:'$1'}
+            {$img = ($img == '') ? (($item->image|default:'')|regex_replace:$pattern:'$1') : $img}
+            {if ($img == '') && isset($item->images) && is_array($item->images) && !empty($item->images)}
+                {foreach $item->images as $r}
+                    {$img = $r|regex_replace:$pattern:'$1'}
+                    {if $img != ''}
+                        {break}
+                    {/if}
+                {/foreach}
+            {/if}
+            {$img = ($img == '') ? '' : ($folder|cat:($img|regex_replace:'!^[/\\\\]+!':''))}
+
+            {* <!-- может как у товара? --> *}
+            {$img = ($img == '') ? (($item->small_image|default:'')|regex_replace:$pattern:'$1') : $img}
+            {$img = ($img == '') ? (($item->large_image|default:'')|regex_replace:$pattern:'$1') : $img}
+
+            {* <!-- может в описании? --> *}
+            {if $img == ''}
+                {$pattern = '/^.*?<img[^<>]+?src=[\'"]([^<>\'"\s\t\r\n]+).+$/is'}
+                {$text = $item->annotation|default:''|replace:'&amp;':'&'|replace:'&nbsp;':' '}
+                {$img = $text|regex_replace:$pattern:'$1'|replace:'&lt;':'<'|replace:'&gt;':'>'|strip_tags}
+                {if ($img == $text|replace:'&lt;':'<'|replace:'&gt;':'>'|strip_tags) || ($img|replace:' ':'' == '')}
+                    {$text = $item->description|default:''|replace:'&amp;':'&'|replace:'&nbsp;':' '}
+                    {$img = $text|regex_replace:$pattern:'$1'|replace:'&lt;':'<'|replace:'&gt;':'>'|strip_tags}
+                    {if ($img == $text|replace:'&lt;':'<'|replace:'&gt;':'>'|strip_tags) || ($img|replace:' ':'' == '')}
+                        {$text = $item->body|default:''|replace:'&amp;':'&'|replace:'&nbsp;':' '}
+                        {$img = $text|regex_replace:$pattern:'$1'|replace:'&lt;':'<'|replace:'&gt;':'>'|strip_tags}
+                        {if ($img == $text|replace:'&lt;':'<'|replace:'&gt;':'>'|strip_tags) || ($img|replace:' ':'' == '')}
+                            {$img = ''}
+                        {/if}
+                    {/if}
+                {/if}
+            {/if}
+
+            {* <!-- может НЕТ ФОТО? --> *}
+            {$img = ($img == '') ? (($theme|default:'')|cat:'images/'|cat:($no_image|default:'no_foto.jpg')) : $img}
+
+            {* <!-- может абсолютизировать путь? --> *}
+            {$pattern = $img|truncate:6:'':true|lower}
+            {if ($pattern != 'http:/') && ($pattern != 'https:')}
+                {$img = ($site|default:'')|cat:($img|regex_replace:'!^[/\\\\]+!':'')}
+            {/if}
+
+            {* <!-- выводим --> *}
+            {$img|escape}
+
+        {/function}
+
+
+
+        {* <!-- захватываем вывод в переменную $result --> *}
+        {capture assign = 'result'}
+
+
+
+            {* <!-- перебираем записи --> *}
+            {$count = $maxcount|default:1000000}
+            {$count = ($count < 0) ? 0 : $count}
+            {$brothers1 = false}
+            {foreach $item->subcategories|default:$item->subbrands|default:$item as $r}
+
+
+
+                {* <!-- если разрешена к показу и не скрыта от чужих --> *}
+                {if (!isset($r->enabled) || $r->enabled)
+                && (!isset($r->hidden) || !$r->hidden || isset($user) && is_object($user))}
+
+
+
+
+                    {* <!-- если непустая или разрешено показывать и пустые --> *}
+                    {if ($r->products_count|default:0 > 0) || !isset($show_empty) || $show_empty}
+
+
+
+                        {* <!-- +1 запись предполагаем вывести --> *}
+                        {$count = $count - 1}
+                        {if $count == -1}
+                            {if $listing_hider_opentag|default:'' == ''}
+                                {break}
+                            {/if}
+
+
+
+                            {* <!-- открывающий тег спрятанной области --> *}
+                            {$listing_hider_opentag}
+                        {/if}
+
+
+
+                        {* <!-- если есть соседний братский элемент --> *}
+                        {if $brothers1}
+                            {$link_separator|default:''}
+                        {/if}
+
+
+
+                        {$link_opentag|default:''}
+
+                            {$info_opentag|default:''}
+
+
+
+                                {* <!-- url страницы элемента --> *}
+                                {$url = (($site|default:'')|cat:($r->url_path|default:'')|cat:($r->url|default:''))|escape}
+
+                                {* <!-- название элемента --> *}
+                                {$name = $r->model|default:$r->header|default:$r->name|default:'Без названия!'}
+
+
+
+                                {* <!-- картинка --> *}
+                                {if isset($show_icon) && $show_icon}
+                                    {$icon_opentag|default:''}
+                                        <a href="{$url}" title="{$name|escape}" {$icon_a_params|default:""}>
+                                            <img src="{category_map_icon_image item = $r no_image = $no_image is_category = $is_category}" {$icon_img_params|default:""} />
+                                        </a>
+                                    {$icon_closetag|default:''}
+                                {/if}
+
+
+
+                                {* <!-- название --> *}
+                                {if !isset($show_name) || $show_name}
+                                    {$name_opentag|default:''}
+                                        <a href="{$url}" title="{$name|escape}" {$name_a_params|default:""}>
+                                            {$name|truncate:$name_maxsize:'...':true}
+                                        </a>
+                                    {$name_closetag|default:''}
+                                {/if}
+
+
+
+                                {* <!-- описание --> *}
+                                {if isset($show_descr) && $show_descr}
+                                    {$descr = $r->annotation|default:$r->description|default:$r->body|default:'Без описания!'}
+                                    {$descr_opentag|default:''}
+                                        {$descr|truncate:$descr_maxsize:'...':true}
+                                    {$descr_closetag|default:''}
+                                {/if}
+
+
+
+                            {$info_closetag|default:''}
+
+
+
+                            {* <!-- если просили показывать подсписки --> *}
+                            {if !isset($show_sublisting) || $show_sublisting}
+
+
+
+                                {* <!-- если это запись с подкатегориями --> *}
+                                {if isset($r->subcategories) && is_array($r->subcategories) && !empty($r->subcategories)
+                                || isset($r->subbrands) && is_array($r->subbrands) && !empty($r->subbrands)}
+
+
+
+                                    {* <!-- захватываем вывод в переменную $result2 --> *}
+                                    {capture assign = 'result2'}
+
+
+
+                                        {* <!-- перебираем записи --> *}
+                                        {$count2 = $submaxcount|default:10}
+                                        {$count2 = ($count2 < 0) ? 0 : $count2}
+                                        {$brothers2 = false}
+                                        {foreach $r->subcategories|default:$r->subbrands as $r2}
+
+
+
+                                            {* <!-- если разрешена к показу и не скрыта от чужих --> *}
+                                            {if (!isset($r2->enabled) || $r2->enabled)
+                                            && (!isset($r2->hidden) || !$r2->hidden || isset($user) && is_object($user))}
+
+
+
+                                                {* <!-- если непустая или разрешено показывать и пустые --> *}
+                                                {if ($r2->products_count|default:0 > 0) || !isset($show_empty) || $show_empty}
+
+
+
+                                                    {* <!-- +1 запись предполагаем вывести --> *}
+                                                    {$count2 = $count2 - 1}
+                                                    {if $count2 == -1}
+                                                        {if $sublisting_hider_opentag|default:'' == ''}
+                                                            {break}
+                                                        {/if}
+
+
+
+                                                        {* <!-- открывающий тег спрятанной области --> *}
+                                                        {$sublisting_hider_opentag}
+                                                    {/if}
+
+
+
+                                                    {* <!-- если есть соседний братский элемент --> *}
+                                                    {if $brothers2}
+                                                        {$sublink_separator|default:''}
+                                                    {/if}
+
+
+
+                                                    {$sublink_opentag|default:''}
+
+                                                        {$subinfo_opentag|default:''}
+
+
+
+                                                            {* <!-- url страницы элемента --> *}
+                                                            {$url2 = (($site|default:'')|cat:($r2->url_path|default:'')|cat:($r2->url|default:''))|escape}
+
+                                                            {* <!-- название элемента --> *}
+                                                            {$name = $r2->model|default:$r2->header|default:$r2->name|default:'Без названия!'}
+
+
+
+                                                            {* <!-- картинка --> *}
+                                                            {if isset($show_subicon) && $show_subicon}
+                                                                {$subicon_opentag|default:''}
+                                                                    <a href="{$url2}" title="{$name|escape}" {$subicon_a_params|default:""}>
+                                                                        <img src="{category_map_icon_image item = $r no_image = $no_image is_category = $is_category}" {$subicon_img_params|default:""} />
+                                                                    </a>
+                                                                {$subicon_closetag|default:''}
+                                                            {/if}
+
+
+
+                                                            {* <!-- название --> *}
+                                                            {if !isset($show_subname) || $show_subname}
+                                                                {$subname_opentag|default:''}
+                                                                    <a href="{$url2}" title="{$name|escape}" {$subname_a_params|default:""}>
+                                                                        {$name|truncate:$subname_maxsize:'...':true}
+                                                                    </a>
+                                                                {$subname_closetag|default:''}
+                                                            {/if}
+
+
+
+                                                            {* <!-- описание --> *}
+                                                            {if isset($show_subdescr) && $show_subdescr}
+                                                                {$descr = $r2->annotation|default:$r2->description|default:$r2->body|default:'Без описания!'}
+                                                                {$subdescr_opentag|default:''}
+                                                                    {$descr|truncate:$subdescr_maxsize:'...':true}
+                                                                {$subdescr_closetag|default:''}
+                                                            {/if}
+
+
+
+                                                        {$subinfo_closetag|default:''}
+
+                                                    {$sublink_closetag|default:''}
+
+
+
+                                                    {* <!-- включаем признак возможному будущему соседу --> *}
+                                                    {$brothers2 = true}
+
+
+
+                                                {/if}
+
+                                            {/if}
+
+                                        {/foreach}
+
+
+
+                                    {/capture}
+
+
+
+                                    {* <!-- если захваченный вывод не пустой, выводим --> *}
+                                    {if $result2|regex_replace:'/[\s\t\r\n]/':'' != ''}
+
+                                        {$sublisting_opentag|default:''}
+
+                                            {$result2}
+
+
+
+                                            {* <!-- закрывающий тег спрятанной области (если был открывающий) --> *}
+                                            {if $count2 < 0}
+                                                {if $sublisting_hider_opentag|default:'' != ''}
+                                                    {$sublisting_hider_closetag}
+                                                {/if}
+                                            {/if}
+
+                                        {$sublisting_closetag|default:''}
+
+
+
+                                        {* <!-- кнопка ВСЕ --> *}
+                                        {if $count2 < 0}
+                                            {$sublisting_moretag|default:''}
+                                        {/if}
+
+                                    {/if}
+
+                                {/if}
+
+                            {/if}
+
+
+
+                        {$link_closetag|default:''}
+
+
+
+                        {* <!-- включаем признак возможному будущему соседу --> *}
+                        {$brothers1 = true}
+
+
+
+                    {/if}
+
+                {/if}
+
+            {/foreach}
+
+
+
+        {/capture}
+
+
+
+        {* <!-- если захваченный вывод не пустой, выводим --> *}
+        {if $result|regex_replace:'/[\s\t\r\n]/':'' != ''}
+
+            {$opentag|default:''}
+
+                {$listing_opentag|default:''}
+
+                    {$result}
+
+
+
+                    {* <!-- закрывающий тег спрятанной области (если был открывающий) --> *}
+                    {if $count < 0}
+                        {if $listing_hider_opentag|default:'' != ''}
+                            {$listing_hider_closetag}
+                        {/if}
+                    {/if}
+
+                {$listing_closetag|default:''}
+
+
+
+                {* <!-- кнопка ВСЕ --> *}
+                {if $count < 0}
+                    {$listing_moretag|default:''}
+                {/if}
+
+            {$closetag|default:''}
+
+        {/if}
+
+    {/if}
+
+{/strip}

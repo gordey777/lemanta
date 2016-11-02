@@ -1,0 +1,173 @@
+{* <!--
+  Impera CMS: шаблон админ модуля групп клиентов.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "groups" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    users = true - вывести эту кнопку
+    groups = true - вывести эту кнопку
+    banneds = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "groups"
+           main = true
+           users = true
+           groups = true
+           banneds = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/">Главная</a>
+        → Группы
+      </div>
+      Группы скидок
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        &nbsp;
+      {/strip}
+    </div>
+
+          <div class="help2">
+            <a class="fl" href="index.php?section=Group&token={$Token|escape}">
+              Добавить
+            </a>
+          </div>
+        <div id="cont_center">
+          {if $error}
+            <div id="error_minh">
+              <div id="error">
+                <img src="http://{$root_url|escape}/admin/images/error.jpg">
+                <p>{$error}</p>
+              </div>
+            </div>
+          {/if}
+          <div class="clear">&nbsp;</div>
+          {$PagesNavigation|default:''}
+          {if isset($Groups) && !empty($Groups)}
+            <form method="post" name="products">
+              <table id="list2">
+                {foreach item=group from=$Groups}
+                  <tr>
+                    <td>
+                      <div class="list_left">
+                        <div class="padding" style="width: 600px;">
+                          <div style="color: #C0C0C0; font-family: Verdana, Tahoma, Arial; font-size: 8pt;{if isset($level)} padding-left: {$level*20}px;{/if}">
+                            <p>
+                              <a class="tovar_on" href="index.php{$group->edit_get|escape}" style="font-family: Verdana, Tahoma, Arial;">
+                                {$group->name|escape}
+                              </a>
+                            </p>
+                            Скидка: <span style="font-size: 8pt;">{$group->discount|escape}</span> %
+                          </div>
+                        </div>
+                        <a class="fl" href="index.php?section=Groups&delete_id={$group->group_id|escape}&token={$Token|escape}" onclick="if (!confirm('Вы уверены?')) return false;">
+                          <img src="http://{$root_url|escape}/admin/images/delete.jpg">
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                {/foreach}
+              </table>
+            </form>
+          {else}
+            <div class="emptylist">
+              Сейчас нет ни одной группы.
+            </div>
+          {/if}
+          {$PagesNavigation|default:''}
+        </div>
+
+        <h1>
+          Внегрупповые скидки
+        </h1>
+          <div class="help2">
+            <a class="fl" href="index.php?section=Group&mode=discount&token={$Token|escape}">
+              Добавить скидку
+            </a>
+          </div>
+
+        <div id="cont_center">
+          <div class="clear">&nbsp;</div>
+          {if $Discounts}
+            <form method="post" name="products">
+              <table id="list2">
+                {foreach item=group from=$Discounts}
+                  <tr>
+                    <td>
+                      <div class="list_left">
+                        <div class="padding" style="width: 600px;">
+                          <div style="color: #C0C0C0; font-family: Verdana, Tahoma, Arial; font-size: 8pt;">
+                            <p>
+                              <a class="tovar_on" href="index.php{$group->edit_get|escape}" style="font-family: Verdana, Tahoma, Arial;">
+                                {$group->name|escape}
+                              </a>
+                            </p>
+                            Скидка: <span style="font-size: 8pt;">{$group->discount|escape}</span> % &nbsp;
+                            при заказе на сумму от <span style="font-size: 8pt;">{($group->from_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."}</span> {$currency->sign|escape}
+                          </div>
+                        </div>
+                        <a class="fl" href="index.php?section=Groups&delete_id={$group->group_id|escape}&token={$Token|escape}" onclick="if (!confirm('Вы уверены?')) return false;">
+                          <img src="http://{$root_url|escape}/admin/images/delete.jpg">
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                {/foreach}
+              </table>
+            </form>
+          {else}
+            <div class="emptylist">
+              Сейчас нет ни одной скидки.
+            </div>
+          {/if}
+        </div>
+
+      <div id="cont" style="margin-top: 0px;">
+        <div id="cont_center">
+          <div id="over">
+            <div id="over_left" style="width: 97%;">
+              <div style="clear: both; float: none; font-family: Verdana, Tahoma, Arial; font-size: 10pt; padding-top: 15px; text-align: justify; text-indent: 32px;">
+                При редактировании <b>группы</b> указывается величина скидки, применяемой к заказам авторизованных
+                (зашедших на сайт по своему логину) покупателей, принадлежащих данной группе. Такая
+                скидка распространяется на все товары с неустановленной приоритетной скидкой для них. Если
+                у конкретного товара задана приоритетная скидка, этот товар будет рассчитан согласно его
+                скидке, остальные товары в заказе покупателя будут рассчитаны согласно скидке для группы
+                этого покупателя.
+              </div>
+              <div style="clear: both; float: none; font-family: Verdana, Tahoma, Arial; font-size: 10pt; text-align: justify; text-indent: 32px;">
+                Скидка для группы не меняется в зависимости от суммы текущего заказа покупателя, и на весь
+                заказ действует постоянная скидка. Можно задать условия, при которых покупатель автоматически
+                переводится в следующую группу (пока в пакете расширений нет поддержки такого автоперехода!).
+                Тогда лишь со следующего заказа для этого покупателя начнёт действовать новая скидка.
+              </div>
+              <div style="clear: both; float: none; font-family: Verdana, Tahoma, Arial; font-size: 10pt; text-align: justify; text-indent: 32px;">
+                Существует второй вариант скидок - <b>внегрупповые</b>. Они применяются к заказам неавторизованных покупателей
+                или тех из авторизованных, кто не отнесён к какой-либо группе покупателей. Внегрупповые скидки уже
+                зависят от суммы текущего заказа. То есть в процессе того, как покупатель добавляет товары в заказ,
+                из перечня внегрупповых скидок выбирается подходящая к итоговой сумме заказа.
+              </div>
+              <div style="clear: both; float: none; font-family: Verdana, Tahoma, Arial; font-size: 10pt; text-align: justify; text-indent: 32px;">
+                Внегрупповые скидки аналогично не распространяются на товары с установленной приоритетной скидкой.
+                Если такой товар оказывается в заказе, скидка для него рассчитывается своя, а внегрупповая скидка
+                действует на итоговую сумму заказа за вычетом цены товара с приоритетной скидкой.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>

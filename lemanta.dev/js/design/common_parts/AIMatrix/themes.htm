@@ -1,0 +1,190 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Модуль: AIMatrix Themes                                                         |
+  Версия модуля: 1.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+  Сайт автора: http://imperacms.ru                                                |
+                                                                                  |
+  Файл: themes.htm - блок выбора шаблонов сайта                                   |
+  Тип: основной файл модуля                                                       |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $items = массив записей о шаблонах                                            |
+    $opentag = html-фрагмент открывающего тега блока шаблонов                     |
+               (по умолчанию пустая строка)                                       |
+    $closetag = html-фрагмент закрывающего тега блока шаблонов                    |
+                (по умолчанию пустая строка)                                      |
+    $box_opentag = html-фрагмент открывающего тега контейнера шаблонов            |
+                   (по умолчанию пустая строка)                                   |
+    $box_closetag = html-фрагмент закрывающего тега контейнера шаблонов           |
+                    (по умолчанию пустая строка)                                  |
+    $listing_opentag = html-фрагмент открывающего тега списка шаблонов            |
+                       (по умолчанию пустая строка)                               |
+    $listing_closetag = html-фрагмент закрывающего тега списка шаблонов           |
+                       (по умолчанию пустая строка)                               |
+    $link_opentag = html-фрагмент открывающего тега ссылки шаблона                |
+                    (по умолчанию пустая строка)                                  |
+    $link_closetag = html-фрагмент закрывающего тега ссылки шаблона               |
+                     (по умолчанию пустая строка)                                 |
+    $form_id = идентификатор FORM-элемента (по умолчанию пустая строка)           |
+    $form_class = класс FORM-элемента (по умолчанию пустая строка)                |
+    $a_id = идентификатор A-элементов (по умолчанию пустая строка)                |
+    $a_class = класс A-элементов (по умолчанию пустая строка)                     |
+    $a_active_class = класс активного A-элемента (по умолчанию пустая строка)     |
+    $a_default_class = класс дефолтного A-элемента (по умолчанию пустая строка)   |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $default_theme = название дефолтного (предложенного администратором) шаблона  |
+    $current_theme = название текущего (выбранного пользователем) шаблона         |
+    $settings = объект настроек сайта                                             |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/themes.htm'                      |
+             items = переменная с категориями                                     |
+             opentag = html-фрагмент или пустая строка                            |
+             closetag = html-фрагмент или пустая строка                           |
+             box_opentag = html-фрагмент или пустая строка                        |
+             box_closetag = html-фрагмент или пустая строка                       |
+             listing_opentag = html-фрагмент или пустая строка                    |
+             listing_closetag = html-фрагмент или пустая строка                   |
+             link_opentag = html-фрагмент или пустая строка                       |
+             link_closetag = html-фрагмент или пустая строка                      |
+             form_id = идентификатор или пустая строка                            |
+             form_class = имя класса (или классов через пробел) или пустая строка |
+             a_id = идентификатор или пустая строка                               |
+             a_class = имя класса (или классов через пробел) или пустая строка    |
+             a_active_class = имя класса (или классов) или пустая строка          |
+             a_default_class = имя класса (или классов) или пустая строка}        |
+                                                                                  |
+  Пример результата работы файла:                                                 |
+    $opentag                                                                      |
+        $box_opentag                                                              |
+            <form ... method="post">                                              |
+                $listing_opentag                                                  |
+                    $link_opentag                                                 |
+                        <a ... >                                                  |
+                            ...                                                   |
+                        </a>                                                      |
+                    $link_closetag                                                |
+                    ...                                                           |
+                    ...                                                           |
+                $listing_closetag                                                 |
+                <input name="theme" type="hidden" value="">                       |
+            </form>                                                               |
+        $box_closetag                                                             |
+    $closetag                                                                     |
+============================================================================ --> *}{strip}
+
+    {* <!-- если в настройках сайта не запрещена динамическая смена дизайна пользователем --> *}
+    {if !$settings->theme_nodynamic|default:false}
+
+        {* <!-- если на вход получен не пустой массив записей о шаблонах --> *}
+        {if isset($items) && is_array($items) && !empty($items)}
+
+            {* <!-- берем имя параметра запроса, в котором передают имя выбранного шаблона --> *}
+            {$temp_param = $smarty.const.REQUEST_PARAM_NAME_THEME|default:'theme'|escape}
+
+
+
+            {* <!-- обрабатываем входной параметр $form_id --> *}
+            {$temp_form_id = ($form_id|default:'')|regex_replace:'/[\s\t\r\n]+/':''}
+            {$temp_form_id = ($temp_form_id != '') ? ('id="'|cat:($temp_form_id|escape)|cat:'"') : ''}
+
+            {* <!-- обрабатываем входной параметр $form_class --> *}
+            {$temp_form_class = ($form_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+            {$temp_form_class = ($temp_form_class != '') ? ('class="'|cat:($temp_form_class|escape)|cat:'"') : ''}
+
+            {* <!-- обрабатываем входной параметр $a_id --> *}
+            {$temp_a_id = ($a_id|default:'')|regex_replace:'/[\s\t\r\n]+/':''}
+            {$temp_a_id = ($temp_a_id != '') ? ('id="'|cat:($temp_a_id|escape)|cat:'"') : ''}
+
+            {* <!-- обрабатываем входной параметр $a_class --> *}
+            {$temp_a_class = ($a_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+            {$temp_a_class = ($temp_a_class != '') ? ('class="'|cat:($temp_a_class|escape)|cat:'"') : ''}
+
+            {* <!-- обрабатываем входной параметр $a_active_class --> *}
+            {$temp_a_active_class = ($a_active_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+            {$temp_a_active_class = ($temp_a_active_class != '') ? ('class="'|cat:($temp_a_active_class|escape)|cat:'"') : ''}
+
+            {* <!-- обрабатываем входной параметр $a_default_class --> *}
+            {$temp_a_default_class = ($a_default_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+            {$temp_a_default_class = ($temp_a_default_class != '') ? ('class="'|cat:($temp_a_default_class|escape)|cat:'"') : ''}
+
+
+
+            {* <!-- захватываем следующий вывод в переменную $temp_result --> *}
+            {capture assign = 'temp_result'}
+
+                {* <!-- перебираем шаблоны --> *}
+                {$temp_count = 0}
+                {foreach $items as $r}
+
+                    {* <!-- если этот шаблон не запрещен к использованию и имеет имя --> *}
+                    {if !isset($r->enabled) || $r->enabled}
+                        {$temp_name = $r->name|default:''}
+                        {if $temp_name != ''}
+
+                            {* <!-- выводим открывающий тег ссылки шаблона --> *}
+                            {$link_opentag|default:''}
+
+                                {* <!-- ссылка --> *}
+                                {$temp_active = ($default_theme|default:false === $temp_name) ? $temp_a_default_class : $temp_a_class}
+                                {$temp_active = ($current_theme|default:false === $temp_name) ? $temp_a_active_class : $temp_active}
+                                {$temp_count = $temp_count + 1}
+                                <a {$temp_active} {$temp_a_id} href="{$site|default:''|escape}?{$temp_param}={$temp_name|escape}" title="Переключиться на дизайн {$temp_name|escape}" onclick="javascript: var object = jQuery(this).closest('form'); jQuery(object).find('input[name=\'{$temp_param}\']').val('{$temp_name|escape}'); jQuery(object).submit(); return false;">
+                                    {$temp_name}
+                                </a>
+
+                            {* <!-- выводим закрывающий тег ссылки шаблона --> *}
+                            {$link_closetag|default:''}
+
+                        {/if}
+                    {/if}
+
+                {/foreach}
+            {/capture}
+
+
+
+            {* <!-- если более одного шаблона есть в захваченном выводе, выводим его --> *}
+            {if $temp_count > 1}
+
+                {* <!-- выводим открывающий тег блока шаблонов --> *}
+                {$opentag|default:''}
+
+                    {* <!-- выводим открывающий тег контейнера шаблонов --> *}
+                    {$box_opentag|default:''}
+
+                        {* <!-- форма выбора шаблонов --> *}
+                        <form {$temp_form_class} {$temp_form_id} method="post">
+
+                            {* <!-- выводим открывающий тег списка шаблонов --> *}
+                            {$listing_opentag|default:''}
+
+                                {* <!-- ранее захваченный вывод --> *}
+                                {$temp_result}
+
+                            {* <!-- выводим закрывающий тег списка шаблонов --> *}
+                            {$listing_closetag|default:''}
+
+
+
+                            {* <!-- скрытое поле для передачи имени выбранного шаблона --> *}
+                            <input name="{$temp_param}" type="hidden" value="">
+                        </form>
+
+                    {* <!-- выводим закрывающий тег контейнера шаблонов --> *}
+                    {$box_closetag|default:''}
+
+                {* <!-- выводим закрывающий тег блока шаблонов --> *}
+                {$closetag|default:''}
+
+            {/if}
+
+        {/if}
+
+    {/if}
+
+{/strip}

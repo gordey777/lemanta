@@ -1,0 +1,99 @@
+{* <!-- личный кабинет --> *}{strip}
+
+    {$title = 'Личный кабинет' scope=global}
+    {$meta = '<meta name="Robots" content="noindex, follow" />' scope=global}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Хлебные крошки.                                                            |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$mod = 'mod-breadcrumbs.htm'}
+    {if $emulator->existsModule($mod)}
+        {include "$mod"
+                  title = 'Личный кабинет'
+                  noCatalogLink = TRUE}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Левая колонка.                                                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {include 'common/left-column.htm'}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Правая колонка.                                                            |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="right">
+        <h1>{echoVar from='user->compound_name'}</h1>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Может была ошибка?                                                     |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($error)}
+            <div class="message_error">{$error}</div>
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Форма ввода данных клиента.                                            |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <form class="form register_form login_form account_form" method="post">
+            <div>
+                <label>Имя</label>
+                <input value="{inputValue from=name}" class="inputall" name="name" maxlength="80" type="text" required />
+            </div>
+
+            <div>
+                <label>Email</label>
+                <input value="{inputValue from=email}" class="inputall" name="email" maxlength="64" type="text" required />
+            </div>
+
+            <div>
+                <label><a onclick="$('#password').show()">Изменить пароль</a></label>
+                <input id="password" value="" class="inputall" name="password" type="password" style="display: none" />
+            </div>
+
+            <div>
+                <input type="submit" class="registr" value="Сохранить" />
+            </div>
+        </form>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Список заказов клиента.                                                |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($orders)}
+            <br /><br />
+            <h2>Ваши заказы</h2>
+            <ul id="orders_history">
+                {foreach $orders as $item}
+                    <li>
+                        {$item->date} <a href="order/{$item->code|escape}">Заказ №{$item->order_id}</a>
+                        {if !empty($item->payment_status)} оплачен,{/if}
+                        {$status = $item->status|default:0}
+                        {if $status == 0} ждет обработки
+                        {elseif $status == 1} в обработке
+                        {elseif $status == 2} выполнен
+                        {elseif $status == 3} аннулирован
+                        {else} неизвестный статус!{/if}
+                    </li>
+                {/foreach}
+            </ul>
+        {/if}
+    </div>
+
+{/strip}

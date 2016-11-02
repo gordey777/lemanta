@@ -1,0 +1,233 @@
+  {literal}
+    <style>
+      div, p, span             {font-family: Verdana, Tahoma, Arial;}
+      input, textarea          {color: #000000; font-family: Verdana, Tahoma, Arial; font-size: 10pt; margin: 0px; padding: 2px;}
+      textarea                 {height: 150px; margin-top: 10px; width: 100%;}
+      a.product                {font-size: 8pt; text-decoration: none;}
+      a.product:hover          {text-decoration: underline;}
+      a.tovar_on               {color: #000000; font-size: 8pt; font-weight: bold; text-decoration: none;}
+      a.tovar_on:hover         {color: #000000; font-size: 8pt; font-weight: bold; text-decoration: underline;}
+      div.post_edit            {float: right; margin: 10px; margin-right: 0px; padding: 0px;}
+      a.post_edit              {color: #0080FF; font-size: 8pt; text-decoration: none;}
+      a.post_edit:hover        {color: #0080FF; font-size: 8pt; text-decoration: underline;}
+      div.post_edit_box        {color: #808080; display: none; font-size: 8pt; margin: 0px; margin-left: 25px; padding: 10px;}
+      div.post_add             {float: left; margin: 0px; margin-left: 35px; padding: 0px;}
+      a.post_add               {color: #0080FF; font-size: 8pt; text-decoration: none;}
+      a.post_add:hover         {color: #0080FF; font-size: 8pt; text-decoration: underline;}
+      div.post_add_box         {color: #808080; display: none; font-size: 8pt; margin: 0px; margin-left: 50px; padding: 10px;}
+      div.post_post_box        {clear: right; display: none; margin: 0px; padding: 0px; text-align: right;}
+      p.post                   {color: #606060; font-size: 10pt; margin: 0px; margin-left: 25px; padding: 10px;}
+      span.no_product          {color: #C06060; font-size: 7pt; text-decoration: blink; white-space: nowrap;}
+      .flxc3                   {width: 99%;}
+      div.subinfo              {float: right; margin: 0px; margin-left: 10px; padding: 0px; width: 50%;}
+      div.subinfo_date         {color: #00A000; float: right; font-size: 8pt; margin: 0px; margin-left: 10px; padding: 0px;}
+      a.post_email             {color: #000000; font-size: 8pt; text-decoration: none;}
+      a.post_email:hover       {color: #000000; font-size: 8pt; text-decoration: underline;}
+    </style>
+  {/literal}
+
+        <div id="cont_center">
+          {if isset($error) && ($error != "")}
+            <div id="error_minh">
+              <div id="error">
+                <img src="http://{$root_url|escape}/admin/images/error.jpg">
+                <p>{$error}</p>
+              </div>
+            </div>
+          {/if}
+          <div class="filter">
+            <form method="get">
+              <input name="section" type="hidden" value="{$smarty.get.section|default:''|escape}">
+              <input name="keyword" style="margin-right: 10px; width: 350px;" type="text" value="{$smarty.get.keyword|default:''|escape}">
+              <input type="submit" value="&nbsp;Найти&nbsp;">
+            </form>
+          </div>
+          {$PagesNavigation|default:""}
+          <div class="clear">
+            &nbsp;
+          </div>
+          {if isset($Items) && !empty($Items)}
+            <form method="post">
+              {function name="show_posts"}
+                {assign var="width_level" value=3}
+                {if $level < $width_level}{assign var="width_level" value=$level}{/if}
+                {foreach item=item from=$items}
+                  {assign var="post_id" value=$item->comment_id|default:""}
+                  {assign var="post_id" value=$item->feedback_id|default:$post_id|escape}
+                  {assign var="post_message" value=$item->comment|default:""}
+                  {assign var="post_message" value=$item->message|default:$post_message|escape}
+                  <table align="center" border="0" cellpadding="0" celsspacing="0" width="98%">
+                    <tr>
+                      <td>
+                        <div style="margin: 0px;{if $width_level > 0} margin-left: {$width_level*50}px;{/if} padding: 0px;">
+                          {if isset($item->enable_get)}
+                            <a href="index.php{$item->enable_get|escape}" title="Разрешён ли к показу на сайте">
+                              <img src="http://{$root_url|escape}/admin/images/{if $item->enabled}lamp_on.jpg{else}lamp_off.jpg{/if}" style="margin: 0px; padding: 0px;" width="24">
+                            </a>
+                          {/if}
+                          {if isset($item->set_new_get)}
+                            <a href="index.php{$item->set_new_get|escape}" title="Считается ли непрочитанным пользователем">
+                              <img src="http://{$root_url|escape}/admin/images/{if $item->new}q_on.jpg{else}q_off.jpg{/if}" style="margin: 0px; margin-right: 5px; padding: 0px;" width="24">
+                            </a>
+                          {/if}
+                        </div>
+                      </td>
+                      <td width="100%">
+                        <div class="flxc3" style="background-color: #F8F8F8; border: #E0E0E0 1px dashed; border-top: #C0C0C0 1px solid; padding: 5px;">
+                          <p>
+                            <div class="subinfo">
+                              <!-- <a href="index.php?section={$smarty.get.section|escape}&keyword=dat%3A{$item->date|truncate:10:"":true|escape}" title="Найти все за эти сутки"> -->
+                              <div class="subinfo_date">
+                                {$item->date|escape}
+                              </div>
+                              <!-- </a> -->
+
+                              {if isset($item->product_id)}
+                                {if ($settings->product_category_show == 1) && ($item->category|strip_tags != "")}
+                                  <a class="product" href="http://{$root_url|escape}/{if $item->category_url_special != 1}catalog/{/if}{$item->category_url|escape}" style="color: #FF8000;" title="Перейти на страницу этой категории в клиентской части">
+                                    {$item->category|strip_tags|escape}
+                                  </a>
+                                {/if}
+                                {if ($settings->product_brand_show == 1) && ($item->brand|strip_tags != "")}
+                                  <a class="product" href="http://{$root_url|escape}/{if $item->brand_url_special != 1}brands/{/if}{$item->brand_url|escape}" style="color: #0080FF;" title="Перейти на страницу этого бренда в клиентской части">
+                                    {$item->brand|strip_tags|escape}
+                                  </a>
+                                {/if}
+                                {if $item->model|strip_tags != ""}
+                                  <a class="product" href="http://{$root_url|escape}/{if $item->product_url_special != 1}products/{/if}{$item->product_url|escape}" style="color: #000000;" title="Перейти на страницу этого товара в клиентской части">
+                                    {$item->model|strip_tags|escape}
+                                  </a>
+                                {else}
+                                  <span class="no_product">
+                                    Такого товара уже нет!
+                                  </span>
+                                {/if}
+
+                              {elseif isset($item->article_id)}
+                                {if $item->header|strip_tags != ""}
+                                  <a class="product" href="http://{$root_url|escape}/{if $item->article_url_special != 1}articles/{/if}{$item->article_url|escape}" style="color: #000000;" title="Перейти на страницу этой статьи в клиентской части">
+                                    {$item->header|strip_tags|escape}
+                                  </a>
+                                {else}
+                                  <span class="no_product">
+                                    Такой статьи уже нет!
+                                  </span>
+                                {/if}
+
+                              {elseif isset($item->news_id)}
+                                {if $item->header|strip_tags != ""}
+                                  <a class="product" href="http://{$root_url|escape}/{if $item->news_url_special != 1}news/{/if}{$item->news_url|escape}" style="color: #000000;" title="Перейти на страницу этой новости в клиентской части">
+                                    {$item->header|strip_tags|escape}
+                                  </a>
+                                {else}
+                                  <span class="no_product">
+                                    Такой новости уже нет!
+                                  </span>
+                                {/if}
+                              {/if}
+
+                            </div>
+                            {if isset($item->product_id)}
+                              {if $item->model}
+                                <div style="float: right;">
+                                  <a href="index.php?section={$smarty.get.section|escape}&keyword=pid%3A{$item->product_id|escape}" title="Найти все для этого товара">
+                                    <img src="http://{$root_url|escape}/admin/images/info.png" style="margin: 0px; margin-left: 5px; margin-bottom: 5px; padding: 0px;" width="16">
+                                  </a>
+                                </div>
+                              {/if}
+                            {/if}
+                            {if $item->from_user}
+                              <div style="float: left;">
+                                <a href="index.php?section=User&user_id={$item->from_user|escape}" title="Перейти на страницу этого пользователя">
+                                  <img src="http://{$root_url|escape}/admin/images/file_icon.jpg" style="margin: 0px; margin-right: 5px; margin-bottom: 5px; padding: 0px;" width="16">
+                                </a>
+                              </div>
+                            {/if}
+                            <a class="tovar_on" href="index.php?section={$smarty.get.section|escape}&keyword=nam%3A{$item->name|default:'Имя не указано'|escape}" title="Найти все с таким именем">
+                              {$item->name|default:'Имя не указано'|escape}
+                            </a>
+                            {if $item->email}
+                              &nbsp;&nbsp;
+                              <a class="post_email" href="index.php?section={$smarty.get.section|escape}&keyword=mai%3A{$item->email|escape}" title="Найти все с таким емейлом">
+                                {$item->email|escape}
+                              </a>
+                            {/if}
+                            &nbsp;&nbsp;
+                            <a class="tovar_on" href="index.php?section={$smarty.get.section|escape}&keyword=uip%3A{$item->ip|escape}" title="Найти все с такого IP-адреса">
+                              <span style="color: #808080; font-size: 7pt; font-weight: normal; white-space: nowrap;">
+                                [ip: {$item->ip|escape}]
+                              </span>
+                            </a>
+                          </p>
+                        </div>
+                        <div class="flxc3" style="margin-bottom: 25px;">
+                          <div class="post_edit" id="message_switch_{$post_id}">
+                            <a class="post_edit" href="#" onclick="javascript: Start_EditPost('{$post_id}', false); return false;">исправить</a>
+                          </div>
+                          <div class="post_edit_box" id="message_{$post_id}">
+                              имя:&nbsp;<input maxlength="128" name="name[{$post_id}]" style="width: 25%;" value="{$item->name|default:'Имя не указано'|escape}">
+                              {if isset($item->email)}
+                                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                  емейл:&nbsp;<input maxlength="80" name="email[{$post_id}]" style="width: 25%;" value="{$item->email|escape}">
+                              {/if}
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                              дата:&nbsp;<input maxlength="20" name="date[{$post_id}]" style="width: 20%;" value="{$item->date|default:'0000-00-00 00:00:00'|replace:'.':'-'|escape}" title="Формат ГГГГ-ММ-ДД ЧЧ:ММ:СС">
+                              <br><textarea name="message[{$post_id}]">{$post_message}</textarea>
+                          </div>
+                          <p class="post">
+                            {$post_message|nl2br}
+                          </p>
+                          <div class="post_add" id="answer_message_switch_{$post_id}">
+                            <a class="post_add" href="#" onclick="javascript: Start_EditPost('{$post_id}', true); return false;">ответить</a>
+                          </div>
+                          <div class="post_add_box" id="answer_message_{$post_id}">
+                              отвечает:&nbsp;<input maxlength="128" name="answer_name[{$post_id}]" style="width: 25%;" value="Администрация">
+                              {if isset($item->email)}
+                                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                  емейл:&nbsp;<input maxlength="80" name="answer_email[{$post_id}]" style="width: 25%;" value="{$settings->admin_email|escape}">
+                              {/if}
+                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                              дата:&nbsp;<input maxlength="20" name="answer_date[{$post_id}]" style="width: 20%;" value="{$smarty.now|date_format:'Y-m-d H:i:s'}" title="Формат ГГГГ-ММ-ДД ЧЧ:ММ:СС">
+                              <br><textarea name="answer_message[{$post_id}]"></textarea>
+                          </div>
+                          <div class="post_post_box" id="post_{$post_id}">
+                            <input name="post[{$post_id}]" style="width: 150px;" type="submit" value="&nbsp;Сохранить&nbsp;" title="Сохранить изменения в этой ветви обсуждения">
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <a class="fl" href="index.php{$item->delete_get|escape}" onclick="if (!confirm('Эта операция удалит указанную запись (если она имеет ответы, они образуют отдельную ветвь). Подтвердите своё намерение удалить данную запись.')) return false;" title="Удалить">
+                          <img src="http://{$root_url|escape}/admin/images/delete.jpg" style="margin: 0px; margin-left: 5px; padding: 0px;" width="24">
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  {if isset($item->discussion) && !empty($item->discussion)}
+                    {show_posts items=$item->discussion level=$level+1}
+                  {/if}
+                {/foreach}
+              {/function}
+
+              {show_posts items=$Items level=0}
+
+              <input name="token" type="hidden" value="{$Token|escape}">
+            </form>
+            {$PagesNavigation}
+            {literal}
+              <script language="JavaScript" type="text/javascript">
+                <!--
+                function Start_EditPost(id, answer) {
+                  var object = document.getElementById(((answer == true)? 'answer_' : '') + 'message_switch_' + id);
+                  if ((typeof(object) == 'object') && (object != null)) object.style.display = 'none';
+                  object = document.getElementById(((answer == true) ? 'answer_' : '') + 'message_' + id);
+                  if ((typeof(object) == 'object') && (object != null)) object.style.display = 'block';
+                  object = document.getElementById('post_' + id);
+                  if ((typeof(object) == 'object') && (object != null)) object.style.display = 'block';
+                }
+                // -->
+              </script>
+            {/literal}
+          {else}
+            Нет записей.
+          {/if}
+        </div>

@@ -1,0 +1,646 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: письмо пользователю об активности по купону                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Используется в момент принятия заказа от пользователя, использовавшего          |
+  скидочный купон при оформлении заказа, или от авторизованного пользователя,     |
+  который зарегистрировался когда-то по скидочному купону. Содержимое шаблона     |
+  передается электронным письмом на емейл партнера и емейл администратора, если   |
+  такая опция включена в настройках модуля скидочных купонов.                     |
+                                                                                  |
+  Этот файл шаблона используется, если не найден файл с таким же именем в папке   |
+  текущего дизайна клиентской стороны сайта (то есть в папке                      |
+  http://сайт/design/выбранный_дизайн/html).                                      |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $post = запись о купоне                                                       |
+    $post_object = запись о предмете активности (пользователь или заказ)          |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $currency = запись о текущей валюте клиентской стороны сайта                  |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $root_url = безпротокольный адрес корня сайта                                 |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- стили --> *}
+    <style>
+
+
+
+        /* заголовок письма */
+        h1 {
+            border: 0px solid;
+            color: #000;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 13pt;
+            font-weight: bold;
+            margin: 10px;
+            padding: 0px;
+            text-align: left;
+            text-indent: 0px;
+        }
+
+
+
+        p {
+            border: 0px solid;
+            color: #000;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 10pt;
+            font-weight: normal;
+            margin: 10px;
+            padding: 0px;
+            text-align: left;
+            text-indent: 0px;
+        }
+
+
+
+        /* справочная часть текста */
+        span {
+            border: 0px solid;
+            color: #000;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 8pt;
+            font-weight: normal;
+            margin: 0px;
+            padding: 0px;
+        }
+
+
+        a {
+            color: #08f;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #c00;
+            text-decoration: underline;
+        }
+
+
+
+        table {
+            border: #ddd 3px solid;
+            border-right: #ddd 2px solid;
+            border-bottom: #ddd 2px solid;
+            color: #000;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 10pt;
+            font-weight: normal;
+            margin: 10px;
+            max-width: 750px;
+            padding: 0px;
+            width: 750px;
+        }
+
+
+
+        /* ячейки наименований (слева) */
+        td  {
+            background: #eee;
+            border: 0px solid;
+            border-right: #ddd 1px solid;
+            border-bottom: #ddd 1px solid;
+            color: #000;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 10pt;
+            font-weight: normal;
+            margin: 0px;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            width: 100px;
+        }
+
+
+
+        /* титульные ячейки (сверху) */
+        td.title {
+            background: #e8e8e8;
+            border: #ddd 0px solid;
+            border-right: #ddd 1px solid;
+            border-bottom: #ddd 1px solid;
+            color: #888;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 8pt;
+            font-weight: normal;
+            margin: 0px;
+            padding: 5px 10px;
+            text-align: center;
+            vertical-align: middle;
+            white-space: nowrap;
+            width: 100px;
+        }
+
+
+
+        /* информационные ячейки (справа) */
+        td.info {
+            background: #fff;
+            border: 0px solid;
+            border-right: #ddd 1px solid;
+            border-bottom: #ddd 1px solid;
+            color: #000;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 10pt;
+            font-weight: normal;
+            margin: 0px;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            width: 100%;
+        }
+
+
+
+        /* ячейки списка (левая колонка) */
+        td.item {
+            background: #eee;
+            border: 0px solid;
+            border-right: #ddd 1px solid;
+            border-bottom: #ddd 1px solid;
+            color: #000;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 10pt;
+            font-weight: normal;
+            margin: 0px;
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            width: 100%;
+        }
+
+
+
+        /* количественные ячейки (правые колонки) */
+        td.sum  {
+            background: #fff;
+            border: 0px solid;
+            border-right: #ddd 1px solid;
+            border-bottom: #ddd 1px solid;
+            color: #000;
+            font-family: Verdana, Tahoma, Arial;
+            font-size: 10pt;
+            font-weight: normal;
+            margin: 0px;
+            padding: 10px;
+            text-align: right;
+            vertical-align: top;
+            white-space: nowrap;
+            width: auto;
+        }
+
+
+
+        /* цветовые классы */
+        .red {
+            color: #f00;
+        }
+        .green {
+            color: #0a0;
+        }
+        .orange {
+            color: #f80;
+        }
+        .silver {
+            color: #ccc;
+        }
+
+
+
+        /* размерные классы */
+        .stdtext {
+            font-size: 10pt;
+        }
+        .one-third {
+            width: 33%;
+        }
+        .two-third {
+            width: 66%;
+        }
+
+
+
+    </style>
+
+
+
+    {* <!-- определяем функцию email_coupon_activity_show_user_info($item) - показ сведений о пользователе --> *}
+    {* <!-- (введенное пользователем ОБЯЗАТЕЛЬНО выводим с помощью модификатора escape для блокировки атаки xss-инъекцией) --> *}
+    {function name = 'email_coupon_activity_show_user_info'}
+
+
+
+        {* <!-- имя --> *}
+        {if $item->compound_name|default:'' != ''}
+            <tr>
+                <td>
+                    Имя:
+                </td>
+                <td class="info">
+                    {$item->compound_name|escape}
+                </td>
+            </tr>
+        {/if}
+
+
+
+        {* <!-- емейл --> *}
+        {if $item->email|default:$item->email2|default:'' != ''}
+            <tr>
+                <td>
+                    Емейл:
+                </td>
+                <td class="info">
+                    {if $item->email|default:'' != ''}
+                        <a href="mailto:{$item->email|escape}" title="Написать письмо этому покупателю">
+                            {$item->email|escape}
+                        </a>
+                        {if $item->email2|default:'' != ''}
+                            <br>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- емейл 2 --> *}
+                    {if $item->email2|default:'' != ''}
+                        <a href="mailto:{$item->email2|escape}" title="Написать письмо этому покупателю">
+                            {$item->email2|escape}
+                        </a>
+                    {/if}
+                </td>
+            </tr>
+        {/if}
+
+
+
+        {* <!-- телефон --> *}
+        {if $item->phone|default:$item->phone2|default:'' != ''}
+            <tr>
+                <td>
+                    Телефон:
+                </td>
+                <td class="info">
+                    {if $item->phone|default:'' != ''}
+                        {$item->phone|escape}
+                        {if $item->phone2|default:'' != ''}
+                            <br>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- телефон 2 --> *}
+                    {($item->phone2|default:'')|escape}
+                </td>
+            </tr>
+        {/if}
+
+
+
+        {* <!-- icq --> *}
+        {if $item->icq|default:$item->icq2|default:'' != ''}
+            <tr>
+                <td>
+                    ICQ:
+                </td>
+                <td class="info">
+                    {if $item->icq|default:'' != ''}
+                        {$item->icq|escape}
+                        {if $item->icq2|default:'' != ''}
+                            <br>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- icq 2 --> *}
+                    {($item->icq2|default:'')|escape}
+                </td>
+            </tr>
+        {/if}
+
+
+
+        {* <!-- skype --> *}
+        {if $item->skype|default:$item->skype2|default:'' != ''}
+            <tr>
+                <td>
+                    Skype:
+                </td>
+                <td class="info">
+                    {if $item->skype|default:'' != ''}
+                        {$item->skype|escape}
+                        {if $item->skype2|default:'' != ''}
+                            <br>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- skype 2 --> *}
+                    {($item->skype2|default:'')|escape}
+                </td>
+            </tr>
+        {/if}
+
+
+
+        {* <!-- адрес доставки --> *}
+        {if $item->compound_address|default:$item->compound_address2|default:'' != ''}
+            <tr>
+                <td>
+                    Адрес доставки:
+                </td>
+                <td class="info">
+                    {if $item->compound_address|default:'' != ''}
+                        {$item->compound_address|escape}
+                        {if $item->compound_address2|default:'' != ''}
+                            <br><br>
+                        {/if}
+                    {/if}
+
+
+
+                    {* <!-- адрес доставки 2 --> *}
+                    {($item->compound_address2|default:'')|escape}
+                </td>
+            </tr>
+        {/if}
+
+
+
+    {/function}
+
+
+
+    {* <!-- если предметом уведомления является заказ --> *}
+    {if isset($post_object->order_id)}
+
+
+
+        {* <!-- вычисляем курс --> *}
+        {$rate = ($currency->rate_from|default:1) / ($currency->rate_to|default:1)}
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            Заказ №{($post_object->order_id|default:'')|escape} {**}
+            на сумму {(($post_object->total_amount|default:0) * $rate)|string_format:'%1.2f'|replace:',':'.'} {$currency->sign|default:''}
+        </h1>
+
+
+
+        {* <!-- сведения о покупателе --> *}
+        <table border="0" cellpadding="0" cellspacing="0">
+
+
+
+            {* <!-- выводим сведения о покупателе --> *}
+            {email_coupon_activity_show_user_info item = $post_object|default:false}
+
+
+
+            {* <!-- комментарий --> *}
+            {if $post_object->comment|default:'' != ''}
+                <tr>
+                    <td>
+                        Комментарий:
+                    </td>
+                    <td class="info">
+                        {(($post_object->comment|strip_tags)|escape)|nl2br}
+                    </td>
+                </tr>
+            {/if}
+
+
+
+            {* <!-- дата --> *}
+            {if isset($post_object->date)}
+                <tr>
+                    <td>
+                        Дата заказа:
+                    </td>
+                    <td class="info">
+                        {$post_object->date}
+                    </td>
+                </tr>
+            {/if}
+
+
+
+            {* <!-- способ оплаты --> *}
+            {if $post_object->payment_method|default:'' != ''}
+                <tr>
+                    <td>
+                        Способ оплаты:
+                    </td>
+                    <td class="info">
+                        {$post_object->payment_method}
+                    </td>
+                </tr>
+            {/if}
+
+
+
+        </table>
+
+
+
+        {* <!-- список товаров --> *}
+        <table border="0" cellpadding="0" cellspacing="0">
+
+
+
+            {* <!-- шапка таблицы --> *}
+            <tr>
+                <td class="title">
+                    товар
+                </td>
+                <td class="title">
+                    кол-во
+                </td>
+                <td class="title">
+                    цена
+                </td>
+                <td class="title">
+                    скидка
+                </td>
+                <td class="title">
+                    сумма
+                </td>
+            </tr>
+
+
+
+            {* <!-- перечисляем товары заказа --> *}
+            {if isset($post_object->products) && is_array($post_object->products) && !empty($post_object->products)}
+                {foreach $post_object->products as $r}
+
+
+
+                    {* <!-- название --> *}
+                    <tr>
+                        <td class="item">
+                            {$r->product_name|default:'Без названия!'}
+
+
+
+                            {* <!-- название варианта товара --> *}
+                            {if ($r->variant_name|default:'' != '') && ($r->variant_name != $r->product_name|default:'')}
+                                {**} {**}
+                                <span class="green">
+                                    {$r->variant_name}
+                                </span>
+                            {/if}
+
+
+
+                            {* <!-- отобранные свойства товара --> *}
+                            {if $r->name_properties|default:'' != ''}
+                                {**} {**}
+                                <span class="orange">
+                                    {$r->name_properties}
+                                </span>
+                            {/if}
+                        </td>
+
+
+
+                        {* <!-- количество --> *}
+                        {$value = ($r->quantity|default:0)|string_format:'%d'}
+                        {$value = ($value < 0) ? $value * -1 : $value}
+                        <td class="sum">
+                            {$value} шт.
+                        </td>
+
+
+
+                        {* <!-- цена --> *}
+                        <td class="sum">
+                          {(($r->real_price|default:0) * $rate)|string_format:'%1.2f'|replace:',':'.'} {$currency->sign|default:''}
+                        </td>
+
+
+
+                        {* <!-- скидка --> *}
+                        <td class="sum" title="Величина скидки">
+                            {if ($r->discount|default:0)|string_format:'%1.2f'|replace:',':'.' != 0}
+                                -{$r->discount|string_format:'%1.2f'|replace:',':'.'}%
+                            {else}
+                                &nbsp;
+                            {/if}
+                        </td>
+
+
+
+                        {* <!-- сумма --> *}
+                        <td class="sum">
+                            {(($r->price|default:0) * $value * $rate)|string_format:'%1.2f'|replace:',':'.'} {$currency->sign|default:''}
+                        </td>
+                    </tr>
+
+
+
+                {/foreach}
+            {/if}
+
+
+
+            {* <!-- способ доставки --> *}
+            <tr>
+                <td class="item">
+                    {$post_object->delivery_method|default:'способ доставки не указан'}
+                </td>
+                <td class="sum" colspan="3">
+                    &nbsp;
+                </td>
+                <td class="sum">
+                    {if ($post_object->delivery_price|default:0)|string_format:'%1.2f'|replace:',':'.' > 0}
+                        {($post_object->delivery_price * $rate)|string_format:'%1.2f'|replace:',':'.'} {$currency->sign|default:''}
+                    {else}
+                        бесплатно
+                    {/if}
+                </td>
+            </tr>
+
+
+
+            {* <!-- дополнительная скидка --> *}
+            <tr>
+                <td class="item">
+                    Дополнительная скидка:
+                </td>
+                <td class="sum" colspan="3">
+                    &nbsp;
+                </td>
+                <td class="sum">
+                    {if ($post_object->discount_sum|default:0)|string_format:'%1.2f'|replace:',':'.' != 0}
+                        -{($post_object->discount_sum * $rate)|string_format:'%1.2f'|replace:',':'.'} {$currency->sign|default:''}
+                    {else}
+                        нет
+                    {/if}
+                </td>
+            </tr>
+
+
+
+        </table>
+
+
+
+    {* <!-- иначе предметом уведомления является регистрация пользователя --> *}
+    {else}
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            Регистрация нового пользователя
+        </h1>
+
+
+
+        {* <!-- сведения о пользователе --> *}
+        <table border="0" cellpadding="0" cellspacing="0">
+
+
+
+            {* <!-- выводим сведения о пользователе --> *}
+            {email_coupon_activity_show_user_info item = $post_object|default:false}
+
+
+
+        </table>
+
+
+
+    {/if}
+
+
+
+    {* <!-- ссылка на сайт, с которого пришло письмо --> *}
+    <br>
+    <p>
+        Это письмо поступило с сайта <a href="{($site|default:'')|escape}" target="_blank" title="Перейти на главную страницу сайта">
+                                         {$root_url|default:''}
+                                     </a>
+        {if isset($post_object->now)}
+            &nbsp;<span class="stdtext">
+                      {$post_object->now}
+                  </span>
+        {/if}
+    </p>
+
+{/strip}

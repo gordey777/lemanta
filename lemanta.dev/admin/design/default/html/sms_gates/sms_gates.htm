@@ -1,0 +1,134 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля SMS-шлюзов.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с html-контентами шлюзов;
+    $phone_all = отобранный список номеров телефонов;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "sms" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    setup = true - вывести эту кнопку
+    currencies = true - вывести эту кнопку
+    deliveries = true - вывести эту кнопку
+    deliveries_types = true - вывести эту кнопку
+    shippings_terms = true - вывести эту кнопку
+    payment = true - вывести эту кнопку
+    sms = true - вывести эту кнопку *} -->
+
+  {include file = '../../../common_parts/submenu.htm'
+           select = "sms"
+           main = true
+           setup = true
+           currencies = true
+           deliveries = true
+           deliveries_types = true
+           shippings_terms = true
+           payment = true
+           sms = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/">Главная</a>
+        → SMS
+      </div>
+      SMS уведомления
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SmsGates&all_phones=1" title="Взять телефоны из заказов и телефоны зарегистрированных пользователей сайта">
+          все телефоны
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SmsGates&order_phones=1" title="Взять телефоны из заказов">
+          только из заказов
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SmsGates&user_phones=1" title="Взять телефоны зарегистрированных пользователей сайта">
+          только клиентов
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- {* Если есть контенты шлюзов *} -->
+    {if isset($items) && !empty($items)}
+
+      <!-- Форма шлюзов -->
+      <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SmsGates" id="items_form" method="post">
+
+        <!-- Сквозная отправка сообщений -->
+        <table align="center" cellpadding="0" cellspacing="8" class="white">
+          <tr>
+
+            <!-- поле Текст сообщения -->
+            <td class="param_short">
+              Отправить SMS:
+            </td>
+            <td class="value" width="100%" title="Текст отправляемого SMS">
+              <input class="edit" name="text_all" type="text" value="{$text_all|escape|default:''}">
+            </td>
+
+            <!-- кнопка Отправить -->
+            <td class="value_box" title="Отправить SMS через подходящие шлюзы">
+              <input class="submit" name="send_all" type="submit" value="Отправить" onclick="javascript: return confirm('Это приведет к отправке ПЛАТНЫХ SMS по всем номерам в списке. Вы подтверждаете такую операцию?');">
+            </td>
+
+          </tr>
+          <tr>
+
+            <!-- поле Номера получателей -->
+            <td class="param_high">
+              на номера:
+            </td>
+            <td class="value" colspan="2" width="100%" title="Номера телефонов получателей SMS (через запятую или построчно)">
+              <textarea class="editor_small" name="phone_all" style="height: 160px;">{$phone_all|escape|default:''}</textarea>
+            </td>
+
+          </tr>
+        </table>
+
+        <!-- {* Выводим контенты шлюзов *} -->
+        {foreach item=r from=$items}
+          {$r}
+        {/foreach}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+      </form>
+    
+    {else}
+      <div class="noitems">
+        Не найдено SMS-шлюзов.
+      </div>
+    {/if}
+
+  </div>

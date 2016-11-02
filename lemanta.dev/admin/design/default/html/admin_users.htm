@@ -1,0 +1,891 @@
+{* <!--
+  Impera CMS: шаблон админ модуля списка пользователей.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о пользователях;
+    $towns = дерево записей о городах;
+    $groups = массив записей о группах;
+    $all_users = массив с записями о пользователях;
+    $users_list = одноуровневый массив с теми же записями о пользователях;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================ --> *}{strip}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../common_parts/submenu.htm'
+             select = 'users'
+             main = true
+             users = true
+             groups = true
+             banneds = true}
+
+
+
+    {* <!-- адрес корня админпанели --> *}
+    {$site = ($site|default:'')|escape}
+    {$admin_site = $site|cat:(($admin_folder|default:'')|escape)|cat:'/'}
+    {$admin_script = $admin_site|cat:'index.php'}
+
+
+
+    {* <!-- адрес для перехода в админпанели (ожидает справа имя модуля) --> *}
+    {$param = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$param = $param|regex_replace:'/[=\?#]/':''}
+    {$admin_goto = $admin_script|cat:'?'|cat:($param|escape)|cat:'='}
+
+
+
+    {* <!-- адрес корня текущего шаблона админпанели --> *}
+    {$param = $settings->admin_theme|default:''}
+    {$admin_theme = $admin_site|cat:'design/'|cat:($param|escape)|cat:'/'}
+    {$theme = ($theme|default:'')|escape}
+
+
+
+    {* <!-- hidden_editbox(param, id, value) = генерация скрытого поля ввода --> *}
+    {function name = 'hidden_editbox'
+              param = ''
+              id = false
+              value = ''}
+        {if $param != ''}
+            {eval var = '{$smarty.const.'|cat:$param|cat:'|default:\'\'}'
+                  assign = 'param'}
+            {if $param != ''}
+                {$value = ($value === true) ? ($inputs[$param]|default:'') : $value}
+                {$param = $param|escape}
+                {$id = ($id) ? ('id="items_form_'|cat:$param|cat:'"') : ''}
+
+                {* <!-- поле ввода --> *}
+                <input {$id} name="{$param}" type="hidden" value="{$value|escape}" />
+            {/if}
+        {/if}
+    {/function}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$admin_site}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → Клиенты
+            </div>
+
+            Зарегистрированные пользователи
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <!-- a href="{$admin_goto}User&{$token_request}" title="Добавить пользователя">
+                добавить
+            </a -->
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- псевдо форма для передачи запроса по заказам --> *}
+        <form action="{$admin_goto}Orders" id="orders_form" method="post" style="display: none;">
+
+            {* <!-- строка поиска --> *}
+            {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|default:''}
+            <input id="orders_form_{$param|escape}" name="{$param|escape}" type="hidden" value="" />
+
+            {* <!-- тип заказов --> *}
+            {$param = $smarty.const.REQUEST_PARAM_NAME_TYPE|default:''}
+            {$value = $smarty.const.TYPE_ORDERS_ANY|default:''}
+            <input name="{$param|escape}" type="hidden" value="{$value|escape}" />
+        </form>
+
+
+
+        {* <!-- форма со списком записей --> *}
+        <form action="{$admin_goto}Users" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+
+
+            {* <!-- фильтр --> *}
+            <table align="center" cellpadding="0" cellspacing="8" class="white">
+                <tr>
+
+                    {* <!-- поле Группа --> *}
+                    <td class="param_short">
+                        Группа
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: только принадлежащие к такой группе">
+
+                        {* <!-- селектор групп --> *}
+                        <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_GROUP|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_GROUP|escape}" onchange="Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+                            <option value="0"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_GROUP]|default:0 === "0"} selected{/if}>Вне групп</option>
+
+                            {if isset($groups) && !empty($groups)}
+                                {foreach item=r from=$groups}
+                                    <option value="{$r->group_id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_GROUP]|default:0 == $r->group_id} selected{/if}>
+                                        {$r->name|strip_tags|escape}
+                                    </option>
+                                {/foreach}
+                            {/if}
+
+                            <option value="{$smarty.const.SELECT_RECORDS_PARAM_INVALID_ID|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_GROUP]|default:0 == $smarty.const.SELECT_RECORDS_PARAM_INVALID_ID} selected{/if}>Выпавшие из групп</option>
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Партнер --> *}
+                    <td class="param_short">
+                        Партнер
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: только приведенные таким пользователем">
+
+                        {* <!-- селектор пользователей --> *}
+                        <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_PARTNER|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_PARTNER|escape}" onchange="Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+
+                            {* <!-- список клиентов --> *}
+                            {include file = '../../common_parts/users.htm'
+                                     items = $all_users
+                                     currents = $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PARTNER]|default:0
+                                     selector = true}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Искомая строка --> *}
+                    <td class="param_short">
+                        Найти:
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: с таким именем, емейлом, телефоном">
+                        <input class="edit" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|escape}" type="text" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH]|escape|default:''}" />
+                    </td>
+                    <td class="value_box" title="Начать поиск товаров по условиям фильтра">
+                        <input class="submit" style="width: auto;" type="submit" value="&nbsp;Найти&nbsp;" />
+                    </td>
+                </tr>
+
+
+
+                <tr>
+
+                    {* <!-- поле Страна --> *}
+                    <td class="param_short">
+                        Страна
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: только из такой страны">
+
+                        {* <!-- селектор стран --> *}
+                        <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY|escape}" onchange="Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}'); Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN|escape}'); Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+
+                            {if isset($towns) && !empty($towns)}
+                                {foreach item=r from=$towns}
+                                    <option value="{$r->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:0 == $r->id} selected{/if}>
+                                        {$r->name|strip_tags|escape}
+                                    </option>
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Область --> *}
+                    <td class="param_short">
+                        Область
+                    </td>
+                    <td class="value" width="33%" title="Фильтр: только из такой области">
+
+                        {* <!-- селектор областей --> *}
+                        <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}" onchange="Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN|escape}'); Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+
+                            {if isset($towns) && !empty($towns)}
+                                {foreach item=r from=$towns}
+                                    {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:0 == $r->id) && isset($r->items) && !empty($r->items)}
+                                        {foreach item=r2 from=$r->items}
+                                            <option value="{$r2->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:0 == $r2->id} selected{/if}>
+                                                {$r2->name|strip_tags|escape}
+                                            </option>
+                                        {/foreach}
+                                    {/if}
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Город --> *}
+                    <td class="param_short">
+                        Город
+                    </td>
+                    <td class="value" colspan="2" width="33%" title="Фильтр: только из такого города">
+
+                        {* <!-- селектор городов --> *}
+                        <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN|escape}" onchange="Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+
+                            {if isset($towns) && !empty($towns)}
+                                {foreach item=r from=$towns}
+                                    {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:0 == $r->id) && isset($r->items) && !empty($r->items)}
+                                        {foreach item=r2 from=$r->items}
+                                            {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:0 == $r->id) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:0 == $r2->id) && isset($r2->items) && !empty($r2->items)}
+                                                {foreach item=r3 from=$r2->items}
+                                                    <option value="{$r3->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_TOWN]|default:0 == $r3->id} selected{/if}>
+                                                        {$r3->name|strip_tags|escape}
+                                                    </option>
+                                                {/foreach}
+                                            {/if}
+                                        {/foreach}
+                                    {/if}
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </td>
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- сортировщик --> *}
+            <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+                <tr>
+                    <td class="param_short">
+                        упорядочить&nbsp;
+                    </td>
+
+
+
+                    {* <!-- флажок Направление сортировки --> *}
+                    <td class="param_short" title="Включить обратный порядок сортировки">
+                        <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+                        <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+                            <img class="icon16x16" src="{$admin_theme}images/icon_descending_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- флажок Лаконичный режим --> *}
+                    <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+                        <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+                        <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+                            <img class="icon16x16" src="{$admin_theme}images/icon_laconical_16x16.png" />
+                        </span>
+                    </td>
+
+
+
+                    {* <!-- поле Способ сортировки --> *}
+                    <td class="value" width="60%" title="Способ сортировки пользователей в нижеследующем списке">
+                        <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="Start_PageRecordsFilter('items_form');">
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_ORDERS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_ORDERS)} selected{/if}>по числу заказов</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_GROUP|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_GROUP)} selected{/if}>по группам</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_AS_IS)} selected{/if}>по дате добавления</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_MODIFIED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_MODIFIED)} selected{/if}>по дате исправления</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_BIRTHDAY|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_BIRTHDAY)} selected{/if}>по дате рождения</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_EMAIL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_EMAIL)} selected{/if}>по емейлу</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_PHONE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_PHONE)} selected{/if}>по телефону</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_ICQ|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_ICQ)} selected{/if}>по номеру ICQ</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_SKYPE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_SKYPE)} selected{/if}>по Skype-имени</option>
+                            <option value="{$smarty.const.SORT_USERS_MODE_BY_CASH|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_CASH)} selected{/if}>по состоянию счета</option>
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Режим отображения --> *}
+                    <td class="value" width="40%" title="Насколько полно выводить информацию о пользователях в списке">
+                        <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|escape}" onchange="Start_PageRecordsFilter('items_form');">
+                            <option value="{$smarty.const.VIEW_MODE_COMPACT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_COMPACT)} selected{/if}>компактно</option>
+                            <option value="{$smarty.const.VIEW_MODE_STANDARD|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD)} selected{/if}>стандартно</option>
+                            <option value="{$smarty.const.VIEW_MODE_FULL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)} selected{/if}>подробно</option>
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- флажок Разрешен --> *}
+                    <td class="param_short" title="Фильтр: только не заблокированные">
+                        <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+                            разрешен
+                        </span>
+                    </td>
+                </tr>
+            </table>
+
+
+
+            {* <!-- кнопка сброса фильтра --> *}
+            <div class="toolkey">
+                <span>
+                    найдено <span>
+                                {($total_items|default:0)|string_format:'%d'} шт.
+                            </span>
+                </span>
+
+                <a href="#" onclick="return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения и полноты вывода)">
+                    сбросить
+                </a>
+            </div>
+
+
+
+            {* <!-- если получен непустой массив записей --> *}
+            {if isset($items) && is_array($items) && !empty($items)}
+
+
+
+                {* <!-- навигатор страниц, только если есть несколько листаемых страниц --> *}
+                {if ($Pages|default:null)|@count > 1}
+                    {$PagesNavigation|default:''}
+                {/if}
+
+
+
+                {$now_group = false}
+                {foreach name = items item = c from = $items}
+
+                    {* <!-- визуальное выделение принадлежности к группе --> *}
+                    {if $now_group !== $c->group_id|default:0}
+                        {$now_group = $c->group_id|default:0}
+                        <li class="head_divider">
+                            <div>
+
+                              {* <!-- дислокатор --> *}
+                              <span class="dislocator">
+                                  перенести в:&nbsp; <select class="dislocate" name="{$smarty.const.REQUEST_PARAM_NAME_DISLOCATE_TO|escape}[{$smarty.foreach.items.iteration}]" title="Выберите куда перенести записи">
+                                                         <option value=""></option>
+                                                         <option value="0">Вне групп</option>
+                                                         {foreach $groups as $r}
+                                                             <option value="{$r->group_id|escape}">
+                                                                 {$r->name|strip_tags|escape}
+                                                             </option>
+                                                         {/foreach}
+                                                     </select> &nbsp;<input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_DISLOCATE|escape}[{$smarty.foreach.items.iteration}]" type="submit" value="подобные" title="Начать перенос всех записей подобной принадлежности" onclick="return confirm('Это действие приведет к переносу в указанное Вами место всех записей подобной принадлежности. Вы подтверждаете такую операцию?');">,&nbsp;
+                                                                     <input name="{$smarty.const.REQUEST_PARAM_NAME_DISLOCATE_ID|escape}[{$smarty.foreach.items.iteration}]" type="hidden" value="{$c->group_id|escape}">
+                                                               &nbsp;<input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_DISLOCATE_FILTER|escape}[{$smarty.foreach.items.iteration}]" type="submit" value="отобранные" title="Начать перенос записей, отобранных фильтром" onclick="return confirm('Это действие приведет к переносу в указанное Вами место всех записей, отобранных фильтром. Вы подтверждаете такую операцию?');">
+                              </span>
+
+                              {if $c->group_name != ''}
+                                  {$c->group_name|strip_tags|escape} (скидка {$c->discount|string_format:'%1.2f'|replace:',':'.'}%)
+                              {else}
+
+                                  {if !empty($c->group_id)}
+                                      Выпавшие из группы &nbsp; (была под номером {$c->group_id|escape})
+
+                                      <!-- &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+                                      <a class="restore" href="{$admin_goto}Group&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}={$c->group_id|escape}&{$token_request}" title="Создать такую группу" onclick="alert('К сожалению, в этой версии системы еще не поддерживается такая возможность.'); return false;">
+                                          восстановить
+                                      </a -->
+
+                                  {else}
+                                      Вне групп
+                                  {/if}
+                              {/if}
+
+                            </div>
+                        </li>
+                    {/if}
+
+
+
+                    <li class="flatlist" style="padding-top: 10px; padding-bottom: 10px;">
+
+
+
+                        {* <!-- флажки Пометить все на удаление / Снять все --> *}
+                        {if $smarty.foreach.items.iteration == 1}
+                            <a href="{$admin_script}" title="Пометить на удаление все на этой странице" onclick="jQuery(this).closest('form').find('li > div > input.delete_items').each(function () { if (!this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 882px; z-index: 1;">
+                                ↓
+                            </a>
+                            <a href="{$admin_script}" title="Снять пометки на удаление со всех на этой странице" onclick="jQuery(this).closest('form').find('li > div > input.delete_items').each(function () { if (this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 890px; z-index: 1;">
+                                ↑
+                            </a>
+
+
+
+                            {* <!-- если включен стандартный или полный вывод информации о записях --> *}
+                            {$param = $smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|default:''}
+                            {if ($inputs[$param]|default:false == $smarty.const.VIEW_MODE_STANDARD|default:false)
+                            || ($inputs[$param]|default:false == $smarty.const.VIEW_MODE_FULL|default:false)}
+
+
+
+                                {* <!-- флажки Пометить все разрешенными / Снять все --> *}
+                                <a href="{$admin_script}" title="Пометить разрешенными все на этой странице" onclick="jQuery(this).closest('form').find('li > div > input.enable_items').each(function () { if (!this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 817px; z-index: 1;">
+                                    ↓
+                                </a>
+                                <a href="{$admin_script}" title="Снять пометки разрешенных со всех на этой странице" onclick="jQuery(this).closest('form').find('li > div > input.enable_items').each(function () { if (this.checked) this.click(); this.onchange(); }); return false;" style="font-size: 12pt; position: absolute; margin: -4px 0px 0px 824px; z-index: 1;">
+                                    ↑
+                                </a>
+
+
+
+                            {/if}
+                        {/if}
+
+
+
+                        <div class="onerow">
+
+                            {* <!-- запоминаем идентификатор текущей записи --> *}
+                            {$id = $c->user_id|default:0}
+
+
+
+                            {* <!-- флажок Пометить на удаление --> *}
+                            <input class="checkbox delete_items" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();" />
+
+
+
+                            {* <!-- кнопка Удалить --> *}
+                            <a href="{$admin_script}{$c->delete_get|default:''|escape}" title="Удалить" onclick="return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                                <img class="microkey_right" src="{$admin_theme}images/icon_delete_16x16.png" />
+                            </a>
+
+
+
+                            <img class="microkey_left" src="{$admin_theme}images/placeholder.gif" />
+
+
+
+                            {* <!-- если включен стандартный или полный вывод информации о записях --> *}
+                            {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                                <input class="checkbox gray enable_items" name="enabled[{$id|escape}]"{if $c->enabled|default:false} checked{/if} title="Пометить как не заблокированный" type="checkbox" value="1" onchange="Show_AcceptChanges_Button();" />
+
+                            {/if}
+
+
+
+                            <a href="{$admin_script}{$c->enable_get|default:''|escape}" title="Разрешить / заблокировать">
+                                <img class="microkey_left" src="{$admin_theme}images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png" />
+                            </a>
+
+
+
+                            <img class="microkey_left" src="{$admin_theme}images/placeholder.gif" />
+
+
+
+                            {* <!-- нумерация --> *}
+                            <span class="topic" style="display: inline;">
+                                {if isset($CurrentPage)}
+                                    {$smarty.foreach.items.iteration + $CurrentPage * $CurrentPageMaxsize}.
+                                {else}
+                                    {$smarty.foreach.items.iteration}.
+                                {/if}
+                            </span>
+
+
+
+                            {* <!-- если включен полный вывод информации о записях --> *}
+                            {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)}
+
+                                {* <!-- дата рождения --> *}
+                                {if $c->birthday|truncate:10:"":true != "0000-00-00"}
+                                    <span class="date" title="Дата рождения: {$c->birthday|truncate:10:'':true|escape}">
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_BIRTHDAY|escape}{$c->birthday|truncate:10:"":true|escape}');" title="Показать всех родившихся такого числа">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->birtday|truncate:10:"":true|escape}
+                                    </span>
+                                {else}
+                                    <span class="date" title="Дата рождения неизвестна">
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_BIRTHDAY|escape}0000-00-00');" title="Показать всех без даты рождения">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        нет даты
+                                    </span>
+                                {/if}
+
+                            {/if}
+
+
+
+                            {* <!-- количество заказов --> *}
+                            <span class="count" title="Количество заказов">
+                                {$c->orders_num|default:0|escape}
+                            </span>
+
+
+
+                            {* <!-- сумма на счете --> *}
+                            <span class="rating{if $c->cash|default:0|string_format:'%1.2f'|replace:',':'.'} zero{/if}" title="Состояние внутреннего счета">
+                                {(($c->cash|default:0) * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'} {$currency->sign|default:''|escape}
+                            </span>
+
+
+
+                            {* <!-- скрытое постинговое идентифицирующее поле текущей записи --> *}
+                            <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="" />
+                            <input name="name[{$id}]" type="hidden" value="{$c->name|default:''|strip_tags|escape}" />
+                            <input name="name2[{$id}]" type="hidden" value="{$c->name2|default:''|strip_tags|escape}" />
+                            <input name="name3[{$id}]" type="hidden" value="{$c->name3|default:''|strip_tags|escape}" />
+
+
+
+                            {* <!-- значок наличия заказов --> *}
+                            {if $c->orders_num|default:0 > 0}
+                                {$param = $smarty.const.SEARCH_ORDERS_COMMAND_USER_ID|default:''}
+                                <a href="#" onclick="return SearchThis_PageRecordsFilter('orders_form', '{$param|escape}{$id|escape}');;">
+                                    <img class="icon16x16" src="{$admin_theme}images/icon_objected_16x16.png" title="Найти все заказы такого пользователя" />
+                                </a>
+                            {/if}
+
+
+
+                            {* <!-- имя --> *}
+                            <a href="{$admin_script}{$c->edit_get|default:''|escape}" title="{$c->compound_name|strip_tags|escape}"{if $c->enabled != 1} class="disabled_item"{/if}>
+                                {$c->compound_name|default:''|strip_tags|escape}
+                            </a>
+
+                        </div>
+
+
+
+                        {* <!-- краткая информация --> *}
+
+                        {* <!-- если включен стандартный или полный вывод информации о записях --> *}
+                        {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                            {* <!-- телефон --> *}
+                            {if ($c->phone|strip_tags != '') || ($c->phone2|strip_tags != '')}
+                                <div class="line">
+                                    <span>
+                                        телефон:
+                                    </span>
+                                    {if $c->phone|strip_tags != ""}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_PHONE|escape}{$c->phone|strip_tags|escape}');;" title="Показать всех с таким телефоном {$c->phone|strip_tags|escape}">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->phone|strip_tags|escape}
+                                        {if $c->phone2|strip_tags != ""}, &nbsp;
+                                            <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_PHONE|escape}{$c->phone2|strip_tags|escape}');;" title="Показать всех с таким телефоном {$c->phone2|strip_tags|escape}">
+                                                <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                            </a> &nbsp;
+                                            {$c->phone2|strip_tags|escape}
+                                        {/if}
+                                    {else}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_PHONE|escape}{$c->phone2|strip_tags|escape}');;" title="Показать всех с таким телефоном {$c->phone2|strip_tags|escape}">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->phone2|strip_tags|escape}
+                                    {/if}
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- емейл --> *}
+                            {if ($c->email|strip_tags != '') || ($c->email2|strip_tags != '')}
+                                <div class="line">
+                                    <span>
+                                        емейл:
+                                    </span>
+                                    {if $c->email|strip_tags != ""}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_EMAIL|escape}{$c->email|strip_tags|escape}');;" title="Показать всех с таким емейлом {$c->email|strip_tags|escape}">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        <a href="mailto:{$c->email|strip_tags|escape}" title="Написать письмо">
+                                            {$c->email|strip_tags|escape}
+                                        </a>
+                                        {if $c->email2|strip_tags != ""}, &nbsp;
+                                            <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_EMAIL|escape}{$c->email2|strip_tags|escape}');;" title="Показать всех с таким емейлом {$c->email2|strip_tags|escape}">
+                                                <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                            </a> &nbsp;
+                                            <a href="mailto:{$c->email2|strip_tags|escape}" title="Написать письмо">
+                                                {$c->email2|strip_tags|escape}
+                                            </a>
+                                        {/if}
+                                    {else}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_EMAIL|escape}{$c->email2|strip_tags|escape}');;" title="Показать всех с таким емейлом {$c->email2|strip_tags|escape}">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        <a href="mailto:{$c->email2|strip_tags|escape}" title="Написать письмо">
+                                            {$c->email2|strip_tags|escape}
+                                        </a>
+                                    {/if}
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- ICQ номер --> *}
+                            {if ($c->icq|strip_tags != '') || ($c->icq2|strip_tags != '')}
+                                <div class="line">
+                                    <span>
+                                        номер ICQ:
+                                    </span>
+                                    {if $c->icq|strip_tags != ""}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_ICQ|escape}{$c->icq|strip_tags|escape}');;" title="Показать всех с таким номером ICQ {$c->icq|strip_tags|escape}">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->icq|strip_tags|escape}
+                                        {if $c->icq2|strip_tags != ""}, &nbsp;
+                                            <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_ICQ|escape}{$c->icq2|strip_tags|escape}');;" title="Показать всех с таким номером ICQ {$c->icq2|strip_tags|escape}">
+                                                <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                            </a> &nbsp;
+                                            {$c->icq2|strip_tags|escape}
+                                        {/if}
+                                    {else}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_ICQ|escape}{$c->icq2|strip_tags|escape}');;" title="Показать всех с таким номером ICQ {$c->icq2|strip_tags|escape}">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->icq2|strip_tags|escape}
+                                    {/if}
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- Skype имя --> *}
+                            {if ($c->skype|strip_tags != '') || ($c->skype2|strip_tags != '')}
+                                <div class="line">
+                                    <span>
+                                        Skype имя:
+                                    </span>
+                                    {if $c->skype|strip_tags != ""}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_SKYPE|escape}{$c->skype|strip_tags|escape}');;" title="Показать всех с таким Skype именем {$c->skype|strip_tags|escape}">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->skype|strip_tags|escape}
+                                        {if $c->skype2|strip_tags != ""}, &nbsp;
+                                            <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_SKYPE|escape}{$c->skype2|strip_tags|escape}');;" title="Показать всех с таким Skype именем {$c->skype2|strip_tags|escape}">
+                                                <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                            </a> &nbsp;
+                                            {$c->skype2|strip_tags|escape}
+                                        {/if}
+                                    {else}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_SKYPE|escape}{$c->skype2|strip_tags|escape}');;" title="Показать всех с таким Skype именем {$c->skype2|strip_tags|escape}">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->skype2|strip_tags|escape}
+                                    {/if}
+                                </div>
+                            {/if}
+
+                        {/if}
+
+
+
+                        {* <!-- если включен полный вывод информации о записях --> *}
+                        {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)}
+
+                            {* <!-- адрес --> *}
+                            {if ($c->compound_address|strip_tags != '') || ($c->compound_address2|strip_tags != '')}
+                                <div class="line" title="{if $c->compound_address != ''}{$c->compound_address|strip_tags|escape}{else}{$c->compound_address2|strip_tags|escape}{/if}">
+                                    <span>
+                                        адрес:
+                                    </span>
+                                    {if $c->compound_address|strip_tags != ''}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_ADDRESS|escape}{$c->search_address|escape}');;" title="Показать всех с таким адресом">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->compound_address|strip_tags|escape}
+                                        {if $c->compound_address2|strip_tags != ''}, &nbsp;
+                                            <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_ADDRESS|escape}{$c->search_address2|escape}');;" title="Показать всех с таким адресом">
+                                                <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                            </a> &nbsp;
+                                            {$c->compound_address2|strip_tags|escape}
+                                        {/if}
+                                    {else}
+                                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_ADDRESS|escape}{$c->search_address2|escape}');;" title="Показать всех с таким адресом">
+                                            <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                        </a> &nbsp;
+                                        {$c->compound_address2|strip_tags|escape}
+                                    {/if}
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- ценовая группа --> *}
+                            {$temp_index = ($c->price_id|default:0|string_format:'%d') + 1}
+                            {$temp_param = 'price_type'|cat:$temp_index}
+                            {$temp_ok = false}
+                            {foreach $settings as $temp_field => $temp_value}
+                                {if $temp_field == $temp_param}
+                                    {$temp_ok = true}
+                                    {break}
+                                {/if}
+                            {/foreach}
+                            {$temp_value = ($temp_ok) ? ($temp_value|regex_replace:'/[\s\t\r\n]+/u':' '|regex_replace:'/^[\s\t\r\n]+/u':''|regex_replace:'/[\s\t\r\n]+$/u':'') : ''}
+                            {$temp_value = ($temp_value == '') ? ('Без названия (тип '|cat:$temp_index|cat:')') : $temp_value}
+                            <div class="line" title="Ценовая группа: {$temp_value|escape}">
+                                <span>
+                                    тип цен:
+                                </span>
+                                {$temp_value}
+                            </div>
+
+
+
+                            {* <!-- дата регистрации --> *}
+                            {if ($c->created|truncate:10:"":true != "0000-00-00") || ($c->affiliate_id != 0) || (isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_AS_IS) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_CREATED)))}
+                                <div class="line">
+                                    <span>
+                                        регистрация:
+                                    </span>
+                                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_CREATED|escape}{$c->created|truncate:10:"":true|escape}');" title="Показать всех зарегистрированных такого числа">
+                                        <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                    </a> &nbsp;
+                                    {$c->created|escape} &nbsp;&nbsp;&nbsp;&nbsp;
+                                    {if $c->affiliate_id != 0}
+                                        &nbsp; <span class="text">с участием партнера: {$c->affiliate_name|strip_tags|escape|default:"Имя не указано"}</span>
+                                    {/if}
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- дата исправления --> *}
+                            {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_USERS_MODE_BY_MODIFIED)}
+                                <div class="line">
+                                    <span>
+                                        исправлен:
+                                    </span>
+                                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_MODIFIED|escape}{$c->modified|truncate:10:"":true|escape}');" title="Показать всех исправленных такого числа">
+                                        <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                    </a> &nbsp;
+                                    {$c->modified|escape} &nbsp;&nbsp;&nbsp;&nbsp;
+                                </div>
+                            {/if}
+
+
+
+                            {* <!-- ip-адрес --> *}
+                            {if $c->ip|strip_tags != ""}
+                                <div class="line">
+                                    <span>
+                                        ip:
+                                    </span>
+                                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_USERS_COMMAND_IP|escape}{$c->ip|strip_tags|escape}');;" title="Показать всех с такого IP-адреса">
+                                        <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                                    </a> &nbsp;
+                                    {$c->ip|strip_tags|escape} &nbsp; <a href="http://www.ip-adress.com/ip_tracer/{$c->ip|strip_tags|escape}" target="_blank" style="font-size: 7pt;">[где это?]</a>{if isset($c->host) && ($c->host|strip_tags != "")} &nbsp; {$c->host|strip_tags|escape}{/if}
+                                </div>
+                            {/if}
+
+                        {/if}
+
+                    </li>
+                {/foreach}
+
+
+
+                {* <!-- пустой указатель требуемой команды --> *}
+                {hidden_editbox param = 'REQUEST_PARAM_NAME_ACTION'
+                                id = true
+                                value = ''}
+
+
+
+                {* <!-- признак отмены постинга --> *}
+                {hidden_editbox param = 'REQUEST_PARAM_NAME_IGNORE_POST'
+                                id = true
+                                value = '1'}
+
+
+
+                {* <!-- признак мини постинга (без некоторых полей записи) --> *}
+                {hidden_editbox param = 'REQUEST_PARAM_NAME_POST_MINI'
+                                id = false
+                                value = '1'}
+
+
+
+                {* <!-- аутентификатор операции --> *}
+                {hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                id = false
+                                value = true}
+
+
+
+                {* <!-- навигатор страниц --> *}
+                {$PagesNavigation|default:''}
+
+
+
+            {* <!-- иначе массив записей пуст --> *}
+            {else}
+
+                {$param = $smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|default:''}
+                {$value = $inputs[$param]|default:false}
+                <div class="noitems">
+                    Не найдено пользователей{if $value} (режим: лаконичный){/if}.
+                </div>
+
+            {/if}
+        </form>
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box" style="display: none;">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность {**}
+                выделить из общего списка пользователей по конкретным параметрам. Поля фильтра {**}
+                можно сочетать произвольно, они объединены функцией И.
+            </div>
+        </div>
+
+    </div>
+
+{/strip}

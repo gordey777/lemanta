@@ -1,0 +1,241 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка зарегистрированных модулей.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о зарегистрированных модулях;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "modules" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    pages = true - вывести эту кнопку
+    news = true - вывести эту кнопку
+    articles = true - вывести эту кнопку
+    banners = true - вывести эту кнопку
+    files = true - вывести эту кнопку
+    menus = true - вывести эту кнопку
+    modules = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "modules"
+           main = true
+           pages = true
+           news = true
+           articles = true
+           banners = true
+           files = true
+           menus = true
+           modules = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Модули
+      </div>
+      Зарегистрированные модули
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Module&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить модуль">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Modules" id="items_form" method="post">
+
+      <!-- Сортировщик и фильтр -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить
+          </td>
+          <td class="value" width="100%" title="Способ сортировки зарегистрированных модулей в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_MODULES_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_MODULES_MODE_AS_IS)} selected{/if}>как регистрировались</option>
+              <option value="{$smarty.const.SORT_MODULES_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_MODULES_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_MODULES_MODE_BY_CLASS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_MODULES_MODE_BY_CLASS)} selected{/if}>по классу модуля</option>
+              <option value="{$smarty.const.SORT_MODULES_MODE_BY_FILENAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_MODULES_MODE_BY_FILENAME)} selected{/if}>по имени файла</option>
+            </select>
+          </td>
+
+          <!-- Флажки фильтра -->
+          <td class="param_short" title="Фильтр: только разрешенные для специальных страниц">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_VALUABLE|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_VALUABLE|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_VALUABLE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_VALUABLE] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_VALUABLE|escape}');">
+              для специальных страниц
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только плагины">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_PLUGIN|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_PLUGIN|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PLUGIN]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PLUGIN] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_PLUGIN|escape}');">
+              плагин
+            </span>
+          </td>
+          <td class="param_short" title="Фильтр: только разрешенные к использованию">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+              разрешен
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <li class="flatlist">
+
+              <!-- Микро кнопки справа от названия зарегистрированного модуля -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данный зарегистрированный модуль будет удален из регистрации. Вы подтверждаете такую операцию?');">
+                <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить использование">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->plugin_get|escape}" title="Это плагин / модуль">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_plugin{if $c->plugin != 1}_off{/if}_16x16.png">
+              </a>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->valuable_get|escape}" title="Разрешен / запрещен для специальных страниц">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_valuable{if $c->valuable != 1}_off{/if}_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              <!-- Нумерация -->
+              <span class="topic" style="display: inline;">
+                {if isset($CurrentPage)}
+                  {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                {else}
+                  {$smarty.foreach.items.iteration}.
+                {/if}
+              </span>
+
+              <!-- Название модуля -->
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}">
+                {$c->name|escape}
+              </a>
+
+              <!-- Краткая информация -->
+              <div class="line">
+                <span>
+                  класс:
+                </span>
+                {$c->class|escape}
+              </div>
+
+              {if $c->filename != ""}
+                <div class="line">
+                  <span>
+                    имя файла:
+                  </span>
+                  {$c->filename|escape}
+                </div>
+              {/if}
+
+              {if isset($c->description) && ($c->description|strip_tags|strip != "")}
+                <div class="line" title="{$c->description|strip_tags|escape}">
+                  <span>
+                    описание:
+                  </span>
+                  {$c->description|strip_tags|escape}
+                </div>
+              {/if}
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено зарегистрированных модулей.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка зарегистрированные модули
+        по конкретным параметрам. Поля фильтра можно сочетать произвольно, они объединены функцией И.
+      </div>
+      <div>
+        <b>Упорядочение</b>. По умолчанию способ сортировки зарегистрированных модулей в списке на данной странице равен "<u>по&nbsp;алфавиту</u>".
+        Способ упорядочения "<u>как&nbsp;регистрировались</u>" отключает сортировку и располагает зарегистрированные модули в порядке их регистрации
+        на сайте. В случае смены способа сортировки он запоминается на время текущего сеанса.
+      </div>
+    </div>
+
+  </div>

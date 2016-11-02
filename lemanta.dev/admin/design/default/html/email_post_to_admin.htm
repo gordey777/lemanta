@@ -1,0 +1,316 @@
+<!-- {*
+  Impera CMS: шаблон письма администратору о новом сообщении (отзыве, комментарии, объявлении, запросе связи).
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Используется в момент принятия сообщения от пользователя. Содержимое
+  шаблона передается электронным письмом на емейл администратора.
+
+  Принимает во входных переменных:
+    $post - запись о сообщении;
+    $post_object - запись к чему это сообщение;
+    $settings - настройки сайта;
+    $root_url - безпротокольный адрес корня сайта;
+    $admin_folder - имя папки админпанели.
+
+  ============================================================================
+
+  В письме мы не можем использовать внешнюю таблицу стилей, поэтому
+  просто прикрепляем ее прямо в тело письма. *} -->
+
+  {literal}
+    <style>
+
+      /* Вид заголовка письма */
+      h1       {border:           0px solid;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        13pt;
+                font-weight:      bold;
+                margin:           10px;
+                padding:          0px;
+                text-align:       left;
+                text-indent:      0px;}
+
+      /* Вид строки текста в письме */
+      p        {border:           0px solid;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           10px;
+                padding:          0px;
+                text-align:       left;
+                text-indent:      0px;}
+
+      /* Вид ссылок в письме */
+      a        {color:           #0080FF;
+                text-decoration: none;}
+
+      /* Вид ссылок при наведении мышки */
+      a:hover  {color:           #C00000;
+                text-decoration: underline;}
+
+      /* Вид таблицы в письме */
+      table    {border:        #E0E0E0 3px solid;
+                border-right:  #E0E0E0 2px solid;
+                border-bottom: #E0E0E0 2px solid;
+                font-family:   Verdana, Tahoma, Arial;
+                font-size:     10pt;
+                font-weight:   normal;
+                margin:        10px;
+                padding:       0px;}
+
+      /* Вид заголовочных ячеек таблицы (это ячейки слева) */
+      td       {background-color: #F0F0F0;
+                border:           #E0E0E0 0px solid;
+                border-right:     #E0E0E0 1px solid;
+                border-bottom:    #E0E0E0 1px solid;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          10px;
+                text-align:       left;
+                vertical-align:   top;
+                width:            80px;}
+
+      /* Вид информационных ячеек таблицы (это ячейки справа) */
+      td.info  {background-color: #FFFFFF;
+                font-family:      Verdana, Tahoma, Arial;
+                font-size:        10pt;
+                font-weight:      normal;
+                margin:           0px;
+                padding:          10px;
+                text-align:       left;
+                vertical-align:   top;
+                width:            400px;}
+    </style>
+  {/literal}
+
+  <!-- {*
+  Проверкой наличия идентифицирующих полей в переменной $post_object уточняем,
+  к чему относится это сообщение, и соответственно создаем переменные $post_title,
+  $post_section, $post_cid и $post_pid с нужными значениями. Эти переменные служат
+  лишь правильному формированию ссылок на модерацию сообщения в админпанели. *} -->
+
+  {assign var="post_title" value="Новое сообщение на сайте"}
+  {assign var="post_cid" value=""}
+  {assign var="post_pid" value=""}
+
+  {if isset($post_object->user_id) || isset($post->feedback_id)}
+    {assign var="post_section" value="Feedback"}
+    {assign var="post_cid" value=$post->feedback_id|default:""}
+    {assign var="post_pid" value=$post_object->user_id|default:""}
+
+  {elseif isset($post_object->product_id)}
+    {assign var="post_section" value="Comments"}
+    {assign var="post_cid" value=$post->comment_id|default:""}
+    {assign var="post_pid" value=$post_object->product_id|default:""}
+
+  {elseif isset($post_object->article_id)}
+    {assign var="post_section" value="AComments"}
+    {assign var="post_cid" value=$post->comment_id|default:""}
+    {assign var="post_pid" value=$post_object->article_id|default:""}
+
+  {elseif isset($post_object->news_id)}
+    {assign var="post_section" value="NComments"}
+    {assign var="post_cid" value=$post->comment_id|default:""}
+    {assign var="post_pid" value=$post_object->news_id|default:""}
+  {/if}
+
+  {if isset($post->callme_id)}
+    {assign var="post_title" value="Новый запрос связи 'Позвоните мне'"}
+    {assign var="post_section" value="CallMe"}
+    {assign var="post_cid" value=""}
+    {assign var="post_pid" value=""}
+  {/if}
+
+  <!-- Выводим заголовок -->
+  <h1>
+    {$post_title}
+  </h1>
+  <p>
+    {if isset($post->callme_id)}
+      Этот запрос помещен на страницу <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}={$post_section}" target="_blank">запросов связи</a> в админпанели сайта.
+    {else}
+      {if isset($post->enabled) && !$post->enabled}
+        Сообщение в настоящий момент помещено на модерацию.<br>
+      {/if}
+      {if $post_cid != ""}
+        Вы можете сделать модерацию <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}={$post_section}&{$smarty.const.REQUEST_PARAM_NAME_KEYWORD|escape}=cid%3A{$post_cid|escape}" target="_blank">этого сообщения</a> в админпанели сайта.<br>
+      {/if}
+      {if $post_pid != ""}
+        Аналогично в админпанели доступны <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}={$post_section}&{$smarty.const.REQUEST_PARAM_NAME_KEYWORD|escape}=pid%3A{$post_pid|escape}" target="_blank">все сообщения</a>, связанные с новым.
+      {/if}
+    {/if}
+  </p>
+
+  <!-- Выводим информационную таблицу -->
+  <table border="0" cellpadding="0" cellspacing="0">
+
+    <!-- Если это сообщение обратной связи -->
+    {if isset($post_object->user_id)}
+      <tr>
+        <td>Пользователь:</td>
+        <td class="info">
+          <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=User&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}={$post_object->user_id|escape}" target="_blank">
+            {$post_object->compound_name|escape}
+          </a>
+        </td>
+      </tr>
+    {/if}
+
+    <!-- Если это отзыв о товаре -->
+    {if isset($post_object->product_id)}
+      <tr>
+        <td>Товар:</td>
+        <td class="info">
+          <a href="http://{$root_url|escape}/{if $post_object->url_special != 1}products/{/if}{$post_object->url|escape}" target="_blank">
+            {if $settings->product_category_show == 1}{$post_object->category|escape}{/if}
+            {if $settings->product_brand_show == 1}{$post_object->brand|escape}{/if}
+            {$post_object->model|escape}
+          </a>
+        </td>
+      </tr>
+    {/if}
+
+    <!-- Если это комментарий к статье -->
+    {if isset($post_object->article_id)}
+      <tr>
+        <td>Статья:</td>
+        <td class="info">
+          <a href="http://{$root_url|escape}/{if $post_object->url_special != 1}articles/{/if}{$post_object->url|escape}" target="_blank">
+            {$post_object->header|escape}
+          </a>
+        </td>
+      </tr>
+    {/if}
+
+    <!-- Если это комментарий к новости -->
+    {if isset($post_object->news_id)}
+      <tr>
+        <td>Новость:</td>
+        <td class="info">
+          <a href="http://{$root_url|escape}/{if $post_object->url_special != 1}news/{/if}{$post_object->url|escape}" target="_blank">
+            {$post_object->header|escape}
+          </a>
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Имя писавшего -->
+    {if isset($post->name) && ($post->name != "")}
+      <tr>
+        <td>
+          Имя:
+        </td>
+        <td class="info">
+          {$post->name|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Телефон писавшего -->
+    {if isset($post->phone) && ($post->phone != "")}
+      <tr>
+        <td>
+          Телефон:
+        </td>
+        <td class="info">
+          {$post->phone|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Емейл писавшего -->
+    {if isset($post->email) && ($post->email != "")}
+      <tr>
+        <td>
+          Емейл:
+        </td>
+        <td class="info">
+          <a href="mailto:{$post->email|escape}">
+            {$post->email|escape}
+          </a>
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Номер ICQ писавшего -->
+    {if isset($post->icq) && ($post->icq != "")}
+      <tr>
+        <td>
+          Номер ICQ:
+        </td>
+        <td class="info">
+          {$post->icq|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Skype имя писавшего -->
+    {if isset($post->skype) && ($post->skype != "")}
+      <tr>
+        <td>
+          Skype имя:
+        </td>
+        <td class="info">
+          {$post->skype|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Дата -->
+    {if isset($post->date) || isset($post->created)}
+      <tr>
+        <td>
+          Дата:
+        </td>
+        <td class="info">
+          {$post->date|default:$post->created|escape}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле IP-адрес писавшего -->
+    {if isset($post->ip) && ($post->ip != "")}
+      <tr>
+        <td>
+          IP-адрес:
+        </td>
+        <td class="info">
+          {$post->ip|escape}
+          &nbsp;
+          <a href="http://www.ip-adress.com/ip_tracer/{$post->ip|escape}" target="_blank" style="font-size: 7pt;">
+            [где это?]
+          </a>
+          {if isset($post->host) && ($post->host != "")}
+            &nbsp;
+            {$post->host|escape}
+          {/if}
+        </td>
+      </tr>
+    {/if}
+
+    <!-- поле Текст сообщения / Описание причины запроса -->
+    {if (isset($post->message) && ($post->message != "")) || (isset($post->comment) && ($post->comment != "")) || (isset($post->reason) && ($post->reason != ""))}
+      <tr>
+        {if isset($post->callme_id)}
+          <td>Причина:</td>
+        {else}
+          <td>Сообщение:</td>
+        {/if}
+        <td class="info">
+          {$post->message|default:$post->comment|default:$post->reason|strip_tags|escape|nl2br}
+        </td>
+      </tr>
+    {/if}
+
+  </table>
+
+  <!-- Выводим ссылку на сайт, с которого пришло письмо -->
+  <p>
+    Это письмо поступило с сайта
+    <a href="http://{$root_url|escape}/" target="_blank">
+      {$root_url|escape}
+    </a>
+  </p>

@@ -1,0 +1,117 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Items - блок записей                                                    |
+  Версия модуля: 1.0                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $items = массив записей (о товарах, статьях, новостях и тому подобное)        |
+    $maxcount = предельное число выводимых записей                                |
+    $opentag = открывающий тег блока                                              |
+        $listing_opentag = открывающий тег списка                                 |
+            $link_opentag = открывающий тег элемента списка                       |
+                $a_params = дополнительные опции тега ссылки                      |
+            $link_closetag = закрывающий тег элемента списка                      |
+        $listing_closetag = закрывающий тег списка                                |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/items.htm'           |
+             items = массив                                                       |
+             maxcount = число                                                     |
+             opentag = строка                                                     |
+                 listing_opentag = строка                                         |
+                     link_opentag = строка                                        |
+                         a_params = строка                                        |
+                     link_closetag = строка                                       |
+                 listing_closetag = строка                                        |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- если получен непустой массив записей --> *}
+    {if isset($items) && is_array($items) && !empty($items)}
+
+
+
+        {* <!-- захватываем вывод в переменную $result --> *}
+        {capture assign = 'result'}
+
+
+
+            {* <!-- перебираем незапрещенные записи, не более заданного количества --> *}
+            {$count = $maxcount|default:1000000}
+            {foreach $items as $r}
+
+                {if $count > 0}
+
+                    {if !isset($r->enabled) || $r->enabled}
+
+
+
+                        {* <!-- извлекаем название --> *}
+                        {$name = $r->model|default:$r->header|default:$r->name|default:'Без названия!'}
+
+
+
+                        {$link_opentag|default:''}
+
+                            <a href="{$site|default:''|escape}{$r->url_path|default:''|escape}{$r->url|default:''|escape}" title="{$name|escape}" {$a_params|default:""}>
+                                {$name}
+                            </a>
+
+                        {$link_closetag|default:''}
+
+
+
+                        {* <!-- +1 запись вывели --> *}
+                        {$count = $count - 1}
+
+
+
+                    {/if}
+
+                {/if}
+
+            {/foreach}
+
+
+
+        {/capture}
+
+
+
+        {* <!-- если захваченный вывод не пустой, выводим --> *}
+        {if $result|regex_replace:'/[\s\t\r\n]/':'' != ''}
+
+            {$opentag|default:''}
+
+                {$listing_opentag|default:''}
+
+                    {$result}
+
+                {$listing_closetag|default:''}
+
+            {$closetag|default:''}
+
+        {/if}
+
+    {/if}
+
+{/strip}

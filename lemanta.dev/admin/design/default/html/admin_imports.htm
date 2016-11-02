@@ -1,0 +1,380 @@
+{* <!--
+  Impera CMS: шаблон админ модуля списка вариантов импорта.
+  Copyright AIMatrix, 2011.
+  http://imperacms.ru
+
+  Принимает во входных переменных:
+    $items = массив с записями о вариантах импорта;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    imports = true - вывести эту кнопку
+    export = true - вывести эту кнопку
+    backup = true - вывести эту кнопку
+    redirects = true - вывести эту кнопку
+    mailer = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "imports"
+           main = true
+           imports = true
+           export = true
+           backup = true
+           redirects = true
+           mailer = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Импорт
+      </div>
+      Варианты импорта
+    </h1>
+
+    <!-- Часть страницы, показываемая после старта варианта импорта -->
+    <div class="box_part" id="import_start_box" style="display: none;">
+      <div class="toolkey">
+        &nbsp;
+      </div>
+      <div class="message">
+        Выполняется указанный Вами вариант импорта.<br>
+        Пожалуйста подождите.
+      </div>
+    </div>
+
+    <!-- Изначально видимая часть страницы, скрываемая после старта варианта импорта -->
+    <div class="box_part" id="import_list_box">
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            {strip}
+                <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+                    справка
+                </a>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="http://imperacms.ru/impera-cms-modules.htm?more=xls-import#xls-import" target="_blank" title="Скачать пример XLS- и CSV-файла, готового для импорта товаров">
+                    скачать пример XLS (CSV)
+                </a>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="{$site|default:''|escape}{$admin_folder|default:''|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|default:''|escape}=Import&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN|default:'']|default:''|escape}" title="Добавить вариант импорта">
+                    добавить
+                </a>
+            {/strip}
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+      <!-- Форма со списком записей -->
+      <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Imports" enctype="multipart/form-data" id="items_form" method="post">
+
+        <!-- Фильтр -->
+
+        <!-- Сортировщик -->
+        <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+          <tr>
+            <td class="param_short">
+              упорядочить
+            </td>
+            <td class="value" width="100%" title="Способ сортировки вариантов импорта в нижеследующем списке">
+
+              <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+              <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+                <option value="{$smarty.const.SORT_IMPORTS_MODE_AS_IS}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_IMPORTS_MODE_AS_IS)} selected{/if}>как добавлялись</option>
+                <option value="{$smarty.const.SORT_IMPORTS_MODE_BY_NAME}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_IMPORTS_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+                <option value="{$smarty.const.SORT_IMPORTS_MODE_BY_LASTUSED}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_IMPORTS_MODE_BY_LASTUSED)} selected{/if}>по дате использования</option>
+              </select>
+            </td>
+
+            <!-- Флажки фильтра -->
+            <td class="param_short" title="Фильтр: только разрешенные к использованию">
+              <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+                разрешен
+              </span>
+            </td>
+            <td class="param_short" title="Фильтр: только запускаемые по расписанию">
+              <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_AUTOMATIC|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_AUTOMATIC|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_AUTOMATIC]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_AUTOMATIC] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_AUTOMATIC|escape}');">
+                с автозапуском
+              </span>
+            </td>
+            <td class="param_short" title="Фильтр: только откликающиеся на внешний вызов">
+              <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_INTERFACED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_INTERFACED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_INTERFACED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_INTERFACED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_INTERFACED|escape}');">
+                доступные извне
+              </span>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Кнопка сброса фильтра --> 
+        <div class="toolkey">
+          {strip}
+            <span>
+              найдено <span>
+                        {$total_items|default:0|string_format:"%d"} шт.
+                      </span>
+            </span>
+            <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения)">
+              сбросить
+            </a>
+          {/strip}
+        </div>
+
+        {if isset($items) && !empty($items)}
+
+          <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+          {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+            {$PagesNavigation}
+          {/if}
+
+          {foreach name=items item=c from=$items}
+            {strip}
+
+              <li class="flatlist">
+
+                <!-- Микро кнопки справа от названия -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данный вариант импорта будет удален с сайта. Вы подтверждаете такую операцию?');">
+                  <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить использование">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                {if $c->enabled == 1}
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->import_get|escape}" title="Начать импорт данных" onclick="javascript: return Start_Import_Popup('popup{$c->import_id|escape}', null);">
+                    <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_import_16x16.png">
+                  </a>
+                {else}
+                  <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_import_off_16x16.png">
+                {/if}
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Нумерация -->
+                <span class="topic" style="display: inline;">
+                  {if isset($CurrentPage)}
+                    {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                  {else}
+                    {$smarty.foreach.items.iteration}.
+                  {/if}
+                </span>
+
+                <!-- Значок запуска по расписанию -->
+                {if $c->automatic == 1}
+                  <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_automatic_16x16.png" title="Запускается по расписанию (период {$c->lifetime_info|escape})">
+                {/if}
+
+                <!-- Значок отклика на внешний вызов -->
+                {if !empty($c->url)}
+                  <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_plugin_16x16.png" title="Откликается на внешний вызов">
+                  <!-- Значок использования пароля на доступ к варианту импорта -->
+                  {if !empty($c->password)}
+                    <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_hidden_16x16.png" title="Доступ закрыт паролем">
+                  {/if}
+                {/if}
+
+                <!-- Название -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}">
+                  {$c->name|escape}
+                </a>
+
+                <!-- {* Выпадающая панель выбора файла для импорта *} -->
+                {if empty($c->filename) && ($c->enabled == 1)}
+                  <div class="popup" id="popup{$c->import_id|escape}">
+                    <div class="popup_content">
+                      <div class="title">
+                        <div class="close">
+                          <a href="#" onclick="javascript: return Hide_Popup('popup{$c->import_id|escape}');" title="Закрыть">
+                            x
+                          </a>
+                        </div>
+                        Импорт из файла
+                      </div>
+                      <div class="cell">
+                        файл:
+                        <div class="input">
+                          <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.IMPORT_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                          <input class="input" disabled id="popup{$c->import_id|escape}file" name="file[{$c->import_id|escape}]" type="file" title="Какой файл требуется взять с Вашего компьютера (объем файла не более {($smarty.const.IMPORT_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт)">
+                        </div>
+                      </div>
+                      <div class="submit">
+                        <input class="submit" type="submit" value="Начать" onclick="javascript: return Submit_Popup('{$c->import_get|escape}', 'import');">
+                      </div>
+                    </div>
+                  </div>
+                {/if}
+
+                <!-- Краткая информация -->
+                {if !empty($c->filename)}
+                  <div class="line">
+                    <span>
+                      источник:
+                    </span>
+                    {$c->filename|escape}
+                  </div>
+                  {if $c->automatic == 1}
+                    <div class="line">
+                      <span>
+                        автозапуск:
+                      </span>
+                      период {$c->lifetime_info|escape}
+                    </div>
+                  {/if}
+                {/if}
+
+                <div class="line">
+                  <span>
+                    формат:
+                  </span>
+                  {if $c->format != "xls html"}
+                    {$c->format|escape}, символ деления полей: {if $c->delimiter == "\t"}табуляция{else}{$c->delimiter|escape}{/if}
+                  {else}
+                    xls (html), символ деления полей: разметочные HTML-теги ячеек таблицы
+                  {/if}
+                </div>
+
+                <div class="line">
+                  <span>
+                    поля:
+                  </span>
+                  {$c->columns|escape}
+                </div>
+
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_IMPORTS_MODE_AS_IS)}
+                  <div class="line">
+                    <span>
+                      добавлен:
+                    </span>
+                    {$c->created|escape}
+                  </div>
+                {/if}
+
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_IMPORTS_MODE_BY_LASTUSED)}
+                  <div class="line">
+                    <span>
+                      применялся:
+                    </span>
+                    {if $c->lastused != "0000-00-00 00:00:00"}
+                      {$c->lastused|escape}
+                    {else}
+                      нет
+                    {/if}
+                  </div>
+                {/if}
+
+                {if !empty($c->url)}
+                  <div class="line{if $c->enabled != 1} gray{/if}">
+                    <span>
+                      интерфейс:
+                    </span>
+                    {if $c->enabled == 1}
+                      <a href="http://{$root_url|escape}/import/{$c->url|escape}" title="Адрес страницы внешнего вызова варианта импорта" onclick="javascript: return false;">
+                        http://{$root_url|escape}/import/{$c->url|escape}
+                      </a>
+                    {else}
+                      http://{$root_url|escape}/import/{$c->url|escape}
+                    {/if}
+                  </div>
+                {/if}
+
+              </li>
+            {/strip}
+          {/foreach}
+
+          <!-- Добавляем аутентификатор операции -->
+          <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+          <!-- Выводим контент навигатора страниц под списком -->
+          {if isset($PagesNavigation) && ($PagesNavigation != "")}
+            {$PagesNavigation}
+          {/if}
+
+        {else}
+          <div class="noitems">
+            Не найдено вариантов импорта.
+          </div>
+        {/if}
+      </form>
+
+    </div>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка варианты импорта по конкретным параметрам.
+        Поля фильтра можно сочетать произвольно, они объединены функцией И.
+      </div>
+      <div>
+        <b>Упорядочение</b>. По умолчанию способ сортировки вариантов импорта в списке на данной странице равен "<u>по&nbsp;алфавиту</u>".
+        В случае смены способа сортировки он запоминается на время текущего сеанса.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Скрипт для запуска выпадающей панели -->
+  {literal}
+    <script language="JavaScript" type="text/javascript">
+      <!--
+      function Start_Import_Popup (id, link_object) {
+        Start_Popup(id, link_object);
+        var object = document.getElementById(id);
+        if ((typeof(object) != 'object') || (object == null)) {
+          if (confirm('Данный вариант импорта будет выполнен. Вы подтверждаете такую операцию?')) {
+            var part = document.getElementById('import_list_box');
+            if ((typeof(part) == 'object') && (part != null)) part.style.display = 'none';
+            part = document.getElementById('import_start_box');
+            if ((typeof(part) == 'object') && (part != null)) part.style.display = '';
+            return true;
+          }
+        }
+        return false;
+      }
+      // -->
+    </script>
+  {/literal}

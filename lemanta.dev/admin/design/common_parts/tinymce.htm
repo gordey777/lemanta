@@ -1,0 +1,333 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Модуль: визуальный редактор TinyMCE                                             |
+  Расположение: common_parts/tinymce.htm                                          |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $disabled_state = булевой признак "редактор запрещен"                         |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- если не запрещают подключать редактор --> *}
+    {if !$disabled_state|default:false}
+
+
+
+        {* <!-- подключаем скрипт редактора --> *}
+        {$admin_site = $admin_site|default:((($site|default:'')|cat:($admin_folder|default:'')|cat:'/')|escape)}
+        <script language="JavaScript" src="{$admin_site}js/tiny_mce/tiny_mce.js" type="text/javascript"></script>
+
+
+
+        {* <!-- задаем настройки редактора для поля аннотации --> *}
+        <script language="JavaScript" type="text/javascript">
+
+            tinyMCE.init({
+
+
+                {* // для каких полей ввода на странице действует эта настройка *}
+                mode:                    'specific_textareas',
+                editor_selector:         'editor_small',
+
+
+
+                {* // какую тему оформления использовать *}
+                theme:                   'advanced',
+                skin:                    'default',
+                theme_advanced_path:     false,
+
+
+
+                {* // какие плагины редактора подключить *}
+                {$value = ($settings->tinymce1_plugins|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                plugins:                 '{$value|escape}',
+
+
+
+                {* // параметры форматирования *}
+                apply_source_formatting: {($settings->tinymce1_source_formatting|default:false) ? 'true' : 'false'},
+                convert_urls:            {($settings->tinymce1_convert_urls|default:false) ? 'true' : 'false'},
+                relative_urls:           {($settings->tinymce1_relative_urls|default:false) ? 'true' : 'false'},
+                remove_script_host:      {($settings->tinymce1_remove_script_host|default:false) ? 'true' : 'false'},
+                verify_css_classes:      {($settings->tinymce1_verify_css_classes|default:false) ? 'true' : 'false'},
+                verify_html:             {($settings->tinymce1_verify_html|default:false) ? 'true' : 'false'},
+                remove_linebreaks:       {($settings->tinymce1_remove_linebreaks|default:false) ? 'true' : 'false'},
+                remove_redundant_brs:    {($settings->tinymce1_remove_redundant_brs|default:false) ? 'true' : 'false'},
+                convert_newlines_to_brs: {($settings->tinymce1_convert_newlines_to_brs|default:false) ? 'true' : 'false'},
+                force_br_newlines:       {($settings->tinymce1_force_br_newlines|default:false) ? 'true' : 'false'},
+                force_p_newlines:        {($settings->tinymce1_force_p_newlines|default:false) ? 'true' : 'false'},
+                fix_list_elements:       {($settings->tinymce1_fix_list_elements|default:false) ? 'true' : 'false'},
+                entity_encoding:         'named',
+
+
+
+                {* // используем родные стили или из шаблона клиентской стороны сайта *}
+                content_css:             '{if $settings->tinymce1_native_css|default:false}
+                                              js/tiny_mce/themes/advanced/skins/default/content.css
+                                          {else}
+                                              ../design/{($settings->theme|default:'')|escape}/css/style.css
+                                          {/if}',
+
+
+
+                {* // на каком языке интерфейс *}
+{* //                language:                'ru',
+*}
+                spellchecker_languages:  '+Russian=ru,+English=en',
+
+
+
+                {* // список допустимых тегов (остальные теги будут удалены) *}
+                {$value = ($settings->tinymce1_valid_tags|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                valid_elements:          '{$value|escape}',
+
+                {$value = ($settings->tinymce1_extended_valid_tags|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                extended_valid_elements: '{$value|escape}',
+
+
+
+             {* // назначения плагинов:
+                //   advimage - расширение работы с картинками (редактирование параметров)
+                //   advlink - расширение работы со ссылками (редактирование параметров)
+                //   emotions - смайлы
+                //   fullscreen - переключение/возврат в полноэкранный режим
+                //   inlinepopups - замена модальных окон выпадающими DIV-аналогами
+                //   insertdatetime - дата, время
+                //   media - работа с медиа файлами (QuickTime, видео, swf и т.п.)
+                //   pagebreak - вставка разрыва страницы (моделирование "читать далее" для CMS)
+                //   paste - вставка из буфера обмена
+                //   searchreplace - поиск, замена текста
+                //   table - работа с таблицами
+                //   visualchars - вставка специальных символов
+                //   xhtmlxtras - вставка журналистских тегов (цитирование и т.п.) *}
+
+
+
+             {* // настройки по кнопкам:
+                //   bold - полужирный
+                //   italic - курсив
+                //   underline - подчеркнутый
+                //   strikethrough - перечеркнутый
+                //   justifyleft - выравнивание влево
+                //   justifycenter - выравнивание по центру
+                //   justifyright- выравнивание вправо
+                //   justifyfull - выравнивание по ширине
+                //   bullist - маркированный список
+                //   numlist - нумерованный список
+                //   outdent - уменьшить отступ
+                //   indent - увеличить отступ
+                //   cut - вырезать в буфер обмена
+                //   copy - скопировать в буфер обмена
+                //   paste - вставить из буфера обмена
+                //   pastetext - вставить как текст из буфера обмена (если подключен плагин paste)
+                //   pasteword - вставить из буфера обмена MS Office Word (если подключен плагин paste)
+                //   selectall - выделить все (если подключен плагин paste)
+                //   undo - отменить изменение
+                //   redo - вернуть изменение
+                //   link - дать ссылку
+                //   unlink - отменить ссылку
+                //   image - вставить/редактировать изображение
+                //   smimage - менеджер изображений (если подключен плагин smimage)
+                //   cleanup - почистить кривой код
+                //   help - справка
+                //   code - редактировать html-код
+                //   hr - горизонтальная линия
+                //   tablecontrols - редактирование таблиц (если подключен плагин table)
+                //   removeformat - удалить форматирование
+                //   sub - нижний индекс
+                //   sup - верхний индекс
+                //   fontselect - выбрать шрифт
+                //   fontsizeselect - размер шрифта
+                //   forecolor - цвет текста
+                //   forecolorpicker - выбор цвета текста
+                //   backcolor - цвет фона
+                //   backcolorpicker - выбор цвета фона
+                //   charmap - таблица символов
+                //   visualaid - показать невидимые элементы
+                //   anchor - ссылочный якорь
+                //   newdocument - новый документ
+                //   blockquote - кавычки
+                //   visualchars - специальный символ (если подключен плагин visualchars)
+                //   search - найти (если подключен плагин searchreplace)
+                //   replace - заменить (если подключен плагин searchreplace)
+                //   pagebreak - разрыв страницы (если подключен плагин pagebreak)
+                //   media - медиа файл (если подключен плагин media)
+                //   insertdate - дата (если подключен плагин insertdatetime)
+                //   inserttime - время (если подключен плагин insertdatetime)
+                //   fullscreen - редактировать в полноэкранном режиме (если подключен плагин fullscreen)
+                //   emotions - смайлы (если подключен плагин emotions)
+                //   cite - цитировать (если подключен плагин xhtmlxtras)
+                //   ins - врезка (если подключен плагин xhtmlxtras)
+                //   del - устаревшее (если подключен плагин xhtmlxtras)
+                //   abbr - аббревиатура (если подключен плагин xhtmlxtras)
+                //   acronym - инициалы, акроним (если подключен плагин xhtmlxtras) *}
+
+
+
+                {* // какие кнопки на панели инструментов *}
+                {$value = ($settings->tinymce1_buttons1|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                theme_advanced_buttons1:           '{$value|escape}',
+
+                {$value = ($settings->tinymce1_buttons2|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                theme_advanced_buttons2:           '{$value|escape}',
+
+                {$value = ($settings->tinymce1_buttons3|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                theme_advanced_buttons3:           '{$value|escape}',
+
+                {$value = ($settings->tinymce1_buttons4|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                theme_advanced_buttons4:           '{$value|escape}',
+
+
+
+                {* // положение панелей инструментов *}
+                theme_advanced_toolbar_location:   '{($settings->tinymce1_buttons_bottom|default:false) ? 'bottom' : 'top'}',
+                theme_advanced_toolbar_align:      '{($settings->tinymce1_buttons_rightalign|default:false) ? 'right' : 'left'}',
+                theme_advanced_statusbar_location: '{($settings->tinymce1_statusbar|default:false) ? 'bottom' : ''}',
+                theme_advanced_resizing:           false,
+
+
+
+                {* // настройки для плагина InsertDateTime *}
+                plugin_insertdate_dateFormat: '%d %B %Y года (%A) ',
+                plugin_insertdate_timeFormat: 'в %H:%M ',
+
+
+
+                {* // настройки для плагина PageBreak *}
+                pagebreak_separator: '<!-- my page break -->',
+
+
+
+                {* // настройки для плагина Paste *}
+                paste_auto_cleanup_on_paste: {($settings->tinymce1_cleanup_paste|default:false) ? 'true' : 'false'}
+            });
+
+        </script>
+
+
+
+        {* <!-- задаем настройки редактора для поля полного текста --> *}
+        <script language="JavaScript" type="text/javascript">
+
+            tinyMCE.init({
+
+
+                {* // для каких полей ввода на странице действует эта настройка *}
+                mode:                    'specific_textareas',
+                editor_selector:         'editor_big',
+
+
+
+                {* // какую тему оформления использовать *}
+                theme:                   'advanced',
+                skin:                    'default',
+                theme_advanced_path:     false,
+
+
+
+                {* // какие плагины редактора подключить *}
+                {$value = ($settings->tinymce2_plugins|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                plugins:                 '{$value|escape}',
+
+
+
+                {* // параметры форматирования *}
+                apply_source_formatting: {($settings->tinymce2_source_formatting|default:false) ? 'true' : 'false'},
+                convert_urls:            {($settings->tinymce2_convert_urls|default:false) ? 'true' : 'false'},
+                relative_urls:           {($settings->tinymce2_relative_urls|default:false) ? 'true' : 'false'},
+                remove_script_host:      {($settings->tinymce2_remove_script_host|default:false) ? 'true' : 'false'},
+                verify_css_classes:      {($settings->tinymce2_verify_css_classes|default:false) ? 'true' : 'false'},
+                verify_html:             {($settings->tinymce2_verify_html|default:false) ? 'true' : 'false'},
+                remove_linebreaks:       {($settings->tinymce2_remove_linebreaks|default:false) ? 'true' : 'false'},
+                remove_redundant_brs:    {($settings->tinymce2_remove_redundant_brs|default:false) ? 'true' : 'false'},
+                convert_newlines_to_brs: {($settings->tinymce2_convert_newlines_to_brs|default:false) ? 'true' : 'false'},
+                force_br_newlines:       {($settings->tinymce2_force_br_newlines|default:false) ? 'true' : 'false'},
+                force_p_newlines:        {($settings->tinymce2_force_p_newlines|default:false) ? 'true' : 'false'},
+                fix_list_elements:       {($settings->tinymce2_fix_list_elements|default:false) ? 'true' : 'false'},
+                entity_encoding:         'named',
+
+
+
+                {* // используем родные стили или из шаблона клиентской стороны сайта *}
+                content_css:             '{if $settings->tinymce2_native_css|default:false}
+                                              js/tiny_mce/themes/advanced/skins/default/content.css
+                                          {else}
+                                              ../design/{($settings->theme|default:'')|escape}/css/style.css
+                                          {/if}',
+
+
+
+                {* // на каком языке интерфейс *}
+{* //                language:                'ru',
+*}
+                spellchecker_languages:  '+Russian=ru,+English=en',
+
+
+
+                {* // список допустимых тегов (остальные теги будут удалены) *}
+                {$value = ($settings->tinymce2_valid_tags|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                valid_elements:          '{$value|escape}',
+
+                {$value = ($settings->tinymce2_extended_valid_tags|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                extended_valid_elements: '{$value|escape}',
+
+
+
+                {* // какие кнопки на панели инструментов *}
+                {$value = ($settings->tinymce2_buttons1|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                theme_advanced_buttons1:           '{$value|escape}',
+
+                {$value = ($settings->tinymce2_buttons2|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                theme_advanced_buttons2:           '{$value|escape}',
+
+                {$value = ($settings->tinymce2_buttons3|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                theme_advanced_buttons3:           '{$value|escape}',
+
+                {$value = ($settings->tinymce2_buttons4|default:'')|regex_replace:'/[ \s\t\r\n\']/':''}
+                theme_advanced_buttons4:           '{$value|escape}',
+
+
+
+                {* // положение панелей инструментов *}
+                theme_advanced_toolbar_location:   '{($settings->tinymce2_buttons_bottom|default:false) ? 'bottom' : 'top'}',
+                theme_advanced_toolbar_align:      '{($settings->tinymce2_buttons_rightalign|default:false) ? 'right' : 'left'}',
+                theme_advanced_statusbar_location: '{($settings->tinymce2_statusbar|default:false) ? 'bottom' : ''}',
+                theme_advanced_resizing:           false,
+
+
+
+                {* // настройки для плагина InsertDateTime *}
+                plugin_insertdate_dateFormat: '%d %B %Y года (%A) ',
+                plugin_insertdate_timeFormat: 'в %H:%M ',
+
+
+
+                {* // настройки для плагина PageBreak *}
+                pagebreak_separator: '<!-- my page break -->',
+
+
+
+                {* // настройки для плагина Paste *}
+                paste_auto_cleanup_on_paste: {($settings->tinymce2_cleanup_paste|default:false) ? 'true' : 'false'}
+            });
+
+        </script>
+
+    {/if}
+
+{/strip}

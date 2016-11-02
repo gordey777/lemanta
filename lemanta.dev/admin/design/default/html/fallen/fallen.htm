@@ -1,0 +1,535 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: выпавшие записи                                                         |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $fallen_categories = массив записей о выпавших категориях                     |
+    $fallen_brands = массив записей о выпавших брендах                            |
+    $fallen_products = массив записей о выпавших товарах                          |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $from_page = адрес страницы возврата после операции                           |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $Token = аутентификатор операции                                              |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$temp_module = $smarty.const.FALLEN_MODULELINK_POINTER|default:''}
+    {$temp_param = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+
+
+
+    {* <!-- подключаем модуль закладок --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.FALLEN_MODULETAB_TEXT|default:''
+             me_pointer = $temp_module
+             me_menupath = $smarty.const.FALLEN_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- формируем URL-ы страницы --> *}
+    {$temp_url_main = (($site|default:'')|cat:($admin_folder|default:'')|cat:'/')}
+    {$temp_url_script = $temp_url_main|cat:'index.php'}
+    {$temp_url_images = ($temp_url_main|escape)|cat:'design/'|cat:($settings->admin_theme|default:''|escape)|cat:'/images/'}
+    {$temp_url_form = $temp_url_script|cat:'?'|cat:$temp_param|cat:'='|cat:$temp_module}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок содержимого --> *}
+        <h1>
+            <div class="path">
+                <a href="{$temp_url_main|escape}">
+                    Главная
+                </a> → Выпавшие записи
+            </div>
+            {$title|default:'Выпавшие записи базы данных'}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- функция вывода списка категорий / брендов --> *}
+        {function name = 'FallenModule_cats_list'
+                  varname = 'fallen_categories'
+                  id_field = 'category_id'
+                  url_path = 'catalog/'
+                  itemtype_plural = 'Категории'
+                  itemtype_plural_Genitive = 'Категорий'
+                  itemtype_single_Genitive = 'Категории'
+                  female = true}
+
+
+
+            {* <!-- если существуют записи --> *}
+            {if isset(${$varname}) && is_array(${$varname}) && !empty(${$varname})}
+                {$id_field = $id_field|lower}
+
+
+
+                {* <!-- перебираем записи --> *}
+                {foreach ${$varname} as $i => $r}
+                    {if isset($r->subitems) && is_array($r->subitems) && !empty($r->subitems)}
+
+
+
+                        <li class="head_divider">
+                            <div>
+                                {if $i == ' '}
+                                    {$itemtype_plural}, ссылающиеся на себя же как родителя
+                                {else}
+                                    {$itemtype_plural}, выпавшие из несуществующ{($female) ? 'ей' : 'его'} более {$itemtype_single_Genitive|lower} (имел{($female) ? 'а' : ''} номер {$i|escape})
+                                {/if}
+                            </div>
+                        </li>
+
+
+
+                        {* <!-- перебираем подзаписи --> *}
+                        {$i = 0}
+                        {foreach $r->subitems as $c}
+                            {$i = $i + 1}
+
+
+
+                            {* <!-- запоминаем идентификатор текущей записи --> *}
+                            {$id = 0}
+                            {foreach $c as $k => $v}
+                                {if $k|lower == $id_field}
+                                    {$id = $v}
+                                    {break}
+                                {/if}
+                            {/foreach}
+
+
+
+                            {* <!-- контейнер записи --> *}
+                            <li class="flatlist">
+
+
+
+                                {* <!-- основная строка --> *}
+                                <div class="onerow">
+
+
+
+                                    {* <!-- кнопка Удалить --> *}
+                                    <a href="{$temp_url_script|escape}{$c->delete_get|default:''|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                                        <img class="microkey_right" src="{$temp_url_images}icon_delete_16x16.png" />
+                                    </a>
+
+
+
+                                    <img class="microkey_left" src="{$temp_url_images}placeholder.gif" />
+
+
+
+                                    {* <!-- нумерация --> *}
+                                    <span class="topic" style="display: inline;">
+                                        {$i}.
+                                    </span>
+
+
+
+                                    {* <!-- текущий ИД --> *}
+                                    <span class="rating" title="Идентификатор {$itemtype_single_Genitive|lower|escape}">
+                                        ← &nbsp; {$id|escape}
+                                    </span>
+
+
+
+                                    {* <!-- ИД несуществующего родителя --> *}
+                                    <span class="rating zero" title="Идентификатор несуществующ{($female) ? 'ей' : 'его'} родительск{($female) ? 'ой' : 'ого'} {$itemtype_single_Genitive|lower|escape}">
+                                        {$c->parent|default:0|escape}
+                                    </span>
+
+
+
+                                    {* <!-- название --> *}
+                                    {$temp_name = $c->name|default:'Без названия!'|escape}
+                                    <a href="{$temp_url_script|escape}{$c->edit_get|default:''|escape}" title="{$temp_name}">
+                                        {$temp_name}
+                                    </a>
+
+                                </div>
+
+
+
+                                {* <!-- описание --> *}
+                                {$temp = ($c->description|default:'')|strip_tags|escape}
+                                {if $temp != ''}
+                                    <div class="line" title="Описание: {$temp}">
+                                        <span>
+                                            описание:
+                                        </span>
+                                        {$temp}
+                                    </div>
+                                {/if}
+
+
+
+                                {* <!-- url --> *}
+                                {$temp = (($site|default:'')|cat:(($c->url_special|default:false) ? '' : $url_path)|cat:($c->url|default:$id|default:''))|escape}
+                                <div class="line{if !$c->enabled|default:false} gray{/if}">
+                                    <span>
+                                        url:
+                                    </span>
+                                    {if $c->enabled|default:false}
+                                        <a href="{$temp}" title="Перейти на страницу {$itemtype_single_Genitive|lower|escape} в клиентской части сайта">
+                                            {$temp}
+                                        </a>
+                                    {else}
+                                        {$temp}
+                                    {/if}
+                                </div>
+
+                            </li>
+
+
+
+                        {/foreach}
+                    {/if}
+                {/foreach}
+
+
+
+            {* <!-- иначе нет записей --> *}
+            {else}
+
+                <div class="noitems">
+                    Нет выпавших {$itemtype_plural_Genitive|lower}.
+                </div>
+
+            {/if}
+
+
+
+        {/function}
+
+
+
+        {* <!-- функция вывода списка товаров --> *}
+        {function name = 'FallenModule_products_list'
+                  varname = 'fallen_products'
+                  id_field = 'product_id'
+                  url_path = 'products/'
+                  itemtype_plural = 'Товары'
+                  itemtype_plural_Genitive = 'Товаров'
+                  itemtype_single_Genitive = 'Товара'
+                  female = false}
+
+
+
+            {* <!-- если существуют записи --> *}
+            {if isset(${$varname}) && is_array(${$varname}) && !empty(${$varname})}
+                {$id_field = $id_field|lower}
+
+
+
+                {* <!-- перебираем записи (в 2 прохода) --> *}
+                {$i = 0}
+                {$states = [true, false]}
+                {foreach $states as $state}
+                    {$prev = ''}
+                    {foreach ${$varname} as $c}
+
+
+
+                        {* <!-- работаем только с записями этого прохода --> *}
+                        {if $c->no_category|default:false == $state}
+                            {$i = $i + 1}
+
+
+
+                            {if $state}
+                                {if ($prev === '') || ($c->category_id|default:0 != $prev) && ($prev !== '')}
+                                    <li class="head_divider">
+                                        <div>
+                                            {if $c->category_id|default:0 == 0}
+                                                {$itemtype_plural}, не имеющие родительской категории
+                                            {else}
+                                                {$itemtype_plural}, выпавшие из несуществующей более категории (имела номер {$c->category_id|escape})
+                                            {/if}
+                                        </div>
+                                    </li>
+                                {/if}
+                                {$prev = $c->category_id|default:0}
+                            {else}
+                                {if ($prev === '') || ($c->brand_id|default:0 != $prev) && ($prev !== '')}
+                                    <li class="head_divider">
+                                        <div>
+                                            {$itemtype_plural}, выпавшие из несуществующего более бренда (имел номер {$c->brand_id|escape})
+                                        </div>
+                                    </li>
+                                {/if}
+                                {$prev = $c->brand_id|default:0}
+                            {/if}
+
+
+
+                            {* <!-- запоминаем идентификатор текущей записи --> *}
+                            {$id = 0}
+                            {foreach $c as $k => $v}
+                                {if $k|lower == $id_field}
+                                    {$id = $v}
+                                    {break}
+                                {/if}
+                            {/foreach}
+
+
+
+                            {* <!-- контейнер записи --> *}
+                            <li class="flatlist">
+
+
+
+                                {* <!-- основная строка --> *}
+                                <div class="onerow">
+
+
+
+                                    {* <!-- кнопка Удалить --> *}
+                                    <a href="{$temp_url_script|escape}{$c->delete_get|default:''|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                                        <img class="microkey_right" src="{$temp_url_images}icon_delete_16x16.png" />
+                                    </a>
+
+
+
+                                    <img class="microkey_left" src="{$temp_url_images}placeholder.gif" />
+
+
+
+                                    {* <!-- нумерация --> *}
+                                    <span class="topic" style="display: inline;">
+                                        {$i}.
+                                    </span>
+
+
+
+                                    {* <!-- ИД несуществующей категории --> *}
+                                    {if $c->no_category|default:false}
+                                        <span class="rating zero" title="Идентификатор несуществующей родительской категории">
+                                            &nbsp; → &nbsp; {$c->category_id|default:0|escape}
+                                        </span>
+                                    {/if}
+
+
+
+                                    {* <!-- ИД несуществующего бренда --> *}
+                                    {if $c->no_brand|default:false}
+                                        <span class="rating" title="Идентификатор несуществующего родительского бренда">
+                                            {$c->brand_id|default:0|escape} &nbsp; ← &nbsp;
+                                        </span>
+                                    {/if}
+
+
+
+                                    {* <!-- название --> *}
+                                    {$temp_name = $c->model|default:'Без названия!'|escape}
+                                    <a href="{$temp_url_script|escape}{$c->edit_get|default:''|escape}" title="{$temp_name}">
+                                        {$temp_name}
+                                    </a>
+
+                                </div>
+
+
+
+                                {* <!-- url --> *}
+                                {$temp = (($site|default:'')|cat:(($c->url_special|default:false) ? '' : $url_path)|cat:($c->url|default:$id|default:''))|escape}
+                                <div class="line{if !$c->enabled|default:false} gray{/if}">
+                                    <span>
+                                        url:
+                                    </span>
+                                    {if $c->enabled|default:false}
+                                        <a href="{$temp}" title="Перейти на страницу {$itemtype_single_Genitive|lower|escape} в клиентской части сайта">
+                                            {$temp}
+                                        </a>
+                                    {else}
+                                        {$temp}
+                                    {/if}
+                                </div>
+
+                            </li>
+
+
+
+                        {/if}
+                    {/foreach}
+                {/foreach}
+
+
+
+            {* <!-- иначе нет записей --> *}
+            {else}
+
+                <div class="noitems">
+                    Нет выпавших {$itemtype_plural_Genitive|lower}.
+                </div>
+
+            {/if}
+
+
+
+        {/function}
+
+
+
+        {* <!-- форма --> *}
+        <form action="{$temp_url_form|escape}" id="items_form" method="post">
+
+
+
+            <li class="divider">
+                <div>
+                    Категории
+                </div>
+            </li>
+
+
+
+            {* <!-- список категорий --> *}
+            {$temp_var = $smarty.const.FALLEN_SMARTYVAR_CATEGORIES|default:'fallen_categories'}
+            {FallenModule_cats_list varname = $temp_var
+                                    id_field = 'category_id'
+                                    url_path = 'catalog/'
+                                    itemtype_plural = 'Категории'
+                                    itemtype_plural_Genitive = 'Категорий'
+                                    itemtype_single_Genitive = 'Категории'
+                                    female = true}
+
+
+
+            <li class="divider">
+                <div>
+                    Бренды
+                </div>
+            </li>
+
+
+
+            {* <!-- список брендов --> *}
+            {$temp_var = $smarty.const.FALLEN_SMARTYVAR_BRANDS|default:'fallen_brands'}
+            {FallenModule_cats_list varname = $temp_var
+                                    id_field = 'brand_id'
+                                    url_path = 'brands/'
+                                    itemtype_plural = 'Бренды'
+                                    itemtype_plural_Genitive = 'Брендов'
+                                    itemtype_single_Genitive = 'Бренда'
+                                    female = false}
+
+
+
+            <li class="divider">
+                <div>
+                    Товары
+                </div>
+            </li>
+
+
+
+            {* <!-- список товаров --> *}
+            {$temp_var = $smarty.const.FALLEN_SMARTYVAR_PRODUCTS|default:'fallen_products'}
+            {FallenModule_products_list varname = $temp_var
+                                        id_field = 'product_id'
+                                        url_path = 'products/'
+                                        itemtype_plural = 'Товары'
+                                        itemtype_plural_Genitive = 'Товаров'
+                                        itemtype_single_Genitive = 'Товара'
+                                        female = false}
+
+
+
+            {* <!-- адрес страницы возврата после операции --> *}
+            {if $from_page|default:'' != ''}
+                <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|default:''|escape}" type="hidden" value="{$from_page|escape}" />
+            {/if}
+
+
+
+            {* <!-- пустой указатель требуемой команды --> *}
+            <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|default:''|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|default:''|escape}" type="hidden" value="" />
+
+
+
+            {* <!-- признак отмены постинга --> *}
+            <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|default:''|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|default:''|escape}" type="hidden" value="1" />
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''|escape}" type="hidden" value="{$Token|default:''|escape}" />
+
+
+
+        </form>
+        <br>
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+
+            <div class="title">
+                Справка
+            </div>
+
+
+
+            <div>
+            </div>
+
+        </div>
+
+
+
+    </div>
+
+{/strip}

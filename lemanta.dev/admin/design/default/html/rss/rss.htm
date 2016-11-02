@@ -1,0 +1,527 @@
+{* <!-- настройки RSS ленты --> *}{strip}
+
+    <style>
+        .standard-ul {
+            line-height: normal !important;
+            margin: 10px 0 0 0 !important;
+            padding: 0 !important;
+        }
+
+        .standard-ul li {
+            color: inherit !important;
+            display: list-item !important;
+            list-style: disc !important;
+            font-size: inherit !important;
+            line-height: normal !important;
+            margin: 5px 0 5px 60px !important;
+            padding: 0 !important;
+        }
+    </style>
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Закладки страниц.                                                          |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="submenu">
+        <li><a href="{siteAdmin}">главная</a></li>
+        <li class="select"><a href="{siteAdmin}?section=Rss">rss</a></li>
+    </div>
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Заголовок, хлебные крошки.                                                 |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="box">
+        <h1>
+            <div class="path">
+                <a href="{siteAdmin}">Главная</a> → Настройки
+            </div>
+            Настройки RSS ленты
+        </h1>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Инструментальные ссылки.                                               |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <div class="toolkey">
+            <a href="{site}rss?diagnostic" target="_blank" title="Просмотреть разметку RSS ленты в диагностических целях">смотреть разметку</a>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="{site}rss" target="_blank" title="Ссылка на вашу RSS ленту">смотреть RSS</a>
+        </div>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Информационное сообщение, сообщение об ошибке (если есть).             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {messageBox from=message css=message}
+        {if !empty($error)}
+            <div class="error"><b>Ошибка:</b> {$error}</div>
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Обшие настройки.                                                       |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <form action="{siteAdmin}?section=Rss" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    <td class="param">Название:</td>
+                    <td class="value value_sheet" colspan="2" width="100%" title="Название ленты">
+                        <input class="edit" name="rss_title_text" type="text" value="{inputValue from='settings->rss_title_text'}" />
+                    </td>
+
+                    <td class="value_box">
+                        <input class="submit" name="setup" type="submit" value="Сохранить" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="param">Описание:</td>
+                    <td class="value value_sheet" width="100%" title="Краткое описание ленты">
+                        <input class="edit" name="rss_description_text" type="text" value="{inputValue from='settings->rss_description_text'}" />
+                    </td>
+
+                    <td class="param_short">Язык:</td>
+                    <td class="value value_sheet" title="Метка языка ленты">
+                        <input class="edit" name="rss_language" type="text" value="{inputValue from='settings->rss_language'}" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="param">Копирайт:</td>
+                    <td class="value value_sheet" title="Копирайт ленты">
+                        <input class="edit" name="rss_copyright_text" type="text" value="{inputValue from='settings->rss_copyright_text'}" />
+                    </td>
+
+                    <td class="param_short">Обновляется:</td>
+                    <td class="value value_sheet" title="Рекомендованный срок синхронизации ленты">
+                        {echoVar from='settings->rss_lifetime' assign=selectedId}
+                        {$values = [ 900 => '15 минут',
+                                     1800 => '30 минут',
+                                     3600 => '1 час',
+                                     7200 => '2 часа',
+                                     10800 => '3 часа',
+                                     18000 => '5 часов',
+                                     36000 => '10 часов',
+                                     86400 => '1 сутки',
+                                     172800 => '2 суток',
+                                     259200 => '3 суток',
+                                     432000 => '5 суток',
+                                     864000 => '10 суток' ]}
+                        <select name="rss_lifetime">
+                            {foreach $values as $key => $value}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$value}</option>
+                            {/foreach}
+                        </select>
+                    </td>
+                </tr>
+            </table>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Настройки по публикациям.                                          |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <li class="head_divider"><div>Публикации</div></li>
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    <td class="param">Товары:</td>
+                    <td class="value value_sheet" width="15%" title="Число таких постов в ленте">
+                        {echoVar from='settings->rss_products_count' assign=selectedId}
+                        <select name="rss_products_count">
+                            {section name=count loop=101}
+                                {$key = $smarty.section.count.index}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$key} шт.</option>
+                            {/section}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Тип:</td>
+                    <td class="value value_sheet" width="20%" title="Название категории поста">
+                        <input class="edit" name="rss_products_type" type="text" value="{inputValue from='settings->rss_products_type'}" />
+                    </td>
+
+                    <td class="param_short">Теги:</td>
+                    <td class="value value_sheet" width="50%" title="Список тегов, допустимых в тексте описания поста">
+                        <input class="edit" name="rss_products_enabled_tags" type="text" value="{inputValue from='settings->rss_products_enabled_tags'}" />
+                    </td>
+
+                    <td class="param_short" title="Выводить ли такие посты только из названий, без текста описания">
+                        {$checked = (!empty($settings->rss_products_without_announce)) ? 'checked' : ''}
+                        <input name="rss_products_without_announce" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_products_without_announce" name="rss_products_without_announce" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_products_without_announce');">
+                            &nbsp; Кратко
+                        </span>
+                    </td>
+
+                    <td class="param_short" title="Определять ли новизну постов по дате изменения вместо даты создания">
+                        {$checked = (!empty($settings->rss_products_modified_analize)) ? 'checked' : ''}
+                        <input name="rss_products_modified_analize" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_products_modified_analize" name="rss_products_modified_analize" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_products_modified_analize');">
+                            &nbsp; По дате изменения
+                        </span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="param">Комплекты:</td>
+                    <td class="value value_sheet" width="15%" title="Число таких постов в ленте">
+                        {echoVar from='settings->rss_kits_count' assign=selectedId}
+                        <select name="rss_kits_count">
+                            {section name=count loop=101}
+                                {$key = $smarty.section.count.index}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$key} шт.</option>
+                            {/section}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Тип:</td>
+                    <td class="value value_sheet" width="20%" title="Название категории поста">
+                        <input class="edit" name="rss_kits_type" type="text" value="{inputValue from='settings->rss_kits_type'}" />
+                    </td>
+
+                    <td class="param_short">Теги:</td>
+                    <td class="value value_sheet" width="50%" title="Список тегов, допустимых в тексте описания поста">
+                        <input class="edit" name="rss_kits_enabled_tags" type="text" value="{inputValue from='settings->rss_kits_enabled_tags'}" />
+                    </td>
+
+                    <td class="param_short" title="Выводить ли такие посты только из названий, без текста описания">
+                        {$checked = (!empty($settings->rss_kits_without_announce)) ? 'checked' : ''}
+                        <input name="rss_kits_without_announce" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_kits_without_announce" name="rss_kits_without_announce" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_kits_without_announce');">
+                            &nbsp; Кратко
+                        </span>
+                    </td>
+
+                    <td class="param_short" title="Определять ли новизну постов по дате изменения вместо даты создания">
+                        {$checked = (!empty($settings->rss_kits_modified_analize)) ? 'checked' : ''}
+                        <input name="rss_kits_modified_analize" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_kits_modified_analize" name="rss_kits_modified_analize" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_kits_modified_analize');">
+                            &nbsp; По дате изменения
+                        </span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="param">Новости:</td>
+                    <td class="value value_sheet" width="15%" title="Число таких постов в ленте">
+                        {echoVar from='settings->rss_news_count' assign=selectedId}
+                        <select name="rss_news_count">
+                            {section name=count loop=101}
+                                {$key = $smarty.section.count.index}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$key} шт.</option>
+                            {/section}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Тип:</td>
+                    <td class="value value_sheet" width="20%" title="Название категории поста">
+                        <input class="edit" name="rss_news_type" type="text" value="{inputValue from='settings->rss_news_type'}" />
+                    </td>
+
+                    <td class="param_short">Теги:</td>
+                    <td class="value value_sheet" width="50%" title="Список тегов, допустимых в тексте описания поста">
+                        <input class="edit" name="rss_news_enabled_tags" type="text" value="{inputValue from='settings->rss_news_enabled_tags'}" />
+                    </td>
+
+                    <td class="param_short" title="Выводить ли такие посты только из названий, без текста описания">
+                        {$checked = (!empty($settings->rss_news_without_announce)) ? 'checked' : ''}
+                        <input name="rss_news_without_announce" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_news_without_announce" name="rss_news_without_announce" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_news_without_announce');">
+                            &nbsp; Кратко
+                        </span>
+                    </td>
+
+                    <td class="param_short" title="Определять ли новизну постов по дате изменения вместо даты создания">
+                        {$checked = (!empty($settings->rss_news_modified_analize)) ? 'checked' : ''}
+                        <input name="rss_news_modified_analize" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_news_modified_analize" name="rss_news_modified_analize" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_news_modified_analize');">
+                            &nbsp; По дате изменения
+                        </span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="param">Статьи:</td>
+                    <td class="value value_sheet" width="15%" title="Число таких постов в ленте">
+                        {echoVar from='settings->rss_articles_count' assign=selectedId}
+                        <select name="rss_articles_count">
+                            {section name=count loop=101}
+                                {$key = $smarty.section.count.index}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$key} шт.</option>
+                            {/section}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Тип:</td>
+                    <td class="value value_sheet" width="20%" title="Название категории поста">
+                        <input class="edit" name="rss_articles_type" type="text" value="{inputValue from='settings->rss_articles_type'}" />
+                    </td>
+
+                    <td class="param_short">Теги:</td>
+                    <td class="value value_sheet" width="50%" title="Список тегов, допустимых в тексте описания поста">
+                        <input class="edit" name="rss_articles_enabled_tags" type="text" value="{inputValue from='settings->rss_articles_enabled_tags'}" />
+                    </td>
+
+                    <td class="param_short" title="Выводить ли такие посты только из названий, без текста описания">
+                        {$checked = (!empty($settings->rss_articles_without_announce)) ? 'checked' : ''}
+                        <input name="rss_articles_without_announce" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_articles_without_announce" name="rss_articles_without_announce" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_articles_without_announce');">
+                            &nbsp; Кратко
+                        </span>
+                    </td>
+
+                    <td class="param_short" title="Определять ли новизну постов по дате изменения вместо даты создания">
+                        {$checked = (!empty($settings->rss_articles_modified_analize)) ? 'checked' : ''}
+                        <input name="rss_articles_modified_analize" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_articles_modified_analize" name="rss_articles_modified_analize" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_articles_modified_analize');">
+                            &nbsp; По дате изменения
+                        </span>
+                    </td>
+                </tr>
+            </table>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Настройки по комментариям.                                         |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <li class="head_divider"><div>Комментарии</div></li>
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    <td class="param">О товарах:</td>
+                    <td class="value value_sheet" width="15%" title="Число таких постов в ленте">
+                        {echoVar from='settings->rss_comments_count' assign=selectedId}
+                        <select name="rss_comments_count">
+                            {section name=count loop=101}
+                                {$key = $smarty.section.count.index}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$key} шт.</option>
+                            {/section}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Тип:</td>
+                    <td class="value value_sheet" width="20%" title="Название категории поста">
+                        <input class="edit" name="rss_comments_type" type="text" value="{inputValue from='settings->rss_comments_type'}" />
+                    </td>
+
+                    <td class="param_short">Обрезать троеточием до:</td>
+                    <td class="value value_sheet" width="10%" title="Максимальный размер комментария, после чего выводить ...">
+                        <input class="edit" name="rss_comments_maxsize" type="text" value="{inputValue from='settings->rss_comments_maxsize'}" />
+                    </td>
+
+                    <td class="param_short" width="30%">символов</td>
+
+                    <td class="value_box">
+                        <input class="submit" name="setup" type="submit" value="Сохранить" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="param">О новостях:</td>
+                    <td class="value value_sheet" width="15%" title="Число таких постов в ленте">
+                        {echoVar from='settings->rss_ncomments_count' assign=selectedId}
+                        <select name="rss_ncomments_count">
+                            {section name=count loop=101}
+                                {$key = $smarty.section.count.index}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$key} шт.</option>
+                            {/section}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Тип:</td>
+                    <td class="value value_sheet" width="20%" title="Название категории поста">
+                        <input class="edit" name="rss_ncomments_type" type="text" value="{inputValue from='settings->rss_ncomments_type'}" />
+                    </td>
+
+                    <td class="param_short">Обрезать троеточием до:</td>
+                    <td class="value value_sheet" width="10%" title="Максимальный размер комментария, после чего выводить ...">
+                        <input class="edit" name="rss_ncomments_maxsize" type="text" value="{inputValue from='settings->rss_ncomments_maxsize'}" />
+                    </td>
+
+                    <td class="param_short" colspan="2" width="30%">символов</td>
+                </tr>
+
+                <tr>
+                    <td class="param">О статьях:</td>
+                    <td class="value value_sheet" width="15%" title="Число таких постов в ленте">
+                        {echoVar from='settings->rss_acomments_count' assign=selectedId}
+                        <select name="rss_acomments_count">
+                            {section name=count loop=101}
+                                {$key = $smarty.section.count.index}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$key} шт.</option>
+                            {/section}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Тип:</td>
+                    <td class="value value_sheet" width="20%" title="Название категории поста">
+                        <input class="edit" name="rss_acomments_type" type="text" value="{inputValue from='settings->rss_acomments_type'}" />
+                    </td>
+
+                    <td class="param_short">Обрезать троеточием до:</td>
+                    <td class="value value_sheet" width="10%" title="Максимальный размер комментария, после чего выводить ...">
+                        <input class="edit" name="rss_acomments_maxsize" type="text" value="{inputValue from='settings->rss_acomments_maxsize'}" />
+                    </td>
+
+                    <td class="param_short" colspan="2" width="30%">символов</td>
+                </tr>
+
+                <tr>
+                    <td class="param">В форуме:</td>
+                    <td class="value value_sheet" width="15%" title="Число таких постов в ленте">
+                        {echoVar from='settings->rss_forum_count' assign=selectedId}
+                        <select name="rss_forum_count">
+                            {section name=count loop=101}
+                                {$key = $smarty.section.count.index}
+                                <option value="{$key}" {($key == $selectedId) ? "selected" : ""}>{$key} шт.</option>
+                            {/section}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Тип:</td>
+                    <td class="value value_sheet" width="20%" title="Название категории поста">
+                        <input class="edit" name="rss_forum_type" type="text" value="{inputValue from='settings->rss_forum_type'}" />
+                    </td>
+
+                    <td class="param_short">Обрезать троеточием до:</td>
+                    <td class="value value_sheet" width="10%" title="Максимальный размер комментария, после чего выводить ...">
+                        <input class="edit" name="rss_forum_maxsize" type="text" value="{inputValue from='settings->rss_forum_maxsize'}" />
+                    </td>
+
+                    <td class="param_short" colspan="2" width="30%">символов</td>
+                </tr>
+            </table>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Настройки статистики.                                              |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <li class="head_divider"><div>Статистика чтения ленты</div></li>
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    <td class="param_short" title="Разрешено ли отправлять статистику на емейл">
+                        {$checked = (!empty($settings->rss_statist_emailing)) ? 'checked' : ''}
+                        <input name="rss_statist_emailing" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_statist_emailing" name="rss_statist_emailing" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_statist_emailing');">
+                            &nbsp; <img class="icon16x16" src="{themeAdmin}images/icon_email_16x16.png" />
+                        </span>
+                    </td>
+
+                    <td class="param_short">На емейлы:</td>
+                    <td class="value value_sheet" width="70%" title="Список емейлов администратора через запятую (по умолчанию емейл из настроек сайта)">
+                        <input class="edit" name="rss_statist_emails" type="text" value="{inputValue from='settings->rss_statist_emails'}" />
+                    </td>
+
+                    <td class="param_short">Шаблон:</td>
+                    <td class="value value_sheet" width="30%" title="Шаблон письма (по умолчанию email/statist_rss.htm)">
+                        <input class="edit" name="rss_statist_email_template" type="text" value="{inputValue from='settings->rss_statist_email_template'}" />
+                    </td>
+
+                    <td class="param_short" title="Включен ли механизм статистики чтения ленты">
+                        {$checked = (!empty($settings->rss_statist_enabled)) ? 'checked' : ''}
+                        <input name="rss_statist_enabled" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_statist_enabled" name="rss_statist_enabled" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_statist_enabled');">
+                            &nbsp; Включена
+                        </span>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="param_short" title="Разрешено ли отправлять статистику по СМС">
+                        {$checked = (!empty($settings->rss_statist_smsing)) ? 'checked' : ''}
+                        <input name="rss_statist_smsing" type="hidden" value="0" />
+                        <input class="checkbox" id="rss_statist_smsing" name="rss_statist_smsing" type="checkbox" value="1" {$checked} />
+                        <span onclick="Toggle_PageCheckbox('rss_statist_smsing');">
+                            &nbsp; <img class="icon16x16" src="{themeAdmin}images/icon_sms_16x16.png" />
+                        </span>
+                    </td>
+
+                    <td class="param_short">На телефоны:</td>
+                    <td class="value value_sheet" width="70%" title="Список телефонов администратора через запятую (по умолчанию телефоны из настроек СМС шлюзов)">
+                        <input class="edit" name="rss_statist_phones" type="text" value="{inputValue from='settings->rss_statist_phones'}" />
+                    </td>
+
+                    <td class="param_short">Шаблон:</td>
+                    <td class="value value_sheet" width="30%" title="Шаблон СМС (по умолчанию sms/statist_rss.htm)">
+                        <input class="edit" name="rss_statist_sms_template" type="text" value="{inputValue from='settings->rss_statist_sms_template'}" />
+                    </td>
+
+                    <td class="value_box">
+                        <input class="submit" name="setup" type="submit" value="Сохранить" />
+                    </td>
+                </tr>
+            </table>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Аутентификатор операции.                                           |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <input name="token" type="hidden" value="{token}" />
+        </form>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Справка.                                                               |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <a name="help"></a>
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                Поле <b>Обновляется</b> носит рекомендательный характер, так как программы чтения {**}
+                RSS лент имеют как правило свои настройки. И хотя программы в основном ориентируются {**}
+                на срок обновления, сообщаемый лентой, тем не менее могут игнорировать этот параметр {**}
+                или предлагать пользователю возможность изменить срок синхронизации по своему усмотрению.
+            </div>
+
+            <div>
+                <b>Статистика чтения ленты</b>. Здесь можно включить или отключить этот механизм, {**}
+                а также по каким каналам отправлять суточный отчет чтения ленты вашими пользователями. {**}
+                Поле <b>На емейлы</b> и поле <b>На телефоны</b> заполняйте в том случае, если хотите, {**}
+                чтобы отчет приходил конкретному менеджеру, иначе будет использован общий адрес из настроек {**}
+                <a href="{siteAdmin}?section=Setup">сайта</a> в случае емейлов и настроек <a href="{siteAdmin}?section=SmsGates">СМС шлюзов</a> {**}
+                в случае СМС. Поля <b>Шаблон</b> заполняйте, когда для отчета хотите использовать шаблон {**}
+                с нестандартным именем файла или его расположением. По умолчанию стандартный шаблон {**}
+                ищется в папке текущего шаблона клиентской стороны сайта, а если его там нет, тогда в папке {**}
+                шаблона админпанели. Стандартные имена файлов:
+
+                <ul class="standard-ul">
+                    <li>email/statist_rss.htm - шаблон письма</li>
+                    <li>sms/statist_rss.htm - шаблон СМС</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+{/strip}

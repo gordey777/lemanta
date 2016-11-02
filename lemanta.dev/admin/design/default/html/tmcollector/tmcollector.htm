@@ -1,0 +1,987 @@
+{* <!-- ===========================================================================
+                                                                                  |
+    Модуль: Сборщик базы шаблонов TemplateMonster.                                |
+    ----------------------------------------------------------------------------  |
+                                                                                  |
+    Входные переменные:                                                           |
+        $items = массив записей о найденных шаблонах:                             |
+                     ->tags = теги                                                |
+                     ->templateAbout = адрес страницы шаблона                     |
+                     ->templateImage = адрес скриншота                            |
+                     ->templateDemo = адрес демо страницы                         |
+                     ->templateType = название типа шаблона                       |
+                     ->templateTracked = 1 если это отслеживаемый тип, 0 - нет    |
+                     ->templateNumber = номер шаблона                             |
+                     ->templateAuthor = автор                                     |
+                     ->templatePrice = цена лицензии шаблона                      |
+                     ->templatePriceEnabled = учитывать ли цену лицензии шаблона  |
+                     ->templatePrice2Enabled = учитывать ли цену лицензии движка  |
+                     ->templatePrice3Enabled = учитывать ли цену сборки           |
+                     ->templateCategories = массив категорий шаблона              |
+        $categories = дерево категорий:                                           |
+                          ->category_id = идентификатор                           |
+                          ->id = идентификатор (дубликат поля category_id)        |
+                          ->parent = ИД родителя                                  |
+                          ->name = название                                       |
+                          ->subitems = ветвь подкатегорий                         |
+        $brands = дерево брендов:                                                 |
+                      ->brand_id = идентификатор                                  |
+                      ->id = идентификатор (дубликат поля brand_id)               |
+                      ->parent = ИД родителя                                      |
+                      ->name = название                                           |
+                      ->subitems = ветвь суббрендов                               |
+        $tracks = список типов шаблонов                                           |
+        $inputs = массив значений некоторых элементов html-формы (индексирован    |
+                  именами этих элементов):                                        |
+                      'filter_target' = выбранная область поиска                  |
+                      'filter_capacity' = выбранный объем поиска                  |
+                      'filter_tracks' = выбранный отслеживаемый тип               |
+                      'filter_tracks_supervisor' = 1 если вывод и неотслеживаемых |
+        $message = текст информационного сообщения, если есть                     |
+        $error = текст сообщения об ошибке, если была                             |
+                                                                                  |
+    ----------------------------------------------------------------------------  |
+    Скриптовая часть модуля: objects/tmcollector/TMCollector.admin.php            |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Закладки страниц.                                                          |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="submenu">
+        <li><a href="{siteAdmin}">главная</a></li>
+        <li class="select"><a href="{siteAdmin}?section=TMCollector">tm новинки</a></li>
+    </div>
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Заголовок, хлебные крошки.                                                 |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="box">
+        <h1>
+            <div class="path">
+                <a href="{siteAdmin}">Главная</a> → Сбор
+            </div>
+            Сборщик базы шаблонов TemplateMonster
+        </h1>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Инструментальные ссылки.                                               |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Информационное сообщение, сообщение об ошибке (если есть).             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {messageBox from=message css=message}
+        {if !empty($error)}
+            <div class="error"><b>Ошибка:</b> {$error}</div>
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Форма со списком записей.                                              |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <form action="{siteAdmin}?section=TMCollector" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Фильтр.                                                            |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <table align="center" cellpadding="0" cellspacing="8" class="white">
+                <tr>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Область поиска.                                            |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    {inputValue from='inputs->filter_target' assign=selectedValue}
+
+                    <td class="param_short">Область:</td>
+                    <td class="value value_sheet" width="33%" title="Область поиска">
+                        <select class="thin" name="filter_target">
+                            <option value="">новинки</option>
+                            <option value="landing" {if $selectedValue == "landing"} selected{/if}>лендинги</option>
+                            <option value="html" {if $selectedValue == "html"} selected{/if}>html шаблоны</option>
+                        </select>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Глубина.                                                   |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    {inputValue from='inputs->filter_capacity' assign=selectedValue}
+
+                    <td class="param_short">Объём:</td>
+                    <td class="value value_sheet" width="33%" title="Объём поиска">
+                        <select class="thin" name="filter_capacity">
+                            <option value="16" {if $selectedValue == 16} selected{/if}>16 первых позиций</option>
+                            <option value="40" {if $selectedValue == 40} selected{/if}>40 первых позиций</option>
+                            <option value="100" {if $selectedValue == 100} selected{/if}>100 первых позиций</option>
+                        </select>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Что отслеживать.                                           |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    {inputValue from='inputs->filter_tracks' assign=selectedValue}
+
+                    <td class="param_short">Отслеживать:</td>
+                    <td class="value value_sheet" width="33%" title="Перечень отслеживаемых типов шаблонов">
+                        <select class="thin" name="filter_tracks">
+                            <option value="">всё</option>
+                            {if !empty($tracks)}
+                                <option value="" disabled class="disabled">--------------------------------</option>
+
+                                {foreach $tracks as $key => $value}
+                                    {$ignore = !is_string($value) || substr($value, 0, 1) == '!'}
+                                    {$class = ($ignore) ? 'class="disabled"' : ''}
+                                    {$selected = ($key == $selectedValue) ? 'selected' : ''}
+
+                                    <option value="{$key}" {$class} {$selected}>
+                                        {$key}
+                                    </option>
+                                {/foreach}
+                            {/if}
+                        </select>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Контроль результатов.                                      |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <td class="param_short" title="Показать в результатах все типы шаблонов (для контрольных целей)">
+                        {$checked = (!empty($inputs.filter_tracks_supervisor)) ? 'checked' : ''}
+                        <input name="filter_tracks_supervisor" type="hidden" value="0" />
+                        <input class="checkbox" id="items_form_filter_tracks_supervisor" name="filter_tracks_supervisor" type="checkbox" {$checked} value="1" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_filter_tracks_supervisor')">
+                            И неотслеживаемые
+                        </span>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Кнопка скана.                                              |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <td class="value_box" title="Начать поиск новых шаблонов на сайте TemplateMonster">
+                        <input class="submit compact" name="scan" type="submit" value="Найти новые" />
+                    </td>
+                </tr>
+            </table>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Кнопка сброса фильтра.                                             |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <div class="toolkey">
+                &nbsp;
+            </div>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Список записей.                                                    |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {if !empty($items)}
+                {$num = 0}
+                {foreach $items as $item}
+                    {$num = $num + 1}
+
+                    {$id = $item->templateNumber|default:$num|escape}
+                    {$priceOn = !empty($item->templatePriceEnabled)}
+                        {$price2On = !empty($item->templatePrice2Enabled)}
+                        {$price3On = !empty($item->templatePrice3Enabled)}
+                    {$price = $item->templatePrice|default:0}
+                        {$price2 = 199}
+                        {$price3 = 250}
+                    {$priceAll = 0}
+                        {$priceAll = ($priceOn) ? ($priceAll + $price) : $priceAll}
+                        {$priceAll = ($price2On) ? ($priceAll + $price2) : $priceAll}
+                        {$priceAll = ($price3On) ? ($priceAll + $price3) : $priceAll}
+                    {$type = $item->templateType|default:'Не указан тип'|escape}
+                        {$typeSiteNamer1 = 'Сайт'}
+                        {$typeSiteNamer2 = 'сайт'}
+                        {$typeSiteNamer3 = 'сайта'}
+                        {if $type == 'Шаблоны целевых страниц'}
+                            {$typeSiteNamer1 = 'Лендинг сайт'}
+                            {$typeSiteNamer2 = 'лендинг сайт'}
+                            {$typeSiteNamer3 = 'лендинг сайта'}
+                        {elseif $type == 'Magento шаблоны'
+                             || $type == 'OpenCart шаблоны'
+                             || $type == 'PrestaShop шаблоны'
+                             || $type == 'Shopify шаблоны'
+                             || $type == 'VirtueMart шаблоны'
+                             || $type == 'WooCommerce шаблоны'}
+                            {$typeSiteNamer1 = 'Магазин'}
+                            {$typeSiteNamer2 = 'магазин'}
+                            {$typeSiteNamer3 = 'магазина'}
+                        {/if}
+                    {$author = $item->templateAuthor|default:'Неизвестный'|escape}
+                    {$image = $item->templateImage|default:($theme|cat:'images/no-photo.png')|escape}
+                    {$about = $item->templateAbout|default:''|escape}
+                    {$demo = $item->templateDemo|default:''|escape}
+                    {$tags = $item->tags|default:''|escape}
+                    {$category = end($item->templateCategories)}
+                        {$category = (is_string($category)) ? ($category|cat:' ') : ''}
+                        {$category = $category|escape}
+                    {$enabled = !empty($item->templateTracked)}
+
+                    {$style = ($enabled) ? '' : 'style="opacity: .3"'}
+
+                    <li class="flatlist" {$style}>
+                        <div class="onerow">
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Массовая пометка постинга.                         |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            {if $num == 1}
+                                <a title="Пометить НЕ ПОСТИТЬ все на этой странице" onclick="massiveSetPostThisRecord(this, false)" style="font-size: 12pt; position: absolute; margin: -4px 0 0 882px; z-index: 1;">
+                                    ↓
+                                </a>
+
+                                <a title="Снять пометки НЕ ПОСТИТЬ со всех на этой странице" onclick="massiveSetPostThisRecord(this, true)" style="font-size: 12pt; position: absolute; margin: -4px 0 0 890px; z-index: 1;">
+                                    ↑
+                                </a>
+
+                                {* <!-- ===========================================
+                                |                                                 |
+                                |  Массовая пометка разрешения к показу.          |
+                                |                                                 |
+                                ============================================ --> *}
+
+                                <a title="Пометить разрешенными все на этой странице" onclick="massiveSetEnabledThisRecord(this, false)" style="font-size: 12pt; position: absolute; margin: -4px 0 0 793px; z-index: 1;">
+                                    ↓
+                                </a>
+
+                                <a title="Снять пометки разрешенных со всех на этой странице" onclick="massiveSetEnabledThisRecord(this, true)" style="font-size: 12pt; position: absolute; margin: -4px 0 0 800px; z-index: 1;">
+                                    ↑
+                                </a>
+                            {/if}
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Признак постинга этой записи (чтобы не постилась,  |
+                            |  установить атрибут disabled).                      |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            {$style = ($enabled) ? '' : 'disabled'}
+
+                            <input name="post[{$id}]" id="post-{$id}-flag" type="hidden" value="" {$style} />
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Признак новой записи (обозначена виртуальным ИД).  |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <input name="post_this_noid[{$id}]" type="hidden" value="1" />
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Флажок "Разрешить / запретить постинг записи".     |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            {$style = ($enabled) ? '' : 'checked'}
+
+                            <input class="checkbox delete_items" type="checkbox" value="" {$style} title="Не постить эту запись" onchange="togglePostThisRecord(this, '{$id}')" />
+
+                            <a title="Удалить" onclick="return false">
+                                <img class="microkey_right" src="{themeAdmin}images/icon_delete_off_16x16.png" alt="" />
+                            </a>
+
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif" alt="" />
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif" alt="" />
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Флажок "Разрешен / запрещен к показу на сайте".    |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <input class="checkbox gray enable_items" name="enabled[{$id}]" type="checkbox" value="1" title="Пометить как разрешенный к показу на сайте" />
+                            <input name="commented[{$id}]" type="hidden" value="0" />
+
+                            <a title="Разрешить / запретить показ на сайте" onclick="return false">
+                                <img class="microkey_right" src="{themeAdmin}images/icon_enabled_off_16x16.png" alt="" />
+                            </a>
+
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif" alt="" />
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Нумерация.                                         |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <span class="topic" style="display: inline;">
+                                {$num}.
+                            </span>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Номер шаблона.                                     |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <span class="date" title="Номер шаблона">
+                                TM {$id}
+                            </span>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Цена товара.                                       |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <span class="rating" title="Цена товара (в базовой валюте)">
+                                {$helper->priceForScreen($priceAll, FALSE, FALSE)}
+                            </span>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Тип шаблона и автор.                               |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <a onclick="return false">
+                                <img src="{themeAdmin}images/microicon_showall_9x9.png" alt="" />
+                            </a> &nbsp;
+
+                            <a onclick="return false">
+                                {$type}
+                            </a>
+
+                            &nbsp; &nbsp; &nbsp;
+
+                            <a onclick="return false">
+                                <img class="icon16x16" src="{themeAdmin}images/icon_registered_off_16x16.png" alt="" />
+                            </a> &nbsp;
+
+                            <a onclick="return false">
+                                {$author}
+                            </a>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Секция "Мета информация".                              |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span class="subtext">
+                                Мета информация
+                            </span>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Мета заголовок.                                        |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span>
+                                Название:
+                            </span>
+
+                            <div class="line_edit half" title="Мета заголовок страницы товара">
+                                <input name="meta_title[{$id}]" type="text" value="Заказать {$typeSiteNamer2} {$category}на шаблоне TM {$id}" />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Название товара.                                   |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="line_edit half" title="Название товара">
+                                <input name="model[{$id}]" type="text" value="{$typeSiteNamer1} {$category}на шаблоне TM {$id}" />
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Мета описание.                                         |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span>
+                                Описание:
+                            </span>
+
+                            <div class="line_edit full" title="Мета описание страницы товара">
+                                <input name="meta_description[{$id}]" type="text" value="Закажите {$typeSiteNamer2} {$category}на хорошем движке и шаблоне TM {$id}." />
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Мета ключевые слова.                                   |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span>
+                                Ключи:
+                            </span>
+
+                            <div class="line_edit full" title="Мета ключевые слова">
+                                <input name="meta_keywords[{$id}]" type="text" value="{$tags}, {$typeSiteNamer2}" />
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Теги.                                                  |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span>
+                                Теги:
+                            </span>
+
+                            <div class="line_edit full" title="Теги">
+                                <input name="tags[{$id}]" type="text" value="{$tags}" />
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Секция "Описание".                                     |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span class="subtext">
+                                Описание
+                            </span>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Краткое описание.                                      |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit for-text">
+                            <span>
+                                Краткое:
+                            </span>
+
+                            <div class="text_edit full" title="Краткое описание">
+                                <textarea name="description[{$id}]" rows="5">
+                                    {"&lt;p&gt;\r\n"}
+                                    {"    Предлагается сборка $typeSiteNamer3 $category на базе шаблона TM $id от дизайнера $author.\r\n"}
+                                    {"    Дизайн из серии \"$type\", представленной на сайте компании TemplateMonster.\r\n"}
+                                    {'&lt;/p&gt;'}
+                                </textarea>
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Полное описание.                                       |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {$p1 = $helper->priceForScreen($price, FALSE)}
+                        {$p2 = $helper->priceForScreen($price2, FALSE)}
+                        {$p3 = $helper->priceForScreen($price3, FALSE)}
+
+                        <div class="line for-edit for-text">
+                            <span>
+                                Полное:
+                            </span>
+
+                            <div class="text_edit full" title="Полное описание">
+                                <textarea name="body[{$id}]" rows="10">
+                                    {"&lt;div class=\"remark noitems\"&gt;\r\n"}
+                                    {"    &lt;p&gt;&lt;b class=\"serious\"&gt;Цена образована из&lt;/b&gt;&lt;/p&gt;\r\n"}
+                                    {"    &lt;ul&gt;\r\n"}
+                                    {if $price2On}
+                                        {"        &lt;li&gt;Лицензионная версия Impera CMS = &lt;span class=\"file\"&gt;$p2\$&lt;/span&gt;&lt;/li&gt;\r\n"}
+                                    {/if}
+                                    {if $priceOn}
+                                        {"        &lt;li&gt;Лицензионная версия шаблона = &lt;span class=\"file\"&gt;$p1\$&lt;/span&gt;&lt;/li&gt;\r\n"}
+                                    {/if}
+                                    {if $price3On}
+                                        {"        &lt;li&gt;Работа по изготовлению сайта = &lt;span class=\"file\"&gt;$p3\$&lt;/span&gt;&lt;/li&gt;\r\n"}
+                                    {/if}
+                                    {"    &lt;/ul&gt;\r\n"}
+                                    {if $price3On}
+                                        {"    &lt;p&gt;Срок изготовления - 2 недели с момента оплаты.&lt;/p&gt;\r\n"}
+                                    {/if}
+                                    {"&lt;/div&gt;"}
+                                </textarea>
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Секция "Цена".                                         |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span class="subtext">
+                                Цена товара
+                            </span>
+
+                            <div class="line_edit plain">
+                                <span class="subtext">
+                                    Идентификация
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="line for-edit">
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Флажок "Учитывать цену шаблона".                   |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <span>
+                                {$state = ($priceOn) ? 'checked' : ''}
+                                <input class="checkbox light" name="price_enabled[{$id}]" type="checkbox" value="1" {$state} title="Учитывать ли эту цену в общей цене товара" />
+                                &nbsp;
+                            </span>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Цена шаблона.                                      |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="price_edit" title="Цена лицензии шаблона (в базовой валюте)">
+                                <input name="price[{$id}]" type="text" value="{$helper->priceForScreen($price, FALSE, FALSE)}" />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Адрес страницы шаблона.                            |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="line_edit" title="HTML-контент субдомена (адрес страницы шаблона)">
+                                <input name="subdomain[{$id}]" type="hidden" value="" />
+                                <input name="subdomain_enabled[{$id}]" type="hidden" value="0" />
+                                <input name="subdomain_html[{$id}]" type="text" value="&lt;!-- {$about} --&gt;" />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Название элемента.                                 |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <a href="{$about}" rel="nofollow" target="_blank" title="Открыть страницу шаблона в новом окне">
+                                <img src="{themeAdmin}images/microicon_showall_9x9.png" alt="" />
+                            </a>&nbsp;
+
+                            <span class="text">
+                                лицензия шаблона
+                            </span>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Флажок "Учитывать цену движка".                        |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span>
+                                {$state = ($price2On) ? 'checked' : ''}
+                                <input class="checkbox light" name="price2_enabled[{$id}]" type="checkbox" value="1" {$state} title="Учитывать ли эту цену в общей цене товара" />
+                                &nbsp;
+                            </span>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Цена движка.                                       |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="price_edit" title="Цена лицензии Impera CMS (в базовой валюте)">
+                                <input name="price2[{$id}]" type="text" value="{$helper->priceForScreen($price2, FALSE, FALSE)}" />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Адрес страницы товара.                             |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="line_edit width3" title="Адрес страницы товара">
+                                <input name="url_special[{$id}]" type="hidden" value="0" />
+                                <input name="url[{$id}]" type="text" value="tm-{$id}" />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Артикул товара.                                    |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="line_edit width3" title="Артикул товара">
+                                <input name="sku[{$id}]" type="text" value="TM-{$id}" />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Код товара.                                        |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="line_edit width3" title="Код товара">
+                                <input name="pcode[{$id}]" type="text" value="SITE-TM-{$id}" />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Название элемента.                                 |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <span class="text">
+                                лицензия движка
+                            </span>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Флажок "Учитывать цену сборки".                        |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span>
+                                {$state = ($price3On) ? 'checked' : ''}
+                                <input class="checkbox light" name="price3_enabled[{$id}]" type="checkbox" value="1" {$state} title="Учитывать ли эту цену в общей цене товара" />
+                                &nbsp;
+                            </span>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Цена сборки.                                       |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="price_edit" title="Цена сборки (в базовой валюте)">
+                                <input name="price3[{$id}]" type="text" value="{$helper->priceForScreen($price3, FALSE, FALSE)}" />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Бренд.                                             |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            {function catsTree level=0 def=''}
+                                {if !empty($items)}
+                                    {foreach $items as $item}
+                                        {$id = $item->id|default:''}
+                                        {$name = $item->name|default:''}
+
+                                        {$state = ''}
+                                        {if !empty($def) && $name == $def}
+                                            {$state = 'selected'}
+                                            {$def = ''}
+                                        {/if}
+
+                                        <option value="{$id}" {$state}>
+                                            {section name=spaces loop=$level}
+                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                            {/section}
+                                            {$name}
+                                        </option>
+
+                                        {if !empty($item->subitems)}
+                                            {catsTree items = $item->subitems
+                                                      level = $level + 1
+                                                      def = $def}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/function}
+
+                            <div class="line_edit width2" title="Бренд">
+                                <select name="brand_id[{$id}]">
+                                    {catsTree items = $brands|default:FALSE
+                                              def = 'TemplateMonster'}
+                                </select>
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Категория.                                         |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="line_edit width2" title="Категория">
+                                <select name="category_id[{$id}]">
+                                    {catsTree items = $categories|default:FALSE
+                                              def = 'Изготовление сайтов'}
+                                </select>
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Название элемента.                                 |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <span class="text">
+                                сборка
+                            </span>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Кнопка Применить (сохранить конкретно эту запись,  |
+                            |  игнорируя изменения других записей на странице).   |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <input class="submit right" name="post_this_one[{$id}]" type="submit" value="применить" title="Принять только этот товар" onclick="return Prepare_PageThisOnePost('items_form')" />
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Секция "Скриншот".                                     |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span class="subtext">
+                                Скриншот
+                            </span>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Скриншот.                                              |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <img class="thumb middle" src="{$image}" title="Скриншот" alt="" />
+                        <input name="images[{$id}]" type="hidden" value="{$image}" />
+
+                        <div class="line for-edit">
+                            <span>
+                                <input class="checkbox light" name="images_view[{$id}]" type="checkbox" value="1" checked title="Виден ли в слайдере" />
+                                &nbsp;
+                            </span>
+
+                            <a href="{$image}" rel="nofollow" target="_blank" title="Смотреть скриншот в новом окне">
+                                <img src="{themeAdmin}images/microicon_showall_9x9.png" alt="" />
+                            </a>&nbsp;
+
+                            <span class="text" title="Адрес скриншота">
+                                {$image}
+                            </span>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Имя файла скриншота.                                   |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit">
+                            <span>
+                                Alt-текст:
+                            </span>
+
+                            <div class="line_edit half" title="Локальное имя файла скриншота">
+                                <input type="text" value="tm-{$id}-1" readonly />
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Alt-текст скриншота.                               |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="line_edit half" title="Alt-текст скриншота">
+                                <input name="images_alts[{$id}]" type="text" value="Скриншот {$typeSiteNamer3} {$category}на шаблоне TM {$id}" />
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Описание скриншота.                                    |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="line for-edit for-text">
+                            <span>
+                                {if !empty($demo)}
+                                    <a href="{$demo}" rel="nofollow" target="_blank" title="Смотреть демо в новом окне">
+                                        <img src="{themeAdmin}images/microicon_showall_9x9.png" alt="" />
+                                    </a>&nbsp;
+                                {/if}
+                                Детали:
+                            </span>
+
+                            <div class="text_edit full" title="Описание скриншота">
+                                <textarea name="images_texts[{$id}]" rows="4">
+                                    {if !empty($demo)}
+                                        {$demo}{"\r\n"}
+                                    {/if}
+                                    Здесь показан скриншот иностранной версии шаблона. После изготовления ваш сайт будет иметь русский интерфейс.
+                                </textarea>
+                            </div>
+                        </div>
+                    </li>
+                {/foreach}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Пустой указатель требуемой команды.                            |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <input id="items_form_act" name="act" type="hidden" value="" />
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Признак отмены постинга.                                       |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <input id="items_form_ignore_post" name="ignore_post" type="hidden" value="1" />
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Признак мини постинга (без некоторых полей записи).            |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <input name="post_mini" type="hidden" value="1" />
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Аутентификатор операции.                                       |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <input name="token" type="hidden" value="{token}" />
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Иначе нет записей.                                                 |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {else}
+                <div class="noitems">
+                    {if !empty($error)}               Поиск шаблонов отклонён по причине ошибки.
+                    {elseif isset($smarty.post.scan)} Нет новых шаблонов.
+                    {else}                            Начните с кнопки поиска шаблонов.
+                    {/if}
+                </div>
+            {/if}
+        </form>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Вспомогательные скрипты.                                               |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <script>
+            function togglePostThisRecord ( checkbox, id ) {
+                try {
+                    var state = !checkbox.checked;
+                    Toggle_LiTransparency(checkbox, state, 0.3);
+                    var flag = jQuery(checkbox).closest('li').find('input#post-' + id + '-flag');
+                    if (flag.length > 0) {
+                        flag = flag[0];
+                        flag.removeAttribute('disabled');
+                        if (!state) flag.setAttribute('disabled', '');
+                    }
+                } catch (e) { }
+                return false;
+            }
+
+            function massiveSetPostThisRecord ( anchor, state ) {
+                try {
+                    jQuery(anchor).closest('form').find('.flatlist > .onerow > input.delete_items').each(
+                        function () {
+                            if (this.checked == state) this.click();
+                            if (typeof this.onchange == 'function') this.onchange();
+                        }
+                    );
+                } catch (e) { }
+                return false;
+            }
+
+            function massiveSetEnabledThisRecord ( anchor, state ) {
+                try {
+                    jQuery(anchor).closest('form').find('.flatlist > .onerow > input.enable_items').each(
+                        function () {
+                            if (this.checked == state) this.click();
+                            if (typeof this.onchange == 'function') this.onchange();
+                        }
+                    );
+                } catch (e) { }
+                return false;
+            }
+        </script>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Справка.                                                               |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <a name="help"></a>
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+        </div>
+    </div>
+
+{/strip}

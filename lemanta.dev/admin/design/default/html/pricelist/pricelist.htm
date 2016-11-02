@@ -1,0 +1,2999 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: таблица товаров                                                         |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $items = массив с записями о категориях с вложенными записями товаров         |
+                 ->category_id = ИД категории                                     |
+                 ->parent = ИД родительской категории                             |
+                 ->name = название                                                |
+                 ->url = URL (относительно корневой папки магазина)               |
+                 ->url_special = признак особого URL (без дефолтного начала)      |
+                 ->url_path = пустая строка или дефолт.начало URL, если не особый |
+                 ->ymarket = разрешен ли экспорт в Яндекс.Маркет (биты 32 каналов)|
+                 ->vkontakte = разрешен ли экспорт ВКонтакте                      |
+                 ->enabled = разрешена ли к показу на клиентской стороне сайта    |
+                 ->highlighted = подсвечена ли на клиентской стороне              |
+                 ->hidden = скрыта ли от неавторизованных пользователей           |
+                 ->rss_disabled = запрещен ли экспорт в RSS                       |
+                 ->export_disabled = запрещен ли экспорт во внешние информеры     |
+                 ->in_prices = в каких прайсах выводится (биты 8 каналов)         |
+                 ->own_block = имеет ли свой блок на главной                      |
+                 ->informative = является ли информативной страницей              |
+                 ->template = имя tpl-шаблона страницы категории                  |
+                 ->order_num = сортировочный вес режима "как расставлены"         |
+                 ->subitems = массив записей о вложенных категориях               |
+                                  ->поля = аналогичны полям массива $items        |
+                 ->products = массив записей о личных товарах категории           |
+                                  ->product_id = ИД товара                        |
+                                  ->category_id = ИД категории                    |
+                                  ->brand_id = ИД бренда                          |
+                                  ->brand = название бренда                       |
+                                  ->pcode = буквенный код                         |
+                                  ->model = название                              |
+                                  ->url = URL (относительно корневой папки)       |
+                                  ->url_special = признак особого URL             |
+                                  ->url_path = пустая строка или дефолт.начало URL|
+                                  ->hit = признак "хит продаж"                    |
+                                  ->newest = признак "новинка"                    |
+                                  ->actional = признак "акционный"                |
+                                  ->awaited = признак "скоро в продаже"           |
+                                  ->ymarket = экспорт в Яндекс.Маркет (32 канала) |
+                                  ->vkontakte = разрешен ли экспорт ВКонтакте     |
+                                  ->enabled = разрешен ли к показу на клиентской  |
+                                  ->highlighted = подсвечен ли на клиентской      |
+                                  ->hidden = скрыт ли от неавторизованных         |
+                                  ->rss_disabled = запрещен ли экспорт в RSS      |
+                                  ->export_disabled = запрещен ли в информерах    |
+                                  ->in_prices = в каких прайсах виден (8 каналов) |
+                                  ->commented = разрешен ли к обсуждению          |
+                                  ->non_usable = запрещен ли к продаже            |
+                                  ->non_creditable = запрещена ли продажа в кредит|
+                                  ->template = имя tpl-шаблона страницы товара    |
+                                  ->order_num = сортировочн.вес "как расставлены" |
+                                  ->variants = массив записей о вариантах товара  |
+                                                   ->variant_id = ИД варианта     |
+                                                   ->product_id = ИД товара       |
+                                                   ->sku = артикул варианта       |
+                                                   ->name = название варианта     |
+                                                   ->price = цена (основн.группа) |
+                                                   ->temp_price = акционная цена  |
+                                                   ->old_price = старая цена      |
+                                                   ->priority_discount = скидка   |
+                                                   ->stock = количество на складе |
+                                                   ->position = сортировочный вес |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+                    ->имя = значение конкретной настройки                         |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.PRICELIST_MODULELINK_POINTER|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.PRICELIST_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.PRICELIST_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    {* <!-- вычисляем текущий курс --> *}
+    {$rate = ($currency->rate_from|default:1) / ($currency->rate_to|default:1)}
+    {$sign = ($currency->sign|default:'?')|escape}
+
+
+
+    {* <!-- информационное сообщение --> *}
+    {if $message|default:'' != ''}
+        <div class="message">
+            {$message}
+        </div>
+    {/if}
+
+
+
+    {* <!-- сообщение об ошибке --> *}
+    {if $error|default:'' != ''}
+        <div class="error">
+            <b>Ошибка:</b> {$error}
+        </div>
+    {/if}
+
+
+
+    {* <!-- стили формы со списком записей --> *}
+    <style>
+        #items_form .table-pricelist,
+        #items_form .table-pricelist-options {
+            background: #ccc;
+            border: #fff 15px solid;
+            border-top: 0 solid;
+            border-bottom: #fff 60px solid;
+            margin: 0;
+            padding: 1px 0 0 1px;
+            width: 100%;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        #items_form .table-pricelist-options {
+            border-bottom: 0 solid;
+        }
+
+            #items_form .table-pricelist td,
+            #items_form .table-pricelist-options td {
+                border: 0 solid;
+                border-right: #ccc 1px solid;
+                border-bottom: #ccc 1px solid;
+                font-family: Verdana, Tahoma, Arial;
+                font-size: 10pt;
+                line-height: 20px;
+                margin: 0;
+                padding: 0;
+                text-align: left;
+                vertical-align: middle;
+                -moz-box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+
+
+
+        /* таблица флажков "Показать / скрыть", когда приклеивается к верху при скроллинге вниз */
+
+        #items_form .table-pricelist-options.table-pricelist-options-fixed {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 1;
+        }
+
+
+
+        /* таблица флажков Показать / скрыть */
+
+        #items_form .table-pricelist-options {
+            padding: 0 1px 0 0;
+        }
+
+            #items_form .table-pricelist-options td {
+                background: #ddd;
+                border: 0 solid;
+                border-left: #ccc 1px solid;
+                border-top: #ccc 1px solid;
+                color: #888;
+                font-size: 8pt;
+                padding: 5px 10px;
+            }
+
+
+
+            /* строки таблицы */
+
+            #items_form .table-pricelist tr:hover td {
+                background: #e0e0e0;
+            }
+
+            #items_form .table-pricelist .row-category td {
+                background: #eee;
+            }
+
+            #items_form .table-pricelist .row-product td {
+                background: #fff;
+            }
+
+            #items_form .table-pricelist .row-variant td {
+                background: #fff;
+            }
+
+
+
+            /* поле ввода */
+
+            #items_form .table-pricelist td span {
+                display: block;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                position: relative;
+                -moz-box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+
+                #items_form .table-pricelist input[type="text"] {
+                    background: transparent;
+                    border: 0 solid;
+                    outline: 0 solid;
+                    color: #222;
+                    font-family: Verdana, Tahoma, Arial;
+                    font-size: 10pt;
+                    font-weight: normal;
+                    margin: 0;
+                    padding: 5px 10px;
+                    width: 100%;
+                    -moz-box-sizing: border-box;
+                    -webkit-box-sizing: border-box;
+                    box-sizing: border-box;
+                }
+
+                #items_form .table-pricelist input[type="text"]:hover,
+                #items_form .table-pricelist span:hover > input[type="text"] {
+                    background: #d0d0d0;
+                }
+
+
+
+            /* ячейка Пометить на удаление */
+
+            #items_form .table-pricelist tr[data-id^="c0_"] .cell-delete,
+            #items_form .table-pricelist tr[data-id^="p0_"] .cell-delete {
+                background: #aea;
+            }
+
+
+
+            /* ссылка Страница на клиентской стороне */
+
+            #items_form .table-pricelist .cell-link {
+                border-right: 0 solid;
+                width: 1px;
+            }
+
+                #items_form .table-pricelist .cell-link img {
+                    margin: 0 10px;
+                    opacity: 0.4;
+                }
+
+                #items_form .table-pricelist .cell-link img:hover {
+                    opacity: 1.0;
+                }
+
+                /* когда запись новая и страницы еще нет */
+
+                #items_form .table-pricelist tr[data-id^="c0_"] .cell-link a,
+                #items_form .table-pricelist tr[data-id^="p0_"] .cell-link a {
+                    display: none;
+                }
+
+
+
+            /* поле Название */
+
+            #items_form .table-pricelist .cell-name {
+            }
+
+                #items_form .table-pricelist .cell-name input[type="text"] {
+                    font-weight: bold;
+                    padding: 5px 10px 3px 10px;
+                    min-width: 150px;
+                }
+
+                #items_form .table-pricelist .cell-name .cell-url input[type="text"] {
+                    padding: 4px 10px 3px 10px;
+                }
+
+                #items_form .table-pricelist .row-product .cell-name input[type="text"] {
+                    font-weight: normal;
+                }
+
+                    /* кнопки Добавить */
+
+                    #items_form .table-pricelist .cell-name .add-subcategory,
+                    #items_form .table-pricelist .cell-name .clone-category,
+                    #items_form .table-pricelist .cell-name .add-variant,
+                    #items_form .table-pricelist .cell-name .clone-product {
+                        background: #ddd;
+                        color: #eee;
+                        display: none;
+                        font-size: 7pt;
+                        margin: 2px;
+                        padding: 0;
+                        line-height: 14px;
+                        height: 14px;
+                        width: 14px;
+                        overflow: hidden;
+                        text-align: center;
+                        text-decoration: none;
+                        position: absolute;
+                        right: 0;
+                    }
+
+                    #items_form .table-pricelist .cell-name .clone-category,
+                    #items_form .table-pricelist .cell-name .clone-product {
+                        margin: 2px 20px 2px 2px;
+                    }
+
+                    #items_form .table-pricelist .cell-name > span:hover .add-subcategory,
+                    #items_form .table-pricelist .cell-name > span:hover .clone-category,
+                    #items_form .table-pricelist .cell-name > span:hover .add-variant,
+                    #items_form .table-pricelist .cell-name > span:hover .clone-product {
+                        background: #999;
+                    }
+
+
+
+                /* обработка флажка Скрыть ссылки */
+
+                #items_form .table-pricelist.table-pricelist-option-links-hide .cell-links {
+                    display: none;
+                }
+
+
+
+                /* обработка состояния В строке показать url */
+
+                #items_form .table-pricelist .row-show-url .cell-name > span {
+                    display: block !important;
+                }
+
+
+
+                /* обработка флажка Скрыть товары */
+
+                #items_form .table-pricelist.table-pricelist-option-products-hide .row-product,
+                #items_form .table-pricelist.table-pricelist-option-products-hide .row-variant {
+                    display: none;
+                }
+
+
+
+                /* обработка флажка Скрыть бренды */
+
+                #items_form .table-pricelist.table-pricelist-option-brands-hide .cell-brands {
+                    display: none;
+                }
+
+
+
+                /* обработка флажка Скрыть ИДы */
+
+                #items_form .table-pricelist.table-pricelist-option-ids-hide .cell-ids {
+                    display: none;
+                }
+
+
+
+                /* обработка флажка Скрыть коды */
+
+                #items_form .table-pricelist.table-pricelist-option-codes-hide .cell-codes {
+                    display: none;
+                }
+
+
+
+                /* обработка флажка Скрыть цены */
+
+                #items_form .table-pricelist.table-pricelist-option-prices-hide .cell-prices {
+                    display: none;
+                }
+
+
+
+                /* обработка флажка Скрыть доступы */
+
+                #items_form .table-pricelist.table-pricelist-option-accesses-hide .cell-accesses {
+                    display: none;
+                }
+
+
+
+                /* обработка флажка Скрыть экспорты */
+
+                #items_form .table-pricelist.table-pricelist-option-exports-hide .cell-exports {
+                    display: none;
+                }
+
+
+
+                /* обработка флажка Скрыть шаблоны страниц */
+
+                #items_form .table-pricelist.table-pricelist-option-templates-hide .cell-templates {
+                    display: none;
+                }
+
+
+
+                /* поле URL страницы */
+
+                #items_form .table-pricelist .cell-name input[name^="url"] {
+                    color: #bbb;
+                    font-size: 8pt;
+                    font-weight: normal;
+                }
+
+                #items_form .table-pricelist .cell-name input[name^="url"]:hover,
+                #items_form .table-pricelist .cell-name > span:hover input[name^="url"] {
+                    color: #888;
+                }
+
+                #items_form .table-pricelist .cell-name > span {
+                    margin: 0;
+                    padding: 0;
+                    position: relative;
+                    -moz-box-sizing: border-box;
+                    -webkit-box-sizing: border-box;
+                    box-sizing: border-box;
+                }
+                #items_form .table-pricelist .cell-name .cell-model {
+                }
+
+
+
+                    /* обработка флажков Скрыть url */
+
+                    #items_form .table-pricelist.table-pricelist-option-caturls-hide .row-category .cell-name .cell-model input[type="text"],
+                    #items_form .table-pricelist.table-pricelist-option-produrls-hide .row-product .cell-name .cell-model input[type="text"] {
+                        padding-bottom: 5px;
+                    }
+                    #items_form .table-pricelist.table-pricelist-option-caturls-hide .row-category .cell-name .cell-url,
+                    #items_form .table-pricelist.table-pricelist-option-produrls-hide .row-product .cell-name .cell-url {
+                        display: none;
+                    }
+
+
+
+                    /* кнопки поля URL */
+
+                    #items_form .table-pricelist .cell-name .translit-branch-url,
+                    #items_form .table-pricelist .cell-name .translit-branch-url-path,
+                    #items_form .table-pricelist .cell-name .reset-branch-url,
+                    #items_form .table-pricelist .cell-name .translit-item-url,
+                    #items_form .table-pricelist .cell-name .reset-item-url {
+                        background: #ccc;
+                        color: #eee;
+                        display: none;
+                        font-size: 7pt;
+                        margin: 2px;
+                        padding: 0;
+                        line-height: 14px;
+                        height: 14px;
+                        width: 14px;
+                        overflow: hidden;
+                        text-align: center;
+                        text-decoration: none;
+                        position: absolute;
+                        bottom: 0;
+                    }
+
+                    #items_form .table-pricelist .cell-name .translit-branch-url,
+                    #items_form .table-pricelist .cell-name .translit-branch-url-path,
+                    #items_form .table-pricelist .cell-name .reset-branch-url {
+                        left: 0;
+                    }
+
+                    #items_form .table-pricelist .cell-name .translit-branch-url {
+                        margin: 2px 2px 2px 20px;
+                    }
+
+                    #items_form .table-pricelist .cell-name .reset-branch-url {
+                        margin: 2px 2px 2px 38px;
+                    }
+
+                    #items_form .table-pricelist .cell-name .translit-item-url,
+                    #items_form .table-pricelist .cell-name .reset-item-url {
+                        right: 0;
+                    }
+
+                    #items_form .table-pricelist .cell-name .reset-item-url {
+                        margin: 2px 20px 2px 2px;
+                    }
+
+                    #items_form .table-pricelist .cell-name > span:hover .translit-branch-url,
+                    #items_form .table-pricelist .cell-name > span:hover .translit-branch-url-path,
+                    #items_form .table-pricelist .cell-name > span:hover .reset-branch-url,
+                    #items_form .table-pricelist .cell-name > span:hover .translit-item-url,
+                    #items_form .table-pricelist .cell-name > span:hover .reset-item-url {
+                        background: #999;
+                    }
+
+
+
+                    /* появление кнопок при наведении на строку */
+
+                    #items_form .table-pricelist tr:hover .cell-name .translit-branch-url,
+                    #items_form .table-pricelist tr:hover .cell-name .translit-branch-url-path,
+                    #items_form .table-pricelist tr:hover .cell-name .reset-branch-url,
+                    #items_form .table-pricelist tr:hover .cell-name .translit-item-url,
+                    #items_form .table-pricelist tr:hover .cell-name .reset-item-url,
+                    #items_form .table-pricelist tr:hover .cell-name .add-subcategory,
+                    #items_form .table-pricelist tr:hover .cell-name .clone-category,
+                    #items_form .table-pricelist tr:hover .cell-name .add-variant,
+                    #items_form .table-pricelist tr:hover .cell-name .clone-product {
+                        display: block;
+                    }
+
+                    #items_form .table-pricelist tr:hover .cell-name input[type="text"] {
+                        padding-left: 10px;
+                        padding-right: 43px;
+                    }
+
+                    #items_form .table-pricelist tr:hover .cell-name input[name^="url"] {
+                        padding: 2px 43px 3px 61px;
+                    }
+                    #items_form .table-pricelist tr.row-product:hover .cell-name input[name^="url"] {
+                        padding-left: 10px;
+                    }
+
+
+
+            /* поле Бренд */
+
+            #items_form .table-pricelist .cell-brand {
+                width: 1px;
+                vertical-align: top;
+            }
+
+                #items_form .table-pricelist .cell-brand input[type="text"] {
+                    width: 150px;
+                    max-width: 150px;
+                    min-width: 150px;
+                }
+
+
+
+            /* поле ИД */
+
+            #items_form .table-pricelist .cell-id {
+                width: 1px;
+                vertical-align: top;
+            }
+
+                #items_form .table-pricelist .cell-id input[type="text"] {
+                    width: 100px;
+                    max-width: 100px;
+                    min-width: 100px;
+                }
+
+
+
+            /* поле Буквенный код товара */
+
+            #items_form .table-pricelist .cell-pcode {
+                width: 1px;
+                vertical-align: top;
+            }
+
+                #items_form .table-pricelist .cell-pcode input[type="text"] {
+                    width: 120px;
+                    max-width: 120px;
+                    min-width: 120px;
+                }
+
+
+
+            /* поле Артикул варианта товара */
+
+            #items_form .table-pricelist .cell-sku {
+                width: 1px;
+                vertical-align: top;
+            }
+
+                #items_form .table-pricelist .cell-sku input[type="text"] {
+                    width: 100px;
+                    max-width: 100px;
+                    min-width: 100px;
+                }
+
+
+
+            /* поле Название варианта товара */
+
+            #items_form .table-pricelist .cell-variant {
+                width: 1px;
+                vertical-align: top;
+            }
+
+                #items_form .table-pricelist .cell-variant input[type="text"] {
+                    width: 150px;
+                    max-width: 150px;
+                    min-width: 150px;
+                }
+
+
+
+            /* поле Цены варианта товара */
+
+            #items_form .table-pricelist .cell-price,
+            #items_form .table-pricelist .cell-oldprice,
+            #items_form .table-pricelist .cell-tempprice,
+            #items_form .table-pricelist .cell-discount,
+            #items_form .table-pricelist .cell-stock {
+                width: 1px;
+                vertical-align: top;
+            }
+
+                #items_form .table-pricelist .cell-price input[type="text"],
+                #items_form .table-pricelist .cell-oldprice input[type="text"],
+                #items_form .table-pricelist .cell-tempprice input[type="text"] {
+                    width: 105px;
+                    max-width: 105px;
+                    min-width: 105px;
+                    text-align: right;
+                }
+
+                #items_form .table-pricelist .cell-discount input[type="text"] {
+                    width: 70px;
+                    max-width: 70px;
+                    min-width: 70px;
+                    text-align: right;
+                }
+
+                #items_form .table-pricelist .cell-stock input[type="text"] {
+                    width: 70px;
+                    max-width: 70px;
+                    min-width: 70px;
+                    text-align: right;
+                }
+
+
+
+            /* поле Шаблон */
+
+            #items_form .table-pricelist .cell-template {
+                width: 1px;
+                vertical-align: top;
+            }
+
+                #items_form .table-pricelist .cell-template input[type="text"] {
+                    width: 200px;
+                    max-width: 200px;
+                    min-width: 200px;
+                }
+
+
+
+            /* флажки-иконки */
+
+            #items_form .table-pricelist .cell-flag {
+                width: 1px;
+            }
+
+            #items_form .table-pricelist .cell-flag:not(.last-flag) {
+                border-right: 0 solid;
+            }
+
+                #items_form .table-pricelist .cell-flag img {
+                    margin: 0 10px -3px 10px;
+                    height: 16px;
+                    width: 16px;
+                }
+
+
+
+            /* заголовки колонок цен */
+
+            #items_form .table-pricelist .cell-th {
+                color: #aaa;
+                font-size: 8pt;
+                padding: 0 10px;
+                width: 1px;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+
+
+            /* флажок */
+
+            #items_form .table-pricelist input.checkbox,
+            #items_form .table-pricelist-options input.checkbox {
+                background: #fff;
+                border: #ccc 1px solid;
+                outline: 0 solid;
+                color: #444;
+                height: 15px;
+                margin: 0;
+                padding: 0;
+                vertical-align: middle;
+                width: 15px;
+            }
+
+
+
+            /* фиктивная ячейка */
+
+            #items_form .table-pricelist .cell-dummy {
+                border-right: transparent 1px solid;
+            }
+
+            #items_form .table-pricelist .row-variant:not(.last-variant) .cell-dummy,
+            #items_form .table-pricelist .row-variant:not(.last-variant) .cell-dummy2 {
+                border-bottom: transparent 1px solid;
+            }
+
+
+
+            /* отредактированное поле */
+
+            #items_form .table-pricelist input.changed {
+                color: #44f !important;
+            }
+
+            #items_form .table-pricelist .cell-flag.changed {
+                background: #c0e0ff;
+            }
+
+
+
+            /* неправильное поле */
+
+            #items_form .table-pricelist input.incorrect {
+                color: #f44 !important;
+                background: #fcc !important;
+            }
+
+
+
+        /* кнопка Сохранить */
+
+        #items_form input[type="submit"] {
+            background: #ddd;
+            border: #bbb 1px solid;
+            outline: #fff 5px solid;
+            color: #47b;
+            display: block;
+            float: none;
+            font-size: 8pt;
+            padding: 0 10px;
+            text-decoration: none;
+            cursor: pointer;
+            height: 25px;
+            width: auto;
+            position: fixed;
+            bottom: 17px;
+            right: 21px;
+        }
+
+        #items_form input[type="submit"]:hover {
+            background: #bbb;
+            border: #999 1px solid;
+            outline: #eee 5px solid;
+            color: #000;
+        }
+
+
+
+        /* всплывающая панель действий для поля ввода */
+
+        .table-pricelist-popup {
+            background: #fff;
+            border: #ccc 1px solid;
+            color: #000;
+            display: none;
+            padding: 0;
+            width: 220px;
+            position: absolute;
+            z-index: 2;
+        }
+
+            .table-pricelist-popup hr {
+                background: #eee;
+                border: 0 solid;
+                display: none;
+                height: 1px;
+                margin: 5px 0;
+                padding: 0;
+            }
+
+            .table-pricelist-popup a {
+                cursor: pointer;
+                display: none;
+                font-size: 8pt;
+                padding: 0 10px;
+                height: 24px;
+                line-height: 24px;
+                overflow: hidden;
+                text-decoration: none;
+            }
+
+            .table-pricelist-popup a:hover {
+                background: #bdf;
+            }
+
+            .table-pricelist-popup a.visible,
+            .table-pricelist-popup a.visible + hr {
+                display: block;
+            }
+
+
+
+        #items_form a,
+        #items_form .cell-flag img,
+        #items_form .cell-flag span,
+        #items_form .cell-flag input[type="checkbox"] {
+            cursor: pointer;
+        }
+    </style>
+
+
+
+    {* <!-- row_category(item, level) = генерация строки категории --> *}
+    {function name = 'row_category'
+              level = 0}
+
+        {call get_item_string item = $item
+                              param = 'category_id'
+                              def = '0'
+                              escaped = true
+                              assign = 'cid'}
+
+
+
+        {* <!-- url категории --> *}
+        {$url = trim($item->url|default:'')}
+        {$url = ($url != '') ? $url : ((!empty($cid)) ? $cid : '')}
+        {$url = $url|escape}
+
+
+
+        {if empty($cid)}
+            {capture assign = 'cid'}
+                0_{math equation = 'rand(1, 2000000000)'}
+            {/capture}
+        {/if}
+
+
+
+        <tr class="row-category" data-level="{$level}" data-id="c{$cid}">
+
+
+
+            {* <!-- признак "пометка на удаление" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'deleted'
+                                 as_icon = true
+                                 image = 'delete'
+                                 text = ''
+                                 class = 'cell-flag cell-delete last-flag'
+                                 title = 'Пометить категорию на удаление'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkQuickDelete(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- ссылка на клиентскую страницу категории --> *}
+            <td class="cell-links cell-link">
+                <a href="{$site}{($item->url_path|default:'')|escape}{$url}" target="_blank" title="Открыть страницу этой категории на сайте">
+                    <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                </a>
+            </td>
+
+
+
+            {* <!-- ссылка на админскую страницу категории --> *}
+            <td class="cell-links cell-link">
+                {$param = ($smarty.const.REQUEST_PARAM_NAME_ITEMID|default:'')|escape}
+                <a href="{$admin_goto}Category&{$param}={$cid}&{$token_request}" target="_blank" title="Открыть страницу этой категории в админпанели">
+                    <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                </a>
+            </td>
+
+
+
+            {* <!-- название категории --> *}
+            <td class="cell-name" colspan="5" style="padding-left: {($level - 1) * 20}px;">
+                <span class="cell-model">
+                    <a class="add-subcategory" onclick="return addCategory(this);" title="Добавить подкатегорию">
+                        +
+                    </a>
+                    <a class="clone-category" onclick="return addCategory(this, true);" title="Добавить копию строки этой категории">
+                        =
+                    </a>
+                    {call get_item_string item = $item
+                                          param = 'name'
+                                          def = 'Без названия!'
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="category[c{$cid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+                <span class="cell-url">
+                    <a class="translit-branch-url" onclick="return confirm('Подтвердите, что это не случайное нажатие кнопки (ведь действие может затронуть серию примыкающих строк таблицы).') && translitBranchURL(this);" title="Транслит URL-ей ветви - сделать URL этой категории и каждой вложенной равным транслиту своего имени">
+                        Т
+                    </a>
+                    <a class="translit-branch-url-path" onclick="return confirm('Подтвердите, что это не случайное нажатие кнопки (ведь действие может затронуть серию примыкающих строк таблицы).') && translitBranchURLPath(this);" title="Объединение и транслит URL-ей ветви - сделать URL этой категории и каждой вложенной равным транслиту всего пути имен, начинающегося с этой категории">
+                        О
+                    </a>
+                    <a class="reset-branch-url" onclick="return confirm('Подтвердите, что это не случайное нажатие кнопки (ведь действие может затронуть серию примыкающих строк таблицы).') && resetBranchURL(this);" title="Вернуть начальное значение этого URL и всех вложенных">
+                        В
+                    </a>
+                    <a class="translit-item-url" onclick="return translitItemURL(this);" title="Транслит URL - сделать только этот URL равным транслиту имени категории">
+                        Т
+                    </a>
+                    <a class="reset-item-url" onclick="return resetInputboxValue(this);" title="Вернуть начальное значение этого URL">
+                        В
+                    </a>
+                    <input name="url[c{$cid}]" maxlength="256" type="text" value="{$url}" data-value="{$url}" title="URL страницы категории (адрес относительно корневой папки магазина)" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- заголовок колонки Бренд --> *}
+            <td class="cell-th cell-brands">
+                бренд
+            </td>
+
+
+
+            {* <!-- ИД категории --> *}
+            <td class="cell-ids cell-id">
+                <span>
+                    <input name="cid[c{$cid}]" readonly maxlength="20" type="text" value="{$cid}" data-value="{$cid}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- заголовок колонки ИД канонического товара --> *}
+            <td class="cell-th cell-ids" nowrap>
+                канон.ид
+            </td>
+
+
+
+            {* <!-- заголовок колонки Буквенный код --> *}
+            <td class="cell-th cell-codes">
+                код
+            </td>
+
+
+
+            {* <!-- заголовок колонки Артикул --> *}
+            <td class="cell-th cell-codes">
+                артикул
+            </td>
+
+
+
+            {* <!-- заголовок колонки Вариант --> *}
+            <td class="cell-th">
+                вариант
+            </td>
+
+
+
+            {* <!-- признак "имеет свой блок на главной" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'own_block'
+                                 as_icon = true
+                                 image = 'required'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag'
+                                 title = 'Имеет ли свой блок на главной странице'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = ''}
+
+
+
+            {* <!-- признак "является информативной страницей" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'informative'
+                                 as_icon = true
+                                 image = 'informative'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag last-flag'
+                                 title = 'Является ли информативной страницей (не показывает список товаров)'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = ''}
+
+
+
+            {* <!-- заголовок колонки Цена --> *}
+            <td class="cell-th cell-prices">
+                цена
+            </td>
+
+
+
+            {* <!-- заголовок колонки Старая цена --> *}
+            <td class="cell-th cell-prices">
+                старая
+            </td>
+
+
+
+            {* <!-- заголовок колонки Акционная цена --> *}
+            <td class="cell-th cell-prices">
+                акция
+            </td>
+
+
+
+            {* <!-- заголовок колонки Приоритетная скидка --> *}
+            <td class="cell-th cell-prices">
+                скидка
+            </td>
+
+
+
+            {* <!-- заголовок колонки Наличие на складе --> *}
+            <td class="cell-th cell-prices">
+                наличие
+            </td>
+
+
+
+            {* <!-- признак "имеет особый URL" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'url_special'
+                                 as_icon = true
+                                 image = 'urlspecial'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag'
+                                 title = 'Имеет ли страница категории особый URL (без catalog/ впереди адреса)'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "выделена визуально" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'highlighted'
+                                 as_icon = true
+                                 image = 'valuable'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag'
+                                 title = 'Выделена ли категория визуально на клиентской стороне сайта'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = ''}
+
+
+
+            {* <!-- признак "скрыта от неавторизованных" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'hidden'
+                                 as_icon = true
+                                 image = 'hidden'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag'
+                                 title = 'Скрыта ли страница категории от неавторизованных посетителей'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "разрешена к показу" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'enabled'
+                                 as_icon = true
+                                 image = 'enabled'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag last-flag'
+                                 title = 'Разрешена ли категория к использованию на клиентской стороне сайта'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "разрешен экспорт в Яндекс.Маркет (канал 1)" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'ymarket'
+                                 as_icon = true
+                                 image = 'ymarket'
+                                 text = ''
+                                 class = 'cell-exports cell-flag'
+                                 title = 'Разрешено ли выводить категорию и ее товары в Яндекс.Маркет (канал 1)'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "разрешен экспорт ВКонтакте" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'vkontakte'
+                                 as_icon = true
+                                 image = 'vkontakte'
+                                 text = ''
+                                 class = 'cell-exports cell-flag'
+                                 title = 'Разрешено ли выводить категорию и ее товары на стены ВКонтакте'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "разрешена в прайсе (номер 1)" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'in_prices'
+                                 as_icon = true
+                                 image = 'done'
+                                 text = ''
+                                 class = 'cell-exports cell-flag'
+                                 title = 'Разрешено ли выводить категорию и ее товары в прайс-лист 1'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "не для RSS" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'rss_disabled'
+                                 as_icon = true
+                                 image = 'notrss'
+                                 text = ''
+                                 class = 'cell-exports cell-flag'
+                                 title = 'Разрешено ли выводить категорию и ее товары в RSS канал'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "не для информеров" --> *}
+            {call items_checkbox item = $item
+                                 id = 'c'|cat:$cid
+                                 param = 'export_disabled'
+                                 as_icon = true
+                                 image = 'notexport'
+                                 text = ''
+                                 class = 'cell-exports cell-flag last-flag'
+                                 title = 'Разрешено ли выводить категорию и ее товары в информеры для партнерских сайтов'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- имя шаблона --> *}
+            <td class="cell-templates cell-template">
+                <span>
+                    {call get_item_string item = $item
+                                          param = 'template'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="template[c{$cid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+        </tr>
+    {/function}
+
+
+
+    {* <!-- row_product(item, level, cid) = генерация строки товара --> *}
+    {function name = 'row_product'
+              level = 0
+              cid = '*'}
+
+        {call get_item_string item = $item
+                              param = 'product_id'
+                              def = '0'
+                              escaped = true
+                              assign = 'pid'}
+
+
+
+        {* <!-- url товара --> *}
+        {$url = trim($item->url|default:'')}
+        {$url = ($url != '') ? $url : ((!empty($pid)) ? $pid : '')}
+        {$url = $url|escape}
+
+
+
+        {if empty($pid)}
+            {capture assign = 'pid'}
+                0_{math equation = 'rand(1, 2000000000)'}
+            {/capture}
+        {/if}
+
+
+
+        <tr class="row-product" data-level="{$level + 1}" data-id="p{$pid}">
+
+
+
+            {* <!-- признак "пометка на удаление" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'deleted'
+                                 as_icon = true
+                                 image = 'delete'
+                                 text = ''
+                                 class = 'cell-flag cell-delete last-flag'
+                                 title = 'Пометить товар на удаление'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkQuickDelete(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- ссылка на клиентскую страницу товара --> *}
+            <td class="cell-links cell-link">
+                <a href="{$site}{($item->url_path|default:'')|escape}{$url}" target="_blank" title="Открыть страницу этого товара на сайте">
+                    <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                </a>
+            </td>
+
+
+
+            {* <!-- ссылка на админскую страницу товара --> *}
+            <td class="cell-links cell-link">
+                {$param = ($smarty.const.REQUEST_PARAM_NAME_ITEMID|default:'')|escape}
+                <a href="{$admin_goto}Product&{$param}={$pid}&{$token_request}" target="_blank" title="Открыть страницу этого товара в админпанели">
+                    <img src="{$admin_theme}images/microicon_showall_9x9.png" />
+                </a>
+            </td>
+
+
+
+            {* <!-- название товара --> *}
+            <td class="cell-name" style="padding-left: {$level * 20}px;">
+                <span class="cell-model">
+                    <a class="add-variant" onclick="return addVariant(this);" title="Добавить вариант товара">
+                        +
+                    </a>
+                    <a class="clone-product" onclick="return addProduct(this, true);" title="Добавить копию строки этого товара">
+                        =
+                    </a>
+                    {call get_item_string item = $item
+                                          param = 'model'
+                                          def = 'Без названия!'
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="model[p{$pid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+                <span class="cell-url">
+                    <a class="translit-item-url" onclick="return translitItemURL(this);" title="Транслит URL - сделать этот URL равным транслиту имени товара">
+                        Т
+                    </a>
+                    <a class="reset-item-url" onclick="return resetInputboxValue(this);" title="Вернуть начальное значение этого поля">
+                        В
+                    </a>
+                    <input name="url[p{$pid}]" maxlength="256" type="text" value="{$url}" data-value="{$url}" title="URL страницы товара (адрес относительно корневой папки магазина)"  onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+                <input name="parent[p{$pid}]" type="hidden" value="c{$cid}" />
+            </td>
+
+
+
+            {* <!-- признак "хит продаж" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'hit'
+                                 as_icon = true
+                                 image = 'hit'
+                                 text = ''
+                                 class = 'cell-states cell-flag'
+                                 title = 'Помечен ли как хит продаж'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "новинка" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'newest'
+                                 as_icon = true
+                                 image = 'newest'
+                                 text = ''
+                                 class = 'cell-states cell-flag'
+                                 title = 'Помечен ли как новинка'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "акционный" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'actional'
+                                 as_icon = true
+                                 image = 'actional'
+                                 text = ''
+                                 class = 'cell-states cell-flag'
+                                 title = 'Помечен ли как акционный'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "скоро в продаже" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'awaited'
+                                 as_icon = true
+                                 image = 'awaited'
+                                 text = ''
+                                 class = 'cell-states cell-flag last-flag'
+                                 title = 'Помечен ли как скоро в продаже'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- название бренда --> *}
+            <td class="cell-brands cell-brand">
+                <span>
+                    {call get_item_string item = $item
+                                          param = 'brand'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="brand[p{$pid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" data-popup="copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+                {call get_item_string item = $item
+                                      param = 'brand_id'
+                                      def = ''
+                                      escaped = true
+                                      assign = 'value'}
+                <input name="brand_id[p{$pid}]" type="hidden" value="{$value}" />
+            </td>
+
+
+
+            {* <!-- ИД товара --> *}
+            <td class="cell-ids cell-id">
+                <span>
+                    <input name="pid[p{$pid}]" readonly maxlength="20" type="text" value="{$pid}" data-value="{$pid}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- ИД канонического товара --> *}
+            <td class="cell-ids cell-id">
+                <span>
+                    {call get_item_string item = $item
+                                          param = 'canonical_id'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    {$value = (empty($value)) ? '' : $value}
+                    <input name="canonical_id[p{$pid}]" maxlength="20" type="text" value="{$value}" data-value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- буквенный код товара --> *}
+            <td class="cell-codes cell-pcode">
+                <span>
+                    {call get_item_string item = $item
+                                          param = 'pcode'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="pcode[p{$pid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- артикул варианта товара --> *}
+            <td class="cell-codes cell-sku">
+                <span>
+                    {call get_item_string item = $item->variants[0]|default:false
+                                          param = 'sku'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="sku[0][p{$pid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- название варианта товара --> *}
+            <td class="cell-variant">
+                <span>
+                    {call get_item_string item = $item->variants[0]|default:false
+                                          param = 'name'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="variant[0][p{$pid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" data-popup="clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- признак "резрешен к обсуждению" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'commented'
+                                 as_icon = true
+                                 image = 'commented'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag'
+                                 title = 'Разрешено ли комментировать товар'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "не для продажи" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'non_usable'
+                                 as_icon = true
+                                 image = 'order_canceled'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag last-flag'
+                                 title = 'Является ли товаром не для продажи (выставлен на витрину лишь в демонстрационных целях)'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- цена варианта товара --> *}
+            <td class="cell-prices cell-price">
+                <span>
+                    {$value = $item->variants[0]->price|default:0}
+                    {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                    <input name="price[0][p{$pid}]" maxlength="16" type="text" value="{$value}" data-value="{$value}" data-popup="copy,copyAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- старая цена варианта товара --> *}
+            <td class="cell-prices cell-oldprice">
+                <span>
+                    {$value = $item->variants[0]->old_price|default:0}
+                    {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                    {$value = ($value == 0) ? '' : $value}
+                    <input name="old_price[0][p{$pid}]" maxlength="16" type="text" value="{$value}" data-value="{$value}" data-popup="copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- акционная цена варианта товара --> *}
+            <td class="cell-prices cell-tempprice">
+                <span>
+                    {$value = $item->variants[0]->temp_price|default:0}
+                    {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                    {$value = ($value == 0) ? '' : $value}
+                    <input name="temp_price[0][p{$pid}]" maxlength="16" type="text" value="{$value}" data-value="{$value}" data-popup="copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- приоритетная скидка варианта товара --> *}
+            <td class="cell-prices cell-discount">
+                <span>
+                    {$value = $item->variants[0]->priority_discount|default:-1}
+                    {$value = ($value < 0) ? '' : ($value|string_format:'%1.2f'|replace:',':'.')}
+                    <input name="priority_discount[0][p{$pid}]" maxlength="6" type="text" value="{$value}" data-value="{$value}" data-popup="nodiscount,nodiscountAll,copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- наличие варианта товара на складе --> *}
+            <td class="cell-prices cell-stock">
+                <span>
+                    {$value = ($item->variants[0]->stock|default:0)|string_format:'%d'}
+                    <input name="stock[0][p{$pid}]" maxlength="12" type="text" value="{$value}" data-value="{$value}" data-popup="min,minAll,max,maxAll,copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- признак "имеет особый URL" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'url_special'
+                                 as_icon = true
+                                 image = 'urlspecial'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag'
+                                 title = 'Имеет ли страница товара особый URL (без products/ впереди адреса)'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "выделен визуально" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'highlighted'
+                                 as_icon = true
+                                 image = 'valuable'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag'
+                                 title = 'Выделен ли товар визуально на клиентской стороне сайта'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "скрыт от неавторизованных" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'hidden'
+                                 as_icon = true
+                                 image = 'hidden'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag'
+                                 title = 'Скрыта ли страница товара от неавторизованных посетителей'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "разрешен к показу" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'enabled'
+                                 as_icon = true
+                                 image = 'enabled'
+                                 text = ''
+                                 class = 'cell-accesses cell-flag last-flag'
+                                 title = 'Разрешен ли товар к использованию на клиентской стороне сайта'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "разрешен экспорт в Яндекс.Маркет (канал 1)" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'ymarket'
+                                 as_icon = true
+                                 image = 'ymarket'
+                                 text = ''
+                                 class = 'cell-exports cell-flag'
+                                 title = 'Разрешено ли выводить товар в Яндекс.Маркет (канал 1)'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "разрешен экспорт ВКонтакте" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'vkontakte'
+                                 as_icon = true
+                                 image = 'vkontakte'
+                                 text = ''
+                                 class = 'cell-exports cell-flag'
+                                 title = 'Разрешено ли выводить товар на стены ВКонтакте'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "разрешен в прайсе (номер 1)" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'in_prices'
+                                 as_icon = true
+                                 image = 'done'
+                                 text = ''
+                                 class = 'cell-exports cell-flag'
+                                 title = 'Разрешено ли выводить товар в прайс-лист 1'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "не для RSS" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'rss_disabled'
+                                 as_icon = true
+                                 image = 'notrss'
+                                 text = ''
+                                 class = 'cell-exports cell-flag'
+                                 title = 'Разрешено ли выводить товар в RSS канал'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- признак "не для информеров" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'export_disabled'
+                                 as_icon = true
+                                 image = 'notexport'
+                                 text = ''
+                                 class = 'cell-exports cell-flag last-flag'
+                                 title = 'Разрешено ли выводить товар в информеры для партнерских сайтов'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkCheckboxChanges(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll,reset,resetAll"'}
+
+
+
+            {* <!-- имя шаблона --> *}
+            <td class="cell-templates cell-template">
+                <span>
+                    {call get_item_string item = $item
+                                          param = 'template'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="template[p{$pid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" data-popup="copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+        </tr>
+    {/function}
+
+
+
+    {* <!-- row_variant(item, level, cid, pid, last) = генерация строки варианта товара --> *}
+    {function name = 'row_variant'
+              level = 0
+              cid = '*'
+              pid = '*'
+              last = false}
+
+        {call get_item_string item = $item
+                              param = 'variant_id'
+                              def = '0'
+                              escaped = true
+                              assign = 'vid'}
+
+
+
+        {if empty($vid)}
+            {capture assign = 'vid'}
+                0_{math equation = 'rand(1, 2000000000)'}
+            {/capture}
+        {/if}
+
+
+
+        <tr class="row-variant{($last) ? ' last-variant' : ''}" data-level="{$level + 1}" data-id="p{$pid}">
+
+
+
+            {* <!-- признак "пометка на удаление" --> *}
+            {call items_checkbox item = $item
+                                 id = 'p'|cat:$pid
+                                 param = 'deleted'
+                                 as_icon = true
+                                 image = 'delete'
+                                 text = ''
+                                 class = 'cell-flag cell-delete cell-dummy'
+                                 title = 'Пометить вариант товара на удаление'
+                                 width = ''
+                                 colspan = 1
+                                 rowspan = 1
+                                 onchange = 'checkQuickDelete(this);'
+                                 options = 'data-popup="setAll,unsetAll,invertAll"'}
+
+
+
+            {* <!-- ссылка на клиентскую страницу товара --> *}
+            {* <!-- ссылка на админскую страницу товара --> *}
+            <td class="cell-links cell-dummy" colspan="2">
+                &nbsp;
+            </td>
+
+            {* <!-- название товара --> *}
+            {* <!-- признак "хит продаж", "новинка", "акционный", "скоро в продаже" --> *}
+            <td class="cell-name cell-dummy" colspan="5">
+                &nbsp;
+            </td>
+
+            {* <!-- название бренда --> *}
+            <td class="cell-brands cell-dummy">
+                &nbsp;
+            </td>
+
+            {* <!-- ИД товара --> *}
+            {* <!-- ИД канонического товара --> *}
+            <td class="cell-ids cell-dummy" colspan="2">
+                &nbsp;
+            </td>
+
+            {* <!-- буквенный код товара --> *}
+            <td class="cell-codes cell-dummy2">
+                &nbsp;
+            </td>
+
+
+
+            {* <!-- артикул варианта товара --> *}
+            <td class="cell-codes cell-sku">
+                <span>
+                    {call get_item_string item = $item|default:false
+                                          param = 'sku'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="sku[v{$vid}][p{$pid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- название варианта товара --> *}
+            <td class="cell-variant">
+                <span>
+                    {call get_item_string item = $item|default:false
+                                          param = 'name'
+                                          def = ''
+                                          escaped = true
+                                          assign = 'value'}
+                    <input name="variant[v{$vid}][p{$pid}]" maxlength="256" type="text" value="{$value}" data-value="{$value}" data-popup="clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- признак "резрешен к обсуждению" --> *}
+            {* <!-- признак "не для продажи" --> *}
+            <td class="cell-accesses cell-dummy2" colspan="2">
+                &nbsp;
+            </td>
+
+
+
+            {* <!-- цена варианта товара --> *}
+            <td class="cell-prices cell-price">
+                <span>
+                    {$value = $item->price|default:0}
+                    {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                    <input name="price[v{$vid}][p{$pid}]" maxlength="16" type="text" value="{$value}" data-value="{$value}" data-popup="copy,copyAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- старая цена варианта товара --> *}
+            <td class="cell-prices cell-oldprice">
+                <span>
+                    {$value = $item->old_price|default:0}
+                    {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                    {$value = ($value == 0) ? '' : $value}
+                    <input name="old_price[v{$vid}][p{$pid}]" maxlength="16" type="text" value="{$value}" data-value="{$value}" data-popup="copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- акционная цена варианта товара --> *}
+            <td class="cell-prices cell-tempprice">
+                <span>
+                    {$value = $item->temp_price|default:0}
+                    {$value = ($value * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                    {$value = ($value == 0) ? '' : $value}
+                    <input name="temp_price[v{$vid}][p{$pid}]" maxlength="16" type="text" value="{$value}" data-value="{$value}" data-popup="copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- приоритетная скидка варианта товара --> *}
+            <td class="cell-prices cell-discount">
+                <span>
+                    {$value = $item->priority_discount|default:-1}
+                    {$value = ($value < 0) ? '' : ($value|string_format:'%1.2f'|replace:',':'.')}
+                    <input name="priority_discount[v{$vid}][p{$pid}]" maxlength="6" type="text" value="{$value}" data-value="{$value}" data-popup="nodiscount,nodiscountAll,copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- наличие варианта товара на складе --> *}
+            <td class="cell-prices cell-stock">
+                <span>
+                    {$value = ($item->stock|default:0)|string_format:'%d'}
+                    <input name="stock[v{$vid}][p{$pid}]" maxlength="12" type="text" value="{$value}" data-value="{$value}" data-popup="min,minAll,max,maxAll,copy,copyAll,clear,clearAll,reset,resetAll" onchange="checkInputboxChanges(this);" onkeyup="checkInputboxChanges(this);" />
+                </span>
+            </td>
+
+
+
+            {* <!-- признак "имеет особый URL" --> *}
+            {* <!-- признак "выделен визуально" --> *}
+            {* <!-- признак "скрыт от неавторизованных" --> *}
+            {* <!-- признак "разрешен к показу" --> *}
+            <td class="cell-accesses cell-dummy" colspan="4">
+                &nbsp;
+            </td>
+
+            {* <!-- признак "разрешен экспорт в Яндекс.Маркет (канал 1)" --> *}
+            {* <!-- признак "разрешен экспорт ВКонтакте" --> *}
+            {* <!-- признак "разрешен в прайсе (номер 1)" --> *}
+            {* <!-- признак "не для RSS" --> *}
+            {* <!-- признак "не для информеров" --> *}
+            <td class="cell-exports cell-dummy" colspan="5">
+                &nbsp;
+            </td>
+
+            {* <!-- имя шаблона --> *}
+            <td class="cell-templates cell-dummy">
+                &nbsp;
+            </td>
+        </tr>
+    {/function}
+
+
+
+    <!-- pre style="text-align: left;">
+        {* print_r($items, TRUE) *}
+    </pre -->
+
+
+
+    {* <!-- всплывающая панель действий для поля ввода --> *}
+    <div class="table-pricelist-popup">
+        <a data-action="nodiscount" onclick="alert('Функция пока не реализована в этом примере!');">
+            никому не даю скидку
+        </a>
+        <a data-action="nodiscountAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            нет скидок на этот и все ниже
+        </a>
+
+        <hr />
+
+        <a data-action="max" onclick="alert('Функция пока не реализована в этом примере!');">
+            на складе много
+        </a>
+        <a data-action="maxAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            много этого и всех ниже
+        </a>
+
+        <hr />
+
+        <a data-action="min" onclick="alert('Функция пока не реализована в этом примере!');">
+            остался всего один
+        </a>
+        <a data-action="minAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            один этот и то же все ниже
+        </a>
+
+        <hr />
+
+        <a data-action="setAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            выбрать этот и все ниже
+        </a>
+        <a data-action="unsetAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            снять этот и все ниже
+        </a>
+        <a data-action="invertAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            сменить этот и все ниже
+        </a>
+
+        <hr />
+
+        <a data-action="copy" onclick="alert('Функция пока не реализована в этом примере!');">
+            скопировать в следующий
+        </a>
+        <a data-action="copyAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            скопировать во все ниже
+        </a>
+
+        <hr />
+
+        <a data-action="clear" onclick="alert('Функция пока не реализована в этом примере!');">
+            очистить
+        </a>
+        <a data-action="clearAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            очистить это и все ниже
+        </a>
+
+        <hr />
+
+        <a data-action="reset" onclick="alert('Функция пока не реализована в этом примере!');">
+            вернуть начальное состояние
+        </a>
+        <a data-action="resetAll" onclick="alert('Функция пока не реализована в этом примере!');">
+            вернуть в этом и во всех ниже
+        </a>
+    </div>
+
+
+
+    {* <!-- форма со списком записей --> *}
+    <form action="{$admin_goto}{$module_pointer|escape}" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);" style="background: #fff; position: absolute; left: 0; right: 0; top: 0; padding: 0; margin: 93px 0 0 0; min-height: 200px;">
+
+
+
+        <table class="table-pricelist-options" border="0" cellpadding="0" cellspacing="0">
+            <tr>
+                <td class="cell-flag" nowrap>
+                    скрыть:
+                </td>
+
+
+
+                {* <!-- флажок Скрыть ссылки на страницы --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть ссылки на страницы">
+                    <input class="checkbox" id="items_form_options_links_hide" type="checkbox" value="1" checked onchange="toggleTablePricelistOption(this, 'links-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_links_hide');">
+                        ссылки
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть url категорий --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть поля URL категорий">
+                    <input class="checkbox" id="items_form_options_caturls_hide" type="checkbox" value="1" checked onchange="toggleTablePricelistOption(this, 'caturls-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_caturls_hide');">
+                        url категорий
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть url товаров --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть поля URL товаров">
+                    <input class="checkbox" id="items_form_options_produrls_hide" type="checkbox" value="1" checked onchange="toggleTablePricelistOption(this, 'produrls-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_produrls_hide');">
+                        url
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть товары --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть строки товаров">
+                    <input class="checkbox" id="items_form_options_products_hide" type="checkbox" value="1" onchange="toggleTablePricelistOption(this, 'products-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_products_hide');">
+                        товары
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть бренды --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть колонку бренда">
+                    <input class="checkbox" id="items_form_options_brands_hide" type="checkbox" value="1" onchange="toggleTablePricelistOption(this, 'brands-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_brands_hide');">
+                        бренды
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть ИДы --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть колонки идентификатора категории/товара и идентификатора канонического товара">
+                    <input class="checkbox" id="items_form_options_ids_hide" type="checkbox" value="1" checked onchange="toggleTablePricelistOption(this, 'ids-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_ids_hide');">
+                        ИДы
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть коды --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть колонки буквенного кода и артикула">
+                    <input class="checkbox" id="items_form_options_codes_hide" type="checkbox" value="1" onchange="toggleTablePricelistOption(this, 'codes-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_codes_hide');">
+                        коды
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть цены --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть колонки цен, приоритетной скидки и наличия на складе">
+                    <input class="checkbox" id="items_form_options_prices_hide" type="checkbox" value="1" onchange="toggleTablePricelistOption(this, 'prices-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_prices_hide');">
+                        цены
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть доступы --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть колонки флажков доступа">
+                    <input class="checkbox" id="items_form_options_accesses_hide" type="checkbox" value="1" checked onchange="toggleTablePricelistOption(this, 'accesses-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_accesses_hide');">
+                        доступы
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть экспорты --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть колонки флажков доступа">
+                    <input class="checkbox" id="items_form_options_exports_hide" type="checkbox" value="1" checked onchange="toggleTablePricelistOption(this, 'exports-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_exports_hide');">
+                        экспорты
+                    </span>
+                </td>
+
+
+
+                {* <!-- флажок Скрыть шаблоны страниц --> *}
+                <td class="cell-flag" nowrap title="Показать / скрыть колонку имени шаблона страницы">
+                    <input class="checkbox" id="items_form_options_templates_hide" type="checkbox" value="1" checked onchange="toggleTablePricelistOption(this, 'templates-hide');" /> {**}
+                    <span onclick="Toggle_PageCheckbox('items_form_options_templates_hide');">
+                        шаблоны
+                    </span>
+                </td>
+
+
+
+                {* <!-- ссылка Проверить коллизии кодов --> *}
+                <td class="cell-flag" nowrap width="100%" style="text-align: right;">
+                    <a onclick="return findConflictCodes(this);" title="Проверить буквенные коды и артикулы на уникальность">
+                        коллизии кодов
+                    </a>
+                </td>
+
+
+
+                {* <!-- ссылка Проверить коллизии URL --> *}
+                <td class="cell-flag" nowrap title="Проверить URL страниц на уникальность">
+                    <a onclick="return findConflictURL(this);">
+                        коллизии url
+                    </a>
+                </td>
+            </tr>
+        </table>
+
+
+
+        <table class="table-pricelist table-pricelist-option-links-hide table-pricelist-option-caturls-hide table-pricelist-option-produrls-hide table-pricelist-option-ids-hide table-pricelist-option-accesses-hide table-pricelist-option-exports-hide table-pricelist-option-templates-hide" border="0" cellpadding="0" cellspacing="0">
+
+
+
+            {* <!-- если получены записи о категориях --> *}
+            {if isset($items) && is_array($items) && !empty($items)}
+
+
+
+                {* <!-- cats_tree(cats, level) = генерация строк категорий и товаров --> *}
+                {function name = 'cats_tree'
+                          level = 1}
+
+                    {* <!-- перебираем категории --> *}
+                    {foreach $cats as $c}
+                        {row_category item = $c
+                                      level = $level}
+
+
+
+                        {* <!-- если в категории есть товары --> *}
+                        {$exists = isset($c->products) && is_array($c->products) && !empty($c->products)}
+                        {if $exists}
+                            {$cid = $c->category_id|default:0}
+                            {foreach $c->products as $r}
+                                {row_product item = $r
+                                             level = $level
+                                             cid = 'c'|cat:$cid}
+
+
+
+                                {* <!-- если у товара несколько вариантов --> *}
+                                {if isset($r->variants) && is_array($r->variants) && count($r->variants) > 1}
+                                    {$pid = $r->product_id|default:0}
+                                    {foreach $r->variants as $i => $v}
+                                        {if $i != 0}
+                                            {row_variant item = $v
+                                                         level = $level
+                                                         cid = 'c'|cat:$cid
+                                                         pid = 'p'|cat:$pid
+                                                         last = $v@last}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            {/foreach}
+                        {/if}
+
+
+
+                        {* <!-- обрабатываем вложенные категории --> *}
+                        {if isset($c->subitems) && is_array($c->subitems) && !empty($c->subitems)}
+                            {cats_tree cats = $c->subitems
+                                       level = $level + 1}
+                        {/if}
+                    {/foreach}
+
+                {/function}
+
+
+
+                {cats_tree cats = $items}
+
+
+
+            {* <!-- иначе нет категорий, имитируем первую --> *}
+            {else}
+                {$c = ['name'        => 'Первая категория',
+                       'category_id' => 1,
+                       'url'         => '']}
+                {row_category item = $c
+                              level = 1}
+            {/if}
+
+
+
+        </table>
+
+
+
+        {* <!-- кнопка Сохранить --> *}
+        <input class="submit" type="submit" value="Сохранить" />
+
+
+
+        {* <!-- пустой указатель требуемой команды --> *}
+        {hidden_editbox param = 'REQUEST_PARAM_NAME_ACTION'
+                        id = true
+                        value = ''}
+
+
+
+        {* <!-- признак отмены постинга --> *}
+        {hidden_editbox param = 'REQUEST_PARAM_NAME_IGNORE_POST'
+                        id = true
+                        value = '1'}
+
+
+
+        {* <!-- признак мини постинга (без некоторых полей записи) --> *}
+        {hidden_editbox param = 'REQUEST_PARAM_NAME_POST_MINI'
+                        id = false
+                        value = '1'}
+
+
+
+        {* <!-- аутентификатор операции --> *}
+        {hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                        id = false
+                        value = true}
+
+    </form>
+
+
+
+    {* <!-- вспомогательные скрипты --> *}
+    <script language="JavaScript" type="text/javascript">
+
+
+
+        {* // приклеивание таблицы флажков "Показать / скрыть" к верху экрана при скроллинге *}
+
+        var scrollControlObjectScrolled = false,
+            scrollControlObjectY = 93,
+            scrollControlObject = jQuery('.table-pricelist-options');
+
+        window.addEventListener('scroll', function (event) {
+            if (!scrollControlObjectScrolled) {
+                scrollControlObjectScrolled = true;
+                scrollControlObjectHandler();
+            }
+        }, false);
+
+        function scrollControlObjectHandler () {
+            try {
+                var sy = window.pageYOffset || document.documentElement.scrollTop;
+                if (sy >= scrollControlObjectY) {
+                    jQuery(scrollControlObject).addClass('table-pricelist-options-fixed');
+                } else {
+                    jQuery(scrollControlObject).removeClass('table-pricelist-options-fixed');
+                }
+            } catch (e) { }
+            scrollControlObjectScrolled = false;
+        }
+
+
+
+        {* // всплывающее окно дополнительных действий над полем ввода *}
+
+        jQuery(document).ready(function () {
+            var popupControlObject = jQuery('.table-pricelist-popup');
+
+            jQuery(popupControlObject).hover(function () { },
+            function ( el ) {
+                if (typeof(this.popupControlObjectOwner) == 'undefined' || this.popupControlObjectOwner != el.relatedTarget) {
+                    jQuery(this).hide();
+                    this.popupControlObjectOwner = null;
+                }
+            });
+
+            jQuery('[data-popup]').hover(function () {
+                jQuery(popupControlObject).find('a').removeClass('visible');
+                var acts = jQuery(this).attr('data-popup');
+                acts = acts.split(',');
+                var name = '';
+                var value = '';
+                var changed = false;
+                var ok = false;
+                for (var i = 0; i < acts.length; i++) {
+                    name = jQuery.trim(acts[i]);
+                    if (this.tagName == 'INPUT') {
+                        value = jQuery(this).val();
+                        changed = jQuery(this).attr('data-value') != value;
+                    } else {
+                        value = jQuery(this).find('input').first().val();
+                        changed = jQuery(this).attr('data-value') != value;
+                    }
+                    value = jQuery.trim(value);
+                    if (name == 'clear' && value == '') name = '';
+                    if (name == 'reset' && !changed) name = '';
+                    if (name != '') {
+                        jQuery(popupControlObject).find('a[data-action="' + name + '"]').addClass('visible');
+                        ok = true;
+                    }
+                }
+                if (ok) {
+                    var pos = jQuery(this).offset();
+                    if (pos.left < 100) {
+                        var w = jQuery(this).width();
+                        var offset = -5;
+                    } else {
+                        var w = jQuery(popupControlObject).width() * -1;
+                        var offset = 5;
+                    }
+                    var h = jQuery(this).height();
+                    var x = pos.left + w + offset;
+                    var y = pos.top + h - 5;
+                    jQuery(popupControlObject).animate({ left: x, top: y }, 0).show();
+                    popupControlObject[0].popupControlObjectOwner = this;
+                }
+            },
+            function ( el ) {
+                if (!jQuery(el.relatedTarget).hasClass('table-pricelist-popup')) {
+                    jQuery(popupControlObject).hide();
+                }
+            });
+        });
+
+
+
+        if (typeof(toggleCheckboxIcon) != 'function') {
+            function toggleCheckboxIcon ( object, checked, icon ) {
+                try {
+                    var url = '{$admin_theme}images/icon_' + icon + (checked ? '' : '_off') + '_16x16.png';
+                    object = jQuery(object).parent()
+                                           .find('span')
+                                           .find('img');
+                    jQuery(object).attr('src', url);
+                    if (checked) {
+                        jQuery(object).removeClass('icon16x16-key-off');
+                    } else {
+                        jQuery(object).addClass('icon16x16-key-off');
+                    }
+                } catch (e) { }
+            }
+        }
+
+
+
+        if (typeof(translitPageURL) != 'function') {
+            function translitPageURL ( name ) {
+                var rus = new Array('А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ё',  'Ж',  'З', 'И', 'Й', 'К', 'Л', 'М', 'Н', 'О', 'П', 'Р', 'С', 'Т', 'У', 'Ф', 'Х', 'Ц', 'Ч',  'Ш',  'Щ',    'Ъ', 'Ы', 'Ь', 'Э', 'Ю',  'Я',  'а', 'б', 'в', 'г', 'д', 'е', 'ё',  'ж',  'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч',  'ш',  'щ',    'ъ', 'ы', 'ь', 'э', 'ю',  'я');
+                var eng = new Array('a', 'b', 'v', 'g', 'd', 'e', 'jo', 'zh', 'z', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'h', 'c', 'ch', 'sh', 'shch', '',  'y', '',  'e', 'ju', 'ja', 'a', 'b', 'v', 'g', 'd', 'e', 'jo', 'zh', 'z', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'h', 'c', 'ch', 'sh', 'shch', '',  'y', '',  'e', 'ju', 'ja');
+                var alen = rus.length;
+                var nlen = name.length;
+                var url = '';
+                var c = '';
+                name = name.toLowerCase();
+                for (var i = 0; i < nlen; i++) {
+                    c = name.charAt(i, 1);
+                    for (j = 0; j < alen; j++) {
+                        if (c == rus[j]) {
+                            url += eng[j];
+                            c = '';
+                            break;
+                        }
+                    }
+                    url += c;
+                }
+                return url;
+            }
+        }
+
+
+
+        if (typeof(generatePageURL) != 'function') {
+            function generatePageURL ( name ) {
+                var url = name.replace(/^[\s \t\r\n]+/g, '');
+                url = url.replace(/[\s \t\r\n]+$/g, '');
+                url = url.replace(/[^0-9a-zа-яё]+/ig, '-');
+                url = translitPageURL(url);
+                url = url.replace(/[^0-9a-z]+$/g, '');
+                return url;
+            }
+        }
+
+
+
+        if (typeof(checkInputboxChanges) != 'function') {
+            function checkInputboxChanges ( ptr ) {
+                try {
+                    var prev = jQuery.trim(jQuery(ptr).attr('data-value'));
+                    var value = jQuery.trim(jQuery(ptr).val());
+                    var changed = value != prev;
+                    jQuery(ptr).removeClass('changed');
+                    if (changed) jQuery(ptr).removeClass('incorrect').addClass('changed');
+                    return changed;
+                } catch (e) { }
+                return false;
+            }
+        }
+
+
+
+        if (typeof(resetInputboxValue) != 'function') {
+            function resetInputboxValue ( ptr, topmost ) {
+                try {
+                    if (!topmost) ptr = jQuery(ptr).closest('span');
+                    ptr = jQuery(ptr).find('input[type="text"]');
+                    var prev = jQuery(ptr).attr('data-value');
+                    jQuery(ptr).val(prev).change();
+                } catch (e) { }
+                return false;
+            }
+        }
+
+
+
+        if (typeof(checkCheckboxChanges) != 'function') {
+            function checkCheckboxChanges ( ptr ) {
+                try {
+                    if (jQuery(ptr).attr('type') == 'checkbox') {
+                        var prev = jQuery(ptr).attr('data-value') == 1;
+                        if (('length' in ptr) && (ptr.length > 0)) ptr = ptr[0];
+                        var value = ('checked' in ptr) ? ptr.checked : false;
+                        var changed = value != prev;
+                        ptr = jQuery(ptr).parent();
+                        jQuery(ptr).removeClass('changed');
+                        if (changed) jQuery(ptr).addClass('changed');
+                        return changed;
+                    }
+                } catch (e) { }
+                return false;
+            }
+        }
+
+
+
+        if (typeof(checkQuickDelete) != 'function') {
+            function checkQuickDelete ( ptr ) {
+                try {
+                    var next = null;
+                    var next_id = '';
+                    var next_level = 1;
+
+                    if (jQuery(ptr).attr('type') == 'checkbox') {
+                        if (('length' in ptr) && (ptr.length > 0)) ptr = ptr[0];
+                        if (('checked' in ptr) && ptr.checked) {
+
+                            ptr = jQuery(ptr).closest('tr');
+                            var level = jQuery(ptr).attr('data-level');
+                            var id = jQuery(ptr).attr('data-id');
+
+                            if (id.replace(/^(c|p)0_[0-9]+$/, '0') == '0') {
+                                if (jQuery(ptr).hasClass('row-category')
+                                || jQuery(ptr).hasClass('row-product')
+                                || jQuery(ptr).hasClass('row-variant')) {
+                                    do {
+                                        next = jQuery(ptr).next('tr');
+                                        jQuery(ptr).remove();
+                                        ptr = next;
+
+                                        if (!jQuery(ptr).hasClass('row-category')
+                                        && !jQuery(ptr).hasClass('row-product')
+                                        && !jQuery(ptr).hasClass('row-variant')) break;
+
+                                        next_id = jQuery(ptr).attr('data-id');
+                                        next_level = jQuery(ptr).attr('data-level');
+                                    } while (next_id == id || next_level > level);
+                                }
+                            }
+                        }
+                    }
+                } catch (e) { }
+                return false;
+            }
+        }
+
+
+
+        function translitItemURL ( ptr, topmost ) {
+            try {
+                if (!topmost) ptr = jQuery(ptr).closest('.cell-name');
+                var name = jQuery(ptr).find('input[name^="category"], input[name^="model"]').val();
+                name = generatePageURL(name);
+                jQuery(ptr).find('input[name^="url"]').val(name).change();
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function translitBranchURL ( ptr ) {
+            try {
+                var name = '';
+                var count1 = 0;
+                var count2 = 0;
+                var level = 0;
+
+                ptr = jQuery(ptr).closest('.row-category');
+                var topmost = jQuery(ptr).attr('data-level');
+
+                do {
+                    name = jQuery(ptr).find('input[name^="category"], input[name^="model"]');
+                    if (name.length > 0) {
+                        name = name[0];
+                        name = jQuery(name).val();
+                        name = generatePageURL(name);
+                        jQuery(ptr).find('input[name^="url"]').val(name).change();
+
+                        if (jQuery(ptr).hasClass('row-category')) {
+                            count1++;
+                        } else if (jQuery(ptr).hasClass('row-product')) {
+                            count2++;
+                        }
+                    }
+
+                    ptr = jQuery(ptr).next('tr');
+                    if (!jQuery(ptr).hasClass('row-category')
+                    && !jQuery(ptr).hasClass('row-product')
+                    && !jQuery(ptr).hasClass('row-variant')) break;
+                    level = jQuery(ptr).attr('data-level');
+                } while (level > topmost);
+
+                if (count1 == 0) {
+                    alert('Действие выполнено. Было обработано ' + count2 + ' товаров.');
+                } else if (count2 == 0) {
+                    alert('Действие выполнено. Было обработано ' + count1 + ' категорий.');
+                } else {
+                    alert('Действие выполнено. Было обработано ' + count1 + ' категорий и ' + count2 + ' товаров.');
+                }
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function resetBranchURL ( ptr ) {
+            try {
+                var element = null;
+                var prev = '';
+                var count1 = 0;
+                var count2 = 0;
+                var level = 0;
+
+                ptr = jQuery(ptr).closest('.row-category');
+                var topmost = jQuery(ptr).attr('data-level');
+
+                do {
+                    element = jQuery(ptr).find('input[name^="url"]');
+                    if (element.length > 0) {
+                        element = element[0];
+                        prev = jQuery(element).attr('data-value');
+                        jQuery(element).val(prev).change();
+
+                        if (jQuery(ptr).hasClass('row-category')) {
+                            count1++;
+                        } else if (jQuery(ptr).hasClass('row-product')) {
+                            count2++;
+                        }
+                    }
+
+                    ptr = jQuery(ptr).next('tr');
+                    if (!jQuery(ptr).hasClass('row-category')
+                    && !jQuery(ptr).hasClass('row-product')
+                    && !jQuery(ptr).hasClass('row-variant')) break;
+                    level = jQuery(ptr).attr('data-level');
+                } while (level > topmost);
+
+                if (count1 == 0) {
+                    alert('Действие выполнено. Было обработано ' + count2 + ' товаров.');
+                } else if (count2 == 0) {
+                    alert('Действие выполнено. Было обработано ' + count1 + ' категорий.');
+                } else {
+                    alert('Действие выполнено. Было обработано ' + count1 + ' категорий и ' + count2 + ' товаров.');
+                }
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function translitBranchURLPath ( ptr ) {
+            try {
+                var name = '';
+                var count1 = 0;
+                var count2 = 0;
+                var level = 0;
+                var prev = 0;
+
+                ptr = jQuery(ptr).closest('.row-category');
+                var topmost = jQuery(ptr).attr('data-level');
+                var path = '';
+
+                do {
+                    prev = level;
+                    name = jQuery(ptr).find('input[name^="category"], input[name^="model"]');
+                    if (name.length > 0) {
+                        name = name[0];
+                        name = jQuery(name).val();
+                        name = generatePageURL(name);
+                        if (name == '') name = 'empty';
+                        jQuery(ptr).find('input[name^="url"]').val(path + name).addClass('changed');
+
+                        if (jQuery(ptr).hasClass('row-category')) {
+                            count1++;
+                        } else if (jQuery(ptr).hasClass('row-product')) {
+                            count2++;
+                        }
+                    } else {
+                        name = 'variant';
+                    }
+
+                    ptr = jQuery(ptr).next('tr');
+                    if (!jQuery(ptr).hasClass('row-category')
+                    && !jQuery(ptr).hasClass('row-product')
+                    && !jQuery(ptr).hasClass('row-variant')) break;
+                    level = jQuery(ptr).attr('data-level');
+
+                    if (level > prev) {
+                        path += name + '/';
+                    } else if (level < prev) {
+                        path = path.replace(/\/[^\/]+\/$/g, '/');
+                    }
+                } while (level > topmost);
+
+                if (count1 == 0) {
+                    alert('Действие выполнено. Было обработано ' + count2 + ' товаров.');
+                } else if (count2 == 0) {
+                    alert('Действие выполнено. Было обработано ' + count1 + ' категорий.');
+                } else {
+                    alert('Действие выполнено. Было обработано ' + count1 + ' категорий и ' + count2 + ' товаров.');
+                }
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function addCategory ( ptr, as_clone ) {
+            try {
+                if (typeof(as_clone) == 'undefined') as_clone = false;
+
+                var next = jQuery(ptr).closest('.row-category');
+                if (next.length > 0) {
+                    var src = next[0];
+                    var html = src.outerHTML;
+
+                    var level = jQuery(next).attr('data-level');
+                    if (level < 1) level = 1;
+                    var new_level = level;
+                    if (!as_clone) new_level++;
+
+                    var cid = jQuery(next).attr('data-id');
+                    var id = 'c0_' + Math.floor(Math.random() * 2000000000);
+
+                    var r = new RegExp('\\[' + cid + '\\]', 'g');
+                    html = html.replace(r, '[' + id + ']');
+                    r = new RegExp('_' + cid + '_', 'g');
+                    html = html.replace(r, '_' + id + '_');
+
+                    do {
+                        ptr = next;
+                        next = jQuery(next).next('tr');
+                    } while (jQuery(next).hasClass('row-product')
+                             || jQuery(next).hasClass('row-variant')
+                             || jQuery(next).hasClass('row-category') && jQuery(next).attr('data-level') > level);
+                    jQuery(ptr).after(html);
+
+                    ptr = jQuery(ptr).next('.row-category');
+
+                    if (as_clone) level--;
+                    jQuery(ptr).attr('data-level', new_level)
+                               .attr('data-id', id)
+                               .find('.cell-name')
+                               .attr('style', 'padding-left: ' + (level * 20) + 'px;');
+
+                    var inputs1 = jQuery(src).find('input[type="text"], input[type="checkbox"]');
+                    var inputs2 = jQuery(ptr).find('input[type="text"], input[type="checkbox"]');
+                    var name1 = '';
+                    var name2 = '';
+                    for (var i = 0; i < inputs1.length; i++) {
+                        if (typeof(inputs2[i]) != 'undefined') {
+                            name1 = jQuery(inputs1[i]).attr('name');
+                            name2 = jQuery(inputs2[i]).attr('name');
+                            name1 = name1.replace(/\[[^\]]+\]$/, '');
+                            name2 = name2.replace(/\[[^\]]+\]$/, '');
+                            if (name1 == name2) {
+                                if (jQuery(inputs1[i]).attr('type') == 'text') {
+                                    if (name1 == 'cid' || name1 == 'url') {
+                                        jQuery(inputs2[i]).val('').attr('data-value', '');
+                                    } else {
+                                        jQuery(inputs2[i]).val(jQuery(inputs1[i]).val());
+                                    }
+                                } else {
+                                    inputs2[i].checked = inputs1[i].checked;
+                                }
+                            }
+                        }
+                    }
+
+                    if (as_clone) {
+                        jQuery(ptr).find('input[type="text"]')
+                                   .attr('data-value', '');
+                    } else {
+                        jQuery(ptr).find('input[type="text"]')
+                                   .val('')
+                                   .attr('data-value', '');
+                    }
+                    jQuery(ptr).find('input').removeClass('changed').change();
+
+                    jQuery(ptr).find('input[type="text"]').first().focus();
+                }
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function addProduct ( ptr, as_clone ) {
+            try {
+                if (typeof(as_clone) == 'undefined') as_clone = false;
+
+                var next = jQuery(ptr).closest('.row-product');
+                if (next.length > 0) {
+                    var src = next[0];
+                    var html = src.outerHTML;
+
+                    var pid = jQuery(next).attr('data-id');
+                    var id = 'p0_' + Math.floor(Math.random() * 2000000000);
+
+                    var r = new RegExp('\\[' + pid + '\\]', 'g');
+                    html = html.replace(r, '[' + id + ']');
+                    r = new RegExp('_' + pid + '_', 'g');
+                    html = html.replace(r, '_' + id + '_');
+
+                    do {
+                        ptr = next;
+                        next = jQuery(next).next('tr');
+                    } while (jQuery(next).hasClass('row-variant'));
+                    jQuery(ptr).after(html);
+
+                    ptr = jQuery(ptr).next('.row-product');
+
+                    jQuery(ptr).attr('data-id', id);
+
+                    var inputs1 = jQuery(src).find('input[type="text"], input[type="checkbox"]');
+                    var inputs2 = jQuery(ptr).find('input[type="text"], input[type="checkbox"]');
+                    var name1 = '';
+                    var name2 = '';
+                    for (var i = 0; i < inputs1.length; i++) {
+                        if (typeof(inputs2[i]) != 'undefined') {
+                            name1 = jQuery(inputs1[i]).attr('name');
+                            name2 = jQuery(inputs2[i]).attr('name');
+                            name1 = name1.replace(/(\[[^\]]+\])+$/, '');
+                            name2 = name2.replace(/(\[[^\]]+\])+$/, '');
+                            if (name1 == name2) {
+                                if (jQuery(inputs1[i]).attr('type') == 'text') {
+                                    if (name1 == 'pid' || name1 == 'url' || name1 == 'pcode' || name1 == 'sku') {
+                                        jQuery(inputs2[i]).val('').attr('data-value', '');
+                                    } else {
+                                        jQuery(inputs2[i]).val(jQuery(inputs1[i]).val());
+                                    }
+                                } else {
+                                    inputs2[i].checked = inputs1[i].checked;
+                                }
+                            }
+                        }
+                    }
+
+                    if (as_clone) {
+                        jQuery(ptr).find('input[type="text"]')
+                                   .attr('data-value', '');
+                    } else {
+                        jQuery(ptr).find('input[type="text"]')
+                                   .val('')
+                                   .attr('data-value', '');
+                    }
+                    jQuery(ptr).find('input').removeClass('changed').change();
+
+                    jQuery(ptr).find('input[type="text"]').first().focus();
+                }
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function addVariant ( ptr, as_clone ) {
+            try {
+                if (typeof(as_clone) == 'undefined') as_clone = false;
+
+                var next = jQuery(ptr).closest('tr');
+                if (next.length > 0) {
+                    var src = next[0];
+                    if (jQuery(src).hasClass('row-product')
+                    || jQuery(src).hasClass('row-variant')) {
+                        var html = src.outerHTML;
+alert('Действие этой кнопки еще не реализовано в этом примере!');
+                    }
+                }
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function toggleTablePricelistOption ( ptr, name ) {
+            try {
+                var state = ptr.checked;
+                ptr = jQuery(ptr).closest('form').find('.table-pricelist');
+
+                jQuery(ptr).removeClass('table-pricelist-option-' + name);
+                if (state) jQuery(ptr).addClass('table-pricelist-option-' + name);
+
+                if (name == 'caturls-hide') {
+                    jQuery(ptr).find('tr.row-category.row-show-url').removeClass('row-show-url');
+                } else if (name == 'produrls-hide') {
+                    jQuery(ptr).find('tr.row-product.row-show-url').removeClass('row-show-url');
+                }
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function findConflictCodes ( ptr ) {
+            try {
+                var count = 0;
+                var value = '';
+                var codes1 = new Array();
+                var codes2 = new Array();
+
+                var trs = jQuery(ptr).closest('form').find('.table-pricelist tr');
+                var tr = null;
+
+                for (var i = 0; i < trs.length; i++) {
+                    tr = trs[i];
+                    if (jQuery(tr).hasClass('row-product') || jQuery(tr).hasClass('row-variant')) {
+
+                        ptr = jQuery(tr).find('input[name^="deleted"]');
+                        if (ptr.length > 0 && !ptr[0].checked) {
+
+                            ptr = jQuery(tr).find('input[name^="pcode"]');
+                            if (ptr.length > 0) {
+                                ptr = ptr[0];
+                                jQuery(ptr).removeClass('incorrect');
+
+                                value = jQuery.trim(jQuery(ptr).val());
+                                if (value != '') {
+                                    value = value.toLowerCase();
+
+                                    if (typeof(codes1[value]) == 'undefined') {
+                                        codes1[value] = ptr;
+                                    } else {
+                                        count++;
+                                        jQuery(ptr).addClass('incorrect');
+
+                                        if (typeof(codes1[value]) == 'object') {
+                                            count++;
+                                            jQuery(codes1[value]).removeClass('incorrect').addClass('incorrect');
+                                            codes1[value] == '';
+                                        }
+                                    }
+                                }
+                            }
+
+                            ptr = jQuery(tr).find('input[name^="sku"]');
+                            if (ptr.length > 0) {
+                                ptr = ptr[0];
+                                jQuery(ptr).removeClass('incorrect');
+
+                                value = jQuery.trim(jQuery(ptr).val());
+                                if (value != '') {
+                                    value = value.toLowerCase();
+
+                                    if (typeof(codes2[value]) == 'undefined') {
+                                        codes2[value] = ptr;
+                                    } else {
+                                        count++;
+                                        jQuery(ptr).addClass('incorrect');
+
+                                        if (typeof(codes2[value]) == 'object') {
+                                            count++;
+                                            jQuery(codes2[value]).removeClass('incorrect').addClass('incorrect');
+                                            codes2[value] == '';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (count > 0) {
+                    alert('Обнаружено ' + count + ' конфликтующих буквенных кодов или артикулов. Эти коды подсвечены.');
+                } else {
+                    alert('Конфликты в кодах товаров или их артикулах не найдены.');
+                }
+            } catch (e) { }
+            return false;
+        }
+
+
+
+        function findConflictURL ( ptr ) {
+            try {
+                var count = 0;
+                var value = '';
+                var url_path = '';
+                var urls = new Array();
+
+                var trs = jQuery(ptr).closest('form').find('.table-pricelist tr');
+                var tr = null;
+
+                for (var i = 0; i < trs.length; i++) {
+                    tr = trs[i];
+                    if (jQuery(tr).hasClass('row-category') || jQuery(tr).hasClass('row-product')) {
+
+                        jQuery(tr).removeClass('row-show-url');
+                        ptr = jQuery(tr).find('input[name^="deleted"]');
+                        if (ptr.length > 0 && !ptr[0].checked) {
+
+                            ptr = jQuery(tr).find('input[name^="url_special"]');
+                            url_path = '';
+                            if (ptr.length > 0) {
+                                if (jQuery(tr).hasClass('row-category')) {
+                                    url_path = ptr[0].checked ? '' : 'catalog/';
+                                } else {
+                                    url_path = ptr[0].checked ? '' : 'products/';
+                                }
+                            }
+
+                            ptr = jQuery(tr).find('input[name^="url"]');
+                            if (ptr.length > 0) {
+                                ptr = ptr[0];
+                                jQuery(ptr).removeClass('incorrect');
+
+                                value = jQuery.trim(jQuery(ptr).val());
+                                if (value != '') {
+                                    value = url_path + value.toLowerCase();
+
+                                    if (typeof(urls[value]) == 'undefined') {
+                                        urls[value] = ptr;
+                                    } else {
+                                        count++;
+                                        jQuery(tr).addClass('row-show-url');
+                                        jQuery(ptr).addClass('incorrect');
+
+                                        if (typeof(urls[value]) == 'object') {
+                                            count++;
+                                            jQuery(urls[value]).removeClass('incorrect').addClass('incorrect')
+                                                               .closest('tr')
+                                                               .removeClass('row-show-url').addClass('row-show-url');
+                                            urls[value] == '';
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (count > 0) {
+                    alert('Обнаружено ' + count + ' конфликтующих адресов страниц. Эти адреса подсвечены.');
+                } else {
+                    alert('Конфликты в адресах страниц не найдены.');
+                }
+            } catch (e) { }
+            return false;
+        }
+    </script>
+
+{/strip}

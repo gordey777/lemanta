@@ -1,0 +1,302 @@
+{* <!--
+  Impera CMS: шаблон админ модуля страницы способа доставки.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о стране;
+    $categories = массив с записями о категориях;
+    $payments = массив с записями о способах оплаты;
+    $types = массив с записями о типах доставки;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "card" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    setup = true - вывести эту кнопку
+    currencies = true - вывести эту кнопку
+    deliveries = true - вывести эту кнопку
+    card_deliveries = true - вывести эту кнопку
+    deliveries_types = true - вывести эту кнопку
+    shippings_terms = true - вывести эту кнопку
+    payment = true - вывести эту кнопку
+    sms = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           setup = true
+           currencies = true
+           deliveries = true
+           card_deliveries = true
+           deliveries_types = true
+           shippings_terms = true
+           payment = true
+           sms = true}
+
+  {* <!-- В переменную $id заносим идентификатор способа доставки или 0 при его отсутствии. --> *}
+  {assign var="id" value=$item->delivery_method_id|default:0|escape}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Deliveries" title="Перейти на страницу способов доставки в админпанели">Доставка</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id) || (isset($item->name) && ($item->name != ""))}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новый способ доставки
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о записи -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Delivery" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Название -->
+        <tr>
+          <td class="param">
+            Название:
+          </td>
+          <td class="value" width="100%" title="Название способа доставки">
+            <input class="edit" name="name[{$id}]" type="text" value="{$item->name|default:''|escape}">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Цена -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Цена -->
+        <tr>
+          <td class="param">
+            Цена:
+          </td>
+          <td class="value" title="Цена способа доставки">
+            <input class="edit" name="price[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->price|default:0|string_format:'%1.2f'|replace:',':'.' > 0}{($item->price * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'}{/if}">
+          </td>
+          <td class="param_short">
+            {$currency->sign|default:''|escape}&nbsp;&nbsp;&nbsp;
+          </td>
+
+          <!-- поле Типы доставки -->
+          <td class="param_short" rowspan="3" style="vertical-align: top;">
+            {strip}
+              Имеет<br>
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=DeliveriesTypes" title="Перейти на страницу типов доставки в админпанели">
+                типы
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" rowspan="3" width="100%" title="Имеет ли способ доставки варианты (несколько выбираются с помощью клавиш Shift и Ctrl)">
+ 
+            <!-- фиктивный элемент на случай не выбора типов доставки -->
+            <input name="types[{$id}]" type="hidden" value="">
+
+            <select multiple name="types[{$id}][]" size="4" style="height: 80px;">
+              {if isset($types) && !empty($types)}
+                {foreach item=r from=$types}
+                  <option value="{$r->type_id|escape}"{if isset($item->types_ids) && in_array($r->type_id, $item->types_ids)} selected{/if}>
+                    {$r->name|escape}
+                  </option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+
+        <!-- поле Бесплатно от -->
+        <tr>
+          <td class="param">
+            Бесплатно от:
+          </td>
+          <td class="value" title="Сумма заказа, от которой способ доставки становится бесплатным">
+            <input class="edit" name="free_from[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->free_from|default:0|string_format:'%1.2f'|replace:',':'.' > 0}{($item->free_from * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'}{/if}">
+          </td>
+          <td class="param_short">
+            {$currency->sign|default:''|escape}&nbsp;&nbsp;&nbsp;
+          </td>
+
+          <!-- флажок Адресный -->
+          <td class="param_short" title="Требует ли способ доставки ввода в заказ адреса доставки">
+            <input class="checkbox" id="item_form_require_address" name="require_address[{$id}]" type="checkbox"{if isset($item->require_address) && ($item->require_address == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_require_address');">
+              Адресный
+            </span>
+          </td>
+        </tr>
+
+        <!-- поле Скидка -->
+        <tr>
+          <td class="param">
+            Скидка:
+          </td>
+          <td class="value" title="Скидка на сумму заказа при таком способе доставки">
+            <input class="edit" name="discount[{$id}]" size="10" style="width: auto;" type="text" value="{if $item->discount|default:-1|string_format:'%1.2f'|replace:',':'.' >= 0}{$item->discount|string_format:'%1.2f'|replace:',':'.'}{/if}">
+          </td>
+          <td class="param_short">
+            %&nbsp;&nbsp;&nbsp;
+          </td>
+
+          <!-- флажок Разрешен -->
+          <td class="param_short" title="Разрешен ли способ доставки к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешен
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация о прикреплениях -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Необслуживаемые категории -->
+        <tr>
+          <td class="param_high">
+            Не для товаров:
+          </td>
+          <td class="value" width="50%" title="Для товаров из каких категорий не действует этот способ доставки (несколько выбираются с помощью клавиш Shift и Ctrl)">
+ 
+            <!-- фиктивный элемент на случай не выбора категорий -->
+            <input name="categories[{$id}]" type="hidden" value="">
+
+            <select multiple name="categories[{$id}][]" size="15">
+
+              <!-- {*
+              Подключаем субшаблон списка категорий. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список категорий
+                currents = идентификаторы выбранных категорий (модификатор "|default:''" добавлен для обработки и новой записи)
+                selector = true - это будет селектор, а не список категорий *} -->
+
+              {include file = "../../common_parts/categories.htm"
+                       items = $categories
+                       currents = $item->undelivery_category_ids|default:''
+                       selector = true}
+            </select>
+          </td>
+
+          <!-- поле Способы оплаты -->
+          <td class="param_short" style="vertical-align: top;">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Payments" title="Перейти на страницу способов оплаты в админпанели">
+                Оплата
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" width="50%" title="Возможные способы оплаты">
+ 
+            <!-- фиктивный элемент на случай не выбора способов оплаты -->
+            <input name="payments[{$id}]" type="hidden" value="">
+
+            <select multiple name="payments[{$id}][]" size="15">
+              {if isset($payments) && !empty($payments)}
+                {foreach item=r from=$payments}
+                  <option value="{$r->payment_method_id|escape}"{if isset($item->payments_ids) && in_array($r->payment_method_id, $item->payments_ids)} selected{/if}>
+                    {$r->name|escape}
+                  </option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Описание -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Описание -->
+        <tr>
+          <td class="param_high">
+            Описание:
+          </td>
+          <td class="{if $settings->deliveries_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" name="description[{$id}]">{$item->description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация об отслеживании посылки -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле URL -->
+        <tr>
+          <td class="param">
+            URL слежения:
+          </td>
+          <td class="value" width="100%" title="Адрес страницы отслеживания посылки (символ звездочка означает идентификатор посылки)">
+            <input class="edit" name="tracking_url[{$id}]" type="text" value="{$item->tracking_url|default:''|escape}">
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && ($from_page != "")}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>
+
+  <!-- {*
+  Подключаем субшаблон редактора TinyMCE. В субшаблон передаем атрибуты:
+    disabled_state = из какой переменной брать признак отмены редактора *} -->
+
+  {include file = "../../common_parts/tinymce.htm"
+           disabled_state = $settings->deliveries_wysiwyg_disabled}

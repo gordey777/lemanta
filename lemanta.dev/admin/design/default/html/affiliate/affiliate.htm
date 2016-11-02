@@ -1,0 +1,375 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: партнерская программа                                                   |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $currency = запись о текущей валюте                                           |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.AFFILIATE_MODULELINK_POINTER|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.AFFILIATE_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.AFFILIATE_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    {* <!-- вычисляем текущий курс --> *}
+    {$rate = ($currency->rate_from|default:1) / ($currency->rate_to|default:1)}
+    {$sign = ($currency->sign|default:'?')|escape}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        {call main_title alt = 'Партнерская программа'
+                         path = 'Партнерка'}
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {call info_message}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {call error_message}
+
+
+
+        {* <!-- форма настроек --> *}
+        <form action="{$admin_goto}{$module_pointer|escape}" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+
+
+
+                    {* <!-- поле Вознаграждение за привод на сайт --> *}
+                    {$value = (($settings->affiliates_referal_cost|default:0) * $rate)|string_format:'%1.4f'|replace:',':'.'}
+                    {call settings_editbox param = 'affiliates_referal_cost'
+                                           text = 'Вознаграждение за привод на сайт:'
+                                           title = 'Сколько перечислить на внутренний счет пользователя за каждого приведенного на сайт по реферальной ссылке'
+                                           value = $value
+                                           width = ''
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 10
+                                           flat = true
+                                           short = true
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                    <td class="param_short" width="1%">
+                        {$sign} &nbsp;
+                    </td>
+
+
+
+                    {* <!-- флажок Разрешена --> *}
+                    {call settings_checkbox param = 'affiliates_enabled'
+                                            image = ''
+                                            text = 'Включить партнерскую программу на сайте'
+                                            title = 'Включить обработку партнерской программы'
+                                            width = '100%'
+                                            colspan = 1}
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    {call save_button width = '1%'}
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Вознаграждение за регистрацию --> *}
+                    {$value = (($settings->affiliates_registration_cost|default:0) * $rate)|string_format:'%1.4f'|replace:',':'.'}
+                    {call settings_editbox param = 'affiliates_registration_cost'
+                                           text = 'Вознаграждение за регистрацию реферала:'
+                                           title = 'Сколько перечислить на счет пользователя за каждого приведенного, кто потом зарегистрировался на сайте'
+                                           value = $value
+                                           width = ''
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 10
+                                           flat = true
+                                           short = true
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                    <td class="param_short" width="1%">
+                        {$sign} &nbsp;
+                    </td>
+
+
+
+                    {* <!-- флажок Отклонять приводы с неопознанных страниц --> *}
+                    {call settings_checkbox param = 'affiliates_referal_urlchecking'
+                                            image = ''
+                                            text = 'Не обслуживать приводы с неопознанных страниц'
+                                            title = 'Иначе будут засчитываться и те приводы, когда не удалось опознать адрес страницы, с которой пришел человек'
+                                            width = '100%'
+                                            colspan = 2}
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Вознаграждение за сделанный заказ --> *}
+                    {$value = $settings->affiliates_commission_percent_gift|default:0}
+                    {call settings_editbox param = 'affiliates_commission_percent_gift'
+                                           text = 'Вознаграждение за сделанный рефералом заказ:'
+                                           title = 'Сколько перечислить на счет пользователя, если приведенный им сделал заказ (но пока еще не оплатил)'
+                                           value = $value
+                                           width = ''
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 10
+                                           flat = true
+                                           short = true
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                    <td class="param_short">
+                        % суммы заказа &nbsp;
+                    </td>
+
+
+
+                    {* <!-- поле Таймер слежения --> *}
+                    <td class="param_short">
+                        Таймер слежения за повторными приводами:
+                    </td>
+                    <td class="value value_sheet" title="По истечению этого времени пришедший с того же ip-адреса по реферальной ссылке будет признан новым приведенным">
+                        {$value = $settings->affiliates_referal_lifetime|default:0}
+                        <select name="affiliates_referal_lifetime">
+                            {$previous = 0}
+                            {section name = 'value' start = 1 loop = 91}
+                                {$seconds = $smarty.section.value.index * 24 * 3600}
+                                <option value="{$seconds}"{if ($value > $previous) && ($value <= $seconds)} selected{/if}>
+                                    {$smarty.section.value.index} сут{if ($smarty.section.value.index % 10 < 1) || ($smarty.section.value.index % 10 > 4) || (($smarty.section.value.index >= 10) && ($smarty.section.value.index <= 19))}ок
+                                                                     {elseif $smarty.section.value.index % 10 > 1}ок
+                                                                     {else}ки
+                                                                     {/if}
+                                </option>
+                                {$previous = $seconds}
+                            {/section}
+                            {section name = 'value' start = 1 loop = 5}
+                                {$seconds = $smarty.section.value.index * 365 * 24 * 3600}
+                                <option value="{$seconds}"{if ($value > $previous) && ($value <= $seconds)} selected{/if}>
+                                    {$smarty.section.value.index} {if ($smarty.section.value.index % 10 < 1) || ($smarty.section.value.index % 10 > 4) || (($smarty.section.value.index >= 10) && ($smarty.section.value.index <= 19))}
+                                                                      лет
+                                                                  {elseif $smarty.section.value.index % 10 > 1}
+                                                                      года
+                                                                  {else}
+                                                                      год
+                                                                  {/if}
+                                </option>
+                                {$previous = $seconds}
+                            {/section}
+                            <option value="2147483647"{if $value > $previous} selected{/if}>
+                                вечно
+                            </option>
+                        </select>
+                    </td>
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Комиссия за оплаченный заказ --> *}
+                    {$value = $settings->affiliates_commission_percent|default:0}
+                    {call settings_editbox param = 'affiliates_commission_percent'
+                                           text = 'Комиссия за оплаченный рефералом заказ:'
+                                           title = 'Сколько перечислить на счет пользователя, если приведенный им оплатил заказ'
+                                           value = $value
+                                           width = ''
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 10
+                                           flat = true
+                                           short = true
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                    <td class="param_short">
+                        % суммы заказа &nbsp;
+                    </td>
+
+
+
+                    {* <!-- флажок Комиссия с полной суммы заказа --> *}
+                    {call settings_checkbox param = 'affiliates_commission_full'
+                                            image = ''
+                                            text = 'Брать комиссию с полной суммы заказа, включая доставку'
+                                            title = 'Иначе комиссия будет взиматься только со стоимости заказанных товаров, исключая стоимость доставки'
+                                            width = '100%'
+                                            colspan = 2}
+
+
+
+                </tr>
+                <tr>
+
+
+
+                    {* <!-- поле Ограничить комиссию суммой --> *}
+                    {$value = (($settings->affiliates_commission_limit|default:0) * $rate)|string_format:'%1.2f'|replace:',':'.'}
+                    {$value = ($value > 0) ? $value : ''}
+                    {call settings_editbox param = 'affiliates_commission_limit'
+                                           text = 'Ограничить комиссию суммой:'
+                                           title = 'Если указана, то комиссия не превысит эту сумму, какой бы высокий процент комиссии не был установлен'
+                                           value = $value
+                                           width = ''
+                                           colspan = 1
+                                           rowspan = 1
+                                           size = 10
+                                           flat = true
+                                           short = true
+                                           text_width = ''
+                                           text_colspan = 1
+                                           text_rowspan = 1}
+                    <td class="param_short" colspan="3">
+                        {$sign}
+                    </td>
+
+
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            {call hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                 id = false
+                                 value = $token}
+        </form>
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+
+            {$param = ($smarty.const.REQUEST_PARAM_NAME_AFFILIATE|default:'')|escape}
+            <div>
+                Механизм действия модуля партнерской программы состоит в следующем. {**}
+                Каждому зарегистрированному пользователю магазина неявно выделяется {**}
+                специальная партнерская ссылка. Эту ссылку пользователь видит в {**}
+                личном кабинете, а сама ссылка имеет вид <i style="white-space: nowrap;">{$site}?{$param}=ИД_партнера</i> {**}
+                (где идентификатор партнера является некоторым уникальным числом). {**}
+                Предполагается, что пользователь, желающий выступать в роли партнера {**}
+                по завлечению покупателей, расположит свою ссылку на других веб {**}
+                сайтах, откуда может приводить клиентов на ваш сайт.
+            </div>
+
+            <div>
+                Поддерживается возможность приводить клиентов через свои объявления, {**}
+                размещенные в системах контекстной рекламы типа Яндекс.Директ, Google AdWords, {**}
+                Бегун и подобных. Пользователю нужно лишь добавить в ссылку такого {**}
+                объявления свой параметр <i style="white-space: nowrap;">?{$param}=ИД_партнера</i> {**}
+                (параметр добавляется в конец исходной ссылки, а если в ссылке уже есть {**}
+                какие-то параметры, тогда знак вопроса заменяется символом &amp;).
+            </div>
+
+            <div>
+                Поддерживается также и возможность приводить клиентов через внешние {**}
+                информеры вашего сайта. То есть когда партнер наподобие витрины размещает {**}
+                на своем сайте какой-то из ваших информеров, например {**}
+                <i style="white-space: nowrap;">{$site}informer?ПАРАМ=ИД_партнера</i> {**}
+                (где ПАРАМ - некое название параметра, по которому информер в своем теле {**}
+                сгенерирует ссылки под конкретного партнера).
+            </div>
+
+            <div>
+                Как только пришедший по подобным ссылкам новый пользователь попадает на {**}
+                ваш сайт, движок запоминает, какой партнер привел этого клиента, {**}
+                и в дальнейшем <u>каждый раз</u> как только приведенный человек совершает {**}
+                действия, предусмотренные настройками клиентской программы, на внутренний {**}
+                счет партнера зачисляется сумма, обозначенная вами в настройках программы {**}
+                за такой вид действий.
+            </div>
+
+            <div>
+                Кроме того, если приведенный пользователь регистрируется на сайте, в его {**}
+                записи сохраняются сведения о приведшем его партнере. Администратору {**}
+                доступно в любой момент корректировать привязки клиентов к партнерам на {**}
+                странице <a href="{$admin_goto}Users">Зарегистрированные пользователи</a>. {**}
+                Как было описано выше, предусмотренные программой действия зарегистрированных {**}
+                клиентов, привязанных к конкретным партнерам, тоже приведут к обозначенным {**}
+                партнерским отчислениям на внутренний счет соответствующего партнера.
+            </div>
+
+            <div>
+                Администратор также может видеть всю информацию о движениях средств {**}
+                на внутреннем счете партнера. Такие сведения представлены менеджеру {**}
+                на странице пользователя в админпанели. Чтобы подобную информацию видел и {**}
+                партнер в своем личном кабинете на клиентской стороне сайта, нужно чтобы {**}
+                шаблон сайта был дополнен клиентским модулем вывода сведений о движении {**}
+                средств на счете. Как правило шаблоны клиентской стороны собираются так, {**}
+                что в личном кабинете показывается лишь состояние счета, партнерская ссылка {**}
+                и условия партнерской программы.
+            </div>
+        </div>
+
+    </div>
+
+{/strip}

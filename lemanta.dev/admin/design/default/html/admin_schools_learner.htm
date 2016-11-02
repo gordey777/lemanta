@@ -1,0 +1,394 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля страницы учащегося.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о учащемся;
+    $schools = дерево записей о учебных заведениях;
+    $classes = массив записей о классах учебных заведений;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    countries = true - вывести эту кнопку
+    regions = true - вывести эту кнопку
+    towns = true - вывести эту кнопку
+    schools = true - вывести эту кнопку
+    card_schools = true - вывести эту кнопку
+    schools_types = true - вывести эту кнопку
+    schools_lessons = true - вывести эту кнопку
+    schools_classes = true - вывести эту кнопку
+    schools_learners = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           countries = true
+           regions = true
+           towns = true
+           schools = true
+           schools_types = true
+           schools_lessons = true
+           schools_classes = true
+           schools_learners = true
+           card_schools_learners = true}
+
+  <!-- {* В переменную $id заносим идентификатор учащегося или 0 при его отсутствии. *} -->
+  {assign var="id" value=$item->user_id|escape|default:0}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SchoolsLearners" title="Перейти на страницу учащихся в админпанели">Учащиеся</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id) || (isset($item->compound_name) && ($item->compound_name != ""))}
+        {$item->compound_name|escape|default:"&nbsp;"}
+      {else}
+        Новый учащийся
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о учащемся -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SchoolsLearner" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о учащемся -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Фамилия -->
+        <tr>
+          <td class="param">
+            Ф.И.О:
+          </td>
+          <td class="value" width="33%" title="Фамилия учащегося">
+            <input class="edit" id="item_form_name" name="name[{$id}]" type="text" value="{$item->name|escape|default:''}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_name', 'item_form_name3');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <!-- поле Имя -->
+          <td class="value" width="33%" title="Имя учащегося">
+            <input class="edit" id="item_form_name3" name="name3[{$id}]" type="text" value="{$item->name3|escape|default:''}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_name3', 'item_form_name2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <!-- поле Отчество -->
+          <td class="value" width="33%" title="Отчество учащегося">
+            <input class="edit" id="item_form_name2" name="name2[{$id}]" type="text" value="{$item->name2|escape|default:''}">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация о прикреплениях -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Страна -->
+        <tr>
+          <td class="param">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Countries" title="Перейти на страницу стран в админпанели">
+                Страна
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" width="33%" title="Какой стране принадлежит учащийся">
+            <select id="item_form_countries_selector" name="country_id[{$id}]" onchange="javascript: jQuery('#item_form_regions_selectors select').hide(); jQuery('#item_form_towns_selectors select').hide(); jQuery('#item_form_schools_selectors select').hide(); jQuery('#item_form_classes_selectors select').hide(); jQuery('#item_form_regions_selector_' + this.value).show(); var object = document.getElementById('item_form_regions_selector_' + this.value); if ((typeof(object) == 'object') && (object != null)) object.onchange();">
+              {if isset($schools) && !empty($schools)}
+                {foreach item=r from=$schools}
+                  {strip}
+                    <option value="{$r->id|escape}"{if $item->country_id|default:'' == $r->id} selected{/if}>
+                      {$r->name|escape}
+                    </option>
+                  {/strip}
+                {/foreach}
+              {else}
+                <option value=""></option>
+              {/if}
+            </select>
+          </td>
+
+          <!-- поле Область -->
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Regions" title="Перейти на страницу областей в админпанели">
+                Область
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" id="item_form_regions_selectors" width="33%" title="Какой области принадлежит учащийся">
+            {foreach name="regions" item=r from=$schools}
+              {strip}
+                <select id="item_form_regions_selector_{$r->id|escape}" name="region_id[{$id}][{$r->id|escape}]"{if (!empty($item->country_id) && ($item->country_id != $r->id)) || (empty($item->country_id) && !$smarty.foreach.regions.first)} style="display: none;"{/if} onchange="javascript: jQuery('#item_form_towns_selectors select').hide(); jQuery('#item_form_schools_selectors select').hide(); jQuery('#item_form_classes_selectors select').hide(); jQuery('#item_form_towns_selector_{$r->id|escape}_' + this.value).show(); var object = document.getElementById('item_form_towns_selector_{$r->id|escape}_' + this.value); if ((typeof(object) == 'object') && (object != null)) object.onchange();">
+                  {if isset($r->items) && !empty($r->items)}
+                    {foreach item=r2 from=$r->items}
+                      <option value="{$r2->id|escape}"{if ($item->country_id|default:'' == $r->id) && ($item->region_id|default:'' == $r2->id)} selected{/if}>
+                        {$r2->name|escape}
+                      </option>
+                    {/foreach}
+                  {else}
+                    <option value=""></option>
+                  {/if}
+                </select>
+              {/strip}
+            {/foreach}
+          </td>
+
+          <!-- поле Город -->
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Towns" title="Перейти на страницу городов в админпанели">
+                Город
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" id="item_form_towns_selectors" width="33%" title="Какому городу принадлежит учащийся">
+            {foreach name="regions" item=r from=$schools}
+              {strip}
+                {foreach item=r2 from=$r->items}
+                  <select id="item_form_towns_selector_{$r->id|escape}_{$r2->id|escape}" name="town_id[{$id}][{$r->id|escape}][{$r2->id|escape}]"{if (!empty($item->country_id) && ($item->country_id != $r->id)) || (!empty($item->region_id) && ($item->region_id != $r2->id)) || (empty($item->country_id) && !$smarty.foreach.regions.first) || (empty($item->region_id) && !$smarty.foreach.regions.first)} style="display: none;"{/if} onchange="javascript: jQuery('#item_form_schools_selectors select').hide(); jQuery('#item_form_classes_selectors select').hide(); jQuery('#item_form_schools_selector_{$r->id|escape}_{$r2->id|escape}_' + this.value).show(); var object = document.getElementById('item_form_schools_selector_{$r->id|escape}_{$r2->id|escape}_' + this.value); if ((typeof(object) == 'object') && (object != null)) object.onchange();">
+                    {if isset($r2->items) && !empty($r2->items)}
+                      {foreach item=r3 from=$r2->items}
+                        <option value="{$r3->id|escape}"{if ($item->country_id|default:'' == $r->id) && ($item->region_id|default:'' == $r2->id) && ($item->town_id|default:'' == $r3->id)} selected{/if}>
+                          {$r3->name|escape}
+                        </option>
+                      {/foreach}
+                    {else}
+                      <option value=""></option>
+                    {/if}
+                  </select>
+                {/foreach}
+              {/strip}
+            {/foreach}
+          </td>
+        </tr>
+
+        <!-- поле Учебное заведение -->
+        <tr>
+          <td class="param">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Schools" title="Перейти на страницу учебных заведений в админпанели">
+                Заведение
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" colspan="3" id="item_form_schools_selectors" width="66%" title="Какому учебному заведению принадлежит учащийся">
+            {foreach name="regions" item=r from=$schools}
+              {strip}
+                {foreach item=r2 from=$r->items}
+                  {foreach item=r3 from=$r2->items}
+                    <select id="item_form_schools_selector_{$r->id|escape}_{$r2->id|escape}_{$r3->id|escape}" name="school_id[{$id}][{$r->id|escape}][{$r2->id|escape}][{$r3->id|escape}]"{if (!empty($item->country_id) && ($item->country_id != $r->id)) || (!empty($item->region_id) && ($item->region_id != $r2->id)) || (!empty($item->town_id) && ($item->town_id != $r3->id)) || (empty($item->country_id) && !$smarty.foreach.regions.first) || (empty($item->region_id) && !$smarty.foreach.regions.first) || (empty($item->town_id) && !$smarty.foreach.regions.first)} style="display: none;"{/if} onchange="javascript: jQuery('#item_form_classes_selectors select').hide(); jQuery('#item_form_classes_selector_{$r->id|escape}_{$r2->id|escape}_{$r3->id|escape}_' + this.value).show(); var object = document.getElementById('item_form_classes_selector_{$r->id|escape}_{$r2->id|escape}_{$r3->id|escape}_' + this.value); if ((typeof(object) == 'object') && (object != null)) object.onchange();">
+                      {if isset($r3->items) && !empty($r3->items)}
+                        {foreach item=r4 from=$r3->items}
+                          <option value="{$r4->id|escape}"{if ($item->country_id|default:'' == $r->id) && ($item->region_id|default:'' == $r2->id) && ($item->town_id|default:'' == $r3->id) && ($item->school_id|default:'' == $r4->id)} selected{/if}>
+                            {$r4->name|escape}
+                          </option>
+                        {/foreach}
+                      {else}
+                        <option value=""></option>
+                      {/if}
+                    </select>
+                  {/foreach}
+                {/foreach}
+              {/strip}
+            {/foreach}
+          </td>
+
+          <!-- поле Класс учебного заведения -->
+          <td class="param_short">
+            {strip}
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=SchoolsClasses" title="Перейти на страницу классов учебных заведений в админпанели">
+                Класс
+              </a>
+              :
+            {/strip}
+          </td>
+          <td class="value" id="item_form_classes_selectors" width="33%" title="Какому классу учебного заведения принадлежит учащийся">
+            {foreach name="regions" item=r from=$schools}
+              {strip}
+                {foreach item=r2 from=$r->items}
+                  {foreach item=r3 from=$r2->items}
+                    {foreach item=r4 from=$r3->items}
+                      <select id="item_form_classes_selector_{$r->id|escape}_{$r2->id|escape}_{$r3->id|escape}_{$r4->id|escape}" name="class_id[{$id}][{$r->id|escape}][{$r2->id|escape}][{$r3->id|escape}][{$r4->id|escape}]"{if (!empty($item->country_id) && ($item->country_id != $r->id)) || (!empty($item->region_id) && ($item->region_id != $r2->id)) || (!empty($item->town_id) && ($item->town_id != $r3->id)) || (!empty($item->school_id) && ($item->school_id != $r4->id)) || (empty($item->country_id) && !$smarty.foreach.regions.first) || (empty($item->region_id) && !$smarty.foreach.regions.first) || (empty($item->town_id) && !$smarty.foreach.regions.first) || (empty($item->school_id) && !$smarty.foreach.regions.first)} style="display: none;"{/if}>
+                        {if isset($r4->classes_ids) && !empty($r4->classes_ids)}
+                          {foreach item=r5 from=$r4->classes_ids}
+                            <option value="{$r5|escape}"{if ($item->country_id|default:'' == $r->id) && ($item->region_id|default:'' == $r2->id) && ($item->town_id|default:'' == $r3->id) && ($item->school_id|default:'' == $r4->id) && ($item->class_id|default:'' == $r5)} selected{/if}>
+                              {if isset($classes) && !empty($classes)}
+                                {foreach item=c from=$classes}
+                                  {if $c->class_id == $r5}
+                                    {$c->name|escape}
+                                  {/if}
+                                {/foreach}
+                              {else}
+                                название недоступно
+                              {/if}
+                            </option>
+                          {/foreach}
+                        {else}
+                          <option value=""></option>
+                        {/if}
+                      </select>
+                    {/foreach}
+                  {/foreach}
+                {/foreach}
+              {/strip}
+            {/foreach}
+          </td>
+        </tr>
+      </table>
+
+      <!-- поле Телефоны -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param">
+            Телефон:
+          </td>
+          <td class="value" width="50%" title="Телефон 1 родителей учащегося">
+            <input class="edit" id="item_form_phone" name="phone[{$id}]" type="text" value="{$item->phone|escape|default:''}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_phone', 'item_form_phone2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <td class="value" width="50%" title="Телефон 2 родителей учащегося">
+            <input class="edit" id="item_form_phone2" name="phone2[{$id}]" type="text" value="{$item->phone2|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- поле Емейлы -->
+        <tr>
+          <td class="param">
+            Емейл:
+          </td>
+          <td class="value" width="50%" title="Емейл 1 родителей учащегося">
+            <input class="edit" id="item_form_email" name="email[{$id}]" type="text" value="{$item->email|escape|default:''}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_email', 'item_form_email2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <td class="value" width="50%" title="Емейл 2 родителей учащегося">
+            <input class="edit" id="item_form_email2" name="email2[{$id}]" type="text" value="{$item->email2|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- поле Номера ICQ -->
+        <tr>
+          <td class="param">
+            Номер ICQ:
+          </td>
+          <td class="value" width="33%" title="Номер 1 ICQ родителей учащегося">
+            <input class="edit" id="item_form_icq" name="icq[{$id}]" type="text" value="{$item->icq|escape|default:''}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_icq', 'item_form_icq2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <td class="value" width="33%" title="Номер 2 ICQ родителей учащегося">
+            <input class="edit" id="item_form_icq2" name="icq2[{$id}]" type="text" value="{$item->icq2|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- поле Skype имена -->
+        <tr>
+          <td class="param">
+            Skype имя:
+          </td>
+          <td class="value" width="33%" title="Skype имя 1 родителей учащегося">
+            <input class="edit" id="item_form_skype" name="skype[{$id}]" type="text" value="{$item->skype|escape|default:''}">
+          </td>
+          <!-- кнопка обмена -->
+          <td class="param_short">
+            <a href="#" onclick="javascript: return Swap_Inputbox_Values('item_form_skype', 'item_form_skype2');" title="Обменять значения этих соседних полей">→</a>
+          </td>
+
+          <td class="value" width="33%" title="Skype имя 2 родителей учащегося">
+            <input class="edit" id="item_form_skype2" name="skype2[{$id}]" type="text" value="{$item->skype2|escape|default:''}">
+          </td>
+        </tr>
+      </table>
+
+      <input name="enabled[{$id}]" type="hidden" value="1">
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && ($from_page != "")}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем пустой указатель требуемой команды -->
+      <input id="item_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Скрипт имитации первоначального выбора страны -->
+    <script language="JavaScript" type="text/javascript">
+      <!--
+      var object = document.getElementById('item_form_countries_selector');
+      if ((typeof(object) == 'object') && (object != null) && object.onchange) object.onchange();
+      // -->
+    </script>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>

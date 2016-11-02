@@ -1,0 +1,383 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля страницы медиафайла.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о медиафайле;
+    $menus = массив с записями о меню сайта;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = "card" - выбранной будет эта кнопка
+    main = true - вывести эту кнопку
+    pages = true - вывести эту кнопку
+    news = true - вывести эту кнопку
+    articles = true - вывести эту кнопку
+    banners = true - вывести эту кнопку
+    files = true - вывести эту кнопку
+    card_files = true - вывести эту кнопку
+    menus = true - вывести эту кнопку
+    modules = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           pages = true
+           news = true
+           articles = true
+           banners = true
+           files = true
+           card_files = true
+           menus = true
+           modules = true}
+
+  <!-- {* В переменную $id заносим идентификатор медиафайла или 0 при ее отсутствии. *} -->
+  {assign var="id" value=$item->file_id|escape|default:0}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Files" title="Перейти на страницу медиа файлов в админпанели">Файлы</a>
+        → {if !empty($id)}Редактирование{else}Новая{/if}
+      </div>
+      {if !empty($id)}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новая страница медиа файла
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        {if !empty($id) && isset($item->url) && !empty($item->url) && empty($error)}
+          <a href="http://{$root_url|escape}/media/{$item->url|escape}" title="Перейти на страницу медиа файла в клиентской части сайта">
+            http://{$root_url|escape}/media/{$item->url|escape}
+          </a>
+        {else}
+          &nbsp;
+        {/if}
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о странице медиафайла -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=File" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии в меню и заголовке -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param">
+            Название в меню:
+          </td>
+          <td class="value" width="100%" title="Как называть страницу медиа файла в меню">
+            <input class="edit" name="name[{$id}]" type="text" value="{$item->name|escape|default:''}">
+          </td>
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+        <tr>
+          <td class="param">
+            Заголовок:
+          </td>
+          <td class="value" colspan="2" width="100%" title="Заголовок страницы медиа файла">
+            <input class="edit" id="item_form_name_{$id}" name="header[{$id}]" type="text" value="{$item->header|escape|default:''}">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Meta информация -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+        <tr>
+          <td class="param">
+            URL:
+          </td>
+          <td class="param_short" width="1%">
+            http://сайт/media/
+          </td>
+          <td class="value" colspan="2" width="100%" title="Окончание адреса страницы медиа файла">
+            <input class="edit" id="item_form_url_{$id}" name="url[{$id}]" type="text" value="{$item->url|escape|default:''}">
+          </td>
+        </tr>
+        <tr>
+          <td class="param_high">
+            Meta Keywords:
+          </td>
+          <td class="value" colspan="3" title="Какой текст разместить в мета теге &lt;meta name=keywords ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_keywords_{$id}" name="meta_keywords[{$id}]" style="height: 32px;">{$item->meta_keywords|escape|default:''}</textarea>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_high">
+            Meta Description:
+          </td>
+          <td class="value" colspan="3" title="Какой текст разместить в мета теге &lt;meta name=description ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_description_{$id}" name="meta_description[{$id}]" style="height: 48px;">{$item->meta_description|escape|default:''}</textarea>
+          </td>
+        </tr>
+        <tr>
+          <td class="param">
+            Meta Title:
+          </td>
+          <td class="value" colspan="2" width="100%" title="Какой текст разместить в теге &lt;title&gt; заголовка страницы">
+            <input class="edit" id="item_form_meta_title_{$id}" name="meta_title[{$id}]" type="text" value="{$item->meta_title|escape|default:''}">
+          </td>
+          <td class="value_box" width="1%">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Полный текст -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Описание медиа файла:
+          </td>
+          <td class="{if $settings->files_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_big" id="item_form_description_{$id}" name="description[{$id}]" style="height: 400px;">{$item->description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Теги -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Теги -->
+        <tr>
+          <td class="param">
+            Теги:
+          </td>
+          <td class="value" width="100%" title="Ассоциируемые с этой записью теги (перечисляются через запятую)">
+            <input class="edit" name="tags[{$id}]" type="text" value="{$item->tags|escape|default:''}">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- SEO текст -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            SEO текст:
+          </td>
+          <td class="{if $settings->files_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" name="seo_description[{$id}]" style="height: 150px;">{$item->seo_description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация о прикреплениях и разрешениях -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+        <tr>
+          <td class="param">
+            Раздел:
+          </td>
+          <td class="value" width="100%" title="К какому разделу сайта принадлежит страница медиа файла">
+            <select name="section_field[{$id}]">
+              <option value="1">Основной</option>
+            </select>
+          </td>
+          <td class="param_short">
+            Вес:
+          </td>
+          <td class="value" title="Число определяет положение страницы медиа файла выше других с меньшим весом в том же меню">
+            <input class="edit" name="order_num[{$id}]" size="10" style="width: auto;" type="text" value="{$item->order_num|escape|default:''}">
+          </td>
+          <td class="param_short" title="Будет ли страница медиа файла скрыта от незарегистрированных пользователей">
+            <input class="checkbox" id="item_form_hidden" name="hidden[{$id}]" type="checkbox"{if isset($item->hidden) && ($item->hidden == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_hidden');">
+              Скрыта
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param">
+            Меню:
+          </td>
+          <td class="value" width="100%" title="В какое меню входит страница медиа файла">
+
+            <!-- Селектор выбора меню сайта -->
+            <select name="menu_id[{$id}]">
+              <option value="0"></option>
+              {if isset($menus)}
+                {foreach item=c from=$menus}
+                  <option value="{$c->menu_id|escape}"{if isset($item->menu_id) && ($item->menu_id == $c->menu_id)} selected{/if}>{$c->name|escape}</option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+          <td class="param_short">
+            Просмотры:
+          </td>
+          <td class="value" title="Счетчик визитов на страницу медиа файла">
+            <input class="edit" name="browsed[{$id}]" size="10" style="width: auto;" type="text" value="{$item->browsed|escape|default:''}">
+          </td>
+          <td class="param_short" title="Разрешена ли страница медиа файла к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешена
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация по файлам -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Файлы:
+            {if isset($item->files) && !empty($item->files)}
+              {strip}
+                <br><br>
+                <a href="#" onclick="javascript: if (confirm('Это действие удалит все файлы страницы медиа файла. Вы подтверждаете такую операцию?')) Delete_PageRecordFile('item_form', '*'); return false;" title="Удалить загруженные в страницу файлы">
+                  удалить все
+                </a>
+              {/strip}
+            {/if}
+          </td>
+          <td class="value_box">
+            {if !empty($id)}
+              {if isset($item->files) && !empty($item->files)}
+                {foreach name="files" item=file from=$item->files}
+                  <div class="file">
+                    {strip}
+                      <span>{$smarty.foreach.files.iteration}.</span>
+                      <a href="#" onclick="javascript: if (confirm('Это действие удалит указанный файл страницы медиа файла. Вы подтверждаете такую операцию?')) Delete_PageRecordFile('item_form', {$smarty.foreach.files.iteration}); return false;">
+                        удалить
+                      </a>
+                      <br><br>
+                      <a class="file" href="http://{$root_url|escape}/{$settings->files_files_folder_prefix|escape}{$smarty.const.ADMIN_FILES_CLASS_UPLOAD_FOLDER|escape}{$file|escape}" target="_blank"{if isset($item->files_alts[$smarty.foreach.files.index])} title="{$item->files_alts[$smarty.foreach.files.index]|escape}"{/if}>
+                        http://{$root_url|escape}/{$settings->files_files_folder_prefix|escape}{$smarty.const.ADMIN_FILES_CLASS_UPLOAD_FOLDER|escape}{$file|escape}
+                      </a>
+                    {/strip}
+                    <div>
+                      <input name="file[{$id}][{$smarty.foreach.files.iteration}]" type="hidden" value="{$file|escape}">
+                      заголовок (alt):<br>
+                      <input name="filealt[{$id}][{$smarty.foreach.files.iteration}]" type="text" value="{if isset($item->files_alts[$smarty.foreach.files.index])}{$item->files_alts[$smarty.foreach.files.index]|escape}{/if}" title="Заголовок (всплывающая подсказка) этого файла"><br>
+                      описание:<br>
+                      <textarea name="filetext[{$id}][{$smarty.foreach.files.iteration}]" title="Описание этого файла">{if isset($item->files_texts[$smarty.foreach.files.index])}{$item->files_texts[$smarty.foreach.files.index]|escape}{/if}</textarea>
+                    </div>
+                  </div>
+                {/foreach}
+              {/if}
+              <div style="clear: both;">
+                <div class="newfile">
+                  новый файл (объемом не более {($smarty.const.FILE_UPLOAD_MAXIMAL_FILESIZE/1024/1024)|string_format:"%d"|escape} Мбайт):<br>
+                  <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.FILE_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                  <input class="edit" name="new_file[{$id}]" type="file" title="Какой файл требуется взять с Вашего компьютера (объем файла не более {($smarty.const.FILE_UPLOAD_MAXIMAL_FILESIZE/1024/1024)|string_format:"%d"|escape} Мбайт)"><br><br>
+                  или из удаленного источника:<br>
+                  <input class="edit" name="new_file_url[{$id}]" type="text" value="http://" title="Какой файл требуется взять с другого сайта в Интернете"><br><br>
+                  дать файлу имя:<br>
+                  <input class="edit" id="item_form_filename_{$id}" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_FILEFILENAME|escape}" type="text" value="" title="Какой сделать начальную часть имени нового файла на сайте (файл будет размещен в папке http://{$root_url|escape}/{$settings->files_files_folder_prefix|escape}{$smarty.const.ADMIN_FILES_CLASS_UPLOAD_FOLDER|escape})"><br><br>
+                  <input class="submit" type="submit" value="Сохранить">
+                </div>
+                <div class="newfile_options">
+                  заголовок (alt) файла:<br>
+                  <input class="edit" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_FILEALT|escape}" type="text" value="" title="Какой заголовок (всплывающую подсказку) дать новому файлу"><br>
+                  описание:<br>
+                  <textarea name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_FILETEXT|escape}" style="height: 105px;" title="Какое описание дать новому файлу"></textarea>
+                </div>
+              </div>
+            {else}
+              <div class="hint">
+                Управление файлами станет доступным, когда эта страница медиа файла будет создана.
+              </div>
+            {/if}
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && !empty($from_page)}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем пустой указатель номера файла -->
+      <input id="item_form_{$smarty.const.ACTION_REQUEST_PARAM_NAME_FILENUMBER|escape}" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_FILENUMBER|escape}" type="hidden" value="">
+
+      <!-- Добавляем случайный аутентификатор файла -->
+      <input name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_FILETOKEN|escape}" type="hidden" value="{math equation='rand(1, 100000000)'}">
+
+      <!-- Добавляем пустой указатель требуемой команды -->
+      <input id="item_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <div class="help">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Мета</b>. Эта информация используется в заголовке html-страницы медиа файла. Подобно полю URL, мета информация при ее пустых полях
+        автоматически заполняется из полей заголовка и описания страницы медиа файла, если это разрешено в соответствующих настройках сайта
+        (изменить их можно на странице медиа файлов в админпанели).
+      </div>
+      <div>
+        <b>Файлы</b>. В страницу медиа файла допустимо загружать произвольное количество файлов. Ссылки на загруженные файлы автоматически появятся
+        на странице медиа файла в клиентской части сразу после текста описания. Файлы могут быть загружены с локального компьютера или из
+        удаленного источника (другого сайта). Каждому новому файлу возможно задать его заголовок (alt) - всплывающий текст при наведении
+        курсора на ссылку на скачивание файла, описание - информирующий текст под ссылкой на скачивание файла, имя файла - по умолчанию
+        равно транслитерации заголовка страницы медиа файла. Имя файла нужно указывать без расширения, справа к имени автоматически добавится
+        цифровой идентификатор и расширение. Если имя файла вообще не указано, оно генерируется системой.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- {*
+  Подключаем субшаблон редактора TinyMCE. В субшаблон передаем атрибуты:
+    disabled_state = из какой переменной брать признак отмены редактора *} -->
+
+  {include file = "../../common_parts/tinymce.htm"
+           disabled_state = $settings->files_wysiwyg_disabled}
+
+  <!-- {*
+  Подключаем субшаблон генератора Meta информации. В субшаблон передаем атрибуты:
+    form_id = какой идентификатор у формы, в которой редактируется запись
+    item_id = из какой переменной брать идентификатор записи
+    autofill = из какой переменной брать признак автозаполнения пустых полей мета информации *} -->
+
+  {include file = "../../common_parts/meta.htm"
+           form_id = "item_form"
+           item_id = $id
+           autofill = $settings->files_meta_autofill}

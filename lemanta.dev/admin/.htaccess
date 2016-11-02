@@ -1,0 +1,15 @@
+Order deny,allow
+deny from all
+Allow from 178.151.43.x
+Allow from 195.138.93.2
+Allow from 78.26.173.64
+Allow from 78.26.162.98
+Allow from 78.26.174.55
+Allow from 188.163.70.201
+Allow from 46.211.253.15
+Allow from 195.78.246.213
+Allow from 94.45.148.209
+AuthName "Impera CMS admin panel"
+AuthType Basic
+AuthUserFile /var/www/lemanta/data/www/lemanta.com/admin/.passwd
+require valid-user

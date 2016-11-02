@@ -1,0 +1,403 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Categories - блок категорий / брендов                                   |
+  Версия модуля: 1.4                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $items = массив записей о категориях / брендах                                |
+    $filter = массив фильтра записей (по умолчанию пустой массив)                 |
+    $namepath = именованный путь (через слеши) выводимой ветки переданного        |
+                дерева категорий (по умолчанию пустая строка)                     |
+    $opentag = html-фрагмент открывающего тега блока категорий                    |
+               (по умолчанию пустая строка)                                       |
+    $closetag = html-фрагмент закрывающего тега блока категорий                   |
+                (по умолчанию пустая строка)                                      |
+    $box_opentag = html-фрагмент открывающего тега контейнера категорий           |
+                   (по умолчанию пустая строка)                                   |
+    $box_closetag = html-фрагмент закрывающего тега контейнера категорий          |
+                    (по умолчанию пустая строка)                                  |
+    $listing_opentag = html-фрагмент открывающего тега списка категорий           |
+                       (по умолчанию пустая строка)                               |
+    $listing_closetag = html-фрагмент закрывающего тега списка категорий          |
+                       (по умолчанию пустая строка)                               |
+    $link_opentag = html-фрагмент открывающего тега ссылки категории              |
+                    (по умолчанию пустая строка)                                  |
+    $link_closetag = html-фрагмент закрывающего тега ссылки категории             |
+                     (по умолчанию пустая строка)                                 |
+    $listing_separator = html-фрагмент сепаратора списка категорий                |
+                         (по умолчанию пустая строка)                             |
+    $listing_separator_capacity = емкость (число элементов) сепарированной        |
+                                  части списка категорий (по умолчанию 1000000)   |
+    $sublisting_opentag = html-фрагмент открывающего тега списка подкатегорий     |
+                          (по умолчанию пустая строка)                            |
+    $sublisting_closetag = html-фрагмент закрывающего тега списка подкатегорий    |
+                          (по умолчанию пустая строка)                            |
+    $sublink_opentag = html-фрагмент открывающего тега ссылки родительской        |
+                       категории (по умолчанию пустая строка)                     |
+    $sublink_closetag = html-фрагмент закрывающего тега ссылки родительской       |
+                        категории (по умолчанию пустая строка)                    |
+    $sublisting_separator = html-фрагмент сепаратора списка подкатегорий          |
+                            (по умолчанию пустая строка)                          |
+    $sublisting_separator_capacity = емкость (число элементов) сепарированной     |
+                            части списка подкатегорий (по умолчанию 1000000)      |
+    $a_id = идентификатор A-элементов (по умолчанию пустая строка)                |
+    $a_class = класс A-элементов (по умолчанию пустая строка)                     |
+    $a_active_class = класс активного A-элемента (по умолчанию пустая строка)     |
+    $a_highlighted_class = класс подсвеченного A-элемента (по умолчанию пустая    |
+                           строка)                                                |
+    $a_target = указатель целевого окна A-элементов (по умолчанию пустая строка)  |
+    $a_text_maxsize = предельная длина текста в A-элементе (по умолчанию 256)     |
+    $a_text_top_maxsize = предельная длина текста в наивысшем A-элементе          |
+    $maxlevel = предельное число выводимых уровней дерева категорий (по умолч.16) |
+    $maxcount = предельное число верхних уровней (по умолчанию 256)               |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $category = запись о текущей просматриваемой категории товаров, если есть     |
+    $settings = объект настроек сайта                                             |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $smarty.session = массив сведений сеанса                                      |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/categories.htm'                  |
+             items = переменная с категориями                                     |
+             namepath = именованный путь ветки или пустая строка                  |
+             filter = массив, где ключи равны именам фильтруемых полей записи     |
+             maxlevel = число от 1 и более                                        |
+             maxcount = число от 1 и более                                        |
+             opentag = html-фрагмент или пустая строка                            |
+               box_opentag = html-фрагмент или пустая строка                      |
+                 listing_opentag = html-фрагмент или пустая строка                |
+                   link_opentag = html-фрагмент или пустая строка                 |
+                     a_id = идентификатор или пустая строка                       |
+                     a_class = имя класса (или классов через пробел) или пустая   |
+                     a_active_class = имя класса (или классов) или пустая строка  |
+                     a_highlighted_class = имя класса (или классов) или пустая    |
+                     a_target = указатель целевого окна или пустая строка         |
+                     a_text_maxsize = число от 1 и более                          |
+                     a_text_top_maxsize = число от 1 и более                      |
+                     sublisting_opentag = html-фрагмент или пустая строка         |
+                       sublink_opentag = html-фрагмент или пустая строка          |
+                       sublink_closetag = html-фрагмент или пустая строка         |
+                     sublisting_closetag = html-фрагмент или пустая строка        |
+                     sublisting_separator = html-фрагмент или пустая строка       |
+                     sublisting_separator_capacity = число от 1 и более           |
+                   link_closetag = html-фрагмент или пустая строка                |
+                 listing_closetag = html-фрагмент или пустая строка               |
+                 listing_separator = html-фрагмент или пустая строка              |
+                 listing_separator_capacity = число от 1 и более                  |
+               box_closetag = html-фрагмент или пустая строка                     |
+             closetag = html-фрагмент или пустая строка}                          |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- обрабатываем входной параметр $namepath --> *}
+    {$temp_namepath = ($namepath|default:'')|regex_replace:'/^[\s\t\r\n]+/':''|regex_replace:'/[\s\t\r\n]+$/':''|regex_replace:'/[\s\t\r\n]+/':' '|lower}
+    {$temp_namepath = $temp_namepath|regex_replace:'"\\\\"':'/'|regex_replace:'"[\s\t\r\n]+/"':'/'|regex_replace:'"/[\s\t\r\n]+"':'/'|regex_replace:'"/+"':'/'}
+    {$temp_namepath = $temp_namepath|regex_replace:'"^/+"':''|regex_replace:'"/+$"':''}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_id --> *}
+    {$temp_a_id = ($a_id|default:'')|regex_replace:'/[\s\t\r\n]+/':''}
+    {$temp_a_id = ($temp_a_id != '') ? ('id="'|cat:($temp_a_id|escape)|cat:'"') : ''}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_class --> *}
+    {$temp_a_class = ($a_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+    {$temp_a_class = ($temp_a_class != '') ? ('class="'|cat:($temp_a_class|escape)|cat:'"') : ''}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_active_class --> *}
+    {$temp_a_active_class = ($a_active_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+    {$temp_a_active_class = ($temp_a_active_class != '') ? ('class="'|cat:($temp_a_active_class|escape)|cat:'"') : ''}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_highlighted_class --> *}
+    {$temp_a_highlighted_class = ($a_highlighted_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+    {$temp_a_highlighted_class = ($temp_a_highlighted_class != '') ? ('class="'|cat:($temp_a_highlighted_class|escape)|cat:'"') : ''}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_target --> *}
+    {$temp_a_target = ($a_target|default:'')|regex_replace:'/[^a-z0-9_]+/i':''}
+    {$temp_a_target = ($temp_a_target != '') ? ('target="'|cat:($temp_a_target|escape)|cat:'"') : ''}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_text_maxsize --> *}
+    {$temp_maxsize = ($a_text_maxsize|default:256)|string_format:'%d'}
+    {$temp_maxsize = ($temp_maxsize >= 1) ? $temp_maxsize : 256}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_text_top_maxsize --> *}
+    {$temp_top_maxsize = ($a_text_top_maxsize|default:256)|string_format:'%d'}
+    {$temp_top_maxsize = ($temp_top_maxsize >= 1) ? $temp_top_maxsize : 256}
+
+
+
+    {* <!-- обрабатываем входной параметр $maxlevel --> *}
+    {$temp_maxlevel = ($maxlevel|default:16)|string_format:'%d'}
+    {$temp_maxlevel = ($temp_maxlevel >= 1) ? $temp_maxlevel : 16}
+
+
+
+    {* <!-- обрабатываем входной параметр $maxlevel --> *}
+    {$temp_maxcount = ($maxcount|default:256)|string_format:'%d'}
+    {$temp_maxcount = ($temp_maxcount >= 1) ? $temp_maxcount : 256}
+
+
+
+    {* <!-- обрабатываем входной параметр $listing_separator_capacity --> *}
+    {$capacity = ($listing_separator_capacity|default:1000000)|string_format:'%d'}
+    {$capacity = ($capacity >= 1) ? $capacity : 1000000}
+
+
+
+    {* <!-- обрабатываем входной параметр $sublisting_separator_capacity --> *}
+    {$subcapacity = ($sublisting_separator_capacity|default:1000000)|string_format:'%d'}
+    {$subcapacity = ($subcapacity >= 1) ? $subcapacity : 1000000}
+
+
+
+    {* <!-- если на вход получен не пустой массив записей о категориях --> *}
+    {if isset($items) && is_array($items) && !empty($items)}
+
+
+
+        {* <!-- захватываем следующий вывод в переменную $temp_result --> *}
+        {capture assign = 'temp_result'}
+
+
+
+            {* <!-- объявляем функцию вывода дерева категорий --> *}
+            {function name = 'aimatrix_categories_tree'
+                      level = 1
+                      fullname = ''}
+
+
+
+                {* <!-- перебираем категории --> *}
+                {$number = 1}
+                {$number_capacity = 1}
+                {foreach $cats as $r}
+
+
+
+                    {* <!-- если это вложенная или не достигли предела вывода наивысших --> *}
+                    {if ($level != 1) || ($number <= $temp_maxcount)}
+
+
+
+                        {* <!-- если непустая или в настройках разрешено показывать и пустые --> *}
+                        {if ($r->products_count|default:0 > 0) || isset($settings->catalog_menu_noempty) && !$settings->catalog_menu_noempty}
+
+
+
+                            {* <!-- если разрешена и не закрыта от чужих или это авторизованный пользователь --> *}
+                            {if isset($r->enabled) && $r->enabled && (!$r->hidden|default:false || !isset($user) || !is_object($user))}
+
+
+
+                                {* <!-- проверяем запись на прохождение фильтра --> *}
+                                {$temp_ok = true}
+                                {if isset($filter) && is_array($filter) && !empty($filter)}
+                                    {foreach $filter as $k => $v}
+                                        {if $temp_ok}
+                                            {foreach $r as $k2 => $v2}
+                                                {if $temp_ok && ($k == $k2)}
+                                                    {$temp_ok = $v == $v2}
+                                                {/if}
+                                            {/foreach}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+
+
+
+                                {* <!-- если запись прошла фильтр --> *}
+                                {if $temp_ok}
+
+
+
+                                    {* <!-- если уже внутри искомой ветки или нашли ее начало --> *}
+                                    {$temp_nested = isset($r->subcategories) && is_array($r->subcategories) && !empty($r->subcategories)}
+                                    {$temp_name = ($r->name|default:''|strip_tags)|default:'Без названия!'}
+                                    {if ($fullname === false) || ($fullname == $temp_namepath)}
+
+
+
+                                        {* <!-- если надо вывести сепаратор списка категорий --> *}
+                                        {if $level == 1}
+                                            {if $number_capacity > $capacity}
+                                                {$listing_separator|default:''}
+                                                {$number_capacity = 1}
+                                            {/if}
+                                        {else}
+                                            {if $number_capacity > $subcapacity}
+                                                {$sublisting_separator|default:''}
+                                                {$number_capacity = 1}
+                                            {/if}
+                                        {/if}
+
+
+
+                                        {* <!-- выводим открывающий тег ссылки категорий --> *}
+                                        {$temp_nested = $temp_nested && ($level < $temp_maxlevel)}
+                                        {if $level == 1}
+                                            {$link_opentag|default:''}
+                                        {else}
+                                            {$sublink_opentag|default:''}
+                                        {/if}
+
+
+
+                                            {* <!-- ссылка --> *}
+                                            {if isset($r->brand_id)}
+                                                {$admintools = (($smarty.session.admin|default:'' == 'admin') && (!isset($settings->catalog_menu_adminedit) || $settings->catalog_menu_adminedit)) ? ('tooltip="brand" brand_id="'|cat:($r->brand_id|default:''|escape)|cat:'"') : ''}
+                                            {else}
+                                                {$admintools = (($smarty.session.admin|default:'' == 'admin') && (!isset($settings->catalog_menu_adminedit) || $settings->catalog_menu_adminedit)) ? ('tooltip="category" category_id="'|cat:($r->category_id|default:''|escape)|cat:'"') : ''}
+                                            {/if}
+                                            {$temp_active = ($r->highlighted|default:false) ? $temp_a_highlighted_class : $temp_a_class}
+                                            {$temp_active = ($category->category_id|default:'' === $r->category_id|default:0) ? $temp_a_active_class : $temp_active}
+                                            <a {$temp_active} {$temp_a_id} {$temp_a_target} href="{$site|default:''|escape}{(isset($r->url_path)) ? ($r->url_path|escape) : ((!$r->url_special|default:false) ? ((isset($r->brand_id)) ? 'brands/' : 'catalog/') : '')}{$r->url|default:''|escape}" title="{$temp_name|escape}" {$admintools}>
+                                                {if $level == 1}
+                                                    {$temp_name|truncate:$temp_top_maxsize:'...':true}
+                                                {else}
+                                                    {$temp_name|truncate:$temp_maxsize:'...':true}
+                                                {/if}
+                                            </a>
+
+
+
+                                            {* <!-- если имеет вложенные категории и не превышен позволенный уровень вложенности --> *}
+                                            {if $temp_nested}
+
+                                                {* <!-- выводим открывающий тег списка подкатегорий --> *}
+                                                {$sublisting_opentag|default:''}
+
+                                                    {* <!-- рекурсивно вызываем ту же функцию вывода дерева категорий --> *}
+                                                    {aimatrix_categories_tree cats = $r->subcategories
+                                                                              level = $level + 1
+                                                                              fullname = false}
+
+                                                {* <!-- выводим закрывающий тег списка подкатегорий --> *}
+                                                {$sublisting_closetag|default:''}
+                                            {/if}
+
+
+
+                                        {* <!-- выводим закрывающий тег ссылки категорий --> *}
+                                        {if $level == 1}
+                                            {$link_closetag|default:''}
+                                        {else}
+                                            {$sublink_closetag|default:''}
+                                        {/if}
+
+
+
+                                        {* <!-- +1 категорию вывели --> *}
+                                        {$number = $number + 1}
+                                        {$number_capacity = $number_capacity + 1}
+
+
+
+                                    {* <!-- иначе еще не нашли начало искомой ветки --> *}
+                                    {else}
+
+                                        {* <!-- если имеет вложенные категории --> *}
+                                        {if $temp_nested}
+
+                                            {* <!-- рекурсивно вызываем ту же функцию вывода дерева категорий --> *}
+                                            {aimatrix_categories_tree cats = $r->subcategories
+                                                                      level = 1
+                                                                      fullname = (($fullname != '') ? ($fullname|cat:'/') : '')|cat:($temp_name|regex_replace:'/^[\s\t\r\n]+/':''|regex_replace:'/[\s\t\r\n]+$/':''|regex_replace:'/[\s\t\r\n]+/':' '|lower)}
+                                        {/if}
+
+                                    {/if}
+
+
+
+                                {/if}
+
+                            {/if}
+
+                        {/if}
+
+
+
+                    {/if}
+
+                {/foreach}
+
+            {/function}
+
+
+
+            {* <!-- вызываем функцию вывода дерева категорий --> *}
+            {aimatrix_categories_tree cats = $items
+                                      level = 1
+                                      fullname = ''}
+
+
+
+        {/capture}
+
+
+
+        {* <!-- если захваченный вывод не пуст, выводим его --> *}
+        {if $temp_result|regex_replace:'/[\s\t\r\n]/':'' != ''}
+
+
+
+            {* <!-- выводим открывающий тег блока категорий --> *}
+            {$opentag|default:''}
+
+                {* <!-- выводим открывающий тег контейнера категорий --> *}
+                {$box_opentag|default:''}
+
+                    {* <!-- выводим открывающий тег списка категорий --> *}
+                    {$listing_opentag|default:''}
+
+
+
+                        {* <!-- ранее захваченный вывод --> *}
+                        {$temp_result}
+
+
+
+                    {* <!-- выводим закрывающий тег списка категорий --> *}
+                    {$listing_closetag|default:''}
+
+                {* <!-- выводим закрывающий тег контейнера категорий --> *}
+                {$box_closetag|default:''}
+
+            {* <!-- выводим закрывающий тег блока категорий --> *}
+            {$closetag|default:''}
+
+
+
+        {/if}
+
+
+
+    {/if}
+
+{/strip}

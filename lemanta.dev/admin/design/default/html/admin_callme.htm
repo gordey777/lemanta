@@ -1,0 +1,413 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля запросов связи (функция "Позвоните мне").
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о запросах связи;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    comments = true - вывести эту кнопку
+    acomments = true - вывести эту кнопку
+    ncomments = true - вывести эту кнопку
+    feedback = true - вывести эту кнопку
+    callme = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "callme"
+           main = true
+           comments = true
+           acomments = true
+           ncomments = true
+           feedback = true
+           callme = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Запросы связи
+      </div>
+      Запросы связи "Позвоните мне"
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=CallMe" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <!-- Фильтр -->
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить&nbsp;
+          </td>
+
+          <!-- флажок Направление сортировки -->
+          <td class="param_short" title="Включить обратный порядок сортировки">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png">
+            </span>
+          </td>
+
+          <!-- флажок Лаконичный режим -->
+          <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Способ сортировки -->
+          <td class="value" width="40%" title="Способ сортировки запросов связи в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_CALLME_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CALLME_MODE_AS_IS)} selected{/if}>по дате</option>
+              <option value="{$smarty.const.SORT_CALLME_MODE_BY_PHONE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CALLME_MODE_BY_PHONE)} selected{/if}>по телефону</option>
+              <option value="{$smarty.const.SORT_CALLME_MODE_BY_EMAIL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CALLME_MODE_BY_EMAIL)} selected{/if}>по емейлу запрашивающего</option>
+              <option value="{$smarty.const.SORT_CALLME_MODE_BY_ICQ|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CALLME_MODE_BY_ICQ)} selected{/if}>по номеру ICQ запрашивающего</option>
+              <option value="{$smarty.const.SORT_CALLME_MODE_BY_SKYPE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CALLME_MODE_BY_SKYPE)} selected{/if}>по Skype имени запрашивающего</option>
+              <option value="{$smarty.const.SORT_CALLME_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CALLME_MODE_BY_NAME)} selected{/if}>по имени запрашивающего</option>
+              <option value="{$smarty.const.SORT_CALLME_MODE_BY_IP|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CALLME_MODE_BY_IP)} selected{/if}>по ip-адресу запрашивающего</option>
+            </select>
+          </td>
+
+          <!-- флажок Выполнен -->
+          <td class="param_short" title="Фильтр: только имеющие признак 'Выполнен'">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_DONE|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_DONE|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_DONE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_DONE] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_DONE|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_done_gray_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Искомая строка -->
+          <td class="param_short">
+            найти:
+          </td>
+          <td class="value" width="60%" title="Фильтр: искомое сочетание символов">
+            <input class="edit" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|escape}" type="text" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH]|escape|default:''}">
+          </td>
+          <td class="value_box" title="Начать поиск товаров по условиям фильтра">
+            <input class="submit" style="width: auto;" type="submit" value="&nbsp;Найти&nbsp;">
+          </td>
+
+          <!-- пустая колонка для визуального отделения флажков фильтра -->
+          <td class="param_short">&nbsp;</td>
+
+          <!-- флажок Фильтр запускать вручную -->
+          <td class="param_short" title="Включить срабатывание фильтра только по нажатию клавиши 'Найти'">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_manually_16x16.png" style="margin-right: 0px;">
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <li class="flatlist">
+
+              <!-- {* В переменной $id запоминаем идентификатор текущей записи *} -->
+              {assign var="id" value=$c->callme_id}
+
+              <!-- Микро кнопки справа от названия -->
+              <input class="checkbox" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="javascript: Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();">
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+              </a>
+
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+              <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->done_get|escape}" title="Установить / снять признак 'Выполнен'">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_done{if $c->done != 1}_off{/if}_16x16.png">
+              </a>
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+              <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+              <!-- Нумерация -->
+              <span class="topic" style="display: inline;">
+                {if isset($CurrentPage)}
+                  {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                {else}
+                  {$smarty.foreach.items.iteration}.
+                {/if}
+              </span>
+
+              <!-- Дата -->
+              <span class="date" title="Дата запроса: {$c->created|escape}">
+                <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_DATE|escape}{$c->created|truncate:10:"":true|escape}');;" title="Показать все запросы такого числа">
+                  <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                </a> &nbsp;
+                {$c->created|truncate:10:"":true|escape}
+              </span>
+
+              <!-- Телефон -->
+              {if $c->phone != ""}
+                <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_PHONE|escape}{$c->phone|escape}');" title="Показать все запросы с таким телефоном">
+                  <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png"> &nbsp;
+                  {$c->phone|escape}
+                </a>
+              {elseif $c->email != ""}
+                <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_EMAIL|escape}{$c->email|escape}');;" title="Показать все запросы с таким емейлом">
+                  <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png"> &nbsp;
+                  {$c->email|escape}
+                </a>
+              {elseif $c->icq != ""}
+                <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_ICQ|escape}{$c->icq|escape}');;" title="Показать все запросы с таким номером ICQ">
+                  <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png"> &nbsp;
+                  ICQ номер: {$c->icq|escape}
+                </a>
+              {else}
+                <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_SKYPE|escape}{$c->skype|escape}');;" title="Показать все запросы с таким Skype именем">
+                  <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png"> &nbsp;
+                  Skype: {$c->skype|escape}
+                </a>
+              {/if}
+
+              <!-- Краткая информация -->
+
+              <!-- имя -->
+              {if $c->name != ""}
+                <div class="line">
+                  <span>
+                    имя:
+                  </span>
+                  <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_NAME|escape}{$c->name|escape}');;" title="Показать все запросы с таким именем">
+                    <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                  </a> &nbsp;
+                  {$c->name|escape}
+                </div>
+              {/if}
+
+              <!-- емейл -->
+              {if ($c->phone != "") && ($c->email != "")}
+                <div class="line">
+                  <span>
+                    емейл:
+                  </span>
+                  <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_EMAIL|escape}{$c->email|escape}');;" title="Показать все запросы с таким емейлом">
+                    <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                  </a> &nbsp;
+                  {$c->email|escape}
+                </div>
+              {/if}
+
+              <!-- номер ICQ -->
+              {if (($c->phone != "") || ($c->email != "")) && ($c->icq != "")}
+                <div class="line">
+                  <span>
+                    номер ICQ:
+                  </span>
+                  <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_ICQ|escape}{$c->icq|escape}');;" title="Показать все запросы с таким номером ICQ">
+                    <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                  </a> &nbsp;
+                  {$c->icq|escape}
+                </div>
+              {/if}
+
+              <!-- Skype имя -->
+              {if (($c->phone != "") || ($c->email != "") || ($c->icq != "")) && ($c->skype != "")}
+                <div class="line">
+                  <span>
+                    Skype имя:
+                  </span>
+                  <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_SKYPE|escape}{$c->skype|escape}');;" title="Показать все запросы с таким Skype именем">
+                    <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                  </a> &nbsp;
+                  {$c->skype|escape}
+                </div>
+              {/if}
+
+              <!-- причина -->
+              {if $c->reason != ""}
+                <div class="line">
+                  <span>
+                    причина:
+                  </span>
+                  {$c->reason|escape}
+                </div>
+              {/if}
+
+              <!-- ip-адрес -->
+              <div class="line">
+                <span>
+                  ip-адрес:
+                </span>
+                <a href="#" onclick="javascript: return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_CALLME_COMMAND_IP|escape}{$c->ip|escape}');;" title="Показать все запросы с такого IP-адреса">
+                  <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                </a> &nbsp;
+                {$c->ip|escape} &nbsp; <a href="http://www.ip-adress.com/ip_tracer/{$c->ip|escape}" target="_blank" style="font-size: 7pt;">[где это?]</a>{if isset($c->host) && ($c->host != "")} &nbsp; {$c->host|escape}{/if}
+              </div>
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+        <!-- флажок Добавить удаляемые в запреты доступа -->
+        <table align="center" cellpadding="0" cellspacing="8" class="white">
+          <tr>
+            <td class="value_box" width="100%">
+              &nbsp;
+            </td>
+            <td class="param_short" title="Поместить ли IP-адреса помеченных удаляемых записей на страницу запретов доступа">
+              <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_BAN_SELECTED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_BAN_SELECTED|escape}" type="checkbox" value="1">
+              <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_BAN_SELECTED|escape}');">
+                добавить удаляемые в
+                {strip}
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Banneds" title="Перейти на страницу запретов доступа в админпанели">
+                    запреты доступа
+                  </a>
+                {/strip}
+              </span>
+            </td>
+          </tr>
+        </table>
+
+      {else}
+        <div class="noitems">
+          Не найдено запросов связи{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} (режим: лаконичный){/if}.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Что это?</b> В силу обстоятельств пользователь сайта может оказаться в ситуации, когда по какой-то причине необходим контакт
+        с персоналом сайта, однако пользователь не имеет возможности выйти на связь. Функция "Позвоните мне" снабжает пользователя
+        средством передать персоналу просьбу выйти на связь с их стороны. На клиентской стороне сайта есть заполняемая форма для этой
+        цели. О каждом таком запросе связи администратор уведомляется по емейлу, а сами запросы попадают в список на данной странице.
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка запросы связи по конкретным параметрам.
+        Поля фильтра можно сочетать произвольно, они объединены функцией И. Кроме того, в фильтре имеется строка поиска, а также в элементах списка запросов
+        связи размещены ссылки <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">,
+        моделирующие заполнение строки поиска соответствующим искомым текстом и нажатие кнопки "Найти" без сброса остальных настроек фильтра.
+      </div>
+      <div>
+        Флаг <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_manually_16x16.png"> фильтра
+        управляет автоматизацией срабатывания. При снятом флаге фильтр реагирует на каждое изменение мышью состояния его элементов. При установленном
+        флаге фильтр отзывается лишь на нажатие кнопки "Найти".
+      </div>
+      <div>
+        Флаг <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png"> фильтра
+        управляет порядком сортировки элементов списка. При установленном флаге элементы располагаются по убыванию, то есть от большего к меньшему. При
+        снятом флаге - по возрастанию.
+      </div>
+      <div>
+        Флаг <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png"> фильтра
+        управляет лаконичностью сортировки элементов списка. Установленный флаг означает лаконичный режим, когда после упорядочения скрываются нецелевые
+        записи. Например, есть 10 записей, только в 3 из них указаны телефоны. Тогда сортировка по номерам телефонов в лаконичном режиме выдаст 3 упорядоченные
+        записи с телефонами, остальные 7 записей без телефонов будут скрыты как нецелевые для такого способа сортировки.
+      </div>
+      <div>
+        Флаг <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_done_gray_16x16.png"> фильтра
+        выделяет запросы связи с установленным признаком "Выполнен". Этот признак не несет функциональной нагрузки и существует как средство администратору
+        пометить для себя, какие из запросов связи были им выполнены.
+      </div>
+      <div>
+        <b>Удаление</b>. У каждой записи в списке есть кнопка <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+        для удаления именно этой записи. Рядом с каждой кнопкой размещен пометочный флажок, который совместно с кнопкой "Удалить помеченные" дает возможность
+        массового удаления записей с текущей страницы списка.
+      </div>
+      <div>
+        Дополнительно под списком записей предложен флажок "добавить в запреты доступа". Если его установить перед массовым удалением записей, IP-адрес каждой
+        будет занесен на страницу запретов доступа. Причем если там уже существовал такой IP-адрес и его блокировка была отключена, она будет снова включена.
+        Важно также, что в отношении удаляемых здесь записей и приказе добавить их в запреты доступа каждой из них включается максимальная блокировка.
+      </div>
+      <div>
+        <b>IP-адрес</b>. В запросе связи сохраняется информация о текущем интернет адресе компьютера запрашивающего пользователя. Если системе удается определить
+        связанное с этим адресом имя хоста (канал коммуникационного сервера, через который пользователь зашел на сайт), то следом за числовым представлением
+        ip-адреса указывается имя хоста. В дополнение рядом с ip-адресом выводится ссылка "где это?", чтобы можно было получить информацию о его географической
+        принадлежности.
+      </div>
+    </div>
+
+  </div>

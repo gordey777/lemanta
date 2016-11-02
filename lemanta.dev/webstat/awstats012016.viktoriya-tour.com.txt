@@ -1,0 +1,775 @@
+AWSTATS DATA FILE 7.0 (build 1.971)
+# If you remove this file, all statistics for date 201601 will be lost/reset.
+# Last config file used to build this data file was /etc/awstats/awstats.viktoriya-tour.com.conf.
+
+# Position (offset in bytes) in this file for beginning of each section for
+# direct I/O access. If you made changes somewhere in this file, you should
+# also remove completely the MAP section (AWStats will rewrite it at next
+# update).
+BEGIN_MAP 27
+POS_GENERAL 1998                
+POS_TIME 2657                
+POS_VISITOR 16839               
+POS_DAY 21765               
+POS_DOMAIN 3498                
+POS_LOGIN 3731                
+POS_ROBOT 3920                
+POS_WORMS 4847                
+POS_EMAILSENDER 4978                
+POS_EMAILRECEIVER 5121                
+POS_SESSION 22561               
+POS_SIDER 22768               
+POS_FILETYPES 5256                
+POS_DOWNLOADS 5577                
+POS_OS 11938               
+POS_BROWSER 12074               
+POS_SCREENSIZE 12902               
+POS_UNKNOWNREFERER 12976               
+POS_UNKNOWNREFERERBROWSER 13518               
+POS_ORIGIN 13691               
+POS_SEREFERRALS 13832               
+POS_PAGEREFS 13987               
+POS_SEARCHWORDS 14292               
+POS_KEYWORDS 14444               
+POS_MISC 2320                
+POS_ERRORS 14503               
+POS_CLUSTER 3587                
+POS_SIDER_404 14670               
+END_MAP
+
+# LastLine    = Date of last record processed - Last record line number in last log - Last record offset in last log - Last record signature value
+# FirstTime   = Date of first visit for history file
+# LastTime    = Date of last visit for history file
+# LastUpdate  = Date of last update - Nb of parsed records - Nb of parsed old records - Nb of parsed new records - Nb of parsed corrupted - Nb of parsed dropped
+# TotalVisits = Number of visits
+# TotalUnique = Number of unique visitors
+# MonthHostsKnown   = Number of hosts known
+# MonthHostsUnKnown = Number of hosts unknown
+BEGIN_GENERAL 8
+LastLine 20160201013123 1 0 8561627966578
+FirstTime 0
+LastTime 20160131221039
+LastUpdate 20160202000156 1 0 0 0 0
+TotalVisits 158                 
+TotalUnique 119                 
+MonthHostsKnown 0                   
+MonthHostsUnknown 122                 
+END_GENERAL
+
+# Misc ID - Pages - Hits - Bandwidth
+BEGIN_MISC 10
+QuickTimeSupport 0 0 0
+JavaEnabled 0 0 0
+JavascriptDisabled 0 0 0
+PDFSupport 0 0 0
+WindowsMediaPlayerSupport 0 0 0
+AddToFavourites 0 42 0
+RealPlayerSupport 0 0 0
+TotalMisc 0 0 0
+DirectorSupport 0 0 0
+FlashSupport 0 0 0
+END_MISC
+
+# Hour - Pages - Hits - Bandwidth - Not viewed Pages - Not viewed Hits - Not viewed Bandwidth
+BEGIN_TIME 24
+0 40 316 55513003 14 40 983148
+1 18 161 62969973 3 11 10015
+2 9 37 1867087 2 10 12730
+3 1 1 9247 7 10 41624
+4 3 3 13667 5 10 9268
+5 3 3 19752 129 137 352307
+6 4 4 28603 4 11 11229
+7 31 291 82427427 2 21 388479
+8 26 138 30234481 12 51 4637474
+9 49 383 71264638 572 593 4114316
+10 34 306 73087204 271 1783 680173580
+11 62 417 39807822 11 23 26024
+12 8 24 1072587 7 10 17333
+13 16 101 11841709 9 18 15898
+14 96 439 18776586 21 38 48160
+15 53 507 104604947 26 41 32579
+16 11 44 2146730 2 9 3923
+17 14 65 3604725 3 18 8442
+18 37 305 62318988 17 39 43502
+19 14 97 24236743 9 15 36098
+20 25 223 41579048 1882 3467 708551413
+21 49 386 115511207 25 78 2597031
+22 27 273 49946265 7 37 4477415
+23 36 332 58323068 14 31 22593
+END_TIME
+
+# Domain - Pages - Hits - Bandwidth
+# The 10 first Pages must be first (order not required for others)
+BEGIN_DOMAIN 1
+ip 666 4856 897172901
+END_DOMAIN
+
+# Cluster ID - Pages - Hits - Bandwidth
+BEGIN_CLUSTER 0
+END_CLUSTER
+
+# Login - Pages - Hits - Bandwidth - Last visit
+# The 10 first Pages must be first (order not required for others)
+BEGIN_LOGIN 1
+admin 0 348 888840 20160126163027
+END_LOGIN
+
+# Robot ID - Hits - Bandwidth - Last visit - Hits on robots.txt
+# The 10 first Hits must be first (order not required for others)
+BEGIN_ROBOT 23
+spider 3383 695765669 20160131204308 10
+spiderbot 2289 683856545 20160121100108 0
+bot[\s_+:,\.\;\/\\-] 103 235655 20160131213822 60
+mj12bot 44 17952 20160127095052 44
+unknown 24 10609 20160131204824 24
+facebook 22 6061823 20160131204826 0
+googlebot 20 9020 20160131181713 20
+phantom 18 959581 20160122003457 0
+no_user_agent 16 28049 20160131203939 12
+yandex 9 6610 20160130011227 8
+core 1 8747 20160127024625 0
+exabot 1 451 20160111083008 1
+libwww 1 3337 20160116092913 0
+slurp 1 408 20160115000241 1
+nagios 1 8747 20160127141901 0
+robot 7 3157 20160129060132 7
+python 1 3449 20160114044435 0
+surveybot 2 816 20160124114908 2
+favicon 3 21149 20160131214702 0
+archive\.org_bot 4 10471 20160131204824 3
+wget 1 8747 20160127141902 0
+netcraft 1 9247 20160111190750 0
+crawl 5 12244 20160127095705 2
+END_ROBOT
+
+# Worm ID - Hits - Bandwidth - Last visit
+# The 5 first Hits must be first (order not required for others)
+BEGIN_WORMS 0
+END_WORMS
+
+# EMail - Hits - Bandwidth - Last visit
+# The 20 first Hits must be first (order not required for others)
+BEGIN_EMAILSENDER 0
+END_EMAILSENDER
+
+# EMail - Hits - Bandwidth - Last visit
+# The 20 first hits must be first (order not required for others)
+BEGIN_EMAILRECEIVER 0
+END_EMAILRECEIVER
+
+# Files type - Hits - Bandwidth - Bandwidth without compression - Bandwidth after compression
+BEGIN_FILETYPES 13
+css 111 1088880 0 0
+png 1315 23187445 0 0
+ttf 34 4341290 0 0
+woff 44 1663464 0 0
+php 79 1604140 0 0
+mp4 8 21612026 0 0
+html 230 2945163 0 0
+jpg 2610 829798341 0 0
+js 132 5316070 0 0
+xml 3 18986 0 0
+Unknown 276 1923887 0 0
+svg 2 395416 0 0
+gif 12 51412 0 0
+END_FILETYPES
+
+# Downloads - Hits - Bandwidth
+BEGIN_DOWNLOADS 116
+/robots.txt 194 0 82033
+/files/products/product_72_1_72264308.mp4 3 1 4723721
+/files/products/product_236_1_38565866.mp4 3 1 6731337
+/files/products/product_654_1_2055803.mp4 3 1 6171517
+/files/products/product_67_1_73928456.mp4 3 1 4571949
+/files/products/product_304_1_15287936.mp4 3 1 5748493
+/files/products/product_648_1_68897822.mp4 3 1 5617401
+/files/products/product_65_1_49701955.mp4 3 1 3743671
+/files/products/product_305_1_17052380.mp4 3 1 5339853
+/files/products/product_652_1_8280091.mp4 2 0 3555970
+/files/products/product_335_1_24755352.mp4 2 0 2649462
+/files/products/product_86_1_89294631.mp4 2 0 2892576
+/files/products/product_633_1_53771577.mp4 2 0 3264102
+/files/products/product_401_1_92726400.mp4 2 0 2799690
+/files/products/product_69_1_90572634.mp4 2 0 2675990
+/files/products/product_74_1_4089105.mp4 2 0 2618752
+/files/products/product_397_1_34385709.mp4 2 0 3605240
+/files/products/product_680_1_72676583.mp4 2 0 2919508
+/files/products/product_460_1_23255143.mp4 2 0 3187834
+/files/products/product_634_1_769908.mp4 2 0 3578742
+/files/products/product_91_1_52411648.mp4 2 0 2688742
+/files/products/product_1_1_7086962.mp4 2 0 2515654
+/files/products/product_125_1_68117614.mp4 2 0 3126884
+/files/products/product_315_1_49778689.mp4 2 0 2892156
+/files/products/product_635_1_77034800.mp4 2 0 2838344
+/files/products/product_143_1_66741147.mp4 2 0 3024070
+/files/products/product_312_1_72109827.mp4 2 0 2983976
+/files/products/product_130_1_18576866.mp4 2 0 1934806
+/files/products/product_75_1_66718903.mp4 2 0 2440262
+/files/products/product_66_1_32277060.mp4 2 0 2608694
+/files/products/product_139_1_42978536.mp4 2 0 3006946
+/files/products/product_631_1_21219881.mp4 2 0 3330236
+/files/products/product_632_1_60500362.mp4 2 0 3538108
+/files/products/product_646_1_73163434.mp4 2 0 3370498
+/files/products/product_71_1_85381729.mp4 2 0 2378588
+/files/products/product_250_1_10229280.mp4 2 0 3373366
+/files/products/product_621_1_89186883.mp4 2 0 3656936
+/files/products/product_641_1_71699146.mp4 2 0 3248508
+/files/products/product_124_1_72236822.mp4 2 0 3453914
+/files/products/product_77_1_87431563.mp4 2 0 2254536
+/files/products/product_263_1_7557595.mp4 2 0 3059694
+/files/products/product_280_1_67564617.mp4 2 0 2748242
+/files/products/product_132_1_30707922.mp4 2 0 2530730
+/files/products/product_636_1_75567594.mp4 2 0 2914608
+/files/products/product_80_1_85276317.mp4 2 0 3049144
+/files/products/product_683_1_47011452.mp4 2 0 3287964
+/files/products/product_336_1_76357265.mp4 2 0 3427232
+/files/products/product_675_1_40370178.mp4 2 0 3339404
+/files/products/product_76_1_46231821.mp4 2 0 2784852
+/files/products/product_653_1_26652682.mp4 2 0 3531206
+/files/products/product_314_1_42678578.mp4 2 0 2612674
+/files/products/product_123_1_71622483.mp4 2 0 3516918
+/files/products/product_348_1_88668349.mp4 2 0 2879086
+/files/products/product_237_1_69176578.mp4 2 0 3225328
+/files/products/product_273_1_62812750.mp4 2 0 2843502
+/files/products/product_307_1_95769686.mp4 2 0 3102664
+/files/products/product_127_1_86537595.mp4 2 0 3357594
+/files/products/product_138_1_9009374.mp4 2 0 2650648
+/files/products/product_70_1_37087553.mp4 2 0 2519614
+/files/products/product_73_1_85614200.mp4 2 0 2453250
+/files/products/product_627_1_38093245.mp4 2 0 3383566
+/files/products/product_421_1_1213835.mp4 2 0 3873946
+/files/products/product_354_1_23862631.mp4 2 0 3622140
+/files/products/product_92_1_4598892.mp4 2 0 2814250
+/files/products/product_140_1_94995108.mp4 2 0 2614702
+/files/products/product_316_1_99282289.mp4 2 0 2789804
+/files/products/product_135_1_51855410.mp4 2 0 2635550
+/files/products/product_260_1_63599393.mp4 2 0 3106562
+/files/products/product_344_1_15000315.mp4 2 0 3560876
+/files/products/product_419_1_67693987.mp4 2 0 3277204
+/files/products/product_88_1_89657291.mp4 2 0 2908454
+/files/products/product_279_1_84809504.mp4 2 0 3473392
+/files/products/product_398_1_62138186.mp4 2 0 3806692
+/files/products/product_142_1_47392500.mp4 2 0 3257314
+/files/products/product_640_1_55267575.mp4 2 0 3309870
+/files/products/product_404_1_30903346.mp4 2 1 4850207
+/files/products/product_400_1_68203681.mp4 2 0 3739752
+/files/products/product_310_1_11363663.mp4 2 0 2799942
+/files/products/product_625_1_74119720.mp4 2 0 3562990
+/files/products/product_68_1_92960732.mp4 2 0 2275538
+/files/products/product_129_1_18195865.mp4 2 0 3246056
+/files/products/product_83_1_18440901.mp4 2 0 3007196
+/files/products/product_306_1_36458021.mp4 2 0 3326490
+/files/products/product_626_1_23309483.mp4 2 0 3600208
+/files/products/product_136_1_89731434.mp4 2 0 2753268
+/files/products/product_343_1_57188910.mp4 2 0 3431766
+/files/products/product_623_1_6393959.mp4 2 0 3525564
+/files/products/product_290_1_87486816.mp4 2 0 3412384
+/files/products/product_251_1_96262836.mp4 2 0 3040056
+/files/products/product_399_1_85721818.mp4 2 0 3443816
+/files/products/product_630_1_85947189.mp4 2 0 3713660
+/files/products/product_253_1_3309542.mp4 2 0 3105554
+/files/products/product_89_1_94307902.mp4 2 0 2720638
+/files/products/product_233_1_72314085.mp4 2 0 3197872
+/files/products/product_261_1_99595713.mp4 2 0 2877014
+/files/products/product_628_1_59301903.mp4 2 1 4828724
+/files/products/product_420_1_6560638.mp4 2 0 4190534
+/files/products/product_423_1_66360765.mp4 2 0 3603696
+/files/products/product_624_1_42671882.mp4 2 0 3824448
+/files/products/product_285_1_80385943.mp4 2 0 3317590
+/files/products/product_650_1_45298694.mp4 2 0 3489154
+/files/products/product_82_1_49798632.mp4 2 0 3021960
+/files/products/product_496_1_39006690.mp4 2 0 3580428
+/files/products/product_684_1_39398631.mp4 2 0 2994976
+/files/products/product_629_1_96063140.mp4 2 0 3725160
+/files/products/product_282_1_4695039.mp4 2 0 3293738
+/files/products/product_134_1_14376439.mp4 2 0 2404450
+/files/products/product_126_1_93211872.mp4 2 0 3098258
+/files/products/product_612_1_86988723.mp4 2 0 3341576
+/files/products/product_637_1_61558900.mp4 2 0 2723016
+/files/products/product_651_1_26530423.mp4 2 0 3072644
+/files/products/product_676_1_63013066.mp4 2 0 3343548
+/files/products/product_649_1_93843722.mp4 2 0 2739474
+/files/products/product_645_1_75537260.mp4 2 0 3503100
+/files/products/product_342_1_6889254.mp4 2 0 2977156
+/files/products/product_128_1_79006487.mp4 2 0 3078886
+END_DOWNLOADS
+
+# OS ID - Hits
+BEGIN_OS 9
+winxp 455
+winnt 192
+linuxubuntu 71
+linux 87
+winvista 566
+win7 3393
+macosx 2
+win2003 1
+Unknown 99
+END_OS
+
+# Browser ID - Hits
+BEGIN_BROWSER 46
+firefox28.0 1
+chrome44.0.2403.125 1
+msie6.0 3
+firefox5.0 1
+firefox3.8 2
+chrome29.0.1547.57 2
+chrome12.0.742.100 1
+chrome34.0.1847.137 1
+strata 20
+firefox3.6.6 1
+firefox4.0 1
+firefox31.0 2
+msie8.0 1
+firefox6.0.2 3
+chrome47.0.2526.111 1446
+firefox43.0 32
+msie7.0 1
+chrome37.0.2062.120 20
+chrome17.0.963.46 1
+firefox23.0 1
+chrome27.0.1453 38
+firefox41.0 91
+msie9.0 1
+chrome37.0.2062.103 11
+Unknown 2
+netscape 2
+firefox40.0 1
+chilkat 1
+chrome34.0.1847.131 1
+chrome48.0.2564.82 35
+firefox7.0.1 4
+chrome47.0.2526.73 149
+chrome32.0.1700.107 56
+chrome36.0.1985.143 464
+mozilla 75
+chrome47.0.2526.106 1673
+firefox39.0 1
+chrome35.0.1916.153 22
+netscape5.0 1
+chrome46.0.2490.86 157
+chrome23.0.1271.97 4
+chrome48.0.2564.97 512
+firefox3.6.8 4
+firefox15.0.1 1
+safari 18
+chrome21.0.1180.89 1
+END_BROWSER
+
+# Screen size - Hits
+BEGIN_SCREENSIZE 0
+END_SCREENSIZE
+
+# Unknown referer OS - Last visit date
+BEGIN_UNKNOWNREFERER 7
+Validator.nu/LV_http://validator.w3.org/services 20160131204825
+Mozilla/5.0_(compatible;_Google-Structured-Data-Testing-Tool__http://developers.google.com/structured-data/testing-tool/) 20160131221039
+Mozilla 20160108120135
+Stratagems_Kumo 20160130140442
+semanticbot 20160129110546
+Chilkat/1.0.0_(_http://www.chilkatsoft.com/ChilkatHttpUA.asp) 20160128072529
+Mozilla/5.0_(compatible;_GoogleDocs;_apps-spreadsheets;__http://docs.google.com) 20160102155038
+END_UNKNOWNREFERER
+
+# Unknown referer Browser - Last visit date
+BEGIN_UNKNOWNREFERERBROWSER 2
+Validator.nu/LV_http://validator.w3.org/services 20160131204825
+semanticbot 20160129110546
+END_UNKNOWNREFERERBROWSER
+
+# Origin - Pages - Hits 
+BEGIN_ORIGIN 6
+From0 164 173
+From1 0 0
+From2 1 1
+From3 52 52
+From4 449 4640
+From5 0 0
+END_ORIGIN
+
+# Search engine referers ID - Pages - Hits
+BEGIN_SEREFERRALS 1
+google 1 1
+END_SEREFERRALS
+
+# External page referers - Pages - Hits
+# The 10 first Pages must be first (order not required for others)
+BEGIN_PAGEREFS 5
+http://top1-seo-service.com/try.php 30 30
+http://burger-imperia.com 11 11
+http://buttons-for-website.com 9 9
+http://hvd-store.com 1 1
+http://hundejo.com 1 1
+END_PAGEREFS
+
+# Search keyphrases - Number of search
+# The 10 first number of search must be first (order not required for others)
+BEGIN_SEARCHWORDS 0
+END_SEARCHWORDS
+
+# Search keywords - Number of search
+# The 10 first number of search must be first (order not required for others)
+BEGIN_KEYWORDS 0
+END_KEYWORDS
+
+# Errors - Hits - Bandwidth
+BEGIN_ERRORS 7
+403 1 469
+401 22 14338
+302 45 19207
+206 156 19062638
+500 1 390
+404 91 305690
+301 169 111030
+END_ERRORS
+
+# URL with 404 errors - Hits - Last URL referer
+BEGIN_SIDER_404 56
+/user 1 -
+/libraries 1 -
+/includes 1 -
+/modules 1 -
+/modules/mod_mapsgoogle/mod_mapsgoogle.php 1 http://viktoriya-tour.com/modules/mod_mapsgoogle/mod_mapsgoogle.php
+/media 1 -
+/wp-includes/az1.php 1 -
+/wordpress/wp-login.php 1 http://viktoriya-tour.com/wordpress/wp-login.php
+/plugins 1 -
+/detskaya-odezhda/bridzhi/dlya-malchikov 1 -
+/sitemap 1 -
+/wp-includes/images/rss.png 1 http://viktoriya-tour.com/
+/copyright.php 1 -
+/index1.html 1 -
+/license.txt 1 -
+/templates 1 -
+/configuration.php 1 -
+/sitemap.html 1 -
+/xmlrpc.php 1 -
+/index2.php 1 -
+/components 1 -
+/%D1%84%D0%B2%D1%8C%D1%88%D1%82 1 -
+/zhenskaya-odezhda/nakidki 1 -
+/blog/robots.txt 1 -
+/components/archive 1 -
+/bitrix/admin/index.php 1 -
+/templates/atomic/cachefix.php 1 http://viktoriya-tour.com/templates/atomic/cachefix.php
+/install.php 1 -
+/zhenskaya-odezhda/yubki 1 -
+/modules/mod_apigoogle/mod_apigoogle.php 1 http://viktoriya-tour.com/modules/mod_apigoogle/mod_apigoogle.php
+/wp-cache.php 1 -
+/zhenskaja_odezhda-testovaya-stranica 1 -
+/administrator/index.php 11 -
+/xmlrpc 1 -
+/wp-register.php 1 -
+/index_old.html 1 -
+/licenses.php 1 -
+/credits.php 1 -
+/language 1 -
+/administrator/cachefix.php 1 http://viktoriya-tour.com/administrator/cachefix.php
+/detskaya-odezhda/dlya-devochek/sarafany 2 -
+/wp-includes/sample.php 1 -
+/changelog.php 1 -
+/images 1 -
+/tmp 1 -
+/administrator 2 -
+/blog/wp-login.php 1 http://viktoriya-tour.com/blog/wp-login.php
+/modules/mod_mapsapi/mod_mapsapi.php 1 http://viktoriya-tour.com/modules/mod_mapsapi/mod_mapsapi.php
+/detskaya-odezhda/bridzhi/dlya-devochek 16 -
+/wp-login.php 5 http://viktoriya-tour.com/wp-login.php
+/gtm.js 1 -
+/products/trendovaya-futbolka-sinego-cveta-s-printo 1 -
+/logs 1 -
+/design/lemanta/images/no_foto.jpg 5 http://viktoriya-tour.com/admin/index.php
+/downloads 1 -
+/images/cachefix.php 1 http://viktoriya-tour.com/images/cachefix.php
+END_SIDER_404
+
+# Host - Pages - Hits - Bandwidth - Last visit date - [Start date of last visit] - [Last page of last visit]
+# [Start date of last visit] and [Last page of last visit] are saved only if session is not finished
+# The 10 first Hits must be first (order not required for others)
+BEGIN_VISITOR 122
+85.238.96.82 107 1134 292312749 20160129191242
+195.138.93.2 103 309 3802986 20160126163027
+188.163.70.201 94 902 235548392 20160126081144
+91.214.82.66 41 420 72095735 20160115100428
+78.26.154.89 39 300 77346371 20160131220803
+46.98.110.134 28 304 32189110 20160119143118
+85.198.191.203 23 236 69350097 20160120211809
+62.4.22.54 20 20 62994 20160130140442
+185.14.195.188 10 11 115768 20160130005348
+80.90.237.27 8 88 1929084 20160115113418
+104.45.18.178 1 1 38026 20160120140256
+190.121.21.211 1 1 9362 20160111105121
+162.244.35.233 4 4 8840 20160104231728
+177.39.152.250 2 18 1036858 20160126124825
+54.164.211.254 2 18 1036961 20160112233915
+176.31.24.29 1 1 3346 20160119210410
+189.12.46.244 2 18 1036858 20160125151139
+78.47.191.22 1 1 9247 20160108042633
+89.34.23.52 1 1 8747 20160117224336
+171.25.193.78 1 1 3346 20160115082853
+195.242.80.46 2 2 14260 20160105155803
+179.253.1.100 2 18 1036858 20160129015936
+87.0.151.251 2 18 1036858 20160121204528
+123.125.67.215 1 1 3346 20160128005325
+177.9.60.166 1 3 80385 20160121161909
+37.187.129.166 1 1 3346 20160115075352
+197.148.28.70 1 1 8795 20160118053705
+27.75.200.168 1 1 3361 20160128072529
+188.72.96.236 1 1 3449 20160107014222
+189.76.68.82 1 3 80385 20160128170344
+186.250.229.229 2 14 813293 20160128023215
+189.28.184.93 1 1 3346 20160121205016
+158.69.201.128 1 1 3346 20160118063345
+91.121.141.219 1 1 3449 20160108120647
+130.185.139.213 1 1 3346 20160128091532
+62.212.73.49 1 1 3346 20160117014105
+37.1.202.50 1 1 3449 20160112012205
+66.102.9.53 4 46 11333268 20160131221039
+158.69.27.74 1 1 9247 20160106211558
+123.125.67.209 1 1 3346 20160126153758
+46.229.170.197 4 4 35488 20160129052810
+179.156.119.127 1 12 781870 20160118203741
+77.120.168.45 3 32 5064083 20160129130042
+85.247.2.166 2 18 1036858 20160127185221
+37.116.188.214 2 19 1136837 20160125174638
+115.112.64.154 2 2 18494 20160108120135
+91.121.100.66 1 1 9247 20160109142200
+186.237.62.22 2 18 1036858 20160124230801
+5.39.79.8 1 1 3346 20160131025145
+91.205.238.109 1 1 3346 20160119022627
+93.147.51.98 2 19 1234566 20160116192008
+66.102.9.42 2 41 9651001 20160131212009
+78.47.248.249 1 1 9247 20160111171003
+37.49.226.236 1 1 3346 20160122022224
+123.125.67.216 1 1 3346 20160128210047
+188.64.170.188 4 4 18744 20160117163937
+82.207.87.110 8 91 15182708 20160122231511
+195.138.68.66 4 36 1919207 20160120181724
+179.99.180.4 2 18 1036858 20160131192417
+213.231.2.248 6 70 20363202 20160112230005
+176.126.252.12 1 1 3346 20160115134838
+179.223.189.228 2 18 1036858 20160131161458
+120.27.29.137 1 1 3449 20160113224831
+189.124.24.44 1 3 80385 20160126220346
+95.45.252.1 2 2 14260 20160105003926
+202.152.50.154 2 18 1036858 20160127084055
+136.243.48.86 3 3 10216 20160117154741
+185.55.224.5 1 1 8747 20160117223825
+189.11.134.52 2 18 1036858 20160124225310
+177.220.152.206 2 18 1036858 20160122020254
+151.28.39.89 2 18 1036858 20160117224600
+95.213.143.103 1 1 9247 20160113032600
+136.243.48.85 2 2 18868 20160117080402
+66.249.89.114 1 1 2210 20160102155038
+54.85.223.247 4 4 35988 20160117092603
+128.30.52.96 1 1 7315 20160131204825
+136.243.48.83 1 1 2210 20160102055931
+201.78.192.99 2 18 1036858 20160117185455
+177.223.12.43 2 18 1036858 20160116213258
+186.244.112.68 0 2 216431 
+91.250.241.241 1 1 3346 20160115114712
+201.79.36.204 1 3 203026 20160122162643
+216.151.2.2 1 1 9362 20160111065438
+46.252.153.10 1 1 9362 20160111105634
+184.154.228.8 1 1 9362 20160111064937
+178.137.82.205 1 1 9247 20160114214304
+212.7.220.163 1 1 2210 20160103133911
+201.42.222.12 2 18 1036858 20160126183809
+103.231.92.42 2 18 1036858 20160118012205
+151.74.138.67 2 18 1036858 20160120115035
+94.242.246.23 2 2 6692 20160125075527
+187.108.53.26 2 18 1036858 20160118132240
+187.53.12.99 2 18 1036858 20160130144540
+191.183.241.212 2 18 1036858 20160120005243
+192.241.169.95 1 1 8747 20160116114701
+87.244.163.247 2 2 4420 20160104122728
+201.75.171.16 2 18 1036858 20160121183742
+202.57.16.84 1 1 8747 20160117224834
+82.155.53.147 2 18 1036858 20160115195908
+95.45.254.122 2 2 14260 20160105003928
+150.70.173.57 1 1 8747 20160127084138
+184.15.149.228 2 18 1036858 20160122115513
+78.26.162.98 7 66 7187313 20160115083712
+66.102.9.64 1 24 3620229 20160112150710
+77.247.181.162 1 1 3346 20160116161609
+37.115.33.169 1 1 8804 20160116142036
+201.79.168.209 0 5 212572 
+95.130.10.216 1 1 3346 20160116210434
+83.240.209.158 2 18 1036858 20160122173548
+186.247.195.173 2 18 1036858 20160127094153
+191.237.46.228 1 1 399 20160129110546
+95.95.162.166 2 18 1036961 20160113222948
+79.167.15.233 2 18 1036858 20160126153155
+92.202.35.187 1 3 80385 20160123161906
+65.19.167.131 1 1 3346 20160115075409
+177.125.195.190 0 3 267059 
+91.203.63.72 4 24 1104581 20160120183154
+71.88.132.2 2 18 1036858 20160128204842
+119.81.249.132 1 1 3346 20160115072628
+136.243.48.84 1 1 6533 20160118065212
+5.61.40.20 1 1 8747 20160124131452
+177.141.68.61 2 19 1234566 20160118154515
+END_VISITOR
+
+# Date - Pages - Hits - Bandwidth - Visits
+BEGIN_DAY 30
+20160102 5 5 11050 4
+20160103 1 1 2210 1
+20160104 6 6 13260 2
+20160105 8 8 47200 4
+20160106 11 43 2673827 3
+20160107 1 1 3449 1
+20160108 6 6 38088 4
+20160109 3 3 18869 2
+20160110 1 1 9247 1
+20160111 11 51 5768740 7
+20160112 47 578 135877245 7
+20160113 11 87 18690545 5
+20160114 40 393 70966414 10
+20160115 135 1031 176231503 14
+20160116 8 41 2295667 6
+20160117 16 48 2150216 11
+20160118 20 191 64990936 8
+20160119 20 192 2020584 3
+20160120 100 465 75683489 9
+20160121 36 316 83494166 5
+20160122 16 159 19195716 6
+20160123 1 3 80385 1
+20160124 5 37 2082463 3
+20160125 11 121 3441233 5
+20160126 33 256 43821048 9
+20160127 7 55 3119321 4
+20160128 9 39 1943935 7
+20160129 35 282 82760159 6
+20160130 14 31 1159318 3
+20160131 49 406 112615224 7
+END_DAY
+
+# Session range - Number of visits
+BEGIN_SESSION 7
+1h+ 3
+5mn-15mn 8
+0s-30s 129
+2mn-5mn 4
+15mn-30mn 3
+30s-2mn 5
+30mn-1h 6
+END_SESSION
+
+# URL - Pages - Bandwidth - Entry - Exit
+# The 10 first Pages must be first (order not required for others)
+BEGIN_SIDER 112
+/ 144 615129 113 65
+/admin/ 84 2323428 3 2
+/admin/index.php 46 1466578 2 4
+/design/lemanta/fonts/isocpeur.woff 44 1663464 2 11
+/design/lemanta/fonts/isocpeur.ttf 34 4341290 0 34
+/license.php 26 86980 13 11
+/zhenskaya-odezhda 13 100072 1 1
+/muzhskaya-odezhda 12 63957 0 3
+/zhenskaya-odezhda/page-1 11 85065 0 1
+/detskaya-odezhda/dlya-devochek 10 70058 3 1
+/detskaya-odezhda/dlya-devochek/kostyumy-troyki 1 6130 0 0
+/blog/detskaya-odezhda-kak-gramotno-podobrat-garderob-rebenka 2 11757 1 1
+/sitemap.xml 3 18986 0 0
+/products/nezhnaya-futbolka-golubogo-cveta-s-korotkim-rukavom 1 7163 0 0
+/detskaya-odezhda/dlya-devochek/bryuki 3 16372 0 0
+/dostavka 3 14618 0 0
+/zhenskaya-odezhda/platya/povsednevnye/page-1 7 55554 0 1
+// 2 6606 0 0
+/zhenskaya-odezhda/platya/letnie 2 17318 0 0
+/contact 3 13751 0 1
+/detskaya-odezhda 6 43536 1 0
+/registration 2 8927 0 1
+/cart/add/2065 1 4377 0 0
+/products/bridzhi-2n-8123pd 1 6789 0 0
+/zhenskaya-odezhda/platya/povsednevnye/page-3 1 6789 0 0
+/detskaya-odezhda/dlya-malchikov 8 65862 1 1
+/blog/detskie-dzhinsy-universalnyj-predmet-garderoba-dlya-malysha-lyubogo-vozrasta 1 5956 0 0
+/blog 7 65922 1 1
+/zhenskaya-odezhda/platya/page-1 6 48566 0 1
+/detskaya-odezhda/dlya-devochek/kostyumy 1 7668 0 0
+/detskaya-odezhda/dlya-malchikov/dzhinsy 1 6347 0 0
+/products/stilnaya-futbolka-belogo-cveta-s-korotkim-rukavom 4 28596 0 0
+/detskaya-odezhda/dlya-devochek/dzhinsy 1 6822 0 0
+/zhenskaya-odezhda/platya/vechernie/page-1 2 13106 0 0
+/cart/delete/1407 1 4423 0 0
+/products/sarafan-poplin-8y-55vj 1 7640 0 1
+/tuniki 2 12904 0 1
+/detskaya-odezhda/kurtki/page-1 1 7081 0 0
+/detskaya-odezhda/dlya-malchikov/page-1 8 65266 0 0
+/zhenskaya-odezhda/platya/letnie/page-1 2 17366 0 0
+/sections/mainpage 1 3293 0 0
+/blog/bluzki-i-yubki-kak-element-delovogo-stilya-podbiraem-pravilnye-sochetaniya 1 5833 0 0
+/zhenskaya-odezhda/kostyumy 1 5606 0 0
+/zhenskaya-odezhda/page-5 2 14819 0 0
+/oplata 4 24309 1 1
+/detskaya-odezhda/dlya-malchikov/rubashki 5 24822 0 0
+/cart/delete/2065 1 4112 0 1
+/zhenskaya-odezhda/svitera 4 21996 0 1
+/products/trendovaya-futbolka-sinego-cveta-s-printom-i-korotkim-rukavom 3 22428 1 0
+/products/plate-9d-1143pf 1 8398 0 0
+/detskaya-odezhda/page-1 6 44020 0 0
+/zhenskaya-odezhda/page-0 2 14608 1 0
+/zhenskaya-odezhda/platya/kokteylnye 3 25439 0 0
+/detskaya-odezhda/platya 1 5412 0 0
+/login 3 12328 1 1
+/zhenskaya-odezhda/platya/kokteylnye/page-1 3 25025 0 0
+/detskaya-odezhda/dlya-malchikov/kostyumy 2 15239 0 0
+/zhenskaya-odezhda/futbolki 3 20869 0 0
+/products/effektnoe-vechernee-plate-chernogo-cveta-bez-rukavov 1 6966 0 0
+/blog/kakuyu-odezhdu-vybrat-v-etom-sezone 1 6329 0 0
+/detskaya-odezhda/dlya-devochek/svitera 2 14352 0 0
+/products/stilnoe-koktejlnoe-plate-s-rozovo-chernym-uzorom-s-dlinnym-rukavom 2 16180 0 0
+/cart/delete/567 1 4422 0 0
+/detskaya-odezhda/dlya-devochek/kurtki 3 21663 0 1
+/detskaya-odezhda/dlya-malchikov/mayki 2 10611 0 0
+/cart/add/836 1 649 0 0
+/detskaya-odezhda/dlya-malchikov/kurtki/page-1 1 6347 0 0
+/products 1 7593 0 0
+/zhenskaya-odezhda/platya/povsednevnye/page-2 1 9074 0 0
+/products/sviter-4p-16ol 1 6441 0 1
+/zhenskaya-odezhda/platya/sarafany 2 12746 0 1
+/products/shorty-2u-9218cx 1 6502 0 0
+/blog/kak-vybrat-zhenskuyu-odezhdu-dlya-korporativa 2 13476 0 0
+/detskaya-odezhda/dlya-malchikov/kostyumy-zimnie 1 6453 0 0
+/products/page-1 1 7022 0 0
+/blog/zhenskie-vetrovki-i-verhnyaya-odezhda-dlya-zhenshchin-aktualnye-trendy-etogo-sezona 1 6018 0 0
+/detskaya-odezhda/dlya-malchikov/dzhinsy/page-1 1 5579 0 0
+/detskaya-odezhda/svitera/page-1 1 6998 0 0
+/zhenskaya-odezhda/platya/povsednevnye 7 54737 1 0
+/detskaya-odezhda/bridzhi 1 5485 0 0
+/muzhskaya-odezhda/futbolki 2 11397 0 0
+/products/plate-5u-1099wm 1 8318 0 1
+/detskaya-odezhda/dlya-malchikov/bryuki 1 5741 0 0
+/cart 3 12801 1 1
+/cart/add/264 1 4367 0 0
+/rasprodazha 2 7876 0 0
+/zhenskaya-odezhda/platya/vechernie 3 25241 0 0
+/zhenskaya-odezhda/page-4 2 14943 0 0
+/detskaya-odezhda/dlya-devochek/page-1 8 56459 0 0
+/detskaya-odezhda/dlya-devochek/svitera/page-1 2 10629 0 0
+/products/plate-4k-1216df 1 7674 0 0
+/detskaya-odezhda/dlya-malchikov/kostyumy-troyki 2 15232 0 0
+/zhenskaya-odezhda/platya 6 46188 0 0
+/detskaya-odezhda/yubki 1 5594 0 0
+/order 1 2414 0 0
+/zhenskaya-odezhda/page-3 2 15754 0 0
+/zhenskaya-odezhda/page-2 3 23097 0 0
+/products/modnoe-koktejlnoe-plate-s-zeleno-chernym-uzorom-s-dlinnym-rukavom 1 7649 0 0
+/products/plate-1w-339ss 1 7105 0 0
+/detskaya-odezhda/dlya-devochek/page-2 1 4981 0 0
+/detskaya-odezhda/dlya-devochek/bridzhi 5 27696 0 1
+/detskaya-odezhda/dlya-malchikov/kurtki 1 7285 0 0
+/detskaya-odezhda/dlya-devochek/plashchi 2 10253 0 0
+/design/lemanta/js/ajax/search.php 2 4330 0 0
+/detskaya-odezhda/bryuki 1 6249 0 0
+/detskaya-odezhda/dlya-devochek/kostyumy-zimnie 2 12993 0 0
+/products/plate-3u-82581ps 9 97604 6 1
+/index.php 5 46252 5 5
+/detskaya-odezhda/dlya-devochek/tuniki 3 19238 0 0
+/detskaya-odezhda/kurtki 1 7004 0 0
+/cart/add/1966 1 5157 0 0
+/detskaya-odezhda/svitera 1 6991 0 0
+END_SIDER

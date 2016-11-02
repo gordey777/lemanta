@@ -1,0 +1,166 @@
+{* <!--
+  Impera CMS: шаблон админ модуля страницы валюты.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о валюте;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    setup = true - вывести эту кнопку
+    currencies = true - вывести эту кнопку
+    card_currencies = true - вывести эту кнопку
+    deliveries = true - вывести эту кнопку
+    deliveries_types = true - вывести эту кнопку
+    shippings_terms = true - вывести эту кнопку
+    payment = true - вывести эту кнопку
+    sms = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           setup = true
+           currencies = true
+           card_currencies = true
+           deliveries = true
+           deliveries_types = true
+           shippings_terms = true
+           payment = true
+           sms = true}
+
+  {* <!-- В переменную $id заносим идентификатор валюты или 0 при его отсутствии. --> *}
+  {assign var="id" value=$item->currency_id|default:0|escape}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currencies" title="Перейти на страницу валют в админпанели">Валюты</a>
+        → {if !empty($id)}Редактирование{else}Новая{/if}
+      </div>
+      {if !empty($id) || (isset($item->name) && ($item->name != ""))}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новая валюта
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    {* <!-- Если во входной переменной $message есть текст информационного сообщения --> *}
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    {* <!-- Если во входной переменной $error есть текст сообщения об ошибке --> *}
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о записи -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Currency" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Название -->
+        <tr>
+          <td class="param_short">
+            Название:
+          </td>
+          <td class="value" width="100%" title="Название валюты">
+            <input class="edit" name="name[{$id}]" type="text" value="{$item->name|default:''|escape}">
+          </td>
+
+          <!-- поле Код ISO -->
+          <td class="param_short">
+            код:
+          </td>
+          <td class="value" title="Код ISO">
+            <input class="edit" name="code[{$id}]" size="3" style="width: auto;" type="text" value="{$item->code|default:''|escape}">
+          </td>
+
+          <!-- поле Курс -->
+          <td class="param_short">
+            Курс:
+          </td>
+          <td class="value" title="Курс (за единицу базовой валюты)">
+            <input class="edit" name="rate_from[{$id}]" size="6" style="width: auto;" type="text" value="{if $item->rate_from|default:0|string_format:'%1.4f'|replace:',':'.' > 0}{$item->rate_from|string_format:'%1.4f'|replace:',':'.'}{/if}">
+          </td>
+          <td class="value" title="Знак (надпись)">
+            <input class="edit" name="sign[{$id}]" size="4" style="width: auto;" type="text" value="{$item->sign|default:''|escape}">
+          </td>
+
+          <!-- поле Курс -->
+          <td class="param_short">
+            =
+          </td>
+          <td class="value" title="Обратный курс (сколько единиц базовой валюты)">
+            <input class="edit" name="rate_to[{$id}]" size="6" style="width: auto;" type="text" value="{if $item->rate_to|default:0|string_format:'%1.4f'|replace:',':'.' > 0}{$item->rate_to|string_format:'%1.4f'|replace:',':'.'}{/if}">
+          </td>
+          <td class="param_short">
+            {$MainCurrency->sign|default:'?'|escape}
+          </td>
+
+          <!-- флажок Разрешена -->
+          <td class="param_short" title="Разрешена ли валюта к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешена
+            </span>
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input name="main[{$id}]" type="hidden" value="{$item->main|default:0|escape}">
+            <input name="def[{$id}]" type="hidden" value="{$item->def|default:0|escape}">
+            <input name="defa[{$id}]" type="hidden" value="{$item->defa|default:0|escape}">
+            <input name="ymarket[{$id}]" type="hidden" value="{$item->ymarket|default:0|escape}">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && ($from_page != "")}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>

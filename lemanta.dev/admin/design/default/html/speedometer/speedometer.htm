@@ -1,0 +1,428 @@
+{* <!--
+  Impera CMS: шаблон админ модуля сравнения прогрузок страниц сайтов.
+
+  Принимает во входных переменных:
+    $site_count = возможное количество сайтов
+    $test_count = возможное число тестовых прогрузок
+    $test_timer = возможное значение таймера между тестами
+    $items = массив указанных пользователем адресов страниц
+    $count = указанное пользователем количество тестов
+    $timer = указанное пользователем значение таймера повторов
+    $samples = массив замеров прогруженных страниц
+    $message = текст информационного сообщения, если есть
+    $error = текст сообщения об ошибке, если была
+    $Token = аутентификатор операции
+    $settings = настройки сайта
+    $admin_folder = имя папки админпанели
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта
+    $site = полный адрес корня сайта
+
+  ============================================================================
+
+    Подключаем субшаблон закладок. В субшаблон передаем атрибуты:
+      main = вывести закладку "главная"
+      me = текст собственной закладки модуля
+      me_pointer = указатель на модуль в ссылке
+      me_menupath = путевое положение модуля в меню
+      select = какая закладка будет выбранной --> *}
+
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.SPEEDOMETER_MODULETAB_TEXT|default:''
+             me_pointer = $smarty.const.SPEEDOMETER_MODULELINK_POINTER|default:''
+             me_menupath = $smarty.const.SPEEDOMETER_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- доопределяем некоторые стили --> *}
+    <style>
+        span.filesize {
+          background-color: #E0E0E0;
+        }
+        span.filesize,
+        span.opentime,
+        span.closetime,
+        span.readtime,
+        span.state {
+          color: #606060;
+          clear: both;
+          display: block;
+          margin: 0px;
+          padding: 5px 10px;
+          text-align: right;
+        }
+        span.opentime {
+          border-bottom: #E8E8E8 1px dashed;
+          color: #000000;
+        }
+        span.closetime {
+          border-bottom: #E8E8E8 1px dashed;
+          color: #808080;
+        }
+        span.readtime {
+          border-bottom: #E8E8E8 1px dashed;
+          color: #008000;
+        }
+        span.state {
+          color: #C00000;
+        }
+        span.filesize span,
+        span.opentime span,
+        span.closetime span,
+        span.readtime span,
+        span.state span {
+          color: #A0A0A0;
+          float: left;
+        }
+        span.timetrace {
+          background-color: #FF8000;
+          clear: both;
+          display: block;
+          height: 2px;
+          line-height: 2px;
+          max-width: 101px;
+          overflow: hidden;
+          margin: 2px 10px 2px auto;
+          padding: 0px;
+        }
+        td.param_short {
+          vertical-align: top !important;
+        }
+    </style>
+
+
+
+    {* <!-- вычисляем некоторые временные значения для этого шаблона --> *}
+    {$temp_count = $site_count|default:$smarty.const.SPEEDOMETER_SITECOUNT_DEFAULT|default:4}
+    {$temp_width = (100 / $temp_count)|string_format:'%d'}
+
+
+
+    <div class="box">
+
+        {* <!-- заголовок содержимого --> *}
+        {strip}
+            <h1>
+                <div class="path">
+                    <a href="{$site|default:''|escape}{$admin_folder|default:''|escape}/">
+                        Главная
+                    </a> → Скорости
+                </div>
+                {$title|default:'Измерение скорости прогрузки страниц'}
+            </h1>
+        {/strip}
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            {strip}
+                <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+                    справка
+                </a>
+
+                <a class="left" href="http://imperacms.ru/impera-cms-modules.htm?more=webload-speedometer#webload-speedometer" target="_blank" title="Перейти на страницу модуля на официальном сайте">
+                    подробнее о модуле
+                </a>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="#help" title="Показать / скрыть графы колебаний чтения" onclick="javascript: jQuery('.timetrace').toggle(); return false;">
+                    графы колебаний
+                </a>
+            {/strip}
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+      {* <!-- форма --> *}
+      {strip}
+        <form id="item_form" {**}
+              method="post" {**}
+              action="{$site|default:''|escape}
+                      {$admin_folder|default:''|escape}
+                      /index.php?
+                      {$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=
+                      {$smarty.const.SPEEDOMETER_MODULELINK_POINTER|default:''|escape}">
+
+          {* <!-- поля Адреса страниц --> *}
+          <table align="center" cellpadding="0" cellspacing="10" class="white">
+            <tr>
+              {section name = "value"
+                       start = 0
+                       loop = $temp_count}
+                <td class="value" {**}
+                    rowspan="3" {**}
+                    width="{$temp_width}%" {**}
+                    title="Адрес страницы сайта">
+                  <textarea name="{$smarty.const.SPEEDOMETER_SMARTYVAR_ITEMS|default:''|escape}
+                                  [{$smarty.section.value.index}]" {**}
+                            style="height: 82px;">
+                    {$items[$smarty.section.value.index]|default:''|escape}
+                  </textarea>
+                </td>
+              {/section}
+
+              {* <!-- поле Число тестов --> *}
+              <td class="param_short">
+                Тесты:
+              </td>
+              <td class="value" title="Сколько последовательных тестов нужно сделать">
+                <select name="{$smarty.const.SPEEDOMETER_SMARTYVAR_COUNT|default:''|escape}">
+                  {section name = "value"
+                           start = 1
+                           loop = 1 + $test_count|default:1}
+                    <option {if $count|default:1 == $smarty.section.value.index}
+                              selected
+                            {/if} value="{$smarty.section.value.index}">
+                      {$smarty.section.value.index}
+                    </option>
+                  {/section}
+                </select>
+              </td>
+            </tr>
+
+            {* <!-- поле Пауза между тестами --> *}
+            <tr>
+              <td class="param_short">
+                Пауза:
+              </td>
+              <td class="value" title="Пауза в секундах между тестами">
+                <select name="{$smarty.const.SPEEDOMETER_SMARTYVAR_TIMER|default:''|escape}">
+                  {section name = "value"
+                           start = 0
+                           loop = 1 + $test_timer|default:0}
+                    <option {if $timer|default:1 == $smarty.section.value.index}
+                              selected
+                            {/if} value="{$smarty.section.value.index}">
+                      {$smarty.section.value.index}
+                    </option>
+                  {/section}
+                </select>
+              </td>
+            </tr>
+
+            {* <!-- кнопка Старт --> *}
+            <tr>
+              <td class="value_box" colspan="2">
+                <input class="submit" {**}
+                       type="submit" {**}
+                       value="Старт">
+              </td>
+            </tr>
+
+            {* <!-- если получены замеры прогрузок страниц --> *}
+            {if isset($samples)
+            && is_array($samples)
+            && !empty($samples)}
+
+              {* <!-- адреса страниц --> *}
+              <tr>
+                {section name = "value"
+                         start = 0
+                         loop = $temp_count}
+                  <td class="param_short">
+                    {if $items[$smarty.section.value.index]|default:"" != ""}
+                      <a href="{$items[$smarty.section.value.index]|default:''|escape}" {**}
+                         target="_blank">
+                        ссылка на страницу
+                      </a>
+                    {else}
+                      &nbsp;
+                    {/if}
+                  </td>
+                {/section}
+                <td colspan="2">
+                  &nbsp;
+                </td>
+              </tr>
+
+              {* <!-- заголовок --> *}
+              <tr>
+                <td colspan="{$temp_count + 2}">
+                  <h2>
+                    Результаты измерений
+                  </h2>
+                </td>
+              </tr>
+
+              {* <!-- строки замеров --> *}
+              {foreach $samples as $r}
+                <tr>
+
+                  {* <!-- ячейка замера --> *}
+                  {section name = "value"
+                           start = 0
+                           loop = $temp_count}
+                    {$temp = $r[$smarty.section.value.index]->state|default:0}
+                    <td class="param_short">
+
+                      {* <!-- размер файла --> *}
+                      <span class="filesize">
+                        <span>
+                          прочитано
+                        </span>
+                        {if ($temp === $smarty.const.SPEEDOMETER_PAGESTATE_READING|default:false)
+                        || ($temp === $smarty.const.SPEEDOMETER_PAGESTATE_ERROR|default:false)}
+                          {$r[$smarty.section.value.index]->filesize|default:0|string_format:"%d"}
+                        {else}
+                          &nbsp;
+                        {/if}
+                      </span>
+
+                      {* <!-- время отклика --> *}
+                      <span class="opentime">
+                        <span>
+                          отклик
+                        </span>
+                        {if $temp !== $smarty.const.SPEEDOMETER_PAGESTATE_NONAME|default:false}
+                          {$r[$smarty.section.value.index]->opentime|default:0|string_format:"%1.10f"}
+                        {else}
+                          &nbsp;
+                        {/if}
+                      </span>
+
+                      {* <!-- время отключения --> *}
+                      <span class="opentime">
+                        <span>
+                          отбой
+                        </span>
+                        {if ($temp === $smarty.const.SPEEDOMETER_PAGESTATE_READING|default:false)
+                        || ($temp === $smarty.const.SPEEDOMETER_PAGESTATE_ERROR|default:false)}
+                          {$r[$smarty.section.value.index]->closetime|default:0|string_format:"%1.10f"}
+                        {else}
+                          &nbsp;
+                        {/if}
+                      </span>
+
+                      {* <!-- время чтения --> *}
+                      <span class="readtime">
+                        <span>
+                          чтение
+                        </span>
+                        {if $temp === $smarty.const.SPEEDOMETER_PAGESTATE_READING|default:false}
+                          {$r[$smarty.section.value.index]->readtime|default:0|string_format:"%1.10f"}
+                        {else}
+                          &nbsp;
+                        {/if}
+                      </span>
+
+                      {* <!-- если доступен граф колебаний --> *}
+                      {if isset($r[$smarty.section.value.index]->timetrace)
+                      && is_array($r[$smarty.section.value.index]->timetrace)
+                      && !empty($r[$smarty.section.value.index]->timetrace)}
+                        {foreach $r[$smarty.section.value.index]->timetrace as $v}
+                          <span class="timetrace" style="width: {$v|string_format:'%d' + 1}px;">&nbsp;</span>
+                        {/foreach}
+                      {/if}
+
+                      {* <!-- если известна ошибка --> *}
+                      {if $temp === $smarty.const.SPEEDOMETER_PAGESTATE_OPENING|default:false}
+                        <span class="state">
+                          <span>
+                            проблема
+                          </span>
+                          нет связи
+                        </span>
+                      {elseif $temp === $smarty.const.SPEEDOMETER_PAGESTATE_ERROR|default:false}
+                        <span class="state">
+                          <span>
+                            проблема
+                          </span>
+                          обрыв чтения
+                        </span>
+                      {/if}
+                    </td>
+                  {/section}
+                  <td colspan="2">
+                    &nbsp;
+                  </td>
+                </tr>
+              {/foreach}
+            {/if}
+          </table>
+
+          {* <!-- аутентификатор операции --> *}
+          <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" {**}
+                 type="hidden" {**}
+                 value="{$Token|default:''|escape}">
+        </form>
+      {/strip}
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box" style="display: none;">
+
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                WebLoad Speedometer - этот модуль дает прямо из админпанели сравнить скорость
+                загрузки разных веб страниц, более точно, любого веб файла, доступного по
+                протоколам http, https. В каждом случае измерения раздельно сообщается: <b>время
+                отклика</b> - сколько прошло от запроса страницы до поступления ответной реакции
+                сайта, <b>время чтения</b> - затраты на передачу контента запрошенной страницы,
+                <b>время отбоя</b> - потери на ожидание разрыва соединения с сайтом.
+            </div>
+
+            <div>
+                Дополнительно измеряется колебание временных затрат в процессе чтения контента
+                страницы и отображается в виде графа, где бОльшие потери отражены бОльшими пиками.
+            </div>
+
+            <div>
+                Таким образом, получаем четкую картину, на каких этапах загрузки происходят потери.
+                Это способствует пониманию, с чем может быть связано такое поведение сайта и где
+                кроются узкие места. Изменяя параметры хостинга, например с помощью инструкций
+                в файле .htaccess, теперь можно видеть, как это отражается на скорости передачи
+                страницы.
+            </div>
+
+            <div>
+                Присутствует возможность сделать одиночный тест (измерение) или серию с заданной
+                паузой между ними. Чтобы получить ответ на вопрос, эффективно ли происходит
+                кеширование для конкретных типов веб страниц и как ведет себя сайт, если
+                запрашивают ту же страницу с некоторым интервалом во времени.
+            </div>
+
+            <div>
+                Важно учесть! Под загрузкой страницы понимается прогрузка ее собственного контента.
+                Если это html-страница, прилагающиеся к ней файлы стилей, скриптов, картинок и
+                прочего не рассматриваются. То есть модуль смотрит на страницу словно бы глазами
+                поискового робота.
+                <br><br><br>
+
+                <b>Модуль</b>: &nbsp; WebLoad Speedometer v.1.0<br>
+                <b>Автор</b>: &nbsp; Разработчик Impera CMS ( <a href="http://imperacms.ru/" target="_blank">сайт автора</a> )<br>
+                <b>Требования</b>: &nbsp; allow_url_fopen = On, не блокируется set_time_limit()
+                <br><br>
+
+                <a href="http://imperacms.ru/impera-cms-modules.htm?more=webload-speedometer#webload-speedometer" target="_blank">
+                    подробнее о модуле
+                </a>
+            </div>
+        </div>
+
+    </div>

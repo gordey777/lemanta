@@ -1,0 +1,656 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: файлы стилей                                                            |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $items = массив с записями о файлах и папках                                  |
+    $item = относительный путь выбранной папки                                    |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.STYLES_MODULELINK_POINTER|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             select = 'styles'
+             main = true
+             themes = true
+             templates = true
+             styles = true
+             images = true}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    {$id_param = ($smarty.const.REQUEST_PARAM_NAME_ITEMID|default:'')|escape}
+    {$action_param = ($smarty.const.REQUEST_PARAM_NAME_ACTION|default:'')|escape}
+    {$section_param = ($smarty.const.REQUEST_PARAM_NAME_SECTION|default:'')|escape}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        {call main_title alt = 'Файлы стилей'
+                         path = 'Стили'
+                         title = 'Файлы стилей: [b]шаблон '|cat:($settings->theme|default:'')|cat:'[/b]'}
+
+
+
+        {* <!-- часть страницы, показываемая после старта загрузки файла --> *}
+        <div class="box_part" id="styles_start_box" style="display: none;">
+            <div class="toolkey">
+                &nbsp;
+            </div>
+            <div class="message">
+                Выполняется указанное Вами действие.<br />
+                Пожалуйста подождите.
+            </div>
+        </div>
+
+
+
+        {* <!-- изначально видимая часть страницы, скрываемая после старта загрузки файла --> *}
+        <div class="box_part" id="styles_list_box">
+
+
+
+            {* <!-- инструментальные ссылки --> *}
+            <div class="toolkey">
+                <a class="left" href="#help" onclick="Show_PageElements('help_box');" title="Показать справочную информацию">
+                    справка
+                </a>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                <a href="http://htmlbook.ru/css" target="_blank" title="Перейти в справочник CSS на сайте HtmlBook.ru">
+                    справочник CSS
+                </a>
+
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                {$value = ($smarty.const.ACTION_REQUEST_PARAM_VALUE_DOWNLOAD|default:'')|escape}
+                <a href="{$admin_goto}{$module_pointer|escape}&{$action_param}={$value}&{$token_request}" title="Загрузить файл в текущую папку" onclick="return Start_Popup('popupDOWNLOAD', null);">
+                    загрузить
+                </a>
+            </div>
+
+
+
+            {* <!-- информационное сообщение --> *}
+            {call info_message}
+
+
+
+            {* <!-- сообщение об ошибке --> *}
+            {call error_message}
+
+
+
+            {* <!-- форма со списком записей --> *}
+            <form action="{$admin_goto}{$module_pointer|escape}" enctype="multipart/form-data" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+
+
+                {* <!-- селектор --> *}
+                <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+                    <tr>
+
+                        {* <!-- кнопка Удалить --> *}
+                        <td class="param_short" title="Удалить текущую папку">
+                            <a href="{$admin_goto}{$module_pointer|escape}" onclick="var object = document.getElementById('select_{$id_param}');
+                                                                                     if (typeof(object) != 'object' || object == null || !('options' in object) || !('length' in object.options) || !('selectedIndex' in object) || object.options.length <= object.selectedIndex) return false;
+                                                                                     object = object.options[object.selectedIndex];
+                                                                                     if (typeof(object) != 'object' || object == null || !('getAttribute' in object)) return false;
+                                                                                     object = object.getAttribute('link');
+                                                                                     if (!object || object == '') return false;
+                                                                                     if (!confirm('Данная папка будет удалена с сайта. Вы подтверждаете такую операцию?')) return false;
+                                                                                     this.href = object;
+                                                                                     return true;">
+                                <img class="microkey_right icon16x16" src="{$admin_theme}images/icon_delete_16x16.png" />
+                            </a>
+                        </td>
+
+
+
+                        {* <!-- кнопка Создать копию --> *}
+                        {if $item|default:'' != ''}
+                            <td class="param_short" title="Создать копию папки">
+                                <a href="{$admin_goto}{$module_pointer|escape}" onclick="var object = document.getElementById('select_{$id_param}');
+                                                                                         if (typeof(object) != 'object' || object == null || !('options' in object) || !('length' in object.options) || !('selectedIndex' in object) || object.options.length <= object.selectedIndex) return false;
+                                                                                         object = object.options[object.selectedIndex];
+                                                                                         if (typeof(object) != 'object' || object == null || !('getAttribute' in object)) return false;
+                                                                                         object = object.getAttribute('link2');
+                                                                                         if (!object || object == '') return false;
+                                                                                         if (!confirm('Будет создана полная копия данной папки. Вы подтверждаете такую операцию?')) return false;
+                                                                                         this.href = object;
+                                                                                         return true;">
+                                    <img class="microkey_right icon16x16" src="{$admin_theme}images/icon_edit_16x16.png" />
+                                </a>
+                            </td>
+                        {/if}
+
+
+
+                        {* <!-- текущая папка --> *}
+                        <td class="param_short">
+                            текущая папка:
+                        </td>
+                        <td class="value" width="60%" title="Выбор папки с файлами">
+                            <select class="thin" id="select_{$id_param}" name="{$id_param}" onchange="Start_PageRecordsFilter('items_form');">
+
+                                {* <!-- элемент корневой папки --> *}
+                                {$count = 0}
+                                {if isset($items) && is_array($items) && !empty($items)}
+                                    {foreach $items as $r}
+                                        {if !isset($r->files)}
+                                            {$count = $count + 1}
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+
+                                {$value = ($smarty.const.ACTION_REQUEST_PARAM_VALUE_DELETE|default:'')|escape}
+                                <option value="" link="{$admin_goto}{$module_pointer|escape}&{$action_param}={$value}&{$id_param}=&{$token_request}" {if $count == 0} style="color: #808080;"{/if}>
+                                    корень {**}
+                                    {if $count != 0}
+                                        &nbsp;&nbsp;&nbsp;&nbsp;({$count} шт.)
+                                    {/if}
+                                </option>
+
+                                {* <!-- перечисляем имена папок --> *}
+                                {if isset($items) && is_array($items) && !empty($items)}
+                                    {function name = 'show_folders'}
+                                        {foreach $dir as $c}
+                                            {if isset($c->files)}
+
+                                                {$count = 0}
+                                                {if is_array($c->files) && !empty($c->files)}
+                                                    {foreach $c->files as $r}
+                                                        {if !isset($r->files)}
+                                                            {$count = $count + 1}
+                                                        {/if}
+                                                    {/foreach}
+                                                {/if}
+
+                                                {$value = ($c->path|default:'')|cat:($c->filename|default:'')}
+
+                                                <option value="{$value|escape}"{if $item|default:"" == $value} selected{/if} {**}
+                                                        link="{$admin_script}{($c->delete_get|default:'')|escape}" {**}
+                                                        link2="{$admin_script}{($c->copy_get|default:'')|escape}" {**}
+                                                        {if $count == 0} style="color: #808080;"{/if}>
+                                                    {section name = 'spaces' start = 0 loop = $level step=1}
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;
+                                                    {/section}
+                                                    {($c->filename|default:'Без названия!')|escape} {**}
+                                                    {if $count != 0}
+                                                        &nbsp;&nbsp;&nbsp;&nbsp;({$count} шт.)
+                                                    {/if}
+                                                </option>
+
+                                                {if is_array($c->files) && !empty($c->files)}
+                                                    {show_folders dir = $c->files
+                                                                  level = $level + 1}
+                                                {/if}
+                                            {/if}
+                                        {/foreach}
+                                    {/function}
+
+                                    {* <!-- запускаем объявленную выше функцию --> *}
+                                    {show_folders dir = $items
+                                                  level = 1}
+                                {/if}
+                            </select>
+                        </td>
+
+
+
+                        {* <!-- добавить папку --> *}
+                        <td class="param_short">
+                            &nbsp;&nbsp; в ней папку:
+                        </td>
+                        <td class="value" width="40%" title="Имя новой папки, которая будет создана в текущей папке">
+                            {$param = ($smarty.const.REQUEST_PARAM_NAME_NAME|default:'')|escape}
+                            <input class="edit" name="{$param}" type="text" value="" />
+                        </td>
+                        <td class="value_box">
+                            {$value = ($smarty.const.ACTION_REQUEST_PARAM_VALUE_CREATE|default:'')|escape}
+                            <input class="submit" type="submit" value="Создать" onclick="return Submit_Popup('?{$section_param}={$module_pointer|escape}&{$action_param}={$value}', 'styles');" />
+                        </td>
+
+                    </tr>
+                </table>
+
+
+
+                {* <!-- кнопка сброса фильтра --> *}
+                <div class="toolkey">
+                    <span>
+                        папка: <span>
+                                   корень{if $item|default:'' != ''}/{$item|escape}{/if}
+                               </span>
+                    </span>
+                </div>
+
+
+
+                {* <!-- выпадающая панель выбора файла для загрузки --> *}
+                <div class="popup" id="popupDOWNLOAD">
+                    <div class="popup_content">
+                        <div class="title">
+                            <div class="close">
+                                <a href="#" onclick="return Hide_Popup('popupDOWNLOAD');" title="Закрыть">
+                                    x
+                                </a>
+                            </div>
+                            Загрузка стилей
+                        </div>
+                        <div class="cell">
+                          файл стилей или zip-архив стилей:
+                          <div class="input">
+
+                              {* <!-- не позволяем загрузку файла объемом свыше заданного --> *}
+                              <input type="hidden" name="MAX_FILE_SIZE" value="{($smarty.const.ZIP_TEMPLATES_UPLOAD_MAXIMAL_FILESIZE|default:'')|string_format:'%d'}" />
+
+                              <input class="input" disabled id="popupDOWNLOADfile" name="file" type="file" title="Какой файл требуется взять с Вашего компьютера (объем файла не более {(($smarty.const.ZIP_TEMPLATES_UPLOAD_MAXIMAL_FILESIZE|default:0) / 1024)|string_format:'%d'} Кбайт)" />
+                          </div>
+                        </div>
+                        <div class="submit">
+                            {$value = ($smarty.const.ACTION_REQUEST_PARAM_VALUE_DOWNLOAD|default:'')|escape}
+                            <input class="submit" type="submit" value="Начать" onclick="return Submit_Popup('?{$section_param}={$module_pointer|escape}&{$action_param}={$value}', 'styles');" />
+                        </div>
+                    </div>
+                </div>
+
+
+
+                {* <!-- если массив записей о файлах и папках не пустой --> *}
+                {if isset($items) && is_array($items) && !empty($items)}
+
+
+
+                    {* <!-- навигатор страниц --> *}
+                    <div class="navigator">
+
+                        {* <!-- скрытые кнопки массовых операций --> *}
+                        {$value = ($smarty.const.ACTION_REQUEST_PARAM_VALUE_EDIT_ALL|default:'')|escape}
+                        <input class="mass_submit disabled_button" disabled id="popupEDIT_SaveAllChangesKey1" type="submit" value="Сохранить все" title="Сохранить исправления во всех отредактированных файлах" onclick="return Submit_FileEdit_Popup('?{$section_param}={$module_pointer|escape}&{$action_param}={$value}', 'styles');" />
+                    </div>
+
+
+
+                    {* <!-- перечисляем имена файлов --> *}
+                    {capture name = 'count'}{/capture}
+                    {$temp = $item|default:''}
+                    {$temp = ($temp != '') ? ($temp|cat:'/') : ''}
+                    {function name = 'show_files'}
+                        {$number = 0}
+                        {foreach name = 'items' item = c from = $dir}
+                            {if isset($c->files)}
+                                {if is_array($c->files) && !empty($c->files)}
+                                    {show_files dir = $c->files}
+                                {/if}
+                            {elseif $c->path|default:'' == $temp}
+                                {$number = $number + 1}
+                                {capture name = 'count'}1{/capture}
+
+                                <li class="flatlist">
+                                    <div class="onerow">
+
+                                        {* <!-- кнопка Удалить --> *}
+                                        <a href="{$admin_script}{($c->delete_get|default:'')|escape}" title="Удалить" onclick="return confirm('Данный файл будет удален с сайта. Вы подтверждаете такую операцию?');">
+                                            <img class="microkey_right" src="{$admin_theme}images/icon_delete_16x16.png" />
+                                        </a>
+
+                                        <img class="microkey_left" src="{$admin_theme}images/placeholder.gif" />
+
+
+
+
+                                        {* <!-- кнопка Создать копию --> *}
+                                        <a href="{$admin_script}{($c->copy_get|default:'')|escape}" title="Создать копию">
+                                            <img class="microkey_right" src="{$admin_theme}images/icon_edit_16x16.png" />
+                                        </a>
+
+                                        <img class="microkey_left" src="{$admin_theme}images/placeholder.gif" />
+
+
+
+                                        {* <!-- нумерация --> *}
+                                        <span class="topic" style="display: inline;">
+                                            {if isset($CurrentPage)}
+                                                {$number + $CurrentPage * ($CurrentPageMaxsize|default:0)}.
+                                            {else}
+                                                {$number}.
+                                            {/if}
+                                        </span>
+
+
+
+                                        {* <!-- дата создания --> *}
+                                        {if isset($c->ctime) && ($c->ctime|truncate:10:'':true != '0000-00-00')}
+                                            <span class="date" title="Дата создания: {$c->ctime|escape}">
+                                                {$c->ctime|truncate:10:'':true|escape}
+                                            </span>
+                                        {else}
+                                            <span class="date" title="Дата создания: неизвестно">
+                                                неизвестно
+                                            </span>
+                                        {/if}
+
+
+
+                                        {* <!-- дата модификации --> *}
+                                        {if isset($c->ctime) && isset($c->mtime) && ($c->mtime != $c->ctime) && ($c->mtime|truncate:10:'':true != '0000-00-00')}
+                                            <span class="date" title="Дата изменения: {$c->mtime|escape}">
+                                                {$c->mtime|truncate:10:'':true|escape}
+                                            </span>
+                                        {else}
+                                            <span class="date" title="Дата изменения: не изменяли">
+                                                не меняли
+                                            </span>
+                                        {/if}
+
+
+
+                                        {* <!-- права доступа --> *}
+                                        {if isset($c->permissions) && ($c->permissions|strip_tags|strip != '')}
+                                            <span class="date" title="Права доступа к файлу (формат: Тип Владелец Группа Остальные; права: r = чтение, w = запись, x s t = исполнение, листинг папки; типы: l = символическая ссылка, s = сокет, b = специальный блок, c = специальный символ, d = папка, p = поток FIFO, u = неизвестный)">
+                                                {$c->permissions|strip_tags|escape}
+                                            </span>
+                                        {else}
+                                            <span class="date" title="Права доступа: неизвестно">
+                                                неизвестно
+                                            </span>
+                                        {/if}
+
+
+
+                                        {* <!-- размер --> *}
+                                        {$value = $c->filesize|default:0}
+                                        <span class="votes" title="Размер файла: {$value|string_format:'%d'} байт">
+                                            {if $value|string_format:'%d' > 65536}
+                                                {($value / 1024)|string_format:'%d'} кбайт
+                                            {else}
+                                                {$value|string_format:'%d'} байт
+                                            {/if}
+                                        </span>
+
+
+
+                                        {* <!-- имя файла --> *}
+                                        <a href="{$admin_script}{($c->edit_get|default:'')|escape}" title="{if isset($c->title) && ($c->title|strip_tags|strip != '')}{$c->title|strip_tags|escape}{else}{($c->filename|default:'Без названия!')|escape}{/if}" onclick="return Start_FileEdit_Popup('popupEDIT{$smarty.foreach.items.iteration}', this);">
+                                            {if isset($c->title) && ($c->title|strip_tags|strip != '')}
+                                                {$c->title|strip_tags|escape}
+                                            {else}
+                                                {($c->filename|default:'Без названия!')|escape}
+                                            {/if}
+                                        </a>
+
+                                    </div>
+
+
+
+                                    {* <!-- краткая информация --> *}
+
+
+
+                                    {* <!-- имя файла --> *}
+                                    {$value = $c->filename|default:'Без названия!'}
+                                    <div class="line" title="Файл: {$value|escape}">
+                                        <span>
+                                            файл:
+                                        </span>
+
+                                        {* <!-- изначально скрытая кнопка Сохранить (сохранить конкретно эту запись, игнорируя изменения других записей на странице) --> *}
+                                        <input class="submit" disabled id="popupEDIT{$smarty.foreach.items.iteration}_SaveChangesKey" type="submit" value="сохранить" style="display: none; margin-right: 20px;" title="Сохранить исправления только этого файла" onclick="return Submit_FileEdit_Popup('{($c->edit_get|default:'')|escape}', 'styles');" />
+                                        {$value|escape}
+                                    </div>
+
+
+
+                                    {* <!-- переменные --> *}
+                                    {if isset($c->vars) && is_array($c->vars) && !empty($c->vars)}
+                                        {foreach name = 'vars' item = v from = $c->vars}
+                                            <div class="line template_var_line" title="Использует класс: {$v|escape}" style="display: none;">
+                                                <span>
+                                                    {if $smarty.foreach.vars.iteration == 1}
+                                                        class:
+                                                    {else}
+                                                        &nbsp;
+                                                    {/if}
+                                                </span>
+                                                <span class="subinfo">
+                                                    {$v|escape}
+                                                </span>
+                                            </div>
+                                        {/foreach}
+                                    {/if}
+
+                                </li>
+
+
+
+                                {* <!-- выпадающая панель редактирования файла --> *}
+                                <div class="popup popup_wide" id="popupEDIT{$smarty.foreach.items.iteration}">
+                                    <div class="popup_content">
+                                        <div class="title">
+                                            <div class="close">
+                                                <a href="#" onclick="return Hide_Popup('popupEDIT{$smarty.foreach.items.iteration}');" title="Закрыть">
+                                                    x
+                                                </a>
+                                            </div>
+                                            <div class="close">
+                                                <a href="#" onclick="jQuery(this).closest('.popup').toggleClass('popup_full'); return false;" title="Растянуть / восстановить">
+                                                    ↔
+                                                </a>
+                                            </div>
+                                            Редактирование: <b style="font-size: 10pt; font-weight: normal;">
+                                                                {if isset($c->title) && ($c->title|strip_tags|strip != '')}
+                                                                    {$c->title|strip_tags|escape}
+                                                                {else}
+                                                                    {($c->filename|default:'Без названия!')|escape}
+                                                                {/if}
+                                                            </b>
+                                        </div>
+                                        <div class="cell">
+                                            файл:
+                                            <div class="input">
+                                                <input class="input" disabled readonly id="popupEDIT{$smarty.foreach.items.iteration}title" maxlength="64" name="{$smarty.const.REQUEST_PARAM_NAME_TITLE|escape}[{if isset($c->path) && ($c->path|strip_tags|strip != '')}{$c->path|strip_tags|escape}{/if}{($c->filename|default:'')|escape}]" type="text" value="{($c->filename|default:'Без названия!')|escape}" title="Имя файла" />
+                                            </div>
+                                        </div>
+                                        <div class="cell">
+                                            содержимое:
+                                            <div class="input">
+                                                {$value = ($smarty.const.REQUEST_PARAM_NAME_CONTENT|default:'')|escape}
+                                                <textarea class="input" disabled id="popupEDIT{$smarty.foreach.items.iteration}content" name="{$value}[{if isset($c->path) && ($c->path|strip_tags|strip != '')}{$c->path|strip_tags|escape}{/if}{($c->filename|default:'')|escape}]" style="height: 600px;" title="Содержимое файла">{($c->content|default:'')|escape}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="submit">
+                                            <input class="submit" type="submit" value="Сохранить" onclick="return Submit_FileEdit_Popup('{($c->edit_get|default:'')|escape}', 'styles');">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            {/if}
+                        {/foreach}
+                    {/function}
+
+                    {* <!-- запускаем объявленную выше функцию --> *}
+                    {show_files dir = $items}
+
+
+
+                    {if $smarty.capture.count == ''}
+                        <div class="noitems">
+                            Папка не содержит файлов.
+                        </div>
+                    {else}
+
+
+
+                        {* <!-- навигатор страниц --> *}
+                        <div class="navigator">
+
+                            {* <!-- скрытые кнопки массовых операций --> *}
+                            {$value = ($smarty.const.ACTION_REQUEST_PARAM_VALUE_EDIT_ALL|default:'')|escape}
+                            <input class="mass_submit disabled_button" disabled id="popupEDIT_SaveAllChangesKey2" type="submit" value="Сохранить все" title="Сохранить исправления во всех отредактированных файлах" onclick="return Submit_FileEdit_Popup('?{$section_param}={$module_pointer|escape}&{$action_param}={$value}', 'styles');" />
+                        </div>
+                    {/if}
+
+
+
+                {* <!-- иначе массив записей о файлах и папках пуст --> *}
+                {else}
+                    <div class="noitems">
+                        Папка не содержит файлов.
+                    </div>
+                {/if}
+
+
+
+                {* <!-- аутентификатор операции --> *}
+                {call hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                     id = false
+                                     value = $token}
+
+            </form>
+
+        </div>
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box" style="display: none;">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                &nbsp;
+            </div>
+        </div>
+
+    </div>
+
+
+
+    {* <!-- скрипт редактора html-кода с подсветкой синтаксиса --> *}
+    <script src="{$site}js/codemirror/js/codemirror.js" type="text/javascript"></script>
+    <script language="JavaScript" type="text/javascript">
+
+        {* // объекты редакторов содержимого файлов *}
+        var fileEdit_editors = new Array();
+        var fileEdit_editors_changed = new Array();
+        var fileEdit_editors_parserList = ['parsecss.js'];
+        var fileEdit_editors_cssList = ['{$site}js/codemirror/css/csscolors.css'];
+
+
+
+        {* // проявление выпадающей панели редактирования файла                    *}
+        {* //   id = идентификатор объекта панели                                  *}
+        {* //   link_object = кликабельный объект, инициировавший выпадение панели *}
+
+        function Start_FileEdit_Popup (id, link_object) {
+
+            {* // проявляем выпадающую панель редактирования *}
+            Start_Popup(id, link_object);
+
+            {* // если для панели еще не была сделана подсветка синтаксиса, делаем *}
+            if (!fileEdit_editors[id]) {
+                fileEdit_editors_changed[id] = false;
+                fileEdit_editors[id] = CodeMirror.fromTextArea(id + 'content',
+                                                              { height: '600px',
+                                                                parserfile: fileEdit_editors_parserList,
+                                                                stylesheet: fileEdit_editors_cssList,
+                                                                path: '{$site}js/codemirror/js/',
+                                                                dumbTabs: true,
+                                                                saveFunction: null,
+                                                                onChange: function () {
+                                                                              fileEdit_editors_changed[id] = true;
+                                                                              var object = document.getElementById(id + '_SaveChangesKey');
+                                                                              if ((typeof(object) == 'object') && (object != null) && ('style' in object) && ('display' in object.style)) {
+                                                                                  object.style.display = 'inline';
+                                                                                  if ('disabled' in object) object.disabled = false;
+                                                                              }
+                                                                              object = document.getElementById('popupEDIT_SaveAllChangesKey1');
+                                                                              if ((typeof(object) == 'object') && (object != null) && ('style' in object) && ('display' in object.style)) {
+                                                                                  object.style.display = 'block';
+                                                                                  if ('disabled' in object) object.disabled = false;
+                                                                                  jQuery(object).removeClass('disabled_button');
+                                                                              }
+                                                                              object = document.getElementById('popupEDIT_SaveAllChangesKey2');
+                                                                              if ((typeof(object) == 'object') && (object != null) && ('style' in object) && ('display' in object.style)) {
+                                                                                  object.style.display = 'block';
+                                                                                  if ('disabled' in object) object.disabled = false;
+                                                                                  jQuery(object).removeClass('disabled_button');
+                                                                              }
+                                                                          },
+                                                                textWrapping: true });
+            }
+            return false;
+        }
+
+
+
+        {* // отправка выпадающей панели редактирования файла                 *}
+        {* //   url_params = динамические параметры URL админпанели           *}
+        {* //   part_id = начало идентификатора переключаемых частей страницы *}
+
+        function Submit_FileEdit_Popup (url_params, part_id) {
+
+            {* // перебираем объекты редакторов содержимого файлов *}
+            for (id in fileEdit_editors) {
+
+                {* // если редактором включена кнопка "сохранить изменения" *}
+                var changed = !fileEdit_editors_changed[id] ? false : true;
+                var object = !changed ? document.getElementById(id + '_SaveChangesKey') : null;
+                if (changed || ((typeof(object) == 'object') && (object != null) && ('style' in object) && ('display' in object.style))) {
+                    if (changed || (object.style.display == 'inline')) {
+
+                        {* // передаем содержимое из редактора в соответствующий textarea *}
+                        object = document.getElementById(id + 'content');
+                        if ((typeof(object) == 'object') && (object != null) && ('value' in object)) {
+                            object.value = fileEdit_editors[id].getCode();
+
+                            {* // разблокируем поля панели, где находится этот textarea *}
+                            Unlock_Popup_Fields(id);
+                        }
+                    }
+                }
+            }
+
+            {* // отправляем выпадающую панель редактирования *}
+            return Submit_Popup(url_params, part_id);
+        }
+    </script>
+
+{/strip}

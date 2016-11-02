@@ -1,0 +1,1207 @@
+{* <!--
+  Impera CMS: шаблон админ модуля списка заказов.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о заказах;
+    $all_users = массив с записями о пользователях;
+    $deliveries = массив с записями о способах доставки;
+    $payments = массив с записями о способах оплаты;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    orders = true - вывести эту кнопку
+    orders_phases = true - вывести эту кнопку
+    payments_history = true - вывести эту кнопку
+    credit_programs = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "orders"
+           main = true
+           orders = true
+           orders_phases = true
+           payments_history = true
+           credit_programs = true}
+
+  <!-- Подключаем скрипт и файл стилей календаря -->
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.js" type="text/javascript"></script>
+  <script language="JavaScript" src="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendas.js" type="text/javascript"></script>
+  <link href="http://{$root_url|escape}/{$admin_folder|escape}/js/calendar/calendar.css" rel="stylesheet" type="text/css">
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Заказы
+      </div>
+      Заказы
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        <a class="left" href="#settings" onclick="Show_PageElements('setup_form');" title="Показать настройки сайта, относящиеся к заказам">
+          настройки
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Order&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить заказ">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && !empty($message)}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && !empty($error)}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Orders" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+      <!-- Фильтр -->
+      <table align="center" cellpadding="0" cellspacing="8" class="white">
+        <tr>
+
+          <!-- поле Покупатель -->
+          <td class="param_short">
+            Покупатель
+          </td>
+          <td class="value" width="33%" title="Фильтр: только заказы такого зарегистрированного покупателя">
+
+            <!-- Создаем селектор пользователей -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_USER|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_USER|escape}" onchange="Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              <!-- {*
+              Подключаем субшаблон списка клиентов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список клиентов
+                currents = идентификатор выбранного клиента (модификатор "|default:0" добавлен для обработки отсутствия выбора)
+                selector = true - это будет селектор, а не список клиентов *} -->
+
+              {include file = "../../common_parts/users.htm"
+                       items = $all_users
+                       currents = $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_USER]|default:0
+                       selector = true}
+            </select>
+          </td>
+
+          <!-- поле Способ доставки -->
+          <td class="param_short">
+            Доставка
+          </td>
+          <td class="value" width="33%" title="Фильтр: только заказы с таким способом доставки">
+
+            <!-- Создаем селектор способов доставки -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_DELIVERY|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_DELIVERY|escape}" onchange="Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+              {if isset($deliveries) && !empty($deliveries)}
+                {foreach item=c from=$deliveries}
+                  <option value="{$c->delivery_method_id|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_DELIVERY]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_DELIVERY] == $c->delivery_method_id)} selected{/if}>{$c->name|escape}</option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+
+          <!-- поле Искомая строка -->
+          <td class="param_short">
+            Найти:
+          </td>
+          <td class="value" colspan="3" width="33%" title="Фильтр: с таким словом в заказе (не более 4 слов, слова менее 3 символов игнорируются)">
+            <input class="edit" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH|escape}" type="text" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCH]|escape|default:''}">
+          </td>
+
+          <!-- кнопка Найти -->
+          <td class="value_box" title="Начать поиск заказов по условиям фильтра">
+            <input class="submit" style="width: auto;" type="submit" value="&nbsp;Найти&nbsp;">
+          </td>
+        </tr>
+
+        <tr>
+
+          <!-- поле Партнер -->
+          <td class="param_short">
+            Партнер
+          </td>
+          <td class="value" width="33%" title="Фильтр: только заказы с участием такого партнера">
+
+            <!-- Создаем селектор пользователей -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_AFFILIATE|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_AFFILIATE|escape}" onchange="Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              <!-- {*
+              Подключаем субшаблон списка клиентов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список клиентов
+                currents = идентификатор выбранного клиента (модификатор "|default:0" добавлен для обработки отсутствия выбора)
+                selector = true - это будет селектор, а не список клиентов *} -->
+
+              {include file = "../../common_parts/users.htm"
+                       items = $all_users
+                       currents = $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_AFFILIATE]|default:0
+                       selector = true}
+            </select>
+          </td>
+
+          <!-- поле Способ оплаты -->
+          <td class="param_short">
+            Оплата
+          </td>
+          <td class="value" width="33%" title="Фильтр: только заказы с таким способом оплаты">
+
+            <!-- Создаем селектор способов оплаты -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYMENT|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYMENT|escape}" onchange="Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+              {if isset($payments) && !empty($payments)}
+                {foreach item=c from=$payments}
+                  <option value="{$c->payment_method_id|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYMENT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYMENT] == $c->payment_method_id)} selected{/if}>{$c->name|escape}</option>
+                {/foreach}
+              {/if}
+            </select>
+          </td>
+
+          <!-- поле Искомая дата -->
+          <script language="JavaScript" type="text/javascript">
+            <!--
+            var xcDateFormat = 'yyyy-mm-dd';
+            // -->
+          </script>
+          <td class="param_short">
+            Дата от:
+          </td>
+          <td class="value" width="16%" title="Фильтр: начиная с такой даты (формат даты ГГГГ-ММ-ДД)">
+            <input class="edit" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATEFROM|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATEFROM|escape}" type="text" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATEFROM]|escape|default:''}" onfocus="showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+          <td class="param_short">
+            до:
+          </td>
+          <td class="value" width="16%" title="Фильтр: до такой даты включительно (формат даты ГГГГ-ММ-ДД)">
+            <input class="edit" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATETO|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATETO|escape}" type="text" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEARCHDATETO]|escape|default:''}" onfocus="showCalendar('', this, this, '', 'holder', 5, 5, 1);">
+          </td>
+
+          <!-- флажок Фильтр запускать вручную -->
+          <td class="param_short" title="Включить срабатывание фильтра только по нажатию клавиши 'Найти'">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY] == 1)} checked{/if} value="1" onchange="Start_PageRecordsFilter('items_form');">
+            <span onclick="Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_MANUALLY|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_manually_16x16.png" style="margin-right: 0px;">
+            </span>
+          </td>
+        </tr>
+
+      </table>
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить&nbsp;
+          </td>
+
+          <!-- флажок Направление сортировки -->
+          <td class="param_short" title="Включить обратный порядок сортировки">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="Start_PageRecordsFilter('items_form');">
+            <span onclick="Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png">
+            </span>
+          </td>
+
+          <!-- флажок Лаконичный режим -->
+          <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="Start_PageRecordsFilter('items_form');">
+            <span onclick="Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Способ сортировки -->
+          <td class="value" width="40%" title="Способ сортировки заказов в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_ORDERS_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_AS_IS)} selected{/if}>по дате поступления</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_PAYMENT_DATE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_PAYMENT_DATE)} selected{/if}>по дате оплаты</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_SUM|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_SUM)} selected{/if}>по сумме заказа</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_QUANTITY|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_QUANTITY)} selected{/if}>по количеству товаров</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_ROWCOUNT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_ROWCOUNT)} selected{/if}>по количеству товарных позиций</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_NAME)} selected{/if}>по имени покупателя</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_PHONE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_PHONE)} selected{/if}>по телефону покупателя</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_EMAIL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_EMAIL)} selected{/if}>по емейлу покупателя</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_ICQ|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_ICQ)} selected{/if}>по номеру ICQ покупателя</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_SKYPE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_SKYPE)} selected{/if}>по Skype имени покупателя</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_PAYMENT_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_PAYMENT_NAME)} selected{/if}>по способу оплаты</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_DELIVERY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_DELIVERY_NAME)} selected{/if}>по способу доставки</option>
+              <option value="{$smarty.const.SORT_ORDERS_MODE_BY_IP|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_IP)} selected{/if}>по IP-адресу покупателя</option>
+            </select>
+          </td>
+
+          <!-- поле Состояние заказов -->
+          <td class="value" width="35%" title="С заказами какого состояния производится работа">
+
+            <!-- Создаем селектор состояния заказов и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_TYPE|escape}" onchange="Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.TYPE_ORDERS_ANY|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE] == $smarty.const.TYPE_ORDERS_ANY)} selected{/if}>любые заказы</option>
+              <option value="{$smarty.const.TYPE_ORDERS_COMING|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE] == $smarty.const.TYPE_ORDERS_COMING)} selected{/if}>новые заказы</option>
+              <option value="{$smarty.const.TYPE_ORDERS_PROCESSING|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE] == $smarty.const.TYPE_ORDERS_PROCESSING)} selected{/if}>заказы в обработке</option>
+              <option value="{$smarty.const.TYPE_ORDERS_DONE|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE] == $smarty.const.TYPE_ORDERS_DONE)} selected{/if}>выполненные заказы</option>
+              <option value="{$smarty.const.TYPE_ORDERS_CANCELED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_TYPE] == $smarty.const.TYPE_ORDERS_CANCELED)} selected{/if}>аннулированные заказы</option>
+            </select>
+          </td>
+
+          <!-- поле Режим отображения -->
+          <td class="value" width="25%" title="Насколько полно выводить информацию о заказах в списке">
+
+            <!-- Создаем селектор режимов отображения и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|escape}" onchange="Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.VIEW_MODE_COMPACT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_COMPACT)} selected{/if}>компактно</option>
+              <option value="{$smarty.const.VIEW_MODE_STANDARD|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD)} selected{/if}>стандартно</option>
+              <option value="{$smarty.const.VIEW_MODE_FULL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)} selected{/if}>подробно</option>
+            </select>
+          </td>
+
+          <!-- флажок В кредит -->
+          <td class="param_short" title="Фильтр: только заказы в кредит">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_CREDITABLE|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_CREDITABLE|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_CREDITABLE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_CREDITABLE] == 1)} checked{/if} value="1" onchange="Start_PageRecordsFilter('items_form');">
+            <span onclick="Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_CREDITABLE|escape}');">
+              в кредит
+            </span>
+          </td>
+
+          <!-- флажок Оплаченный -->
+          <td class="param_short" title="Фильтр: только оплаченные заказы">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYSTATUS|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYSTATUS|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYSTATUS]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYSTATUS] == 1)} checked{/if} value="1" onchange="Start_PageRecordsFilter('items_form');">
+            <span onclick="Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_PAYSTATUS|escape}');">
+              оплаченный
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          {if isset($items) && !empty($items) && isset($items[0]->totals_total_amount)}
+            <span title="Общая сумма найденных заказов">
+              на сумму <span>
+                         {($items[0]->totals_total_amount*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                       </span>
+            </span>
+          {/if}
+          <a href="#" onclick="return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения, типа заказов и полноты вывода)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <!-- {* В переменной $id запоминаем идентификатор текущей записи *} -->
+            {assign var="id" value=$c->order_id}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки справа от названия -->
+                <input class="checkbox" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();">
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                  <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                </a>
+
+                <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                  <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                  <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+                {/if}
+
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->canceled_get|escape}" title="Считать заказ аннулированным">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_order_canceled{if $c->status != $smarty.const.ORDER_STATUS_CANCEL}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->done_get|escape}" title="Считать заказ выполненным">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_order_done{if $c->status != $smarty.const.ORDER_STATUS_DONE}_off{/if}_16x16.png">
+                </a>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->processing_get|escape}" title="Считать заказ находящимся в обработке">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_order_processing{if $c->status != $smarty.const.ORDER_STATUS_PROCESS}_off{/if}_16x16.png">
+                </a>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->coming_get|escape}" title="Считать заказ новым">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_order_coming{if $c->status != $smarty.const.ORDER_STATUS_NEW}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->payment_get|escape}" title="Считать / не считать заказ оплаченным">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_payment{if $c->payment_status != 1}_off{/if}_16x16.png">
+                </a>
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Нумерация -->
+                <span class="topic" style="display: inline;">
+                  {if isset($CurrentPage)}
+                    {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                  {else}
+                    {$smarty.foreach.items.iteration}.
+                  {/if}
+                </span>
+
+                <!-- Дата -->
+                <span class="date" title="Дата оформления: {$c->date|escape}">
+                  <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_DATE|escape}{$c->date|truncate:10:"":true|escape}');" title="Показать все заказы такого числа">
+                    <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                  </a> &nbsp;
+                  {$c->date|truncate:10:"":true|escape}
+                </span>
+
+                <!-- Количество товаров -->
+                <span class="count" id="orderitem_total_{$id|escape}_order_quantity" old_value="{$c->total_quantity|default:0|escape}" title="Количество товаров в заказе (товарных позиций {$c->total_rows|default:0|escape})">
+                  {$c->total_quantity|default:0|escape}
+                </span>
+
+                <!-- Сумма -->
+                <span class="rating" id="orderitem_total_{$id|escape}_order_sum" old_value="{($c->total_amount*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'}" title="Полная сумма заказа">
+                  {($c->total_amount*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."} {$currency->sign|escape}
+                </span>
+
+                <!-- значок Оформляется в кредит -->
+                {if ($c->credit_id != 0) && ($c->credit_details != "")}
+                  <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_credit_16x16.png" title="Этот заказ оформляется в кредит">
+                {/if}
+
+                <!-- Имя покупателя -->
+                {if $c->compound_name != ""}
+                  <!-- ссылка на поиск -->
+                  <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_NAME|escape}{$c->search_name|escape}');;" title="Показать все заказы с таким именем покупателя">
+                    <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                  </a> &nbsp;
+                  <!-- значок заказа зарегистрированного пользователя сайта -->
+                  {if $c->user_id != 0}
+                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_USER_ID|escape}{$c->user_id|escape}');;">
+                      <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_registered_16x16.png" title="Это заказ зарегистрированного пользователя сайта">
+                    </a>
+                  {/if}
+                  <!-- ссылка не редактирование -->
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->compound_name|escape}">
+                    {$c->compound_name|escape}
+                  </a>
+                {else}
+                  <!-- значок заказа зарегистрированного пользователя сайта -->
+                  {if $c->user_id != 0}
+                    <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_registered_16x16.png" title="Это заказ зарегистрированного пользователя сайта">
+                  {/if}
+                  <!-- ссылка не редактирование -->
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}">
+                    Имя не указано
+                  </a>
+                {/if}
+
+              </div>
+
+              <!-- Краткая информация -->
+
+              <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                <!-- Номер заказа -->
+                <span class="ordernum" title="Номер заказа"><i>№</i>{$id|escape}</span>
+
+                <!-- товары заказа -->
+                {foreach name=v item=v from=$c->products}
+
+                  {assign var="image" value=""}
+                  {if isset($v->small_image)}
+                    {assign var="image" value=$v->small_image|default:""}
+                  {/if}
+                  {if ($image == "") && isset($v->large_image)}
+                    {assign var="image" value=$v->large_image|default:""}
+                  {/if}
+                  {if ($image == "") && isset($v->fotos) && !empty($v->fotos)}
+                    {foreach item=f from=$v->fotos}
+                      {if $image == ""}
+                        {assign var="image" value=$f->filename|default:""}
+                      {/if}
+                    {/foreach}
+                  {/if}
+
+                  {if $image == ""}
+                    {assign var="description" value=$v->description|default:""}
+                    {assign var="image" value=$description|regex_replace:"'^.*?<img[^>]+?src=([^>\s]+).+$'is":"\\1"}
+                    {if $image == $description}
+                      {assign var="description" value=$v->body|default:""}
+                      {assign var="image" value=$description|regex_replace:"'^.*?<img[^>]+?src=([^>\s]+).+$'is":"\\1"}
+                      {if $image == $description}
+                        {assign var="image" value=""}
+                      {/if}
+                    {/if}
+                    {if $image == ""}
+                      {capture assign="image"}"http://{$root_url|escape}/design/{$settings->theme|escape}/images/no_foto.jpg"{/capture}
+                    {/if}
+                  {else}
+                    {capture assign="image"}"{if $image|truncate:7:'':true|lower != 'http://'}http://{$root_url|escape}/{/if}{$image|escape}"{/capture}
+                  {/if}
+
+                  <!-- изображение -->
+                  <img class="thumb{if $v->model == ""} thumb_no_product" title="Этого товара уже нет в каталоге сайта{/if}" src={$image}>
+
+                  <div class="line" style="padding-top: 9px;">
+
+                    <span>
+                      <!-- флаг использования товарной позиции -->
+                      <input class="checkbox" checked id="orderitem_used_{$id|escape}_{$smarty.foreach.v.iteration}" name="orderitem_used[{$id|escape}][{$smarty.foreach.v.iteration}]" type="checkbox" value="1" style="color: #C0C0C0;" title="Действительна ли эта товарная позиция (позиции со снятым флажком будут удалены)" onchange="Toggle_DivTransparency(this, this.checked, 0.3); Show_AcceptChanges_Button();">
+                      &nbsp;
+                    </span>
+                    <!-- цена -->
+                    <div class="price_edit" title="Цена товара">
+                      <input id="orderitem_price_{$id|escape}_{$smarty.foreach.v.iteration}" name="orderitem_price[{$id|escape}][{$smarty.foreach.v.iteration}]" type="text" value="{($v->real_price*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'|escape}" onkeyup="return Change_OrderItem_Price(event, this, '{$id|escape}', '{$smarty.foreach.v.iteration}', '', true);" onchange="Show_AcceptChanges_Button();">
+                    </div>
+                    <span class="label">
+                      {$currency->sign|escape}
+                    </span>
+                    <!-- количество -->
+                    <div class="quantity_edit" title="Количество товара (отрицательное число обозначает продажу под заказ)">
+                      <input id="orderitem_quantity_{$id|escape}_{$smarty.foreach.v.iteration}" name="orderitem_quantity[{$id|escape}][{$smarty.foreach.v.iteration}]" type="text" value="{$v->quantity|escape}" old_value="{$v->quantity|escape}" onkeyup="return Change_OrderItem_Quantity(event, this, '{$id|escape}', '{$smarty.foreach.v.iteration}', true);" onchange="Show_AcceptChanges_Button();">
+                      <input name="orderitem_quantity_previous[{$id|escape}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$v->quantity|escape}">
+                    </div>
+                    <span class="label">
+                      шт.
+                    </span>
+                    <!-- скидка -->
+                    <div class="discount_edit" title="Использовать скидку">
+                      <input id="orderitem_discount_{$id|escape}_{$smarty.foreach.v.iteration}" name="orderitem_discount[{$id|escape}][{$smarty.foreach.v.iteration}]" type="text" value="{if $v->discount|string_format:'%1.2f'|replace:',':'.' != '0.00'}{$v->discount|string_format:'%1.2f'|replace:',':'.'|escape}{/if}" onkeyup="return Change_OrderItem_Discount(event, this, '{$id|escape}', '{$smarty.foreach.v.iteration}', true);" onchange="Show_AcceptChanges_Button();">
+                    </div>
+                    <span class="label">
+                      %
+                    </span>
+                    <!-- окончательная цена позиции -->
+                    {assign var="quantity" value=$v->quantity}
+                    {if $v->quantity < 0}
+                      {assign var="quantity" value=$v->quantity*-1}
+                    {/if}
+                    <span class="price" id="orderitem_total_{$id|escape}_{$smarty.foreach.v.iteration}" old_value="{($v->price*$quantity*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'|escape}">
+                      {($v->price*$quantity*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."|escape} {$currency->sign|escape}
+                    </span>
+                    <!-- название товара -->
+                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_PRODUCT_ID|escape}{$v->product_id|escape}');;" title="Показать все заказы с таким товаром">
+                      <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                    </a>&nbsp;
+                    <a class="product" href="http://{$root_url|escape}/{if $v->url_special != 1}products/{/if}{$v->url|escape}">
+                      <span class="text" title="{$v->product_name|escape|default:"&nbsp;"}{if ($v->variant_name != "") && ($v->variant_name != $v->product_name)} {$v->variant_name|escape}{/if} {$v->name_properties|escape}">{$v->product_name|escape|default:"&nbsp;"}</span>
+                    </a>
+                    {if ($v->variant_name != "") && ($v->variant_name != $v->product_name)}
+                      <span class="subtext">{$v->variant_name|escape}</span>
+                    {/if}
+                    {if $v->name_properties != ""}
+                      <span class="subinfo">{$v->name_properties|escape}</span>
+                    {/if}
+                    <!-- скрытые справочные поля -->
+                    <input name="orderitem_id[{$id|escape}][{$smarty.foreach.v.iteration}]" type="hidden" value="{if !isset($v->virtual)}{$v->orderitem_id|escape}{else}0{/if}">
+                    <input name="orderitem_product_id[{$id|escape}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$v->product_id|escape}">
+                    <input name="orderitem_variant_id[{$id|escape}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$v->variant_id|escape}">
+                    <input name="orderitem_position[{$id|escape}][{$smarty.foreach.v.iteration}]" type="hidden" value="{$smarty.foreach.v.iteration}">
+                  </div>
+                {/foreach}
+                <!-- доставка -->
+                <div class="line" style="padding-top: 9px;">
+                  <span>
+                    доставка:
+                  </span>
+                  <div class="price_edit" title="Цена доставки">
+                    <input name="delivery_price[{$id|escape}]" type="text" value="{($c->delivery_price*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'|escape}" onkeyup="return Change_OrderItem_Price(event, this, '{$id|escape}', 'delivery', '', true);" onchange="Show_AcceptChanges_Button();">
+                  </div>
+                  <span class="label">
+                    {$currency->sign|escape}
+                  </span>
+                  <span class="label" style="width: 146px;">
+                    &nbsp;
+                  </span>
+                  <span class="price" id="orderitem_total_{$id|escape}_delivery" old_value="{($c->delivery_price*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'|escape}">
+                    {($c->delivery_price*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."|escape} {$currency->sign|escape}
+                  </span>
+                  {if $c->delivery_method_id != 0}
+                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_DELIVERY_ID|escape}{$c->delivery_method_id|escape}');;" title="Показать все заказы с таким способом доставки">
+                      <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                    </a>&nbsp;
+                    <span class="text">{$c->delivery_method|escape|default:"способ доставки не указан"}</span>
+                  {/if}
+                </div>
+                <!-- дополнительная скидка -->
+                <div class="line" style="padding-top: 9px;">
+                  <span>
+                    доп.скидка:
+                  </span>
+                  <div class="price_edit" title="Сумма дополнительной скидки">
+                    <input id="discount_sum_{$id|escape}" name="discount_sum[{$id|escape}]" type="text" value="{($c->discount_sum*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'|escape}" onkeyup="return Change_OrderItem_Price(event, this, '{$id|escape}', 'discount', '-', true);" onchange="Show_AcceptChanges_Button();">
+                  </div>
+                  <span class="label">
+                    {$currency->sign|escape}
+                  </span>
+                  <span class="label" style="width: 71px;">
+                    &nbsp;
+                  </span>
+                  <div class="discount_edit" title="Сумма дополнительной скидки, выраженная в процентах">
+                    {assign var="temp" value=$c->amount+$c->discount_sum+$c->delivery_price}
+                    {if $temp == 0}{assign var="temp" value=1}{/if}
+                    <input id="discount_percent_{$id|escape}" type="text" value="{($c->discount_sum*100/$temp)|string_format:'%1.2f'|replace:',':'.'|escape}" onkeyup="return Change_Order_DiscountPercent(event, this, '{$id|escape}', '-', true);" onchange="Show_AcceptChanges_Button();">
+                  </div>
+                  <span class="label">
+                    %
+                  </span>
+                  <span class="price" id="orderitem_total_{$id|escape}_discount" old_value="-{($c->discount_sum*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'|escape}">
+                    -{($c->discount_sum*$currency->rate_from/$currency->rate_to)|string_format:"%1.2f"|replace:",":"."|escape} {$currency->sign|escape}
+                  </span>
+                  <!-- кнопка Применить (сохранить конкретно эту запись, игнорируя изменения других записей на странице) -->
+                  <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_THISONE|escape}[{$id|escape}]" type="submit" value="применить" title="Принять исправления только в этом заказе" onclick="return Prepare_PageThisOnePost('items_form');">
+                  &nbsp;
+                  <!-- флаг уведомления администратора -->
+                  <input class="checkbox" name="inform_admin_sms[{$id|escape}]" style="float: none;" type="checkbox" value="1" title="Информировать ли администратора по SMS об изменениях в заказе" onchange="Show_AcceptChanges_Button();">
+                  <input class="checkbox" id="items_form_inform_admin_{$id|escape}" name="inform_admin[{$id|escape}]" style="float: none;" type="checkbox" value="1" title="Информировать ли администратора по емейлу об изменениях в заказе" onchange="Show_AcceptChanges_Button();"> &nbsp;
+                  <span class="text" title="Информировать ли администратора по емейлу об изменениях в заказе" onclick="Toggle_PageCheckbox('items_form_inform_admin_{$id|escape}');">
+                    уведомить админа
+                  </span>
+                  <!-- флаг уведомления покупателя -->
+                  {if (($c->email != "") || ($c->email2 != "")) && (($c->phone != "") || ($c->phone2 != ""))}
+                    <input class="checkbox" name="inform_user_sms[{$id|escape}]" style="float: none;" type="checkbox" value="1" title="Информировать ли покупателя по SMS об изменениях в заказе" onchange="Show_AcceptChanges_Button();">
+                    <input class="checkbox" id="items_form_inform_user_{$id|escape}" name="inform_user[{$id|escape}]" style="float: none;" type="checkbox" value="1" title="Информировать ли покупателя по емейлу об изменениях в заказе" onchange="Show_AcceptChanges_Button();"> &nbsp;
+                    <span class="text" title="Информировать ли покупателя по емейлу об изменениях в заказе" onclick="Toggle_PageCheckbox('items_form_inform_user_{$id|escape}');">
+                      клиента
+                    </span>
+                  {elseif ($c->email != "") || ($c->email2 != "")}
+                    <input class="checkbox" id="items_form_inform_user_{$id|escape}" name="inform_user[{$id|escape}]" style="float: none;" type="checkbox" value="1" title="Информировать ли покупателя по емейлу об изменениях в заказе" onchange="Show_AcceptChanges_Button();"> &nbsp;
+                    <span class="text" title="Информировать ли покупателя по емейлу об изменениях в заказе" onclick="Toggle_PageCheckbox('items_form_inform_user_{$id|escape}');">
+                      клиента
+                    </span>
+                  {elseif ($c->phone != "") || ($c->phone2 != "")}
+                    <input class="checkbox" id="items_form_inform_user_sms{$id|escape}" name="inform_user_sms[{$id|escape}]" style="float: none;" type="checkbox" value="1" title="Информировать ли покупателя по SMS об изменениях в заказе" onchange="Show_AcceptChanges_Button();"> &nbsp;
+                    <span class="text" title="Информировать ли покупателя по SMS об изменениях в заказе" onclick="Toggle_PageCheckbox('items_form_inform_user_sms{$id|escape}');">
+                      клиента
+                    </span>
+                  {/if}
+                </div>
+
+              {/if}
+
+              <!-- {* Если включен полный вывод информации о записях *} -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)}
+
+                <!-- телефон -->
+                {if ($c->phone|strip_tags != "") || ($c->phone2|strip_tags != "")}
+                  <div class="line">
+                    <span>
+                      телефон:
+                    </span>
+                    {if $c->phone|strip_tags != ""}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_PHONE|escape}{$c->phone|strip_tags|escape}');;" title="Показать все заказы с таким телефоном {$c->phone|strip_tags|escape}">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      {$c->phone|strip_tags|escape}
+                      {if $c->phone2|strip_tags != ""}, &nbsp;
+                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_PHONE|escape}{$c->phone2|strip_tags|escape}');;" title="Показать все заказы с таким телефоном {$c->phone2|strip_tags|escape}">
+                          <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                        </a> &nbsp;
+                        {$c->phone2|strip_tags|escape}
+                      {/if}
+                    {else}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_PHONE|escape}{$c->phone2|strip_tags|escape}');;" title="Показать все заказы с таким телефоном {$c->phone2|strip_tags|escape}">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      {$c->phone2|strip_tags|escape}
+                    {/if}
+                  </div>
+                {/if}
+
+                <!-- емейл -->
+                {if ($c->email|strip_tags != "") || ($c->email2|strip_tags != "")}
+                  <div class="line">
+                    <span>
+                      емейл:
+                    </span>
+                    {if $c->email|strip_tags != ""}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_EMAIL|escape}{$c->email|strip_tags|escape}');;" title="Показать все заказы с таким емейлом {$c->email|strip_tags|escape}">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      <a href="mailto:{$c->email|strip_tags|escape}" title="Написать письмо">
+                        {$c->email|strip_tags|escape}
+                      </a>
+                      {if $c->email2|strip_tags != ""}, &nbsp;
+                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_EMAIL|escape}{$c->email2|strip_tags|escape}');;" title="Показать все заказы с таким емейлом {$c->email2|strip_tags|escape}">
+                          <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                        </a> &nbsp;
+                        <a href="mailto:{$c->email2|strip_tags|escape}" title="Написать письмо">
+                          {$c->email2|strip_tags|escape}
+                        </a>
+                      {/if}
+                    {else}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_EMAIL|escape}{$c->email2|strip_tags|escape}');;" title="Показать все заказы с таким емейлом {$c->email2|strip_tags|escape}">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      <a href="mailto:{$c->email2|strip_tags|escape}" title="Написать письмо">
+                        {$c->email2|strip_tags|escape}
+                      </a>
+                    {/if}
+                  </div>
+                {/if}
+
+                <!-- ICQ номер -->
+                {if ($c->icq|strip_tags != "") || ($c->icq2|strip_tags != "")}
+                  <div class="line">
+                    <span>
+                      номер ICQ:
+                    </span>
+                    {if $c->icq|strip_tags != ""}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_ICQ|escape}{$c->icq|strip_tags|escape}');;" title="Показать все заказы с таким номером ICQ {$c->icq|strip_tags|escape}">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      {$c->icq|strip_tags|escape}
+                      {if $c->icq2|strip_tags != ""}, &nbsp;
+                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_ICQ|escape}{$c->icq2|strip_tags|escape}');;" title="Показать все заказы с таким номером ICQ {$c->icq2|strip_tags|escape}">
+                          <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                        </a> &nbsp;
+                        {$c->icq2|strip_tags|escape}
+                      {/if}
+                    {else}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_ICQ|escape}{$c->icq2|strip_tags|escape}');;" title="Показать все заказы с таким номером ICQ {$c->icq2|strip_tags|escape}">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      {$c->icq2|strip_tags|escape}
+                    {/if}
+                  </div>
+                {/if}
+
+                <!-- Skype имя -->
+                {if ($c->skype|strip_tags != "") || ($c->skype2|strip_tags != "")}
+                  <div class="line">
+                    <span>
+                      Skype имя:
+                    </span>
+                    {if $c->skype|strip_tags != ""}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_SKYPE|escape}{$c->skype|strip_tags|escape}');;" title="Показать все заказы с таким Skype именем {$c->skype|strip_tags|escape}">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      {$c->skype|strip_tags|escape}
+                      {if $c->skype2|strip_tags != ""}, &nbsp;
+                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_SKYPE|escape}{$c->skype2|strip_tags|escape}');;" title="Показать все заказы с таким Skype именем {$c->skype2|strip_tags|escape}">
+                          <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                        </a> &nbsp;
+                        {$c->skype2|strip_tags|escape}
+                      {/if}
+                    {else}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_SKYPE|escape}{$c->skype2|strip_tags|escape}');;" title="Показать все заказы с таким Skype именем {$c->skype2|strip_tags|escape}">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      {$c->skype2|strip_tags|escape}
+                    {/if}
+                  </div>
+                {/if}
+
+                <!-- адрес -->
+                {if ($c->compound_address|strip_tags != "") || ($c->compound_address2|strip_tags != "")}
+                  <div class="line" title="{if $c->compound_address != ""}{$c->compound_address|strip_tags|escape}{else}{$c->compound_address2|strip_tags|escape}{/if}">
+                    <span>
+                      адрес:
+                    </span>
+                    {if $c->compound_address|strip_tags != ""}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_ADDRESS|escape}{$c->search_address|escape}');;" title="Показать все заказы с таким адресом">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      {$c->compound_address|strip_tags|escape}
+                      {if $c->compound_address2|strip_tags != ""}, &nbsp;
+                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_ADDRESS|escape}{$c->search_address2|escape}');;" title="Показать все заказы с таким адресом">
+                          <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                        </a> &nbsp;
+                        {$c->compound_address2|strip_tags|escape}
+                      {/if}
+                    {else}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_ADDRESS|escape}{$c->search_address2|escape}');;" title="Показать все заказы с таким адресом">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      {$c->compound_address2|strip_tags|escape}
+                    {/if}
+                  </div>
+                {/if}
+
+                <!-- желаемое время доставки -->
+                {if ($c->to_date|strip_tags != "") || ($c->to_time|strip_tags != "")}
+                  <div class="line">
+                    <span>
+                      желает:
+                    </span>
+                    {if $c->to_date|strip_tags != ""}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_TODATE|escape}{$c->to_date|strip_tags|escape}');;" title="Показать все заказы с такой желаемой датой доставки">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      дата доставки: {$c->to_date|strip_tags|escape}
+                      {if $c->to_time|strip_tags != ""}, &nbsp;
+                        <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_TOTIME|escape}{$c->to_time|strip_tags|escape}');;" title="Показать все заказы с таким желаемым временем доставки">
+                          <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                        </a> &nbsp;
+                        время: {$c->to_time|strip_tags|escape}
+                      {/if}
+                    {else}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_TOTIME|escape}{$c->to_time|strip_tags|escape}');;" title="Показать все заказы с таким желаемым временем доставки">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a> &nbsp;
+                      время доставки: {$c->to_time|strip_tags|escape}
+                    {/if}
+                  </div>
+                {/if}
+
+                <!-- дата добавления -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_AS_IS) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_ORDERS_MODE_BY_DATE))}
+                  <div class="line">
+                    <span>
+                      оформлен:
+                    </span>
+                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_DATE|escape}{$c->date|truncate:10:"":true|escape}');" title="Показать все заказы такого числа">
+                      <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                    </a> &nbsp;
+                    {$c->date|escape} &nbsp;&nbsp;&nbsp;&nbsp;
+                    {if $c->affiliate_id != 0}
+                      &nbsp; <span class="text">с участием партнера: {$c->affiliate_name|strip_tags|escape|default:"Имя не указано"}</span>
+                    {/if}
+                  </div>
+                {/if}
+
+                <!-- дата оплаты -->
+                {if ($c->payment_date|truncate:10:"":true != "0000-00-00") || ($c->payment_method_id != 0)}
+                  <div class="line">
+                    <span>
+                      оплачен:
+                    </span>
+                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_PAYMENT_DATE|escape}{$c->payment_date|truncate:10:"":true|escape}');;" title="Показать все заказы, оплаченные такого числа">
+                      <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                    </a> &nbsp;
+                    {if $c->payment_date|truncate:10:"":true != "0000-00-00"}
+                      {$c->payment_date|escape} &nbsp;&nbsp;&nbsp;&nbsp;
+                    {else}
+                      дата неизвестна &nbsp;&nbsp;&nbsp;&nbsp;
+                    {/if}
+                    {if $c->payment_method_id != 0}
+                      <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_PAYMENT_ID|escape}{$c->payment_method_id|escape}');;" title="Показать все заказы с таким способом оплаты">
+                        <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                      </a>
+                    {/if}
+                    {if $c->payment_status != 1}
+                      <span class="warning">Заказ не помечен как оплаченный!</span>
+                    {/if}
+                    &nbsp;
+                    <span class="text">{$c->payment_method|strip_tags|escape|default:"способ оплаты не указан"}</span>
+                  </div>
+                {/if}
+
+                <!-- ip-адрес -->
+                {if $c->ip|strip_tags != ""}
+                  <div class="line">
+                    <span>
+                      ip:
+                    </span>
+                    <a href="#" onclick="return SearchThis_PageRecordsFilter('items_form', '{$smarty.const.SEARCH_ORDERS_COMMAND_IP|escape}{$c->ip|strip_tags|escape}');;" title="Показать все заказы с такого IP-адреса">
+                      <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+                    </a> &nbsp;
+                    {$c->ip|strip_tags|escape} &nbsp; <a href="http://www.ip-adress.com/ip_tracer/{$c->ip|strip_tags|escape}" target="_blank" style="font-size: 7pt;">[где это?]</a>{if isset($c->host) && ($c->host|strip_tags != "")} &nbsp; {$c->host|strip_tags|escape}{/if}
+                  </div>
+                {/if}
+
+                <!-- комментарий покупателя -->
+                {if $c->comment != ""}
+                  <div class="line" title="{$c->comment|strip_tags|escape}">
+                    <span>
+                      заметки:
+                    </span>
+                    {$c->comment|strip_tags|escape}
+                  </div>
+                {/if}
+
+                <!-- желаемый способ оплаты -->
+                {if $c->desire_payment != ""}
+                  <div class="line" title="Желаемый покупателем способ оплаты">
+                    <span>
+                      оплатит:
+                    </span>
+                    {$c->desire_payment|escape}
+                  </div>
+                {/if}
+
+                <!-- комментарий администратора -->
+                {if $c->comment_status != ""}
+                  <div class="line" title="{$c->comment_status|strip_tags|escape}">
+                    <span style="color: #606060;">
+                      пояснение:
+                    </span>
+                    {$c->comment_status|strip_tags|escape}
+                  </div>
+                {/if}
+
+                <!-- вид кредита -->
+                {if ($c->credit_id != 0) && ($c->credit_details != "")}
+                  <div class="line" title="Вид кредита: {$c->credit_name|default:'неизвестный'|strip_tags|escape}, срок кредитования {$c->credit_term|string_format:'%d'} месяцев, процентная ставка {$c->credit_percent|string_format:'%1.2f'|replace:',':'.'}%">
+                    <span>
+                      кредит:
+                    </span>
+                    {$c->credit_name|default:'неизвестный'|strip_tags|escape}, срок кредитования {$c->credit_term|string_format:'%d'} месяцев, процентная ставка {$c->credit_percent|string_format:'%1.2f'|replace:',':'.'}%
+                  </div>
+                {/if}
+
+                <!-- стадия заказа -->
+                {if $c->orders_phase != ""}
+                  <div class="line" title="Стадия состояния заказа: {$c->orders_phase|strip_tags|escape}">
+                    <span>
+                      стадия:
+                    </span>
+                    {$c->orders_phase|strip_tags|escape}
+                  </div>
+                {/if}
+
+                <!-- url -->
+                <div class="line{if ($c->payment_status == 1) || ($c->hidden == 1)} gray{/if}">
+                  <span>
+                    <!-- флаг Скрыт от чужих -->
+                    <input name="hidden[{$id|escape}]" type="hidden" value="0">
+                    <input class="checkbox"{if $c->hidden == 1} checked{/if} name="hidden[{$id|escape}]" type="checkbox" value="1" title="Запрещен ли на клиентской стороне доступ к сведениям заказа незарегистрированному покупателю" onchange="Show_AcceptChanges_Button();">
+                    url:
+                  </span>
+                  {if ($c->payment_status != 1) && ($c->hidden != 1)}
+                    <a href="http://{$root_url|escape}/order/{$c->code|escape}" title="Перейти на страницу заказа в клиентской части сайта">
+                      http://{$root_url|escape}/order/{$c->code|escape}
+                    </a>
+                  {else}
+                    http://{$root_url|escape}/order/{$c->code|escape}
+                  {/if}
+                  &nbsp;
+                  <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_hidden{if $c->hidden != 1}_off{/if}_16x16.png" title="Страница заказа {if $c->hidden == 1}закрыта от чужих{else}свободно доступна{/if}">
+                </div>
+
+              {/if}
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено заказов{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} (режим: лаконичный){/if}.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка заказы по конкретным параметрам.
+        Поля фильтра можно сочетать произвольно, они объединены функцией И. Кроме того, в фильтре имеется строка поиска, а также в элементах списка
+        заказов размещены ссылки <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">,
+        моделирующие заполнение строки поиска соответствующим искомым текстом и нажатие кнопки "Найти" без сброса остальных настроек фильтра.
+      </div>
+      <div>
+        <b>Покупатель</b>. Этот выпадающий список фильтра содержит перечень зарегистрированных пользователей сайта и дает выделить заказы
+        кого-то из них. Нужно понимать, что если зарегистрированный покупатель сделал заказ, при этом не авторизовавшись на сайте, такой
+        заказ в силу отсутствия привязки к аккаунту данного пользователя просто не войдет в список отфильтрованных по этому зарегистрированному
+        покупателю.
+      </div>
+      <div>
+        Поэтому заказы зарегистрированных покупателей помечаются в списке знаком <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_registered_16x16.png">
+        перед именем покупателя. Как правило, заказы одного человека, даже когда оформлялись часть с авторизацией, часть без нее, все же
+        имеют похожие сведения, например телефон, емейл, ip-адрес. Это открывает путь ссылками <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/microicon_showall_9x9.png">
+        или через строку поиска попытаться найти максимально большее число заказов, действительно относящихся к выбранному покупателю.
+      </div>
+      <div>
+        <b>Партнер</b>. Система поддерживает комиссионные отчисления партнерам с оплаченных заказов покупателей, приведенных на сайт по реферальной
+        ссылке партнера. Тогда возникает необходимость фильтрации заказов по какому-то партнеру. Этот выпадающий список фильтра предоставляет такую
+        возможность.
+      </div>
+      <div>
+        <b>Доставка</b>, <b>Оплата</b>. Два выпадающих списка фильтра, фильтрующие список заказов по указанному способу доставки или оплаты.
+      </div>
+      <div>
+        <b>Диапазон дат</b>. Под строкой поиска в фильтре расположены два поля для задания интересующего диапазона дат. То есть можно выделить заказы
+        конкретного периода времени. Указание первой даты отфильтровывает заказы, оформленные начиная с такой даты. Указание второй даты - заказы,
+        оформленные не позднее такой даты. Поля дат снабжены выпадающими календарями, и также возможно вводить даты вручную в формате ГГГГ-ММ-ДД.
+      </div>
+      <div>
+        <b>Автоматизация</b>. Флаг <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_manually_16x16.png">
+        фильтра управляет автоматизацией срабатывания. При снятом флаге фильтр реагирует на каждое изменение мышью состояния его элементов. При
+        установленном флаге фильтр отзывается лишь на нажатие кнопки "Найти".
+      </div>
+      <div>
+        <b>Направление</b>. Флаг <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png">
+        фильтра управляет порядком сортировки элементов списка. При установленном флаге элементы располагаются по убыванию, то есть от большего к
+        меньшему. При снятом флаге - по возрастанию. По умолчанию считается выбранным порядок по убыванию как наиболее оптимальный для важных
+        сортировочных операций: по датам, сумме, количествам. Смена порядка запоминается как минимум на время сеанса. Если в браузере не отключена
+        поддержка cookie, смена запоминается на большее время.
+      </div>
+      <div>
+        <b>Лаконичность</b>. Флаг <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png">
+        фильтра управляет лаконичностью сортировки элементов списка. Установленный флаг означает лаконичный режим, когда после упорядочения скрываются
+        нецелевые записи. Например, есть 10 записей, только в 3 из них указаны телефоны. Тогда сортировка по номеру телефона покупателя в лаконичном
+        режиме выдаст 3 упорядоченные записи с телефонами, остальные 7 записей без телефонов будут скрыты как нецелевые для такого способа сортировки.
+        По умолчанию считается выбранным лаконичный режим как самый оптимальный для результатов сортировки. Смена порядка запоминается как минимум
+        на время сеанса.
+      </div>
+      <div>
+        <b>Способы сортировки</b>. Выпадающий список фильтра, где указывается требуемый способ упорядочения элементов списка заказов. По умолчанию
+        считается выбранной сортировка по дате поступления как наиболее употребляемая в списке заказов. Смена способа запоминается как минимум
+        на время сеанса.
+      </div>
+      <div>
+        <b>Состояния заказов</b>. Этот выпадающий список фильтра содержит варианты: любые заказы, новые заказы, заказы в обработке, выполненные заказы,
+        аннулированные заказы. Выпадающий список предназначен для выделения того типа заказов, с которым нужно поработать. По умолчанию считается
+        выбранным вариант новые заказы как чаще всего интересующий администратора. Смена варианта запоминается как минимум на время сеанса.
+      </div>
+      <div>
+        <b>Подробность</b>. Данный выпадающий список фильтра содержит варианты: компактно, стандартно, подробно. Здесь выбирается степень подробности
+        сведений о каждом заказе. В первом случае - это информация о имени покупателя, дате, сумме заказа и количеству товаров. Второй случай дополняет
+        сведения перечислением товарных позиций, цены доставки и суммы дополнительной скидки. Третий случай - развернутая информация о заказе, включая
+        номера телефонов, емейлы, адреса и прочее, что было указано покупателем. Второй и третий случаи дают возможность корректировать элементы заказа
+        прямо в списке. По умолчанию считается выбранной степень подробно как наиболее востребованная при работе с заказами. Смена степени запоминается
+        как минимум на время сеанса.
+      </div>
+      <div>
+        <b>Удаление</b>. У каждой записи в списке есть кнопка <img src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+        для удаления именно этой записи. Рядом с такой кнопкой расположен пометочный флажок, который совместно с размещенной под списком кнопкой "Удалить"
+        дает возможность массового удаления записей с текущей страницы списка.
+      </div>
+      <div>
+        Кроме того, в списке у каждого заказа слева от его товарных позиций находятся свои пометочные флажки, также относящиеся к удалению. Однако суть
+        их состояний противоположна: что нельзя удалять. То есть при установленном флажке товарная позиция останется в заказе, при снятом - будет удалена.
+        Чтобы администратор не путался в смыслах состояний пометочных флажков, они снабжены визуальным интуитивно понятным эффектом - удаляемые элементы
+        становятся полупрозрачными.
+      </div>
+      <div>
+        <b>Кнопка Применить</b>. Видна лишь при выборе стандартной или подробной степени сведений о заказе. На странице расположено несколько таких кнопок.
+        Одна из них под списком заказов служит для массового принятия изменений во множестве заказов на странице. Остальные подобные кнопки размещены
+        по одной в каждом заказе и служат для принятия изменений только в данном заказе.
+      </div>
+      <div>
+        Важно знать, что кнопка Применить игнорирует пометочные флажки удаления заказов, ведь в целях безопасности их обслуживает только специальная кнопка
+        под списком заказов. Иными словами, если что-то исправить в заказе, пометить его на удаление и нажать кнопку Применить, то произойдет принятие
+        изменений в заказе без его удаления.
+      </div>
+      <div>
+        <b>IP-адрес</b>. Виден лишь при выборе подробной степени сведений о заказе. В любом заказе сохраняется информация об интернет адресе компьютера
+        покупателя в момент оформления заказа. Если системе удается определить связанное с этим адресом имя хоста (канал коммуникационного сервера, через
+        который пользователь зашел на сайт), то следом за числовым представлением ip-адреса указывается имя хоста. В дополнение рядом с ip-адресом выводится
+        ссылка "где это?", чтобы можно было получить информацию о его географической принадлежности.
+      </div>
+      <div>
+        <b>URL</b>. Виден лишь при выборе подробной степени сведений о заказе. Когда пользователь оформил заказ, автоматически на клиентской стороне сайта
+        становится доступной страница с информацией о заказе. Там покупатель в любой момент без регистрации на сайте может узнать о состоянии своего заказа.
+        Хотя страница заказа имеет сложно подбираемый url (адрес), тем не менее может оказаться принципиальным, чтобы именно к сведениям этого заказа никто
+        чужой не смог получить доступ, даже когда узнал адрес страницы. Для этой цели в заказе слева от поля URL размещен флажок, его установка скрывает
+        страницу заказа от всех, кроме зарегистрированного покупателя.
+      </div>
+      <div>
+        <b>Уведомления</b>. В заказах расположены специальные флажки: один для уведомления администратора, другой - покупателя, если тот сообщил свой
+        контактный емейл. Так как покупатель, кроме емейла, может сообщить другие каналы связи - номер телефона и ICQ, и если в системе присутствуют
+        модули ICQ- и SMS-сообщений, отправка уведомления покупателю будет сделана по всем возможным каналам, которые незапрещены в его профиле.
+      </div>
+      <div>
+        <b>Подсветка изменений</b>. Внося правки в разные заказы на странице, удобно иметь зрительные ориентиры, какие поля подверглись исправлениям.
+        Это реализовано окраской текста синим в тех полях ввода, которые пытались редактировать.
+      </div>
+    </div>
+
+
+
+    {* <!-- форма настроек модуля --> *}
+    <a name="settings"></a>
+
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Orders" enctype="multipart/form-data" id="setup_form" method="post"{if empty($error)} style="display: none;"{/if}>
+
+
+
+        <br>
+        <h1>
+          Настройки
+        </h1>
+        <br>
+
+
+
+        <table align="center" cellpadding="0" cellspacing="10" class="white">
+            <tr>
+                <td class="param_short">
+                    Редактировать товары:
+                </td>
+                <td class="value" colspan="2" width="100%" title="В каких заказах разрешено редактировать список товаров">
+                    <select name="orders_edit_mode">
+                        <option value="{$smarty.const.EDIT_ORDER_MODE_NOTHING|escape}"{if $settings->orders_edit_mode == $smarty.const.EDIT_ORDER_MODE_NOTHING} selected{/if}>запрещено в любых заказах</option>
+                        <option value="{$smarty.const.EDIT_ORDER_MODE_NEW_ONLY|escape}"{if $settings->orders_edit_mode == $smarty.const.EDIT_ORDER_MODE_NEW_ONLY} selected{/if}>можно в новых заказах</option>
+                        <option value="{$smarty.const.EDIT_ORDER_MODE_NEW_PROCESS|escape}"{if $settings->orders_edit_mode == $smarty.const.EDIT_ORDER_MODE_NEW_PROCESS} selected{/if}>можно в заказах в обработке и новых</option>
+                        <option value="{$smarty.const.EDIT_ORDER_MODE_NEW_PROCESS_DONE|escape}"{if $settings->orders_edit_mode == $smarty.const.EDIT_ORDER_MODE_NEW_PROCESS_DONE} selected{/if}>можно в заказах в обработке, новых и выполненных</option>
+                        <option value="{$smarty.const.EDIT_ORDER_MODE_NEW_PROCESS_DONE_CANCEL|escape}"{if $settings->orders_edit_mode == $smarty.const.EDIT_ORDER_MODE_NEW_PROCESS_DONE_CANCEL} selected{/if}>можно в любых заказах</option>
+                    </select>
+                </td>
+
+
+
+                <td class="param_short">
+                    Минимальн. сумма заказа:
+                </td>
+                <td class="value" title="Начиная с какой суммы заказа разрешать его оформление покупателем">
+                    <input class="edit" name="orders_minimal_sum" size="10" style="width: auto;" type="text" value="{(($settings->orders_minimal_sum|default:0) * ($currency->rate_from|default:1) / ($currency->rate_to|default:1))|string_format:'%1.2f'|replace:',':'.'}" />
+                </td>
+                <td class="param_short">
+                    {($currency->sign|default:'')|truncate:3:'':true}
+                </td>
+
+
+
+                <td class="value_box">
+                    <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_SETUP|escape}" type="submit" value="Сохранить" />
+                </td>
+            </tr>
+
+
+
+            <tr>
+                <td class="param_short">
+                    В письмо покупателю о заказе:
+                </td>
+
+
+
+                <td class="param_short" colspan="2" title="Прикреплять ли квитанцию на оплату через банк в письмо покупателю о заказе">
+                    <input class="checkbox" id="setup_form_orders_attach_receipt" name="orders_attach_receipt" type="checkbox"{if isset($settings->orders_attach_receipt) && ($settings->orders_attach_receipt == 1)} checked{/if} value="1" />
+                    <span onclick="Toggle_PageCheckbox('setup_form_orders_attach_receipt');">
+                        Прикреплять квитанцию оплаты банком
+                    </span>
+                </td>
+
+
+
+                <td class="param_short" title="При включенном флажке товары списываются со склада виртуально (без реального изменения количества товаров в базе данных)">
+                    <input class="checkbox" id="setup_form_orders_non_touch_quantity" name="orders_non_touch_quantity" type="checkbox"{if $settings->orders_non_touch_quantity|default:false} checked{/if} value="1" />
+                    <span onclick="Toggle_PageCheckbox('setup_form_orders_non_touch_quantity');">
+                        Статичное число товаров
+                    </span>
+                </td>
+
+
+
+                <td class="param_short" colspan="3" title="Разрешено ли оформлять заказ, когда выбранный товар есть только в частичном количестве на складе">
+                    <input class="checkbox" id="setup_form_orders_deficit_enabled" name="orders_deficit_enabled" type="checkbox"{if $settings->orders_deficit_enabled|default:false} checked{/if} value="1" />
+                    <span onclick="Toggle_PageCheckbox('setup_form_orders_deficit_enabled');">
+                        Допустим неполный дефицит товара
+                    </span>
+                </td>
+            </tr>
+
+
+
+            <tr>
+                <td class="param_short">
+                    Авто экспорт новых заказов:
+                </td>
+
+
+
+                {* <!-- флажок Включить автоэкспорт --> *}
+                <td class="param_short" title="Включен ли авто экспорт заказов">
+
+                    {$param = 'orders_auto_export'}
+                    {$checked = ''}
+                    {foreach $settings as $key => $value}
+                        {if $key == $param}
+                            {$checked = ($value) ? 'checked' : ''}
+                            {break}
+                        {/if}
+                    {/foreach}
+                    <input class="checkbox" id="setup_form_{$param|escape}" name="{$param|escape}" type="checkbox" value="1" {$checked} />
+                    {**} {**}
+
+                    <span onclick="Toggle_PageCheckbox('setup_form_{$param|escape}');">
+                        Включен
+                    </span>
+                </td>
+
+
+
+                {* <!-- поле Формат автоэкспорта --> *}
+                <td class="value" width="100%" title="В каком формате экспортировать заказы в файл">
+                    <select name="orders_auto_export_format">
+                        <option value="xml">в формате XML</option>
+                    </select>
+                </td>
+
+
+
+                {* <!-- поле Файл автоэкспорта --> *}
+                <td class="param_short">
+                    Через http://сайт/export/
+                </td>
+                <td class="value" colspan="3" title="В какой файл добавлять экспорт новых заказов (рекомендуется придумать трудно подбираемое имя файла)">
+                    <input class="edit" name="orders_auto_export_file" type="text" value="{($settings->orders_auto_export_file|default:'')|escape}" />
+                </td>
+            </tr>
+        </table>
+
+
+
+        {* <!-- аутентификатор операции --> *}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" />
+
+
+
+    </form>
+
+  </div>

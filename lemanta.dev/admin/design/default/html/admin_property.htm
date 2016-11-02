@@ -1,0 +1,216 @@
+{* <!--
+  Impera CMS: шаблон админ модуля страницы свойства товара.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о свойстве товара;
+    $categories = массив с записями о категориях;
+    $all_brands = массив с записями о брендах;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    products = true - вывести эту кнопку
+    products_kits = true - вывести эту кнопку
+    categories = true - вывести эту кнопку
+    brands = true - вывести эту кнопку
+    properties = true - вывести эту кнопку
+    card_properties = true - вывести эту кнопку
+    stocks = true - вывести эту кнопку --> *}
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           products = true
+           products_kits = true
+           categories = true
+           brands = true
+           properties = true
+           card_properties = true
+           stocks = true}
+
+  {* <!-- В переменную $id заносим идентификатор свойства товара или 0 при его отсутствии. --> *}
+
+  {assign var="id" value=$item->property_id|default:0|escape}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Properties" title="Перейти на страницу свойств товаров в админпанели">Свойства</a>
+        → {if !empty($id)}Редактирование{else}Новое{/if}
+      </div>
+      {if !empty($id)}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новое свойство
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о свойстве товара -->
+    <form action="{siteAdmin}?section=Property" enctype="multipart/form-data" id="item_form" method="post">
+
+        {* <!-- Информация о названии --> *}
+        <table align="center" cellpadding="0" cellspacing="10" class="white">
+            <tr>
+                <td class="param">Название:</td>
+                <td class="value" width="50%" title="Название свойства товара">
+                    <input class="edit" name="name[{$id}]" type="text" value="{inputValue from='item->name'}" />
+                </td>
+
+                <td class="param_short">Группа:</td>
+                <td class="value" width="40%" title="Название группы свойств">
+                    <input class="edit" name="group[{$id}]" type="text" value="{inputValue from='item->group'}" />
+                </td>
+
+                <td class="param_short">Вес:</td>
+                <td class="value" width="10%" title="Положение свойства выше других с меньшим весом">
+                    <input class="edit" name="order_num[{$id}]" type="text" value="{inputValue from='item->order_num'}" />
+                </td>
+
+                <td class="value_box">
+                    <input class="submit" type="submit" value="Сохранить" />
+                </td>
+            </tr>
+
+            {* <!-- Возможные значения --> *}
+            <tr>
+                <td class="param_high">
+                    Возможные значения:
+                </td>
+                <td class="value" colspan="6">
+                    <textarea class="editor_small" name="options[{$id}]">{if isset($item->options) && !empty($item->options)}{foreach item=s from=$item->options}{$s|escape}&#10;{/foreach}{/if}</textarea>
+                </td>
+            </tr>
+        </table>
+
+      <!-- Информация о прикреплениях и разрешениях -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+        <tr>
+          <td class="param_high" rowspan="5">
+            В категориях:
+          </td>
+          <td class="value" rowspan="5" width="50%" title="В каких категориях используется свойство товара">
+            <select multiple name="categories[{$id}][]" size="15">
+
+              <!-- {*
+              Подключаем субшаблон списка категорий. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список категорий
+                currents = идентификатор выбранной категории (модификатор "|default:0" добавлен для обработки и новой записи)
+                selector = true - это будет селектор, а не список категорий *} -->
+
+              {include file = "../../common_parts/categories.htm"
+                       items = $categories
+                       currents = $item->categories|default:0
+                       selector = true}
+            </select>
+          </td>
+          <td class="param_short" rowspan="5" style="vertical-align: top;">
+            В брендах:
+          </td>
+          <td class="value" rowspan="5" width="50%" title="В каких брендах используется свойство товара">
+            <select multiple name="brands[{$id}][]" size="15">
+
+              <!-- {*
+              Подключаем субшаблон списка брендов. В субшаблон передаем атрибуты:
+                items = из какой переменной брать список брендов
+                currents = идентификатор выбранного бренда (модификатор "|default:0" добавлен для обработки и новой записи)
+                selector = true - это будет селектор, а не список брендов *} -->
+
+              {include file = "../../common_parts/brands.htm"
+                       items = $all_brands
+                       currents = $item->brands|default:0
+                       selector = true}
+            </select>
+          </td>
+          <td class="param_short" title="Отображать ли свойство в товарах на стороне клиента">
+            <input class="checkbox" id="item_form_inproduct" name="in_product[{$id}]" type="checkbox"{if isset($item->in_product) && ($item->in_product == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_inproduct');">
+              В товарах
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" title="Использовать ли свойство в фильтре">
+            <input class="checkbox" id="item_form_infilter" name="in_filter[{$id}]" type="checkbox"{if isset($item->in_filter) && ($item->in_filter == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_infilter');">
+              В фильтре
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" title="Отображать ли свойство клиенту на странице сравнения товаров">
+            <input class="checkbox" id="item_form_incompare" name="in_compare[{$id}]" type="checkbox"{if isset($item->in_compare) && ($item->in_compare == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_incompare');">
+              В сравнении
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" title="Разрешено ли свойство товара к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешено
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="value_box" style="vertical-align: bottom;">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && !empty($from_page)}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>

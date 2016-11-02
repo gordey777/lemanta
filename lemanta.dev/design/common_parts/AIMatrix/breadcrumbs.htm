@@ -1,0 +1,179 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Breadcrumbs - блок хлебных крошек                                       |
+  Версия модуля: 1.3                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $opentag = открывающий тег блока хлебных крошек                               |
+        $box_opentag = открывающий тег контейнера хлебных крошек                  |
+            $first_link_opentag = открывающий тег первой ссылки хлебной крошки    |
+            $first_link_closetag = закрывающий тег ссылки хлебной крошки          |
+            $link_opentag = открывающий тег ссылки хлебной крошки                 |
+                $a_id = идентификатор ссылок                                      |
+                $a_class = класс ссылок                                           |
+                $a_params = дополнительные опции тега ссылки                      |
+                $a_text_opentag = открывающий тег текста ссылки                   |
+                    $prelast = текст добавочного предпоследнего звена             |
+                    $prelast_url = url (относительно корня) добавочн.предпос.звена|
+                    $last = текст добавочного последнего звена                    |
+                    $last_url = url (относительно корня) добавочн.последн.звена   |
+                $a_text_closetag = закрывающий тег текста ссылки                  |
+            $link_closetag = закрывающий тег ссылки хлебной крошки                |
+            $separator = тег разделителя хлебных крошек                           |
+        $box_closetag = закрывающий тег контейнера                                |
+    $closetag = закрывающий тег блока хлебных крошек                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $category = запись о текущей просматриваемой категории товаров, если есть     |
+    $brand = запись о текущем просматриваемом бренде, если есть                   |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/breadcrumbs.htm'                 |
+             opentag = строка                                                     |
+                 box_opentag = строка                                             |
+                     first_link_opentag = строка                                  |
+                     first_link_closetag = строка                                 |
+                     link_opentag = строка                                        |
+                         a_id = строка                                            |
+                         a_class = строка                                         |
+                         a_params = строка                                        |
+                         a_text_opentag = строка                                  |
+                             prelast = строка                                     |
+                             prelast_url = строка                                 |
+                             last = строка                                        |
+                             last_url = строка                                    |
+                         a_text_closetag = строка                                 |
+                     link_closetag = строка                                       |
+                     separator = строка                                           |
+                 box_closetag = строка                                            |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_id --> *}
+    {$a_id = ($a_id|default:'')|regex_replace:'/[\s\t\r\n]+/':''}
+    {$a_id = ($a_id != '') ? ('id="'|cat:($a_id|escape)|cat:'"') : ''}
+
+
+
+    {* <!-- обрабатываем входной параметр $a_class --> *}
+    {$a_class = ($a_class|default:'')|regex_replace:'/[\s\t\r\n]+/':' '}
+    {$a_class = ($a_class != '') ? ('class="'|cat:($a_class|escape)|cat:'"') : ''}
+
+
+
+    {$opentag|default:''}
+
+        {$box_opentag|default:''}
+
+
+
+            {* <!-- ссылка на главную --> *}
+            {$first_link_opentag|default:''}
+                <a {$a_class} {$a_id} href="{$site|default:''|escape}" title="Главная страница" {$a_params|default:""}>
+                    {$a_text_opentag|default:''}
+                        Главная
+                    {$a_text_closetag|default:''}
+                </a>
+            {$first_link_closetag|default:''}
+
+
+
+            {* <!-- если находимся в категории (блокируем повтор подобия с предыдущим звеном) --> *}
+            {$prev = ''}
+            {if isset($category->path) && is_array($category->path) && !empty($category->path)}
+                {foreach $category->path as $r}
+                    {$name = $r->name|default:'Без названия!'}
+                    {if $prev != $name|lower}
+                        {$separator|default:''}
+                        {$link_opentag|default:''}
+                            <a {$a_class} {$a_id} href="{$site|default:''|escape}{if isset($r->url_path)}{$r->url_path|escape}{elseif !$r->url_special|default:false}catalog/{/if}{$r->url|default:''|escape}" title="{$name|strip_tags|escape}" {$a_params|default:""}>
+                                {$a_text_opentag|default:''}
+                                    {$name}
+                                {$a_text_closetag|default:''}
+                            </a>
+                        {$link_closetag|default:''}
+                        {$prev = $name|lower}
+                    {/if}
+                {/foreach}
+            {/if}
+
+
+
+            {* <!-- если находимся в бренде (блокируем повтор подобия с предыдущим звеном) --> *}
+            {if isset($brand->path) && is_array($brand->path) && !empty($brand->path)}
+                {foreach $brand->path as $r}
+                    {$name = $r->name|default:'Без названия!'}
+                    {if $prev != $name|lower}
+                        {$separator|default:''}
+                        {$link_opentag|default:''}
+                            <a {$a_class} {$a_id} href="{$site|default:''|escape}{if isset($r->url_path)}{$r->url_path|escape}{elseif !$r->url_special|default:false}brands/{/if}{$r->url|default:''|escape}" title="{$name|strip_tags|escape}" {$a_params|default:""}>
+                                {$a_text_opentag|default:''}
+                                    {$name}
+                                {$a_text_closetag|default:''}
+                            </a>
+                        {$link_closetag|default:''}
+                        {$prev = $name|lower}
+                    {/if}
+                {/foreach}
+            {/if}
+
+
+
+            {* <!-- предпоследнее звено, если задано (блокируем повтор подобия с предыдущим) --> *}
+            {if ($prelast|default:'' != '') && ($prelast|lower != $prev)}
+                {$separator|default:''}
+                {$link_opentag|default:''}
+                    {if $prelast_url|default:'' != ''}
+                        <a {$a_class} {$a_id} href="{$site|default:''|escape}{$prelast_url|escape}" {$a_params|default:""}>
+                            {$a_text_opentag|default:''}
+                                {$prelast}
+                            {$a_text_closetag|default:''}
+                        </a>
+                    {else}
+                        {$prelast}
+                    {/if}
+                {$link_closetag|default:''}
+                {$prev = $prelast|lower}
+            {/if}
+
+
+
+            {* <!-- последнее звено, если задано (блокируем повтор подобия с предыдущим) --> *}
+            {if ($last|default:'' != '') && ($last|lower != $prev)}
+                {$separator|default:''}
+                {$link_opentag|default:''}
+                    {if $last_url|default:'' != ''}
+                        <a {$a_class} {$a_id} href="{$site|default:''|escape}{$last_url|escape}" {$a_params|default:""}>
+                            {$a_text_opentag|default:''}
+                                {$last}
+                            {$a_text_closetag|default:''}
+                        </a>
+                    {else}
+                        {$last}
+                    {/if}
+                {$link_closetag|default:''}
+            {/if}
+
+
+
+        {$box_closetag|default:''}
+
+    {$closetag|default:''}
+
+{/strip}

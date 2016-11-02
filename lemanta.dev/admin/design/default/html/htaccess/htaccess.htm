@@ -1,0 +1,163 @@
+{* <!--
+  Impera CMS: шаблон админ модуля корневого файла .htaccess
+
+  Принимает во входных переменных:
+    $data = контент файла .htaccess
+    $message = текст информационного сообщения, если есть
+    $error = текст сообщения об ошибке, если была
+    $Token = аутентификатор операции
+    $settings = настройки сайта
+    $admin_folder = имя папки админпанели
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта
+    $site = полный адрес корня сайта
+
+  ============================================================================
+
+    Подключаем субшаблон закладок. В субшаблон передаем атрибуты:
+      main = вывести закладку "главная"
+      me = текст собственной закладки модуля
+      me_pointer = указатель на модуль в ссылке
+      me_menupath = путевое положение модуля в меню
+      select = какая закладка будет выбранной --> *}
+
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.HTACCESS_MODULETAB_TEXT|default:''
+             me_pointer = $smarty.const.HTACCESS_MODULELINK_POINTER|default:''
+             me_menupath = $smarty.const.HTACCESS_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок содержимого --> *}
+        {strip}
+            <h1>
+                <div class="path">
+                    <a href="{$site|default:''|escape}{$admin_folder|default:''|escape}/">
+                        Главная
+                    </a> → .htaccess
+                </div>
+                {$title|default:'Корневой файл .htaccess'}
+            </h1>
+        {/strip}
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            {strip}
+                <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+                    справка
+                </a>
+
+                &nbsp;
+            {/strip}
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма --> *}
+        <form action="{$site|default:''|escape}{$admin_folder|default:''|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|default:''|escape}={$smarty.const.HTACCESS_MODULELINK_POINTER|default:''|escape}" id="item_form" method="post">
+
+
+
+            {* <!-- имя редактируемого файла --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+                <tr>
+                    <td class="param_short">
+                        Файл:
+                    </td>
+
+                    <td class="value" title="Имя редактируемого файла" width="100%">
+                        <input class="edit" disabled readonly type="text" value="{$site|default:''|escape}.htaccess" />
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    <td class="value_box">
+                        <input class="submit" type="submit" value="Сохранить" onclick="javascript: return confirm('Подтвердите свое желание сохранить изменения в этом файле!');" />
+                    </td>
+                </tr>
+
+            </table>
+
+
+
+            {* <!-- контент файла --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+                <tr>
+                    <td class="value" title="Содержимое редактируемого файла" width="100%">
+                        <textarea class="source_code" name="{$smarty.const.HTACCESS_SMARTYVAR_DATA|default:''|escape}" style="height: 800px;">{$data|default:''|escape}</textarea>
+                    </td>
+                </tr>
+
+            </table>
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''|escape}" type="hidden" value="{$Token|default:''|escape}">
+
+        </form>
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help">
+
+            <div class="title">
+                Обратите внимание!
+            </div>
+
+
+
+            <div>
+                Неверный синтаксис в этом файле может привести к полной неработоспособности сайта, так как
+                файл обрабатывается сервером еще до запуска движка сайта. Следовательно при допущении
+                какой-нибудь критической ошибки в синтаксисе, сайт станет вообще недоступным через браузер.
+            </div>
+
+            <div>
+                Если такое случилось, придется зайти на сайт по FTP в папку, эквивалентную веб странице {$site|default:''},
+                и вручную удалить файл .htaccess, потом вернуть его прежнюю версию, просто переименовав резервную
+                копию <b>.htaccess.bak</b> в файл .htaccess (то есть без расширения .bak).
+            </div>
+
+            <div>
+                Именно для этих целей при каждом изменении файла внутри данной страницы всегда создается
+                его резервная копия с прежним содержимым файла. В дальнейшем, когда убедились в
+                работоспособности внесенных изменений, резервная копия может быть свободно удалена по FTP.
+            </div>
+
+        </div>
+
+
+
+    </div>

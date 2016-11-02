@@ -1,0 +1,392 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля страницы склада.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о складе;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    products = true - вывести эту кнопку
+    products_kits = true - вывести эту кнопку
+    categories = true - вывести эту кнопку
+    brands = true - вывести эту кнопку
+    properties = true - вывести эту кнопку
+    stocks = true - вывести эту кнопку
+    card_stocks = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           products = true
+           products_kits = true
+           categories = true
+           brands = true
+           properties = true
+           stocks = true
+           card_stocks = true}
+
+  <!-- {* В переменную $id заносим идентификатор склада или 0 при его отсутствии. *} -->
+  {assign var="id" value=$item->stock_id|escape|default:0}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Stocks" title="Перейти на страницу складов в админпанели">Склады</a>
+        → {if !empty($id)}Редактирование{else}Новый{/if}
+      </div>
+      {if !empty($id)}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новый склад
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        {if !empty($id) && isset($item->url) && !empty($item->url) && empty($error)}
+          <a href="http://{$root_url|escape}/stocks/{$item->url|escape}" title="Перейти на страницу склада в клиентской части сайта">
+            http://{$root_url|escape}/stocks/{$item->url|escape}
+          </a>
+        {else}
+          &nbsp;
+        {/if}
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о складе -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Stock" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param">
+            Название:
+          </td>
+          <td class="value" width="100%" title="Название склада">
+            <input class="edit" id="item_form_name_{$id}" name="name[{$id}]" type="text" value="{$item->name|escape|default:''}">
+          </td>
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Meta информация -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+        <tr>
+          <td class="param">
+            URL:
+          </td>
+          <td class="param_short" width="1%">
+            http://сайт/stocks/
+          </td>
+          <td class="value" width="100%" title="Окончание адреса страницы склада">
+            <input class="edit" id="item_form_url_{$id}" name="url[{$id}]" type="text" value="{$item->url|escape|default:''}">
+          </td>
+          <td class="param_short">
+            Вес:
+          </td>
+          <td class="value" title="Число определяет положение склада выше других с меньшим весом в списке">
+            <input class="edit" name="order_num[{$id}]" size="10" style="width: auto;" type="text" value="{$item->order_num|escape|default:''}">
+          </td>
+          <td class="param_short" title="Разрешен ли склад к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешен
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_high" rowspan="2">
+            Meta Keywords:
+          </td>
+          <td class="value" colspan="2" rowspan="2" title="Какой текст разместить в мета теге &lt;meta name=keywords ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_keywords_{$id}" name="meta_keywords[{$id}]" style="height: 48px;">{$item->meta_keywords|escape|default:''}</textarea>
+          </td>
+          <td class="param_short">
+            Просмотры:
+          </td>
+          <td class="value" title="Счетчик визитов на страницу склада">
+            <input class="edit" name="browsed[{$id}]" size="10" style="width: auto;" type="text" value="{$item->browsed|escape|default:''}">
+          </td>
+          <td class="param_short" title="Имеет ли склад страницу на клиентской стороне">
+            <input class="checkbox" id="item_form_visible" name="visible[{$id}]" type="checkbox"{if isset($item->visible) && ($item->visible == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_visible');">
+              Видимый
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short">
+            Плагины:
+          </td>
+          <td class="value" title="Какие динамические плагины подключить на страницу склада (список классов модулей через запятую)">
+            <input class="edit" name="objects[{$id}]" size="10" style="width: auto;" type="text" value="{$item->objects|escape|default:''}">
+          </td>
+          <td class="param_short" title="Будет ли склад скрыт от незарегистрированных пользователей">
+            <input class="checkbox" id="item_form_hidden" name="hidden[{$id}]" type="checkbox"{if isset($item->hidden) && ($item->hidden == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_hidden');">
+              Скрыт
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param" rowspan="2">
+            Meta Description:
+          </td>
+          <td class="value" colspan="4" rowspan="2" title="Какой текст разместить в мета теге &lt;meta name=description ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_description_{$id}" name="meta_description[{$id}]" style="height: 48px;">{$item->meta_description|escape|default:''}</textarea>
+          </td>
+          <td class="param_short" title="Разрешен ли приход товаров на склад">
+            <input class="checkbox" id="item_form_enabledebit" name="enable_debit[{$id}]" type="checkbox"{if isset($item->enable_debit) && ($item->enable_debit == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabledebit');">
+              Приходный
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param_short" title="Разрешен ли расход товаров со склада для заказов пользователей">
+            <input class="checkbox" id="item_form_enablecredit" name="enable_credit[{$id}]" type="checkbox"{if isset($item->enable_credit) && ($item->enable_credit == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enablecredit');">
+              Расходный
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td class="param">
+            Meta Title:
+          </td>
+          <td class="value" colspan="4" width="100%" title="Какой текст разместить в теге &lt;title&gt; заголовка страницы">
+            <input class="edit" id="item_form_meta_title_{$id}" name="meta_title[{$id}]" type="text" value="{$item->meta_title|escape|default:''}">
+          </td>
+          <td class="value_box" width="1%">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Аннотация -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Аннотация:
+          </td>
+          <td class="{if $settings->stocks_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" id="item_form_description_{$id}" name="annotation[{$id}]">{$item->annotation|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Текст описания -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Полное описание:
+          </td>
+          <td class="{if $settings->stocks_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_big" name="description[{$id}]" style="height: 400px;">{$item->description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Теги -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Теги -->
+        <tr>
+          <td class="param">
+            Теги:
+          </td>
+          <td class="value" width="100%" title="Ассоциируемые с этой записью теги (перечисляются через запятую)">
+            <input class="edit" name="tags[{$id}]" type="text" value="{$item->tags|escape|default:''}">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- SEO текст -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            SEO текст:
+          </td>
+          <td class="{if $settings->stocks_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" name="seo_description[{$id}]" style="height: 150px;">{$item->seo_description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Информация по изображениям -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Изображения:
+            {if isset($item->images) && !empty($item->images)}
+              {strip}
+                <br><br>
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Stock&{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}=*&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}={$id}&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DELETEIMAGE|escape}" onclick="javascript: if (confirm('Это действие удалит все изображения склада. Вы подтверждаете такую операцию?')) Delete_PageRecordImage('item_form', '*'); return false;" title="Удалить загруженные в склад изображения">
+                  удалить все
+                </a>
+              {/strip}
+            {/if}
+          </td>
+          <td class="value_box">
+            {if !empty($id)}
+              {if isset($item->images) && !empty($item->images)}
+                {foreach name="images" item=image from=$item->images}
+                  <div class="image">
+                    {strip}
+                      <input class="checkbox" name="imageview[{$id}][{$smarty.foreach.images.iteration}]" type="checkbox"{if isset($item->images_view[$smarty.foreach.images.index]) && ($item->images_view[$smarty.foreach.images.index] == 1)} checked{/if} value="1" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+                      <span>{$smarty.foreach.images.iteration}.</span>
+                      <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Stock&{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}={$smarty.foreach.images.iteration}&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$Token|escape}&{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}={$id}&{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}={$smarty.const.ACTION_REQUEST_PARAM_VALUE_DELETEIMAGE|escape}" onclick="javascript: if (confirm('Это действие удалит указанное изображение склада. Вы подтверждаете такую операцию?')) Delete_PageRecordImage('item_form', {$smarty.foreach.images.iteration}); return false;">
+                        удалить
+                      </a>
+                      <br>
+                      <a href="http://{$root_url|escape}/{$settings->stocks_files_folder_prefix|escape}{$smarty.const.ADMIN_STOCKS_CLASS_UPLOAD_FOLDER|escape}{$image|escape}" target="_blank"{if isset($item->images_alts[$smarty.foreach.images.index])} title="{$item->images_alts[$smarty.foreach.images.index]|escape}"{/if}>
+                        <img src="http://{$root_url|escape}/{$settings->stocks_files_folder_prefix|escape}{$smarty.const.ADMIN_STOCKS_CLASS_UPLOAD_FOLDER|escape}{if isset($item->images_thumbs[$smarty.foreach.images.index])}{$item->images_thumbs[$smarty.foreach.images.index]|escape}{else}{$image|escape}{/if}">
+                      </a>
+                    {/strip}
+                    <div>
+                      <input name="image[{$id}][{$smarty.foreach.images.iteration}]" type="hidden" value="{$image|escape}">
+                      заголовок (alt):<br>
+                      <input name="imagealt[{$id}][{$smarty.foreach.images.iteration}]" type="text" value="{if isset($item->images_alts[$smarty.foreach.images.index])}{$item->images_alts[$smarty.foreach.images.index]|escape}{/if}" title="Заголовок (всплывающая подсказка) этого изображения"><br>
+                      описание:<br>
+                      <textarea name="imagetext[{$id}][{$smarty.foreach.images.iteration}]" title="Описание этого изображения">{if isset($item->images_texts[$smarty.foreach.images.index])}{$item->images_texts[$smarty.foreach.images.index]|escape}{/if}</textarea>
+                    </div>
+                  </div>
+                {/foreach}
+              {/if}
+              <div style="clear: both;">
+                <div class="newimage">
+                  новое изображение (объемом не более {($smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт):<br>
+                  <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                  <input class="edit" name="new_image[{$id}]" type="file" title="Какой файл изображения требуется взять с Вашего компьютера (объем файла не более {($smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт)"><br><br>
+                  или из удаленного источника:<br>
+                  <input class="edit" name="new_image_url[{$id}]" type="text" value="http://" title="Какой файл изображения требуется взять с другого сайта в Интернете"><br><br>
+                  дать файлу имя:<br>
+                  <input class="edit" id="item_form_filename_{$id}" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEFILENAME|escape}" type="text" value="" title="Какой сделать начальную часть имени файла нового изображения на сайте (файл будет размещен в папке http://{$root_url|escape}/{$settings->stocks_files_folder_prefix|escape}{$smarty.const.ADMIN_STOCKS_CLASS_UPLOAD_FOLDER|escape})"><br><br>
+                  <input class="checkbox" id="item_form_imageview" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEVIEW|escape}" type="checkbox" checked value="1" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+                  <span onclick="javascript: Toggle_PageCheckbox('item_form_imageview');" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+                    использовать в слайдере
+                  </span>
+                  <input class="submit" type="submit" value="Сохранить">
+                </div>
+                <div class="newimage_options">
+                  заголовок (alt) изображения:<br>
+                  <input class="edit" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEALT|escape}" type="text" value="" title="Какой заголовок (всплывающую подсказку) дать новому изображению"><br>
+                  описание:<br>
+                  <textarea name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGETEXT|escape}" style="height: 105px;" title="Какое описание дать новому изображению"></textarea>
+                </div>
+              </div>
+            {else}
+              <div class="hint">
+                Управление изображениями станет доступным, когда этот склад будет создан.
+              </div>
+            {/if}
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && !empty($from_page)}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем пустой указатель номера изображения -->
+      <input id="item_form_{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}" type="hidden" value="">
+
+      <!-- Добавляем случайный аутентификатор изображения -->
+      <input name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGETOKEN|escape}" type="hidden" value="{math equation='rand(1, 100000000)'}">
+
+      <!-- Добавляем пустой указатель требуемой команды -->
+      <input id="item_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <div class="help">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Мета</b>. Эта информация используется в заголовке html-страницы склада. Подобно полю URL, мета информация при ее пустых полях
+        автоматически заполняется из полей названия и описания склада, если это разрешено в соответствующих настройках сайта
+        (изменить их можно на странице складов в админпанели).
+      </div>
+      <div>
+        <b>Плагины</b>. Если при просмотре пользователем страницы этого склада должно происходить подключение расширяющих функционал плагинов,
+        необходимо выше в соответствующем поле перечислить через запятую классы их модулей (например: MyBanner, SubscribeForm). Тогда перед
+        открытием страницы склада управление сначала будет передаваться плагинам в порядке их перечисления. Плагину разрешено выполнять
+        любые действия, но результатом он возвращает либо замещающий страницу склада текст, либо каким фрагментом ее дополнить.
+      </div>
+      <div>
+        <b>Изображения</b>. В склад допустимо загружать произвольное количество картинок. Они могут быть вставлены в описание склада, а могут
+        просто располагаться на сайте для иных целей, например фотогалерея. Изображения могут быть загружены с локального компьютера или из
+        удаленного источника (другого сайта). Каждому новому изображению возможно задать его заголовок (alt) - всплывающий текст при наведении
+        курсора на картинку, описание - информирующий текст (может использоваться во вьюверах на клиентской стороне), имя файла - по умолчанию
+        равно транслитерации названия склада. Имя файла нужно указывать без расширения, справа к имени автоматически добавится цифровой
+        идентификатор и расширение. Если имя файла вообще не указано, оно генерируется системой.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- {*
+  Подключаем субшаблон редактора TinyMCE. В субшаблон передаем атрибуты:
+    disabled_state = из какой переменной брать признак отмены редактора *} -->
+
+  {include file = "../../common_parts/tinymce.htm"
+           disabled_state = $settings->stocks_wysiwyg_disabled}
+
+  <!-- {*
+  Подключаем субшаблон генератора Meta информации. В субшаблон передаем атрибуты:
+    form_id = какой идентификатор у формы, в которой редактируется запись
+    item_id = из какой переменной брать идентификатор записи
+    autofill = из какой переменной брать признак автозаполнения пустых полей мета информации *} -->
+
+  {include file = "../../common_parts/meta.htm"
+           form_id = "item_form"
+           item_id = $id
+           autofill = $settings->stocks_meta_autofill}

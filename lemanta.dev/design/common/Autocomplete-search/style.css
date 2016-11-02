@@ -1,0 +1,134 @@
+/* Autocomplete search v.1.3 styles for Impera CMS */
+    .autocomplete-w1 {
+        background: url('shadow.png') no-repeat bottom right;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        margin: 6px 0px 0px 6px;
+    }
+
+    .autocomplete-w1 .autocomplete {
+        border: 1px solid #999;
+        background: #FFF;
+        cursor: default;
+        text-align: left;
+        max-height: 350px;
+        overflow: auto;
+        margin: -6px 6px 6px -6px;
+    }
+
+    .autocomplete-w1 .autocomplete .selected {
+        background: #F0F0F0;
+    }
+
+    .autocomplete-w1 .autocomplete div {
+        border-bottom: #F0F0F0 1px solid;
+        padding: 5px 5px 5px 60px;
+        overflow: hidden;
+    }
+
+
+
+    /* mark search keyword in suggested */
+
+    .autocomplete-w1 .autocomplete strong {
+        font-weight: normal;
+        color: #3399FF;
+    }
+
+
+
+    /* image for product or category or brand */
+
+    .autocomplete-w1 .autocomplete img {
+        border: #E0E0E0 1px solid;
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
+        border-radius: 3px;
+        background-color: #FFF;
+        display: block;
+        clear: none;
+        float: left;
+        margin: 0px 10px 5px -50px;
+        padding: 3px;
+        width: 32px;
+        max-height: 24px;
+        text-decoration: none;
+    }
+
+
+
+    /* product price */
+
+    .autocomplete-w1 .autocomplete span.price {
+        border: 0px solid;
+        display: block;
+        clear: none;
+        float: right;
+        margin: 0px 5px;
+        padding: 0px;
+        white-space: nowrap;
+        font-size: 8pt;
+        font-weight: normal;
+        color: #C00000;
+        text-decoration: none;
+    }
+
+
+
+    /* product vendor code */
+
+    .autocomplete-w1 .autocomplete span.product_id,
+    .autocomplete-w1 .autocomplete span.pcode,
+    .autocomplete-w1 .autocomplete span.sku {
+        border: 0px solid;
+        display: inline;
+        clear: none;
+        float: none;
+        margin: 0px 15px 0px 0px;
+        padding: 0px;
+        font-size: 7pt;
+        font-weight: normal;
+        font-style: italic;
+        color: #C0C0C0;
+        text-decoration: none;
+    }
+
+
+
+    /* categories and brands remark */
+
+    .autocomplete-w1 .autocomplete span.remark {
+        border: 0px solid;
+        display: inline;
+        clear: none;
+        float: none;
+        margin: 0px;
+        padding: 0px;
+        font-size: 7pt;
+        font-weight: normal;
+        font-style: italic;
+        color: #C0C0C0;
+        text-decoration: none;
+    }
+
+
+
+    /* page link */
+
+    .autocomplete-w1 .autocomplete div a {
+        color: #404040;
+        text-decoration: none;
+    }
+
+    .autocomplete-w1 .autocomplete div a:hover {
+        color: #404040;
+        text-decoration: underline;
+    }
+
+    .autocomplete-w1 .autocomplete div a:hover span.product_id,
+    .autocomplete-w1 .autocomplete div a:hover span.pcode,
+    .autocomplete-w1 .autocomplete div a:hover span.sku,
+    .autocomplete-w1 .autocomplete div a:hover span.remark {
+        color: #404040;
+    }

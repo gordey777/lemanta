@@ -1,0 +1,726 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка городов.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о городах;
+    $regions = дерево записей о областях;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    countries = true - вывести эту кнопку
+    regions = true - вывести эту кнопку
+    towns = true - вывести эту кнопку
+    schools = true - вывести эту кнопку
+    schools_types = true - вывести эту кнопку
+    schools_lessons = true - вывести эту кнопку
+    schools_classes = true - вывести эту кнопку
+    schools_learners = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "towns"
+           main = true
+           countries = true
+           regions = true
+           towns = true
+           schools = true
+           schools_types = true
+           schools_lessons = true
+           schools_classes = true
+           schools_learners = true}
+
+  <!-- {* В переменной $sort_as_is запоминаем значение дефолтного режима сортировки *} -->
+  {assign var="sort_as_is" value=$smarty.const.SORT_TOWNS_MODE_AS_IS}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Города
+      </div>
+      Города
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        <a class="left" href="#settings" onclick="javascript: Show_PageElements('setup_form');" title="Показать настройки сайта, относящиеся к городам">
+          настройки
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Town&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить город">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Towns" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <!-- Фильтр -->
+      <table align="center" cellpadding="0" cellspacing="8" class="white">
+        <tr>
+
+          <!-- поле Страна -->
+          <td class="param_short">
+            Страна
+          </td>
+          <td class="value" width="50%" title="Фильтр: только принадлежащие такой стране">
+
+            <!-- Создаем селектор стран -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY|escape}" onchange="javascript: Reset_PageCombobox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}'); Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              {foreach item=r from=$regions}
+                {strip}
+                  <option value="{$r->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:"" == $r->id} selected{/if}>
+                    {$r->name|escape}
+                  </option>
+                {/strip}
+              {/foreach}
+            </select>
+          </td>
+
+          <!-- поле Область -->
+          <td class="param_short">
+            Область
+          </td>
+          <td class="value" width="50%" title="Фильтр: только принадлежащие такой области">
+
+            <!-- Создаем селектор областей -->
+            <select class="thin" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value=""></option>
+
+              {foreach item=r from=$regions}
+                {strip}
+                  {if ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_COUNTRY]|default:'' == $r->id) && isset($r->items) && !empty($r->items)}
+                    {foreach item=r2 from=$r->items}
+                      <option value="{$r2->id|escape}"{if $inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_REGION]|default:"" == $r2->id} selected{/if}>
+                        {$r2->name|escape}
+                      </option>
+                    {/foreach}
+                  {/if}
+                {/strip}
+              {/foreach}
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить&nbsp;
+          </td>
+
+          <!-- флажок Направление сортировки -->
+          <td class="param_short" title="Включить обратный порядок сортировки (игнорируется при упорядочении 'Как расставлены')">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png">
+            </span>
+          </td>
+
+          <!-- флажок Лаконичный режим -->
+          <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Способ сортировки -->
+          <td class="value" width="60%" title="Способ сортировки областей в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_TOWNS_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_AS_IS)} selected{/if}>как расставлены</option>
+              <option value="{$smarty.const.SORT_TOWNS_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_TOWNS_MODE_BY_CREATED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_CREATED)} selected{/if}>по дате добавления</option>
+              <option value="{$smarty.const.SORT_TOWNS_MODE_BY_MODIFIED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_MODIFIED)} selected{/if}>по дате исправления</option>
+              <option value="{$smarty.const.SORT_TOWNS_MODE_BY_ORDERSCOUNT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_ORDERSCOUNT)} selected{/if}>по числу заказов</option>
+              <option value="{$smarty.const.SORT_TOWNS_MODE_BY_USERSCOUNT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_USERSCOUNT)} selected{/if}>по числу клиентов</option>
+              <option value="{$smarty.const.SORT_TOWNS_MODE_BY_BROWSED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_BROWSED)} selected{/if}>по количеству просмотров</option>
+              <option value="{$smarty.const.SORT_TOWNS_MODE_BY_URL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_URL)} selected{/if}>по url (адресу страницы города)</option>
+            </select>
+          </td>
+
+          <!-- поле Режим отображения -->
+          <td class="value" width="40%" title="Насколько полно выводить информацию о городах в списке">
+
+            <!-- Создаем селектор режимов отображения и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.VIEW_MODE_COMPACT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_COMPACT)} selected{/if}>компактно</option>
+              <option value="{$smarty.const.VIEW_MODE_STANDARD|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD)} selected{/if}>стандартно</option>
+              <option value="{$smarty.const.VIEW_MODE_FULL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)} selected{/if}>подробно</option>
+            </select>
+          </td>
+
+          <!-- флажок Разрешен -->
+          <td class="param_short" title="Фильтр: только разрешенные к показу на сайте">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_ENABLED|escape}');">
+              разрешен
+            </span>
+          </td>
+
+          <!-- флажок С картинками -->
+          <td class="param_short" title="Фильтр: только загружавшиеся изображениями">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_IMAGED|escape}');">
+              с картинками
+            </span>
+          </td>
+
+          <!-- флажок С SEO текстом -->
+          <td class="param_short" title="Фильтр: только с SEO текстом">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_FILTER_SEOED|escape}');">
+              с SEO текстом
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+          <a href="#" onclick="javascript: return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения и полноты вывода)">
+            сбросить
+          </a>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        <!-- {* Определяем переменную тега, закрывающего контейнер перетаскиваемых элементов *} -->
+        {assign var="items_container_close_tag" value=""}
+
+        {assign var="now_country" value=false}
+        {assign var="now_region" value=false}
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <!-- Визуальное выделение принадлежности к стране -->
+            {if $now_country !== $c->country}
+              {assign var="now_country" value=$c->country}
+              {assign var="now_region" value=false}
+              <li class="head_divider">
+                <div>
+                  {if $c->country != ""}
+                    {$c->country|escape}
+                  {else}
+                    Вне любой страны
+                  {/if}
+                </div>
+              </li>
+            {/if}
+
+            <!-- Визуальное выделение принадлежности к области -->
+            {if $now_region !== $c->region}
+              {assign var="now_region" value=$c->region}
+
+              <!-- {* Если выбрана сортировка "как расставлены" *} -->
+              {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+
+                <!-- Заключаем перетаскиваемые элементы списка в контейнер -->
+                {$items_container_close_tag}
+                <div id="items_container">
+
+                <!-- {* Назначаем тег, закрывающий контейнер перетаскиваемых элементов *} -->
+                {assign var="items_container_close_tag" value="</div>"}
+              {/if}
+
+              <li class="divider">
+                <div>
+                  {if $c->region != ""}
+                    {$c->region|escape}
+                  {else}
+                    Без области
+                  {/if}
+                </div>
+              </li>
+            {/if}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- {* В переменной $id запоминаем идентификатор текущей записи *} -->
+                {assign var="id" value=$c->town_id}
+
+                <!-- Микро кнопки справа от названия -->
+                <input class="checkbox" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="javascript: Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();">
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                  <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                </a>
+
+                {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+
+                  <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                  {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                    <div class="order_edit" title="Текущий вес в ветке">
+                      <input id="order_num" name="order_num[{$id|escape}]" type="text" value="{$c->order_num|escape}" onchange="javascript: Show_AcceptChanges_Button();">
+                    </div>
+
+                  {else}
+
+                    <!-- Добавляем скрытое поле порядкового номера текущей записи -->
+                    <input id="order_num" name="order_num[{$id|escape}]" type="hidden" value="{$c->order_num|escape}">
+
+                    <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                    <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+                  {/if}
+
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_first_get|escape}" title="Поставить первым в ветке (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_first_16x16.png">
+                  </a>
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_up_get|escape}" title="Поднять выше в ветке (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_up_16x16.png">
+                  </a>
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_down_get|escape}" title="Опустить ниже в ветке (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_down_16x16.png">
+                  </a>
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_last_get|escape}" title="Поставить последним в ветке (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_last_16x16.png">
+                  </a>
+                {/if}
+
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                  <input class="checkbox gray" name="enabled[{$id|escape}]"{if $c->enabled == 1} checked{/if} title="Пометить как разрешенный к показу на сайте" type="checkbox" value="1" onchange="javascript: Show_AcceptChanges_Button();">
+
+                {/if}
+
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Нумерация -->
+                <span class="topic" style="display: inline;">
+                  {if isset($CurrentPage)}
+                    {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                  {else}
+                    {$smarty.foreach.items.iteration}.
+                  {/if}
+                </span>
+
+                <!-- Количество заказов -->
+                <span class="count" title="Количество заказов: {$c->orders_count|escape}">
+                  {$c->orders_count|escape}
+                </span>
+
+                <!-- Количество пользователей -->
+                <span class="count" title="Количество пользователей: {$c->users_count|escape}">
+                  {$c->users_count|escape}
+                </span>
+
+                <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                  <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                  <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+
+                  <!-- Количество просмотров -->
+                  <span class="browsed{if $c->browsed == 0} zero{/if}" title="Количество просмотров: {$c->browsed|escape}">
+                    {$c->browsed|escape}
+                  </span>
+
+                {/if}
+
+                <!-- Название -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->name|escape}"{if $c->enabled != 1} class="disabled_item"{/if}>
+                  {$c->name|escape}
+                </a>
+
+              </div>
+
+              <!-- Краткая информация -->
+
+              <!-- {* Если включен полный вывод информации о записях *} -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)}
+
+                <!-- телефонный код -->
+                {if isset($c->phone_code) && ($c->phone_code != "")}
+                  <div class="line" title="Телефонный код города для стационарных номеров">
+                    <span>
+                      телеф.код:
+                    </span>
+                    {$c->phone_code|escape}
+                  </div>
+                {/if}
+
+                <!-- почтовый индекс -->
+                {if isset($c->post_code) && ($c->post_code != "")}
+                  <div class="line" title="Почтовый индекс">
+                    <span>
+                      индекс:
+                    </span>
+                    {$c->post_code|escape}
+                  </div>
+                {/if}
+
+                <!-- теги -->
+                {if isset($c->tags) && ($c->tags != "")}
+                  <div class="line" title="Теги: {$c->tags|escape}">
+                    <span>
+                      теги:
+                    </span>
+                    {$c->tags|escape}
+                  </div>
+                {/if}
+
+                <!-- дата добавления -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_CREATED)}
+                  <div class="line">
+                    <span>
+                      добавлен:
+                    </span>
+                    {$c->created|escape}
+                  </div>
+                {/if}
+
+                <!-- дата исправления -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_TOWNS_MODE_BY_MODIFIED)}
+                  {if $c->created != $c->modified}
+                    <div class="line">
+                      <span>
+                        исправлен:
+                      </span>
+                      {$c->modified|escape}
+                    </div>
+                  {/if}
+                {/if}
+
+                <!-- описание -->
+                {if isset($c->description) && ($c->description|strip_tags|replace:"&nbsp;":" "|strip != "")}
+                  <div class="line" title="{$c->description|strip_tags|replace:"&nbsp;":" "|escape}">
+                    <span>
+                      описание:
+                    </span>
+                    {$c->description|strip_tags|replace:"&nbsp;":" "|escape}
+                  </div>
+                {/if}
+
+                <!-- url -->
+                <div class="line{if $c->enabled != 1} gray{/if}">
+                  <span>
+                    адрес:
+                  </span>
+                  {if $c->enabled == 1}
+                    <a href="http://{$root_url|escape}/{$c->url_path|escape}{$c->url|escape}" title="Перейти на страницу города в клиентской части сайта">
+                      http://{$root_url|escape}/{$c->url_path|escape}{$c->url|escape}
+                    </a>
+                  {else}
+                    http://{$root_url|escape}/{$c->url_path|escape}{$c->url|escape}
+                  {/if}
+                </div>
+
+              {/if}
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- {* Если выбрана сортировка "как расставлены", делаем элементы перетаскиваемыми в пределах контейнера *} -->
+        {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+          {$items_container_close_tag}
+
+          <!-- Запускаем скрипт передвигания элементов -->
+          {literal}
+            <script language="JavaScript" type="text/javascript">
+              <!--
+              Make_FormItems_Sortable();
+              // -->
+            </script>
+          {/literal}
+        {/if}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено городов{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} (режим: лаконичный){/if}.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+      <div>
+        <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить из общего списка города по конкретным параметрам.
+        Поля фильтра можно сочетать произвольно, они объединены функцией И.
+      </div>
+    </div>
+
+    <!-- Форма соответствующих модулю настроек сайта -->
+    <a name="settings"></a>
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Towns" enctype="multipart/form-data" id="setup_form" method="post"{if $error == ""} style="display: none;"{/if} onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+      <br>
+      <h1>
+        Настройки
+      </h1>
+      <br>
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- для водяного знака -->
+        <tr>
+          <td class="param_high" rowspan="9">
+            Водяной знак:
+            <center>
+              <img class="watermark" src="http://{$root_url|escape}/{$admin_folder|escape}/{$settings->towns_files_folder_prefix|escape}{$smarty.const.ADMIN_IMAGES_FOLDER_REFERENCE|escape}{$smarty.const.TOWNS_CLASS_WATERMARK_FILENAME|escape}?{math equation='rand(1, 1000000000)'}" title="Используемое изображение водяного знака для загружаемых в город картинок">
+            </center>
+          </td>
+          <td class="value" colspan="4" width="100%" title="Какой файл изображения водяного знака требуется взять с Вашего компьютера (объем файла не более {($smarty.const.WATERMARK_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт)">
+            <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.WATERMARK_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+            <input class="edit" name="watermark_filename" type="file">
+          </td>
+          <td class="param_short">
+            Наложить:
+          </td>
+          <td class="value" title="Как накладывать водяной знак (производится без масштабирования водяного знака)">
+            <select name="towns_watermark_location">
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTTOP|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTTOP} selected{/if}>слева вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTERTOP|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTERTOP} selected{/if}>в центре вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTTOP|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTTOP} selected{/if}>справа вверху</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTCENTER|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTCENTER} selected{/if}>слева в центре</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTER|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTER} selected{/if}>по центру</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTCENTER|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTCENTER} selected{/if}>справа в центре</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_LEFTBOTTOM|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_LEFTBOTTOM} selected{/if}>слева внизу</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_CENTERBOTTOM|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_CENTERBOTTOM} selected{/if}>в центре внизу</option>
+              <option value="{$smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTBOTTOM|escape}"{if $settings->towns_watermark_location == $smarty.const.IMAGES_WATERMARK_LOCATION_RIGHTBOTTOM} selected{/if}>справа внизу</option>
+            </select>
+          </td>
+          <td class="param_short">
+            Видимость:
+          </td>
+          <td class="value" title="Видимость знака на картинке (чем меньше число, тем прозрачнее)">
+            <select name="towns_watermark_transparency">
+              {section name="value" start=$smarty.const.SETTINGS_MINIMAL_WATERMARK_TRANSPARENCY loop=$smarty.const.SETTINGS_MAXIMAL_WATERMARK_TRANSPARENCY+1}
+                <option value="{$smarty.section.value.index}"{if $settings->towns_watermark_transparency == $smarty.section.value.index} selected{/if}>
+                  {$smarty.section.value.index}%
+                </option>
+              {/section}
+            </select>
+          </td>
+          <td class="param_short" title="Добавлять ли водяной знак на загружаемые изображения">
+            <input class="checkbox" id="setup_form_watermark_enabled" name="towns_watermark_enabled" type="checkbox"{if isset($settings->towns_watermark_enabled) && ($settings->towns_watermark_enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_watermark_enabled');">
+              Разрешен
+            </span>
+          </td>
+        </tr>
+
+        <!-- для картинки -->
+        <tr>
+          <td class="param_short">
+            Качество:
+          </td>
+          <td class="value" width="100%" title="Качество картинок и миниатюр в процентах (чем меньше число, тем хуже качество и меньше размер файла)">
+            <input class="edit" name="towns_images_quality" type="text" value="{$settings->towns_images_quality|escape|default:''}">
+          </td>
+          <td class="param_short">
+            Размеры картинок:
+          </td>
+          <td class="value" title="Предельная ширина картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_IMAGES_WIDTH|escape} до {$smarty.const.SETTINGS_MAXIMAL_IMAGES_WIDTH|escape})">
+            <input class="edit" name="towns_images_width" size="6" style="width: auto;" type="text" value="{$settings->towns_images_width|escape|default:''}">
+          </td>
+          <td class="value" title="Предельная высота картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_IMAGES_HEIGHT|escape} до {$smarty.const.SETTINGS_MAXIMAL_IMAGES_HEIGHT|escape})">
+            <input class="edit" name="towns_images_height" size="6" style="width: auto;" type="text" value="{$settings->towns_images_height|escape|default:''}">
+          </td>
+          <td class="param_short">
+            Размеры миниатюр:
+          </td>
+          <td class="value" title="Предельная ширина уменьшенных картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_THUMBNAIL_WIDTH|escape} до {$smarty.const.SETTINGS_MAXIMAL_THUMBNAIL_WIDTH|escape})">
+            <input class="edit" name="towns_thumbnail_width" size="6" style="width: auto;" type="text" value="{$settings->towns_thumbnail_width|escape|default:''}">
+          </td>
+          <td class="value" title="Предельная высота уменьшенных картинок в точках (в пределах от {$smarty.const.SETTINGS_MINIMAL_THUMBNAIL_HEIGHT|escape} до {$smarty.const.SETTINGS_MAXIMAL_THUMBNAIL_HEIGHT|escape})">
+            <input class="edit" name="towns_thumbnail_height" size="6" style="width: auto;" type="text" value="{$settings->towns_thumbnail_height|escape|default:''}">
+          </td>
+          <td class="param_short" title="Подгонять ли размеры меньших изображений до указанных размеров">
+            <input class="checkbox" id="setup_form_images_exactly" name="towns_images_exactly" type="checkbox"{if isset($settings->towns_images_exactly) && ($settings->towns_images_exactly == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_images_exactly');">
+              Точно
+            </span>
+          </td>
+        </tr>
+
+        <!-- для визуального редактора -->
+        <tr>
+          <td class="param_short" colspan="3" title="Использовать ли визуальный редактор при редактировании городов">
+            <input class="checkbox" id="setup_form_wysiwyg_disabled" name="towns_wysiwyg_disabled" type="checkbox"{if isset($settings->towns_wysiwyg_disabled) && ($settings->towns_wysiwyg_disabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_wysiwyg_disabled');">
+              Отключить wysiwyg-редактор:
+            </span>
+          </td>
+          <td class="value" colspan="3" title="Как обрабатывать текст при отключенном визуальном редакторе">
+            <select name="towns_wysiwyg_disabled_mode">
+              <option value="{$smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_NO_ACTION|escape}"{if $settings->towns_wysiwyg_disabled_mode == $smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_NO_ACTION} selected{/if}>в тексте ничего не менять, не трогать разметочные теги</option>
+              <option value="{$smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_ALL_TAGS_CLEAR|escape}"{if $settings->towns_wysiwyg_disabled_mode == $smarty.const.FIX_SIMPLE_TEXTAREA_TEXT_MODE_ALL_TAGS_CLEAR} selected{/if}>из текста удалять все теги, пустые строки и лишние пробелы</option>
+            </select>
+          </td>
+          <td class="param_short" colspan="3" title="Разрешить ли системе заполнять пустые поля мета информации">
+            <input class="checkbox" id="setup_form_meta_autofill" name="towns_meta_autofill" type="checkbox"{if isset($settings->towns_meta_autofill) && ($settings->towns_meta_autofill == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('setup_form_meta_autofill');">
+              Автозаполнение полей мета тегов
+            </span>
+          </td>
+        </tr>
+
+        <!-- для упорядочения -->
+        <tr>
+          <td class="param_short" colspan="3">
+            Сортировать в списках стороны клиента:
+          </td>
+          <td class="value" colspan="3" title="Как упорядочить список городов, сформированный для клиентской стороны">
+            <select name="towns_sort_method">
+              <option value="{$smarty.const.SORT_TOWNS_MODE_AS_IS|escape}"{if $settings->towns_sort_method == $smarty.const.SORT_TOWNS_MODE_AS_IS} selected{/if}>как расставлены в админпанели</option>
+              <option value="{$smarty.const.SORT_TOWNS_MODE_BY_NAME|escape}"{if $settings->towns_sort_method == $smarty.const.SORT_TOWNS_MODE_BY_NAME} selected{/if}>по алфавиту</option>
+            </select>
+          </td>
+          <td class="param_short">
+            Префикс:
+          </td>
+          <td class="value" colspan="2" title="Префикс папки с картинками городов">
+            <input class="edit" name="towns_files_folder_prefix" type="text" value="{$settings->towns_files_folder_prefix|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- для озаглавливания -->
+        <tr>
+          <td class="param_short" colspan="3">
+            Оглавление списка на стороне клиента:
+          </td>
+          <td class="value" colspan="3" title="Оглавление списка городов на стороне клиента">
+            <input class="edit" name="towns_main_title" type="text" value="{$settings->towns_main_title|escape|default:''}">
+          </td>
+          <td class="param_short" colspan="2">
+            Название в навигаторе:
+          </td>
+          <td class="value" title="Путевое название списка городов в навигаторе на стороне клиента">
+            <input class="edit" name="towns_main_path" type="text" value="{$settings->towns_main_path|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- для мета описания -->
+        <tr>
+          <td class="param_short" colspan="3">
+            Мета описание страницы списка:
+          </td>
+          <td class="value" colspan="6" title="Описание в мета информации страницы списка городов на стороне клиента">
+            <input class="edit" name="towns_main_description" type="text" value="{$settings->towns_main_description|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- для мета ключевых слов -->
+        <tr>
+          <td class="param_short" colspan="3">
+            Ключевые мета слова страницы списка:
+          </td>
+          <td class="value" colspan="6" title="Ключевые слова в мета информации страницы списка городов на стороне клиента">
+            <input class="edit" name="towns_main_keywords" type="text" value="{$settings->towns_main_keywords|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- для количества записей на странице -->
+        <tr>
+          <td class="param_short" colspan="3">
+            Число городов на стороне клиента:
+          </td>
+          <td class="value" title="Количество городов в списке на клиентской стороне (в пределах от {$smarty.const.SETTINGS_MINIMAL_ITEMS_NUM|escape} до {$smarty.const.SETTINGS_MAXIMAL_ITEMS_NUM|escape})">
+            <input class="edit" name="towns_num" type="text" value="{$settings->towns_num|escape|default:''}">
+          </td>
+          <td class="param_short" colspan="3">
+            Число городов на странице в админпанели:
+          </td>
+          <td class="value" title="Количество городов в списке админпанели (в пределах от {$smarty.const.SETTINGS_MINIMAL_ITEMS_NUM_ADMIN|escape} до {$smarty.const.SETTINGS_MAXIMAL_ITEMS_NUM_ADMIN|escape})">
+            <input class="edit" name="towns_num_admin" type="text" value="{$settings->towns_num_admin|escape|default:''}">
+          </td>
+          <td class="value_box">
+            <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_SETUP|escape}" type="submit" value="Сохранить">
+          </td>
+        </tr>
+
+        <!-- пустая замыкающая строка -->
+        <tr>
+          <td colspan="9"><!-- // --></td>
+        </tr>
+      </table>
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+    </form>
+
+  </div>

@@ -1,0 +1,357 @@
+{* <!-- страница корзины --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Если это ajax-подгрузка корзины (информер).                                |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {if !empty($ajax)}
+        {include 'common/cart-informer.htm'}
+    {else}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Устанавливаем глобальные переменные (для заголовков в index.tpl).      |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {$meta = '<meta name="Robots" content="noindex, follow" />' scope=global}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Хлебные крошки.                                                        |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {$mod = 'mod-breadcrumbs.htm'}
+        {if $emulator->existsModule($mod)}
+            {include "$mod"
+                      title = 'Корзина'
+                      noCatalogLink = TRUE}
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Если корзина не пустая.                                                |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($cart_products)}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Готовим способы доставки (выведем их ниже).                        |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {$dlv_sum = 0}
+            {capture name=deliveries}
+                {if !empty($delivery_methods)}
+                    {$sid = $delivery_method_id|default:FALSE}
+                    <div class="cart-val">
+                        <label>Вид доставки *</label>
+                        <select class="niceSelect" name="delivery_method_id" onchange="document.cart.submit()">
+                            <option>--- Пожалуйста, выберите ---</option>
+                            {foreach $delivery_methods as $item}
+                                {$id = $item->delivery_method_id|default:''}
+                                <option value="{$id|escape}" {($id === $sid) ? "selected" : ""}>
+                                    {name}
+                                    {if $item->final_price|default:0 > 0}
+                                        {$price = $helper->priceForScreen($item->final_price)}
+                                        {**} (+{intval($price)} {sign})
+                                        {if $id === $sid}
+                                            {$dlv_sum = $item->final_price}
+                                        {/if}
+                                    {/if}
+                                </option>
+                            {/foreach}
+                        </select>
+                        <div class="clr"></div>
+                    </div>
+                {/if}
+            {/capture}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Форма ввода.                                                       |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <form action="cart" method="post" name="cart">
+                <div class="center cart_pad">
+                    <div class="cart-page">
+                        <div class="cart-title">ВАША корзина</div>
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <td>Информация о товаре</td>
+                                    <td>Количество</td>
+                                    <td>Цена за единицу</td>
+                                    <td>Итого</td>
+                                </tr>
+                            </thead>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Список товаров в корзине.                          |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <tbody>
+                                {$total = 0}
+                                {foreach $cart_products as $item}
+                                    {$sku = $item->sku|default:$item->name|default:$item->pcode|default:'---/---'}
+                                    {$price = $item->discount_price|default:0}
+                                    {$amount = $item->amount|default:1}
+                                    {$sum = $amount * $price}
+                                    {$total = $total + $sum}
+
+                                    <tr>
+                                        <td style="width: 320px;">
+                                            <div class="cart-img">
+                                                <a href="{url}">
+                                                    <img src="{image folder='files/products'}" alt="{name}" />
+                                                </a>
+                                            </div>
+                                            <div class="cart-desc">
+                                                <a href="{url}">
+                                                    {name}
+                                                </a>
+                                                <p>Код: {$sku}</p>
+                                                {* <!-- p>Цвет:</p --> *}
+                                                {if !empty($item->variant_name)}
+                                                    <p>Размер: {$item->variant_name}</p>
+                                                {/if}
+                                            </div>
+                                        </td>
+                                        <td style="width: 320px;">
+                                            <div class="count option">
+                                                <span>Количество</span> {**}
+                                                <select name="amounts[{$item->variant_id}]" onchange="document.cart.submit()">
+                                                    {section name=amounts start=1 loop=$item->stock+1 step=1}
+                                                        {$i = $smarty.section.amounts.index}
+                                                        <option value="{$i}" {if $amount == $i}selected{/if}>{$i}</option>
+                                                    {/section}
+                                                </select>
+                                            </div>
+                                            <div class="remove">
+                                                <img src="{theme}images/delete.png" alt="" />
+                                                <a href="{cartUrl del=true}" rel="nofollow">
+                                                    Удалить
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="cart-price">
+                                                {$price = $helper->priceForScreen($price)}
+                                                {intval($price)} {sign}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="cart-price-all">
+                                                {$price = $helper->priceForScreen($sum)}
+                                                {intval($price)} {sign}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {/foreach}
+                            </tbody>
+                        </table>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Левая колонка.                                         |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="cart-l">
+                            <div class="banner">
+                                <a href="catalog/boys">
+                                    <img src="{theme}images/foto.png" alt="" />
+                                </a>
+                            </div>
+                            <div class="title">Мы вКонтакте</div>
+                            <div class="vk">
+                                {if !empty($config->vk_group)}
+                                    <script src="//vk.com/js/api/openapi.js?105"></script>
+                                    <div id="vk_groups"></div>
+                                    <script>
+                                        VK.Widgets.Group('vk_groups', { mode: 0,
+                                                                        width: '220',
+                                                                        height: '260',
+                                                                        color1: '111122',
+                                                                        color2: 'b8c0c5',
+                                                                        color3: '07073a' }, {echoVar from='config->vk_group'});
+                                    </script>
+                                {/if}
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Итоги.                                                 |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {$cart_price = $cart_total_price|default:0}
+                        {$discount = $helper->priceForScreen($cart_price - $total)}
+
+                        <div class="cart-r">
+                            <div class="itog-r">
+                                {if $discount != 0}
+                                    <div class="itog">
+                                        Скидка: {intval($discount)} {sign}
+                                    </div>
+                                {/if}
+                                {if $dlv_sum != 0}
+                                    <div class="itog">
+                                        {$price = $helper->priceForScreen($dlv_sum)}
+                                        Доставка: {intval($price)} {sign}
+                                    </div>
+                                {/if}
+                                <div class="itog">
+                                    {$price = $helper->priceForScreen($cart_price + $dlv_sum)}
+                                    ИТОГО: {intval($price)} {sign}
+                                </div>
+                                <a href="javascript:history.go(-1)" mce_href="javascript:history.go(-1)" class="back">
+                                    назад в каталог
+                                </a>
+                                <input type="submit" name="checkout" class="button oform" value="Оформить заказ" onclick="return clickCartSubmitKey(this)" />
+                            </div>
+                            <div class="clr"></div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Сведения о покупателе.                                 |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="cart-form">
+                            <h3>Заполните, пожалуйста, все необходимые поля</h3>
+                            <div class="form cart_form">
+                                {if !empty($error)}
+                                    <div class="message_error">
+                                        {$error}
+                                    </div>
+                                {/if}
+
+                                <div class="cart-val">
+                                    <label>ФИО *</label>
+                                    <input name="name" type="text" value="{inputValue from=name}" required />
+                                    <div class="clr"></div>
+                                </div>
+
+                                <div class="cart-val">
+                                    <label>Email *</label>
+                                    <input name="email" type="text" value="{inputValue from=email}" required />
+                                    <div class="clr"></div>
+                                </div>
+
+                                <div class="cart-val">
+                                    <label>Телефон *</label>
+                                    <input name="phone" type="text" value="{inputValue from=phone}" required />
+                                    <div class="clr"></div>
+                                </div>
+
+                                <div class="cart-val">
+                                    <label>Адрес доставки</label>
+                                    <input name="address" type="text" value="{inputValue from=address}" />
+                                    <div class="clr"></div>
+                                </div>
+
+                                {$smarty.capture.deliveries}
+
+                                <div class="cart-val">
+                                    <label>Комментарий к заказу</label>
+                                    <textarea name="comment" id="order_comment">{$comment|default:''|escape}</textarea>
+                                    <div class="clr"></div>
+                                </div>
+                            </div>
+                            <div class="clr"></div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Список недавно просмотренных товаров.                  |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {if !empty($recent_products)}
+                            <div class="right">
+                                <hr class="separator" />
+                                <div class="product-rel">
+                                    <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
+                                    <div class="product-rel-arr">
+                                        <a href="#" class="prev prevv"></a>
+                                        <a href="#" class="next nextt"></a>
+                                    </div>
+                                    <div class="clr"></div>
+                                    <div class="cat">
+                                        <ul>
+                                            {foreach $recent_products as $item}
+                                                <li>
+                                                    {include 'common/product-card.htm'
+                                                             noQuickOrder = TRUE}
+                                                </li>
+                                            {/foreach}
+                                        </ul>
+                                        <div class="clr"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        {/if}
+                    </div>
+                    <div class="clr"></div>
+                </div>
+
+                <input name="captcha_code" type="hidden" value="" />
+                <input name="submit_order" type="hidden" value="0" />
+            </form>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Иначе левая колонка и сообщение о пустой корзине.                      |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {else}
+            {include 'common/left-column.htm'}
+
+            <div class="right">
+                <p>В корзине нет товаров.</p>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Список недавно просмотренных товаров.                          |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if !empty($recent_products)}
+                    <hr class="separator" />
+                    <div class="product-rel">
+                        <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
+                        <div class="product-rel-arr">
+                            <a href="#" class="prev prevv"></a>
+                            <a href="#" class="next nextt"></a>
+                        </div>
+                        <div class="clr"></div>
+                        <div class="cat">
+                            <ul>
+                                {foreach $recent_products as $item}
+                                    <li>
+                                        {include 'common/product-card.htm'
+                                                 noQuickOrder = TRUE}
+                                    </li>
+                                {/foreach}
+                            </ul>
+                            <div class="clr"></div>
+                        </div>
+                    </div>
+                {/if}
+            </div>
+        {/if}
+    {/if}
+
+{/strip}

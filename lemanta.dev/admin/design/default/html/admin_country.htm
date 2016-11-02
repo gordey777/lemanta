@@ -1,0 +1,392 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля страницы страны.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $item = запись о стране;
+    $from_page = адрес страницы возврата после операции;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $Token = аутентификатор операции;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    countries = true - вывести эту кнопку
+    card_countries = true - вывести эту кнопку
+    regions = true - вывести эту кнопку
+    towns = true - вывести эту кнопку
+    schools = true - вывести эту кнопку
+    schools_types = true - вывести эту кнопку
+    schools_lessons = true - вывести эту кнопку
+    schools_classes = true - вывести эту кнопку
+    schools_learners = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "card"
+           main = true
+           countries = true
+           card_countries = true
+           regions = true
+           towns = true
+           schools = true
+           schools_types = true
+           schools_lessons = true
+           schools_classes = true
+           schools_learners = true}
+
+  <!-- {* В переменную $id заносим идентификатор страны или 0 при его отсутствии. *} -->
+  {assign var="id" value=$item->country_id|escape|default:0}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Countries" title="Перейти на страницу стран в админпанели">Страны</a>
+        → {if !empty($id)}Редактирование{else}Новая{/if}
+      </div>
+      {if !empty($id) || (isset($item->name) && ($item->name != ""))}
+        {$item->name|escape|default:"&nbsp;"}
+      {else}
+        Новая страна
+      {/if}
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        {if !empty($id) && isset($item->url) && ($item->url != "") && ($error == "")}
+          <a href="http://{$root_url|escape}/{$item->url_path|escape}{$item->url|escape}" title="Перейти на страницу страны в клиентской части сайта">
+            http://{$root_url|escape}/{$item->url_path|escape}{$item->url|escape}
+          </a>
+        {else}
+          &nbsp;
+        {/if}
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма данных о стране -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=Country" enctype="multipart/form-data" id="item_form" method="post">
+
+      <!-- Информация о названии -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Название -->
+        <tr>
+          <td class="param">
+            Название:
+          </td>
+          <td class="value" width="100%" title="Название страны">
+            <input class="edit" id="item_form_name_{$id}" name="name[{$id}]" type="text" value="{$item->name|escape|default:''}">
+          </td>
+
+           <!-- поле Телефонный код -->
+           <td class="param_short">
+            Телеф.код:
+          </td>
+          <td class="value" title="Телефонный код страны">
+            <input class="edit" name="phone_code[{$id}]" size="12" style="width: auto;" type="text" value="{$item->phone_code|escape|default:''}">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- Meta информация -->
+      <table align="center" cellpadding="0" cellspacing="10" class="gray">
+
+        <!-- поле URL -->
+        <tr>
+          <td class="param">
+            URL:
+          </td>
+          <td class="param_short" width="1%">
+            http://сайт/countries/
+          </td>
+          <td class="value" colspan="3" width="100%" title="Окончание адреса страницы страны">
+            <input class="edit" id="item_form_url_{$id}" name="url[{$id}]" type="text" value="{$item->url|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- поле Meta Keywords -->
+        <tr>
+          <td class="param_high">
+            Meta Keywords:
+          </td>
+          <td class="value" colspan="4" title="Какой текст разместить в мета теге &lt;meta name=keywords ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_keywords_{$id}" name="meta_keywords[{$id}]" style="height: 32px;">{$item->meta_keywords|escape|default:''}</textarea>
+          </td>
+        </tr>
+
+        <!-- поле Meta Description -->
+        <tr>
+          <td class="param_high" rowspan="2">
+            Meta Description:
+          </td>
+          <td class="value" colspan="2" rowspan="2" width="100%" title="Какой текст разместить в мета теге &lt;meta name=description ...&gt; заголовка страницы">
+            <textarea id="item_form_meta_description_{$id}" name="meta_description[{$id}]" style="height: 48px;">{$item->meta_description|escape|default:''}</textarea>
+          </td>
+
+          <!-- поле Вес -->
+          <td class="param_short">
+            Вес:
+          </td>
+          <td class="value" title="Число определяет положение страны выше других с меньшим весом">
+            <input class="edit" name="order_num[{$id}]" size="10" style="width: auto;" type="text" value="{$item->order_num|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- поле Просмотры -->
+        <tr>
+          <td class="param_short">
+            Просмотры:
+          </td>
+          <td class="value" title="Счетчик визитов на страницу страны">
+            <input class="edit" name="browsed[{$id}]" size="10" style="width: auto;" type="text" value="{$item->browsed|escape|default:''}">
+          </td>
+        </tr>
+
+        <!-- поле Meta Title -->
+        <tr>
+          <td class="param">
+            Meta Title:
+          </td>
+          <td class="value" colspan="3" width="100%" title="Какой текст разместить в теге &lt;title&gt; заголовка страницы">
+            <input class="edit" id="item_form_meta_title_{$id}" name="meta_title[{$id}]" type="text" value="{$item->meta_title|escape|default:''}">
+          </td>
+
+          <!-- флажок Разрешен -->
+          <td class="param_short" title="Разрешена ли страна к показу на сайте">
+            <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox"{if isset($item->enabled) && ($item->enabled == 1)} checked{/if} value="1">
+            <span onclick="javascript: Toggle_PageCheckbox('item_form_enabled');">
+              Разрешена
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Описание -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Описание -->
+        <tr>
+          <td class="param_high">
+            Описание:
+          </td>
+          <td class="{if $settings->countries_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_big" id="item_form_description_{$id}" name="description[{$id}]" style="height: 400px;">{$item->description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Теги -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле Теги -->
+        <tr>
+          <td class="param">
+            Теги:
+          </td>
+          <td class="value" width="100%" title="Ассоциируемые с этой записью теги (перечисляются через запятую)">
+            <input class="edit" name="tags[{$id}]" type="text" value="{$item->tags|escape|default:''}">
+          </td>
+
+          <!-- кнопка Сохранить -->
+          <td class="value_box">
+            <input class="submit" type="submit" value="Сохранить">
+          </td>
+        </tr>
+      </table>
+
+      <!-- SEO текст -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+        <!-- поле SEO текст -->
+        <tr>
+          <td class="param_high">
+            SEO текст:
+          </td>
+          <td class="{if $settings->countries_wysiwyg_disabled == 1}value{else}value_box{/if}">
+            <textarea class="editor_small" name="seo_description[{$id}]" style="height: 150px;">{$item->seo_description|default:''}</textarea>
+          </td>
+        </tr>
+      </table>
+
+      <h2>
+        Фотографии страны
+      </h2>
+ 
+      <!-- Информация по изображениям -->
+      <table align="center" cellpadding="0" cellspacing="10" class="white">
+        <tr>
+          <td class="param_high">
+            Изображения:<br><br>
+            <span style="color: #D0D0D0;">
+              первое в списке считается основным фото страны
+            </span>
+          </td>
+          <td class="value_box" id="images_section">
+            {if isset($item->images) && !empty($item->images)}
+
+              <!-- изображения -->
+              {foreach name="images" item=image from=$item->images}
+                <div class="image">
+                  {strip}
+
+                    <!-- флажок Убрать -->
+                    <input class="checkbox_left" id="item_form_image_delete_{$id}_{$smarty.foreach.images.iteration}" name="imagedelete[{$id}][{$smarty.foreach.images.iteration}]" type="checkbox" value="1" onchange="javascript: Toggle_DivTransparency(this, !this.checked, 0.3);" title="Удалить ли это изображение (картинки с установленным флажком будут удалены)">
+                    <span class="checkbox_left" onclick="javascript: Toggle_PageCheckbox('item_form_image_delete_{$id}_{$smarty.foreach.images.iteration}');" title="Удалить ли это изображение (картинки с установленным флажком будут удалены)">
+                      убрать
+                    </span>
+
+                    <!-- флажок Использовать в слайдере -->
+                    <input class="checkbox_right" name="imageview[{$id}][{$smarty.foreach.images.iteration}]" type="checkbox"{if isset($item->images_view[$smarty.foreach.images.index]) && ($item->images_view[$smarty.foreach.images.index] == 1)} checked{/if} value="1" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+                    <span class="checkbox_right">
+                      фото {$smarty.foreach.images.iteration}
+                    </span>
+
+                    <!-- картинка -->
+                    <br>
+                    <a href="{if $image|truncate:7:'':true != 'http://'}http://{$root_url|escape}/{$settings->countries_files_folder_prefix|escape}{$smarty.const.ADMIN_COUNTRIES_CLASS_UPLOAD_FOLDER|escape}{/if}{$image|escape}" target="_blank"{if isset($item->images_alts[$smarty.foreach.images.index])} title="{$item->images_alts[$smarty.foreach.images.index]|escape}"{/if}>
+                      <img src="{if isset($item->images_thumbs[$smarty.foreach.images.index])}{if $item->images_thumbs[$smarty.foreach.images.index]|truncate:7:'':true != 'http://'}http://{$root_url|escape}/{$settings->countries_files_folder_prefix|escape}{$smarty.const.ADMIN_COUNTRIES_CLASS_UPLOAD_FOLDER|escape}{/if}{$item->images_thumbs[$smarty.foreach.images.index]|escape}{else}{if $image|truncate:7:'':true != 'http://'}http://{$root_url|escape}/{$settings->countries_files_folder_prefix|escape}{$smarty.const.ADMIN_COUNTRIES_CLASS_UPLOAD_FOLDER|escape}{/if}{$image|escape}{/if}">
+                    </a>
+                  {/strip}
+
+                  <!-- заголовок, описание -->
+                  <div>
+                    <input name="image[{$id}][{$smarty.foreach.images.iteration}]" type="hidden" value="{$image|escape}">
+                    заголовок (alt):<br>
+                    <input name="imagealt[{$id}][{$smarty.foreach.images.iteration}]" type="text" value="{if isset($item->images_alts[$smarty.foreach.images.index])}{$item->images_alts[$smarty.foreach.images.index]|escape}{/if}" title="Заголовок (всплывающая подсказка) этого изображения"><br>
+                    описание:<br>
+                    <textarea name="imagetext[{$id}][{$smarty.foreach.images.iteration}]" title="Описание этого изображения">{if isset($item->images_texts[$smarty.foreach.images.index])}{$item->images_texts[$smarty.foreach.images.index]|escape}{/if}</textarea>
+                  </div>
+                </div>
+              {/foreach}
+
+              <!-- скрипт передвигания изображений -->
+              {literal}
+                <script language="JavaScript" type="text/javascript">
+                  <!--
+                  jQuery('td#images_section').sortable({containment: 'parent',
+                                                        items: 'div[class="image"]',
+                                                        opacity: 0.75,
+                                                        scrollSensitivity: 20,
+                                                        tolerance: 'pointer'});
+                  // -->
+                </script>
+              {/literal}
+
+            {/if}
+            <div style="clear: both;">
+              <div class="newimage">
+
+                <!-- выбор локального файла нового изображения -->
+                новое изображение (объемом не более {($smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт):<br>
+                <input type="hidden" name="MAX_FILE_SIZE" value="{$smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE|string_format:"%d"|escape}">  <!-- Не позволяем загрузку файла объемом свыше заданного -->
+                <input class="edit" name="new_image[{$id}]" type="file" title="Какой файл изображения требуется взять с Вашего компьютера (объем файла не более {($smarty.const.IMAGE_UPLOAD_MAXIMAL_FILESIZE/1024)|string_format:"%d"|escape} Кбайт)"><br><br>
+
+                <!-- URL файла нового изображения -->
+                или из удаленного источника:<br>
+                <input class="edit" name="new_image_url[{$id}]" type="text" value="http://" title="Какой файл изображения требуется взять с другого сайта в Интернете"><br><br>
+
+                <!-- имя файла нового изображения -->
+                дать файлу имя:<br>
+                <input class="edit" id="item_form_filename_{$id}" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEFILENAME|escape}" type="text" value="" title="Какой сделать начальную часть имени файла нового изображения на сайте (файл будет размещен в папке http://{$root_url|escape}/{$settings->countries_files_folder_prefix|escape}{$smarty.const.ADMIN_COUNTRIES_CLASS_UPLOAD_FOLDER|escape})"><br><br>
+                <input class="checkbox" id="item_form_imageview" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEVIEW|escape}" type="checkbox" checked value="1" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+
+                <!-- флажок Использовать в слайдере -->
+                <span onclick="javascript: Toggle_PageCheckbox('item_form_imageview');" title="Будет ли это изображение использоваться в слайдере или вьювере изображений">
+                  использовать в слайдере
+                </span>
+
+                <!-- кнопка Применить -->
+                <input class="submit" name="{$smarty.const.REQUEST_PARAM_NAME_POST_AS_ACCEPT|escape}" type="submit" value="Применить">
+              </div>
+
+              <!-- заголовок, описание нового изображения -->
+              <div class="newimage_options">
+                заголовок (alt) изображения:<br>
+                <input class="edit" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGEALT|escape}" type="text" value="" title="Какой заголовок (всплывающую подсказку) дать новому изображению"><br>
+                описание:<br>
+                <textarea name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGETEXT|escape}" style="height: 105px;" title="Какое описание дать новому изображению"></textarea>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- {* Добавляем адрес страницы возврата после операции *} -->
+      {if isset($from_page) && ($from_page != "")}
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_FROM|escape}" type="hidden" value="{$from_page|escape}">
+      {/if}
+
+      <!-- Добавляем признак наличия данных об изменениях -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id}]" type="hidden" value="">
+
+      <!-- Добавляем идентификатор оперируемой записи -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_ITEMID|escape}" type="hidden" value="{$id}">
+
+      <!-- Добавляем пустой указатель номера изображения -->
+      <input id="item_form_{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}" name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGENUMBER|escape}" type="hidden" value="">
+
+      <!-- Добавляем случайный аутентификатор изображения -->
+      <input name="{$smarty.const.ACTION_REQUEST_PARAM_NAME_IMAGETOKEN|escape}" type="hidden" value="{math equation='rand(1, 100000000)'}">
+
+      <!-- Добавляем пустой указатель требуемой команды -->
+      <input id="item_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+      <!-- Добавляем аутентификатор операции -->
+      <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$Token|escape}">
+    </form>
+
+    <!-- Блок справочной информации -->
+    <!-- div class="help">
+      <div class="title">
+        Справка
+      </div>
+    </div -->
+
+  </div>
+
+  <!-- {*
+  Подключаем субшаблон редактора TinyMCE. В субшаблон передаем атрибуты:
+    disabled_state = из какой переменной брать признак отмены редактора *} -->
+
+  {include file = "../../common_parts/tinymce.htm"
+           disabled_state = $settings->countries_wysiwyg_disabled}
+
+  <!-- {*
+  Подключаем субшаблон генератора Meta информации. В субшаблон передаем атрибуты:
+    form_id = какой идентификатор у формы, в которой редактируется запись
+    item_id = из какой переменной брать идентификатор записи
+    autofill = из какой переменной брать признак автозаполнения пустых полей мета информации *} -->
+
+  {include file = "../../common_parts/meta.htm"
+           form_id = "item_form"
+           item_id = $id
+           autofill = $settings->countries_meta_autofill}

@@ -1,0 +1,453 @@
+  {include file = "../../common_parts/submenu.htm"
+           select = "mailer"
+           main = true
+           imports = true
+           export = true
+           backup = true
+           redirects = true
+           mailer = true}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/">Главная</a>
+        → Рассылка
+      </div>
+      Почтовая рассылка
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      &nbsp;
+    </div>
+
+    <!-- {*
+    Если во входной переменной $error есть текст сообщения об ошибке,
+    выводим это сообщение. *} -->
+
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+  {literal}
+    <style>
+      select, .input3, .editor_big, .editor_emails {color: #000000; font-family: Verdana, Tahoma, Arail; font-size: 10pt;}
+    </style>
+  {/literal}
+
+          {if isset($MailerContent) && ($MailerContent != "")}
+            {$MailerContent}
+          {else}
+            {if isset($Message) && ($Message != "")}
+              <div style="margin: 5px; margin-bottom: 15px; padding: 0px; width: 97%">
+                <div id="message" style="margin: 0px; padding: 0px; width: 100%">
+                  <p style="margin: 2px; padding: 0px; width: 100%">
+                    <img src="./images/info.png" style="margin: 2px; padding: 0px;">
+                    &nbsp;
+                    {$Message}
+                  </p>
+                </div>
+              </div>
+            {/if}
+
+            <form id="mailer_form" method="post" enctype="multipart/form-data" style="margin: 0px; padding: 0px;">
+              <div _class="gray_block2" style="margin: 5px; margin-bottom: 15px; padding: 0px; width: 97%">
+                <table width="100%">
+                  <tr>
+                    <td>
+                      <table width="100%">
+                        <tr>
+                          <td colspan="2" width="100%">
+                            <span class="model">
+                              Тема письма:
+                            </span>
+                            <p style="margin: 0px; padding: 0px; padding-right: 20px; padding-top: 5px; padding-bottom: 10px;">
+                              <input class="input3" name="email_tpl_subject" style="width: 100%;" type="text" value="{$email_tpl_subject|strip_tags|escape}">
+                            </p>
+                          </td>
+                          <td>
+                            <span class="model">
+                              Загрузить шаблон:
+                            </span>
+                            <p style="margin: 0px; padding: 0px; padding-top: 5px; padding-bottom: 10px;">
+                              <select class="select2" id="email_tpl_src" name="email_tpl_src" style="width: 100%;" title="Перечень доступных шаблонов писем">
+                                <option value="">
+                                </option>
+                                {foreach from=$email_tpl_src item=src}
+                                  <option value="{$src.value|escape}"{if $src.selected} selected{/if}>
+                                    {$src.name|strip_tags|escape}
+                                  </option>
+                                {/foreach}
+                              </select>
+                            </p>
+                          </td>
+                          <td nowrap style="text-align: right; vertical-align: top;">
+                            <span class="model">
+                              &nbsp;
+                            </span>
+                            {strip}
+                              <a href="#" onclick="javascript:{if $email_tpl_src}{literal}if (document.getElementById('email_tpl_src').value == '') {alert('Нужно сначала выбрать шаблон из списка!')} else {if (confirm('Вы уверены, что хотите удалить этот шаблон?')) {document.getElementById('email_tpl_delete').value = '1'; document.getElementById('mailer_form').submit();}}{/literal}{/if} return false;" style="font-size: 7pt; text-decoration: none;" title="Удалить выбранный шаблон">
+                                удалить
+                              </a>
+                            {/strip}
+                            <input id="email_tpl_delete" name="email_tpl_delete" type="hidden" value="">
+                            <p style="margin: 0px; padding: 0px; padding-top: 5px; padding-bottom: 10px;">
+                              <input class="submit" name="email_tpl_load" style="width: 40px;" type="submit" value="&nbsp;Ok&nbsp;">
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="4">
+                            <span class="model">
+                              Текст письма:
+                            </span>
+                            <p style="margin: 0px; padding: 0px; padding-top: 5px; padding-bottom: 10px;">
+                              <textarea class="editor_big" name="email_tpl_body" style="height: 400px; width: 100%;">{$email_tpl_body}</textarea>
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td nowrap>
+                            <span class="model">
+                              Имя шаблона:
+                            </span>
+                          </td>
+                          <td style="text-align: right;" width="100%">
+                            <p style="margin: 0px; padding: 0px; padding-top: 5px; padding-left: 10px; padding-right: 20px;">
+                              <input class="input3" name="email_tpl_name" style="width: 100%;" title="С каким названием сохранить текущий шаблон письма" type="text" value="{$email_tpl_name|strip_tags|escape}">
+                            </p>
+                          </td>
+                          <td colspan="2">
+                            <p style="margin: 0px; padding: 0px; padding-top: 5px;">
+                              <input class="submit" name="email_tpl_save" style="width: 250px;" type="submit" value="&nbsp;Сохранить этот шаблон&nbsp;">
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    </td>
+                    <td width="290">
+                      <table width="100%">
+                        <tr>
+                          <td nowrap width="100%">
+                            <span class="model">
+                              Загрузить список:
+                            </span>
+                            <p style="margin: 0px; padding: 0px; padding-top: 5px; padding-bottom: 10px;">
+                              <select class="select2" id="email_list_src" name="email_list_src" style="width: 100%;" title="Перечень доступных списков электронных адресов">
+                                <option value="">
+                                </option>
+                                {foreach from=$email_list_src item=src}
+                                  <option value="{$src.value|escape}"{if $src.selected} selected{/if}>
+                                    {$src.name|strip_tags|escape}
+                                  </option>
+                                {/foreach}
+                              </select>
+                            </p>
+                          </td>
+                          <td nowrap style="text-align: right; vertical-align: top;">
+                            <span class="model">
+                              &nbsp;
+                            </span>
+                            {strip}
+                              <a href="#" onclick="javascript:{if $email_list_src}{literal}if (document.getElementById('email_list_src').value == '') {alert('Нужно сначала выбрать список электронных адресов!')} else {if (confirm('Вы уверены, что хотите удалить этот список электронных адресов?')) {document.getElementById('email_list_delete').value = '1'; document.getElementById('mailer_form').submit();}}{/literal}{/if} return false;" style="font-size: 7pt; text-decoration: none;" title="Удалить выбранный список электронных адресов">
+                                удалить
+                              </a>
+                            {/strip}
+                            <input id="email_list_delete" name="email_list_delete" type="hidden" value="">
+                            <p style="margin: 0px; padding: 0px; padding-top: 5px; padding-bottom: 10px;">
+                              <input class="submit" name="email_list_load" style="width: 40px;" type="submit" value="&nbsp;Ok&nbsp;">
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            {strip}
+                              <div style="float: right; margin: 0px; padding: 0px; text-align: right; white-space: nowrap;">
+                                <a href="#" onclick="javascript:document.getElementById('email_list_init').value = '1'; document.getElementById('mailer_form').submit(); return false;" style="font-size: 7pt; text-decoration: none;" title="Взять электронные адреса покупателей из базы данных магазина">
+                                  взять из магазина
+                                </a>
+                                <br>
+                                <a href="#" onclick="javascript:document.getElementById('email_list_init2').value = '1'; document.getElementById('mailer_form').submit(); return false;" style="font-size: 7pt; text-decoration: none;" title="Взять электронные адреса (без имён) покупателей из базы данных магазина">
+                                  взять из магазина (без имён)
+                                </a>
+                              </div>
+                            {/strip}
+                            <input id="email_list_init" name="email_list_init" type="hidden" value="">
+                            <input id="email_list_init2" name="email_list_init2" type="hidden" value="">
+                            <span class="model">
+                              Адреса:
+                            </span>
+                            <p style="margin: 0px; padding: 0px; padding-top: 5px; padding-bottom: 10px;">
+                              <textarea class="editor_emails" name="email_list_body" style="font-size: 8pt; height: 406px; width: 100%; white-space: nowrap;" title="Список электронных адресов (по одному адресу в строке)">{$email_list_body|escape}</textarea>
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td colspan="2">
+                            <table width="100%">
+                              <tr>
+                                <td nowrap>
+                                  <span class="model">
+                                    Имя:
+                                  </span>
+                                </td>
+                                <td style="text-align: right;" width="100%">
+                                  <p style="margin: 0px; padding: 0px; padding-top: 5px; padding-left: 10px; padding-right: 20px;">
+                                    <input class="input3" name="email_list_name" style="width: 100%;" title="С каким названием сохранить текущий список электронных адресов" type="text" value="{$email_list_name|strip_tags|escape}">
+                                  </p>
+                                </td>
+                                <td>
+                                  <p style="margin: 0px; padding: 0px; padding-top: 5px;">
+                                    <input class="submit" name="email_list_save" style="width: 100px;" type="submit" value="&nbsp;Сохранить&nbsp;">
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <br>
+              <div class="gray_block2">
+                <table width="100%">
+                  <tr>
+                    <td nowrap>
+                      <span class="model">
+                        Адрес отправителя:
+                      </span>
+                    </td>
+                    <td colspan="3" width="100%">
+                      <p style="margin: 0px; padding: 10px; padding-right: 20px; padding-top: 5px;">
+                        <input class="input3" name="email_sender" style="width: 100%;" title="Из какого настоящего электронного адреса идёт рассылка (допустимы метасимволы смежных логинов: * - изменяющееся число, $ - изменяющаяся буква)" type="text" value="{$email_sender|strip_tags|escape}">
+                      </p>
+                    </td>
+                    <td style="vertical-align: top;">
+                      <p style="margin: 0px; padding: 0px; padding-top: 5px;">
+                        <input class="submit" name="mailer_start" style="width: 250px;" type="submit" value="&nbsp;Начать рассылку&nbsp;">
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td nowrap>
+                      <span class="model">
+                        Якобы отправляют с:
+                      </span>
+                    </td>
+                    <td colspan="3" width="100%">
+                      <p style="margin: 0px; padding: 10px; padding-right: 20px; padding-top: 5px;">
+                        <input class="input3" name="email_sender_pseudo" style="width: 100%;" title="Выдавать рассылку словно бы идущей из этого электронного адреса (допустимы метасимволы смежных логинов: * - изменяющееся число, $ - изменяющаяся буква)" type="text" value="{$email_sender_pseudo|strip_tags|escape}">
+                      </p>
+                    </td>
+                    <td nowrap style="vertical-align: top;">
+                      <span class="model" title="Как во время рассылки брать электронные адреса из списка: по порядку или наугад">
+                        <input name="email_send_random" style="width: 20px;" type="checkbox" value="1"{if $email_send_random == 1} checked{/if}>
+                        брать адреса наугад
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td nowrap>
+                      <span class="model">
+                        За раз не более:
+                      </span>
+                    </td>
+                    <td nowrap>
+                      <p style="font-size: 10pt; font-weight: bold; margin: 0px; padding: 10px; padding-right: 20px; padding-top: 5px;" title="Сколько писем отправлять за одну фазу рассылки">
+                        <input class="input3" maxlength="5" name="email_send_limit" style="width: 50px;" type="text" value="{$email_send_limit|strip_tags|escape}">
+                        писем
+                      </p>
+                    </td>
+                    <td nowrap>
+                      <span class="model">
+                        с паузой между ними:
+                      </span>
+                    </td>
+                    <td width="100%">
+                      <p style="margin: 0px; padding: 10px; padding-right: 20px; padding-top: 5px;">
+                        <select class="select2" name="email_send_timer" style="width: 100%;" title="Величина паузы между отправкой двух соседних писем">
+                          {section name=count loop=31 start=0}
+                            <option value="{$smarty.section.count.index}"{if $email_send_timer == $smarty.section.count.index} selected{/if}>
+                              {$smarty.section.count.index} секунд
+                            </option>
+                          {/section}
+                        </select>
+                      </p>
+                    </td>
+                    <td nowrap style="vertical-align: top;">
+                      <span class="model" title="Как отправлять письма: средствами сайта или внешнего почтового сервера">
+                        <input name="email_send_via_smtp" style="width: 20px;" type="checkbox" value="1"{if $email_send_via_smtp == 1} checked{/if}>
+                        слать через SMTP-сервер
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td nowrap>
+                      <span class="model">
+                        После этого:
+                      </span>
+                    </td>
+                    <td colspan="3" width="100%">
+                      <p style="margin: 0px; padding: 10px; padding-right: 20px; padding-top: 5px;">
+                        <select class="select2" name="email_send_restarter" style="width: 100%;" title="Что делать после окончания каждой фазы рассылки">
+                          <option value="0"{if $email_send_restarter < 10} selected{/if}>
+                            остановиться
+                          </option>
+                          {section name=count loop=301 start=10}
+                            <option value="{$smarty.section.count.index}"{if $email_send_restarter == $smarty.section.count.index} selected{/if}>
+                              продолжить через {$smarty.section.count.index} секунд
+                            </option>
+                          {/section}
+                        </select>
+                      </p>
+                    </td>
+                    <td nowrap style="vertical-align: top;">
+                      <table width="100%">
+                        <tr>
+                          <td width="100%">
+                            <p style="margin: 0px; padding: 0px; padding-right: 5px; padding-bottom: 10px; padding-top: 5px;">
+                              <input class="input3" name="email_send_smtp" style="width: 100%;" title="Адрес внешнего почтового сервера" type="text" value="{$email_send_smtp|strip_tags|escape}">
+                            </p>
+                          </td>
+                          <td>
+                            <span class="model">
+                              :
+                            </span>
+                          </td>
+                          <td>
+                            <p style="margin: 0px; padding: 0px; padding-left: 5px; padding-bottom: 10px; padding-top: 5px;">
+                              <input class="input3" maxlength="5" name="email_send_smtp_port" style="width: 50px;" title="Порт внешнего почтового сервера" type="text" value="{$email_send_smtp_port|strip_tags|escape}">
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td nowrap>
+                      <p style="font-size: 10pt; font-weight: bold; margin: 0px; padding: 10px; padding-left: 0px; padding-right: 20px; padding-top: 0px;" title="Сколько адресов брать в поле адреса письма">
+                        <input class="input3" maxlength="2" name="email_send_copies_a" style="width: 20px;" type="text" value="{$email_send_copies_a|strip_tags|escape}">
+                        адресов в письме
+                      </p>
+                    </td>
+                    <td colspan="3" width="100%">
+                      <p style="margin: 0px; padding: 0px; padding-left: 10px;">
+                        <span class="model" title="Добавлять ли в конец темы письма электронный адрес получателя (настройка игнорируется, если суммарно адресов в письме выходит больше 1)">
+                          <input name="email_send_personalize" style="width: 20px;" type="checkbox" value="1"{if $email_send_personalize == 1} checked{/if}>
+                          персонализовать тему писем
+                        </span>
+                      </p>
+                    </td>
+                    <td nowrap style="vertical-align: top;">
+                      <table width="100%">
+                        <tr>
+                          <td width="50%">
+                            <p style="margin: 0px; padding: 0px; padding-right: 5px; padding-bottom: 10px;">
+                              <input class="input3" name="email_send_smtp_login" style="width: 100%;" title="Логин почтового ящика на внешнем почтовом сервере (допустимы метасимволы смежных логинов: * - изменяющееся число, $ - изменяющаяся буква)" type="text" value="{$email_send_smtp_login|strip_tags|escape}">
+                            </p>
+                          </td>
+                          <td>
+                            <span class="model">
+                              &nbsp;
+                            </span>
+                          </td>
+                          <td width="50%">
+                            <p style="margin: 0px; padding: 0px; padding-left: 5px; padding-bottom: 10px;">
+                              <input class="input3" name="email_send_smtp_pass" style="width: 100%;" title="Пароль почтового ящика на внешнем почтовом сервере" type="password" value="{$email_send_smtp_pass|escape}">
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td nowrap>
+                      <p style="font-size: 10pt; font-weight: bold; margin: 0px; padding: 10px; padding-left: 0px; padding-right: 20px; padding-top: 0px;" title="Сколько адресов брать в поле скрытого адреса письма">
+                        <input class="input3" maxlength="2" name="email_send_copies_h" style="width: 20px;" type="text" value="{$email_send_copies_h|strip_tags|escape}">
+                        адресов в скрытом
+                      </p>
+                    </td>
+                    <td colspan="3" width="100%">
+                      <p style="margin: 0px; padding: 0px; padding-left: 10px;">
+                        <span class="model" title="Заменять ли случайную часть русских букв их визуальными аналогами английского алфавита">
+                          <input name="email_send_pseudochars" style="width: 20px;" type="checkbox" value="1"{if $email_send_pseudochars == 1} checked{/if}>
+                          разнообразить буквы текста письма
+                        </span>
+                      </p>
+                    </td>
+                    <td nowrap style="vertical-align: top;">
+                      <table width="100%">
+                        <tr>
+                          <td nowrap>
+                            <span class="model">
+                              есть смежных логинов:
+                            </span>
+                          </td>
+                          <td width="100%">
+                            <p style="margin: 0px; padding: 0px; padding-left: 5px; padding-bottom: 10px;">
+                              <input class="input3" maxlength="2" name="email_send_smtp_adjacent" style="width: 100%;" title="Сколько смежных логинов имеется на внешнем почтовом сервере" type="text" value="{$email_send_smtp_adjacent|strip_tags|escape}">
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </form>
+          {/if}
+  </div>
+
+  {literal}
+    <script language="javascript" type="text/javascript" src="js/tiny_mce/tiny_mce.js"></script>
+    <script language="javascript">
+      <!--
+      tinyMCE.init({
+        mode: 'specific_textareas',
+        editor_selector: 'editor_big',
+        theme: 'advanced',
+        language: 'ru',
+        theme_advanced_path: false,
+        apply_source_formatting: false,
+        plugins: 'table',
+        relative_urls: false,
+        remove_script_host: true,
+        convert_urls: true,
+        cleanup: true,
+        cleanup_on_startup: true,
+        valid_elements: '@[style],a[href],-b/-strong,-i/-em,-u,-sub,-sup,-div,-p,br,-h1,-h2,-h3,-h4,-h5,-h6,-pre/-code,' +
+                        '-table[border|cellspacing|cellpadding|width|align|bgcolor|bordercolor],-tr,#td[colspan|rowspan|width|height|align|valign|bgcolor|background|bordercolor],' +
+                        '-li,-ol,-ul,hr[size|noshade],img[src|width|height|align],-font[face|size|color]',
+        fix_content_duplication: true,
+        remove_redundant_brs: true,
+        verify_html: true,
+        remove_linebreaks: false,
+        content_css: '../design/' + theme + '/css/style.css',
+        spellchecker_languages: '',
+
+        theme_advanced_buttons1: 'bold,italic,underline,|,bullist,numlist,|,justifyleft,justifycenter,justifyright,justifyfull,|,formatselect,fontselect,fontsizeselect,forecolor,backcolor',
+        theme_advanced_buttons2: 'tablecontrols,|,link,unlink,|,removeformat,cleanup,visualaid,code',
+        theme_advanced_buttons3: '',
+        theme_advanced_buttons4: '',
+        theme_advanced_toolbar_location: 'top',
+        theme_advanced_toolbar_align: 'left',
+        theme_advanced_statusbar_location: '',
+        theme_advanced_resizing: false,
+
+        file_browser_callback: '',
+        plugin_smexplorer_directory: '',
+        plugin_smimage_directory: ''
+      });
+      // -->
+    </script>
+  {/literal}

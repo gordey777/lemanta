@@ -1,0 +1,35 @@
+{* <!-- информер корзины (отдаётся аяксом) --> *}{strip}
+
+    <div class="cart-l">
+        {if !empty($cart_products_num)}
+            {$price = $helper->priceForScreen($cart_total_price)}
+
+            <p>
+                Товаров...........
+                <span>
+                    {$cart_products_num}
+                </span>
+            </p>
+
+            <p>
+                на сумму..........
+                <span>
+                    {intval($price)} {sign}
+                </span>
+            </p>
+        {else}
+            <p>
+                <span>
+                    Корзина пуста
+                </span>
+            </p>
+        {/if}
+    </div>
+
+    <a data-href="{site}cart" class="cart-r" onclick="return gotoHref(this)">
+        <span>
+            {$cart_products_num|default:0}
+        </span>
+    </a>
+
+{/strip}

@@ -1,0 +1,119 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Сайт системы: http://imperacms.ru/                                              |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Библиотека: Impera CMS Template Constructor                                     |
+  Модуль: Header Links - блок ссылок в шапке сайта                                |
+  Версия модуля: 1.2                                                              |
+  Автор: Разработчик Impera CMS                                                   |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $maxcount = предельно выводимое количество ссылок                             |
+    $split = селектор списка, если надо раздвинуть ссылки поровну в бока          |
+    $opentag = открывающий тег блока                                              |
+        $listing_opentag = открывающий тег списка                                 |
+            $link_opentag = открывающий тег элемента списка                       |
+                $a_id = идентификатор ссылок                                      |
+                $a_class = класс ссылок                                           |
+                $a_active_class = класс активной ссылки                           |
+                $a_text_opentag = открывающий тег текста ссылки                   |
+                    $a_text_maxsize = предельный размер текста ссылки             |
+                $a_text_closetag = закрывающий тег текста ссылки                  |
+            $link_closetag = закрывающий тег элемента списка                      |
+        $listing_closetag = закрывающий тег списка                                |
+    $closetag = закрывающий тег блока                                             |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $menus = массив записей о менюшках сайта                                      |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Подключение из своего шаблона:                                                  |
+    {include file = '../../common_parts/AIMatrix/Constructor/header-links.htm'    |
+             maxcount = число                                                     |
+             split = строка                                                       |
+             opentag = строка                                                     |
+                 listing_opentag = строка                                         |
+                     link_opentag = строка                                        |
+                         a_id = строка                                            |
+                         a_class = строка                                         |
+                         a_active_class = строка                                  |
+                         a_text_opentag = строка                                  |
+                             a_text_maxsize = число                               |
+                         a_text_closetag = строка                                 |
+                     link_closetag = строка                                       |
+                 listing_closetag = строка                                        |
+             closetag = строка}                                                   |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {include file = '../../../common_parts/AIMatrix/menu.htm'
+
+             items = $menus|default:false
+
+             menu_leftname = 'Верхнее меню'
+             menu_name_numbering = false
+             menu_firstnum = 1
+             menus_count = 1
+
+             links_maxcount = ((isset($maxcount)) ? $maxcount : 8)
+             links_count_align = false
+
+             menu_opentag = $opentag|default:''
+                 listing_opentag = $listing_opentag|default:''
+                     link_opentag = $link_opentag|default:''
+
+                         a_id = $a_id|default:''
+                         a_class = $a_class|default:''
+                         a_active_class = $a_active_class|default:''
+
+                         a_text_opentag = $a_text_opentag|default:''
+                             a_text_maxsize = ((isset($a_text_maxsize)) ? $a_text_maxsize : 20)
+                         a_text_closetag = $a_text_closetag|default:''
+
+                     link_closetag = $link_closetag|default:''
+                 listing_closetag = $listing_closetag|default:''
+             menu_closetag = $closetag|default:''
+
+             show_section_links = true
+             show_category_links = true
+             show_brand_links = true
+             show_product_links = true
+             show_article_links = true
+             show_news_links = true
+             show_file_links = true}
+
+
+
+    {* <!-- раздвижка ссылок поровну в бока --> *}
+    {if $split|default:'' != ''}
+
+        <script language="JavaScript" type="text/javascript">
+
+            jQuery(document).ready(function () {
+                var object = jQuery('{$split|escape:quotes}').show().children();
+                if ((typeof(object) == 'object') && (object != null) && ('length' in object)) {
+                    var c = object.length / 2;
+                    for (var i = object.length; i >= 0; --i) {
+                        if (i >= c) {
+                            jQuery(object[i]).css({ 'float': 'right', 'margin-left': '15px' });
+                        } else {
+                            jQuery(object[i]).css({ 'float': 'left', 'margin-right': '15px' });
+                        }
+                    }
+                }
+            });
+
+        </script>
+
+    {/if}
+
+{/strip}

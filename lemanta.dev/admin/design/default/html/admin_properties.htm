@@ -1,0 +1,501 @@
+{* <!-- список свойств товаров --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Закладки страниц.                                                          |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {include '../../common_parts/submenu.htm'
+             select = 'properties'
+             main = true
+             products = true
+             products_kits = true
+             categories = true
+             brands = true
+             properties = true
+             stocks = true}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Заголовок, хлебные крошки.                                                 |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="box">
+        <h1>
+            <div class="path">
+                <a href="{siteAdmin}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → Свойства
+            </div>
+            Свойства товаров
+        </h1>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Инструментальные ссылки.                                               |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            <a class="left" href="#settings" onclick="Show_PageElements('setup_form');" title="Показать настройки сайта, относящиеся к свойствам">
+                настройки
+            </a>
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <a href="{siteAdmin}?section=Property&token={token}" title="Добавить свойство товара">
+                добавить
+            </a>
+        </div>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Информационное сообщение, сообщение об ошибке (если есть).             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {messageBox from=message css=message}
+        {if !empty($error)}
+            <div class="error"><b>Ошибка:</b> {$error}</div>
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Форма со списком записей.                                              |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <form action="{siteAdmin}?section=Properties" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Фильтр.                                                            |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <table align="center" cellpadding="0" cellspacing="8" class="white">
+                <tr>
+                    <td class="param_short">Категория</td>
+                    <td class="value" width="50%" title="Фильтр: только используемые в такой категории">
+                        <select class="thin" id="items_form_filter_category" name="filter_category" onchange="Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+                            {include '../../common_parts/categories.htm'
+                                     items = $categories
+                                     currents = $inputs['filter_category']|default:0
+                                     selector = true}
+                        </select>
+                    </td>
+
+                    <td class="param_short">Бренд</td>
+                    <td class="value" width="50%" title="Фильтр: только используемые в таком бренде">
+                        <select class="thin" id="items_form_filter_brand" name="filter_brand" onchange="Start_PageRecordsFilter('items_form');">
+                            <option value=""></option>
+                            {include '../../common_parts/brands.htm'
+                                     items = $all_brands
+                                     currents = $inputs['filter_brand']|default:0
+                                     selector = true}
+                        </select>
+                    </td>
+                </tr>
+            </table>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Сортировщик.                                                       |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {echoVar from='inputs->sort' assign=sort}
+
+            <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Способ сортировки.                                             |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <tr>
+                    <td class="param_short">упорядочить</td>
+                    <td class="value" width="100%" title="Способ сортировки свойств товаров в нижеследующем списке">
+                        <select class="thin" name="sort" onchange="Start_PageRecordsFilter('items_form');">
+                            {$value = $smarty.const.SORT_PROPERTIES_MODE_AS_IS}
+                            <option value="{$value}"{if $sort == $value} selected{/if}>как расставлены</option>
+
+                            {$value = $smarty.const.SORT_PROPERTIES_MODE_BY_NAME}
+                            <option value="{$value}"{if $sort == $value} selected{/if}>по алфавиту</option>
+                        </select>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Флажок "видно в товаре".                                   |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <td class="param_short" title="Фильтр: только отображаемые в товарах на стороне клиента">
+                        <input class="checkbox" id="items_form_filter_inproduct" name="filter_inproduct" type="checkbox" {if !empty($inputs["filter_inproduct"])} checked {/if} value="1" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_filter_inproduct');">
+                            в товарах
+                        </span>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Флажок "видно в фильтре".                                  |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <td class="param_short" title="Фильтр: только используемые в фильтре">
+                        <input class="checkbox" id="items_form_filter_infilter" name="filter_infilter" type="checkbox" {if !empty($inputs["filter_infilter"])} checked {/if} value="1" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_filter_infilter');">
+                            в фильтре
+                        </span>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Флажок "видно в сравнении".                                |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <td class="param_short" title="Фильтр: только отображаемые клиенту на странице сравнения товаров">
+                        <input class="checkbox" id="items_form_filter_incompare" name="filter_incompare" type="checkbox" {if !empty($inputs["filter_incompare"])} checked {/if} value="1" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_filter_incompare');">
+                            в сравнении
+                        </span>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Флажок "разрешено".                                        |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <td class="param_short" title="Фильтр: только разрешенные к показу на сайте">
+                        <input class="checkbox" id="items_form_filter_enabled" name="filter_enabled" type="checkbox" {if !empty($inputs["filter_enabled"])} checked {/if} value="1" onchange="Start_PageRecordsFilter('items_form');" /> {**}
+                        <span onclick="Toggle_PageCheckbox('items_form_filter_enabled');">
+                            разрешено
+                        </span>
+                    </td>
+                </tr>
+            </table>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Кнопка сброса фильтра.                                             |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <div class="toolkey">
+                <span>
+                    найдено <span>{echoVar from=total_items} шт.</span>
+                </span>
+
+                <a href="#" onclick="return Reset_PageRecordsFilter('items_form');" title="Сбросить фильтр (кроме способа упорядочения)">
+                    сбросить
+                </a>
+            </div>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Список записей.                                                    |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {if !empty($items)}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Навигатор страниц (если есть несколько листаемых страниц).     |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if isset($Pages) && count($Pages) > 1}
+                    {echoVar from=PagesNavigation}
+                {/if}
+
+                {$now_group = FALSE}
+                {foreach $items as $item}
+                    {inputValue from='item->property_id' assign=id}
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Визуальное выделение принадлежности к группе.              |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    {echoVar from='item->group' assign=value}
+                    {if $now_group !== $value}
+                        {$now_group = $value}
+                        <li class="head_divider">
+                            <div>{($value != '') ? $value : 'Без группы'}</div>
+                        </li>
+                    {/if}
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Кнопка "удалить".                                          |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <li class="flatlist">
+                        <a href="{siteAdmin}{inputValue from='item->delete_get'}" title="Удалить" onclick="return confirm('Данное свойство товара будет удалено с сайта. Вы подтверждаете такую операцию?');">
+                            <img class="microkey_right" src="{themeAdmin}images/icon_delete_16x16.png" />
+                        </a>
+                        <img class="microkey_left" src="{themeAdmin}images/placeholder.gif" />
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Кнопки "изменить вес".                                 |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {if $sort == $smarty.const.SORT_PROPERTIES_MODE_AS_IS}
+                            <!-- div class="order_edit" title="Текущий вес">
+                                <input id="order_num" name="order_num[{$id}]" type="text" value="{inputValue from='item->order_num'}" onchange="Show_AcceptChanges_Button();">
+                            </div -->
+
+                            <a href="{siteAdmin}{inputValue from='item->move_first_get'}" title="Поставить первым">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_move_first_16x16.png" />
+                            </a>
+
+                            <a href="{siteAdmin}{inputValue from='item->move_up_get'}" title="Поднять выше">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_move_up_16x16.png" />
+                            </a>
+
+                            <a href="{siteAdmin}{inputValue from='item->move_down_get'}" title="Опустить ниже">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_move_down_16x16.png" />
+                            </a>
+
+                            <a href="{siteAdmin}{inputValue from='item->move_last_get'}" title="Поставить последним">
+                                <img class="microkey_left" src="{themeAdmin}images/icon_move_last_16x16.png" />
+                            </a>
+                            <img class="microkey_left" src="{themeAdmin}images/placeholder.gif" />
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Вес.                                               |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <span class="browsed zero" title="Вес свойства">
+                                {echoVar from='item->order_num'}
+                            </span>
+                        {/if}
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Кнопки "вкл / выкл".                                   |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <a href="{siteAdmin}{inputValue from='item->enable_get'}" title="Разрешить / запретить показ на сайте">
+                            <img class="microkey_left" src="{themeAdmin}images/icon_enabled{if empty($item->enabled)}_off{/if}_16x16.png" />
+                        </a>
+                        <img class="microkey_left" src="{themeAdmin}images/placeholder.gif" />
+
+                        <a href="{siteAdmin}{inputValue from='item->in_compare_get'}" title="Разрешить / запретить использование в сравнении">
+                            <img class="microkey_left" src="{themeAdmin}images/icon_incompare{if empty($item->in_compare)}_off{/if}_16x16.png" />
+                        </a>
+
+                        <a href="{siteAdmin}{inputValue from='item->in_filter_get'}" title="Разрешить / запретить использование в фильтре">
+                            <img class="microkey_left" src="{themeAdmin}images/icon_infilter{if empty($item->in_filter)}_off{/if}_16x16.png" />
+                        </a>
+
+                        <a href="{siteAdmin}{inputValue from='item->in_product_get'}" title="Разрешить / запретить отображение в товарах">
+                            <img class="microkey_left" src="{themeAdmin}images/icon_inproduct{if empty($item->in_product)}_off{/if}_16x16.png" />
+                        </a>
+                        <img class="microkey_left" src="{themeAdmin}images/placeholder.gif" />
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Нумерация.                                             |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <span class="topic" style="display: inline;">
+                            {if !empty($CurrentPage)}
+                                {$item@iteration + $CurrentPage * $CurrentPageMaxsize}.
+                            {else}
+                                {$item@iteration}.
+                            {/if}
+                        </span>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Число категорий.                                       |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <span class="count" title="В скольких категориях используется">
+                            {count($item->categories)}
+                        </span>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Число брендов.                                         |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <span class="count" title="В скольких брендах используется">
+                            {count($item->brands)}
+                        </span>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Число значений.                                        |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <span class="rating" title="Число значений">
+                            {count($item->options)}
+                        </span>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Название.                                              |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <a href="{siteAdmin}{inputValue from='item->edit_get'}">
+                            {echoVar from='item->name'}
+                        </a>
+                    </li>
+                {/foreach}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Навигатор страниц.                                             |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {echoVar from=PagesNavigation}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Аутентификатор операции.                                       |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <input name="token" type="hidden" value="{token}" />
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Иначе нет записей.                                                 |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {else}
+                <div class="noitems">Не найдено свойств товаров.</div>
+            {/if}
+        </form>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Справка.                                                               |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <a name="help"></a>
+        <div class="help" id="help_box" style="display: none;">
+            <div class="title">Справка</div>
+
+            <div>
+                <b>Что это?</b> Когда производится редактирование товара, в некоторых возникает {**}
+                необходимость перечислить какие-нибудь его свойства. Для этих целей и создана данная {**}
+                страница - общий список свойств товаров с перечислением возможных значений в каждом {**}
+                из свойств и указанием категорий и брендов, где такое свойство планируется использовать.
+            </div>
+
+            <div>
+                Например, если здесь задали свойство "Размер", перечислили в нем возможные значения {**}
+                "15х15 см, 20х30 см, 50х50 см" и указали категорию "Стройматериалы / Плитка", то у {**}
+                редактируемых товаров такой категории начнет появляться описанное свойство со всеми его {**}
+                возможными значениями. Останется лишь выделить там из значений имеющиеся в наличии, {**}
+                которые и станут видны клиенту под названием "Размер" у отредактированного товара.
+            </div>
+
+            <div>
+                <b>Фильтр</b>. Расположен в верхней части страницы и обеспечивает возможность выделить {**}
+                из общего списка свойства товаров по конкретным параметрам. Поля фильтра можно сочетать {**}
+                произвольно, они объединены функцией И.
+            </div>
+
+            <div>
+                Важно также понимать, что у каждого свойства существуют флажки: <u>в&nbsp;товарах</u>, {**}
+                <u>в&nbsp;фильтре</u>, <u>в&nbsp;сравнении</u>. Они управляют отображением или использованием {**}
+                свойств на стороне клиента. Добавленное свойство с разрешенным использованием на сайте {**}
+                всегда появится в админпанели на странице редактирования товара обозначенной категории или {**}
+                бренда. Флажки же свойства определяют, будет ли оно видно клиенту на странице товара, будет {**}
+                ли ему доступно фильтровать товары по такому свойству и будет ли свойство отображено на {**}
+                странице сравнения товаров.
+            </div>
+
+            <div>
+                <b>Упорядочение</b>. По умолчанию способ сортировки свойств товаров в списке на данной {**}
+                странице равен "<u>по&nbsp;алфавиту</u>". В случае смены способа сортировки он запоминается {**}
+                на время текущего сеанса.
+            </div>
+        </div>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Форма настроек.                                                        |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        <a name="settings"></a>
+        <form action="{siteAdmin}?section=Properties" enctype="multipart/form-data" id="setup_form" method="post" {if empty($error)} style="display: none;" {/if} onkeypress="return Ignore_KeypressSubmit(event);">
+            <br /><h1>Настройки</h1><br />
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Способ сортировки на клиентской стороне.                           |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {echoVar from='settings->properties_sort_method' assign=sort}
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+                <tr>
+                    <td class="param_short">Сортировать на клиентской стороне:</td>
+                    <td class="value" width="100%" title="Как упорядочить список свойств, сформированный для клиентской стороны">
+                        <select name="properties_sort_method">
+                            {$value = $smarty.const.SORT_PROPERTIES_MODE_AS_IS}
+                            <option value="{$value}" {if $sort == $value} selected{/if}>как расставлены</option>
+
+                            {$value = $smarty.const.SORT_PROPERTIES_MODE_BY_NAME}
+                            <option value="{$value}" {if $sort == $value} selected{/if}>по алфавиту</option>
+                        </select>
+                    </td>
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Кнопка "Сохранить".                                        |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <td class="value_box">
+                        <input class="submit" name="setup" type="submit" value="Сохранить" />
+                    </td>
+                </tr>
+            </table>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Аутентификатор операции.                                           |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <input name="token" type="hidden" value="{token}" />
+        </form>
+    </div>
+
+{/strip}

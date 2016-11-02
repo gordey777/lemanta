@@ -1,0 +1,160 @@
+{* <!--
+  Impera CMS: шаблон админ модуля файла robots.txt
+
+  Принимает во входных переменных:
+    $data = контент файла robots.txt
+    $files_host_suffix = файловый суффикс магазина (среди нескольких на едином движке)
+    $message = текст информационного сообщения, если есть
+    $error = текст сообщения об ошибке, если была
+    $Token = аутентификатор операции
+    $settings = настройки сайта
+    $admin_folder = имя папки админпанели
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта
+    $site = полный адрес корня сайта
+
+  ============================================================================
+
+    Подключаем субшаблон закладок. В субшаблон передаем атрибуты:
+      main = вывести закладку "главная"
+      me = текст собственной закладки модуля
+      me_pointer = указатель на модуль в ссылке
+      me_menupath = путевое положение модуля в меню
+      select = какая закладка будет выбранной --> *}
+
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.ROBOTS_MODULETAB_TEXT|default:''
+             me_pointer = $smarty.const.ROBOTS_MODULELINK_POINTER|default:''
+             me_menupath = $smarty.const.ROBOTS_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок содержимого --> *}
+        {strip}
+            <h1>
+                <div class="path">
+                    <a href="{$site|default:''|escape}{$admin_folder|default:''|escape}/">
+                        Главная
+                    </a> → robots.txt
+                </div>
+                {$title|default:'Файл robots.txt'}
+            </h1>
+        {/strip}
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            {strip}
+                <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+                    справка
+                </a>
+
+                &nbsp;
+            {/strip}
+        </div>
+
+
+
+        {* <!-- если есть информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- если есть сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма --> *}
+        <form action="{$site|default:''|escape}{$admin_folder|default:''|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|default:''|escape}={$smarty.const.ROBOTS_MODULELINK_POINTER|default:''|escape}" id="item_form" method="post">
+
+
+
+            {* <!-- имя редактируемого файла --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+                <tr>
+                    <td class="param_short">
+                        Файл:
+                    </td>
+
+                    <td class="value" title="Имя редактируемого файла" width="100%">
+                        <input class="edit" disabled readonly type="text" value="{$site|default:''|escape}robots{$files_host_suffix|default:''|escape}.txt" />
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    <td class="value_box">
+                        <input class="submit" type="submit" value="Сохранить" onclick="javascript: return confirm('Подтвердите свое желание сохранить изменения в этом файле!');" />
+                    </td>
+                </tr>
+
+            </table>
+
+
+
+            {* <!-- контент файла --> *}
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+                <tr>
+                    <td class="value" title="Содержимое редактируемого файла" width="100%">
+                        <textarea class="source_code" name="{$smarty.const.ROBOTS_SMARTYVAR_DATA|default:''|escape}" style="height: 640px;">{$data|default:''|escape}</textarea>
+                    </td>
+                </tr>
+
+            </table>
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''|escape}" type="hidden" value="{$Token|default:''|escape}">
+
+        </form>
+
+
+
+        {* <!-- блок справки --> *}
+        <a name="help"></a>
+
+        <div class="help">
+
+            <div class="title">
+                Обратите внимание!
+            </div>
+
+
+
+            <div>
+                Так как системой поддерживается функция работы нескольких магазинов на едином движке, то
+                при заходе через админпанель магазина СайтА имя редактируемого файла robots.txt будет видно
+                именно в таком виде. Из админпанели магазина СайтБ имя этого файла уже будет видно как robots_СайтБ.txt.
+                Из админпанели магазина СайтВ - как robots_СайтВ.txt. В каждом случае добавлен свой файловый
+                суффикс на основе доменного имени сайта магазина.
+            </div>
+
+            <div>
+                Это чисто технический внутренний момент лишь для различения файлов разных магазинов внутри
+                единого движка, а равно их единого файлового пространства. Со стороны же интернета привязанный
+                к магазину файл robots_СУФФИКС.txt будет всегда виден под должным именем robots.txt.
+            </div>
+
+        </div>
+
+
+
+    </div>

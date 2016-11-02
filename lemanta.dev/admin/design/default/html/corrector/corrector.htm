@@ -1,0 +1,595 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: корректор полей                                                         |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $items = массив с записями о категориях                                       |
+                 ->category_id = ИД категории                                     |
+                 ->parent = ИД родительской категории                             |
+                 ->name = название                                                |
+                 ->enabled = разрешена ли к показу на клиентской стороне сайта    |
+                 ->filled = имеет ли вложенные товары (свои или в подкатегориях)  |
+                 ->selected = выбрана ли ветка                                    |
+                 ->subitems = массив записей о вложенных категориях               |
+                                  ->поля = аналогичны полям массива $items        |
+                 ->products = булевой признак "содержит товары"                   |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+                    ->имя = значение конкретной настройки                         |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.CORRECTOR_MODULELINK_POINTER|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.CORRECTOR_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.CORRECTOR_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    {* <!-- стили формы со списком записей --> *}
+    <style>
+        #items_form .table-pricelist {
+            border: 0 solid;
+            border-top: #ccc 1px solid;
+            border-right: #ccc 1px solid;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+            #items_form .table-pricelist td {
+                border: 0 solid;
+                border-left: #ccc 1px solid;
+                border-bottom: #ccc 1px solid;
+                color: #222;
+                font-family: Verdana, Tahoma, Arial;
+                font-size: 8pt;
+                line-height: 20px;
+                margin: 0;
+                padding: 0;
+                text-align: left;
+                vertical-align: top;
+                -moz-box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+
+
+
+            /* строки таблицы */
+
+            #items_form .table-pricelist .row-product:hover,
+            #items_form .table-pricelist .row-variant:hover {
+                background: #f4f4f4;
+            }
+
+            #items_form .table-pricelist .row-category td {
+                background: #eee;
+            }
+
+            #items_form .table-pricelist .row-product td {
+            }
+
+            #items_form .table-pricelist .row-variant td {
+            }
+
+            #items_form .table-pricelist tr.disabled * {
+                color: #ccc !important;
+            }
+
+
+
+            /* заголовки колонок */
+
+            #items_form .table-pricelist .cell-th {
+                background: #ddd !important;
+                color: #aaa;
+                font-size: 8pt;
+                padding: 4px 10px;
+                width: 1px;
+                text-align: center;
+                vertical-align: middle;
+            }
+
+
+
+            /* поле ввода */
+
+            #items_form .table-pricelist td span {
+                display: block;
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                position: relative;
+                -moz-box-sizing: border-box;
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+            }
+
+                #items_form .table-pricelist input[type="text"] {
+                    background: transparent;
+                    border: 0 solid;
+                    outline: 0 solid;
+                    color: #222;
+                    display: block;
+                    font-family: Verdana, Tahoma, Arial;
+                    font-size: 8pt;
+                    font-weight: normal;
+                    line-height: 16px;
+                    height: 24px;
+                    margin: 0;
+                    padding: 5px 10px;
+                    width: 100%;
+                    -moz-box-sizing: border-box;
+                    -webkit-box-sizing: border-box;
+                    box-sizing: border-box;
+                }
+
+                #items_form .table-pricelist span:hover > input[type="text"] {
+                    background: #d0d0d0;
+                }
+
+
+
+            /* поле Название */
+
+            #items_form .table-pricelist .cell-name {
+                padding: 2px 10px;
+                width: 100%;
+            }
+
+                #items_form .table-pricelist .cell-name a {
+                    opacity: 0.4;
+                }
+
+                #items_form .table-pricelist .cell-name a:hover {
+                    opacity: 1.0;
+                }
+
+
+
+            /* поле Буквенный код товара */
+
+            #items_form .table-pricelist .cell-pcode {
+                color: #888;
+                display: none;
+                font-size: 8pt;
+                padding: 2px 10px;
+                width: 1px;
+            }
+
+
+
+            /* поле Артикул варианта товара */
+
+            #items_form .table-pricelist .cell-sku {
+                color: #888;
+                font-size: 8pt;
+                padding: 2px 10px;
+                width: 1px;
+            }
+
+
+
+            /* поле Название варианта товара */
+
+            #items_form .table-pricelist .cell-variant {
+                color: #888;
+                font-size: 8pt;
+                padding: 2px 10px;
+                width: 1px;
+            }
+
+
+
+            /* поле Цены варианта товара */
+
+            #items_form .table-pricelist .cell-price,
+            #items_form .table-pricelist .cell-oldprice,
+            #items_form .table-pricelist .cell-tempprice,
+            #items_form .table-pricelist .cell-discount,
+            #items_form .table-pricelist .cell-stock {
+                background: #fff;
+                width: 1px;
+            }
+
+            #items_form .table-pricelist .cell-price {
+                border-left: #ccc 3px solid;
+            }
+
+            #items_form .table-pricelist .cell-oldprice {
+                background: #fff4f4;
+            }
+
+            #items_form .table-pricelist .cell-tempprice {
+                background: #efe;
+            }
+
+            #items_form .table-pricelist .cell-discount {
+                background: #f8f8f8;
+            }
+
+                #items_form .table-pricelist .cell-price input[type="text"],
+                #items_form .table-pricelist .cell-oldprice input[type="text"],
+                #items_form .table-pricelist .cell-tempprice input[type="text"] {
+                    width: 95px;
+                    max-width: 95px;
+                    min-width: 95px;
+                    text-align: right;
+                }
+
+                #items_form .table-pricelist .cell-discount input[type="text"] {
+                    width: 65px;
+                    max-width: 65px;
+                    min-width: 65px;
+                    text-align: right;
+                }
+
+                #items_form .table-pricelist .cell-stock input[type="text"] {
+                    width: 60px;
+                    max-width: 60px;
+                    min-width: 60px;
+                    text-align: right;
+                }
+
+
+
+            /* фиктивная ячейка */
+
+            #items_form .table-pricelist .cell-dummy + .cell-dummy {
+                border-left: transparent 1px solid;
+            }
+
+            #items_form .table-pricelist .row-variant:not(.last-variant) .cell-dummy {
+                border-bottom: transparent 1px solid;
+            }
+
+
+
+            /* отредактированное поле */
+
+            #items_form .table-pricelist input.changed {
+                color: #44f !important;
+            }
+
+
+
+        /* кнопка Сохранить */
+
+        #items_form input[type="submit"] {
+            padding: 0 10px;
+        }
+    </style>
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$admin_site}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → Товары
+            </div>
+
+            {($title|default:'Корректор полей')|escape}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            <a class="left" href="#help" onclick="Show_PageElements('help_box');" title="Показать справочную информацию">
+                справка
+            </a>
+
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- row_category(item, level, enabled, started) = генерация строки категории --> *}
+        {function name = 'row_category'
+                  level = 0
+                  enabled = true
+                  started = false}
+
+            <tr class="row-category{($enabled) ? '' : ' disabled'}">
+                <td class="cell-name" style="padding-left: {($level - 1) * 20 + 10}px;">
+
+                    {* <!-- название --> *}
+                    {call get_item_string item = $item
+                                          param = 'name'
+                                          def = 'Без названия!'
+                                          escaped = true}
+
+                    {* <!-- скрытое постинговое идентифицирующее поле текущей записи --> *}
+                    {if $started}
+                        {$cid = ($item->category_id|default:0)|escape}
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_POST|default:''}
+                        <input name="{$param|escape}[{$cid}]" type="hidden" value="" />
+                    {/if}
+                </td>
+            </tr>
+        {/function}
+
+
+
+        {* <!-- выбрана ли категория? --> *}
+        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_CATEGORY|default:''}
+        {$is_selected = $inputs[$param]|default:'' != ''}
+
+
+
+        {* <!-- форма со списком записей --> *}
+        <form action="{$admin_goto}{$module_pointer|escape}" id="items_form" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+
+
+            {* <!-- фильтр --> *}
+            <table align="center" cellpadding="0" cellspacing="8" class="white">
+                <tr>
+
+
+
+                    {* <!-- поле Категория --> *}
+                    <td class="param_short">
+                        <a href="{$admin_goto}Categories" title="Перейти на страницу категорий в админпанели">
+                            Категория
+                        </a>
+                        :
+                    </td>
+                    <td class="value" width="90%" title="Фильтр: только принадлежащие такой категории">
+
+                        {$param = $smarty.const.REQUEST_PARAM_NAME_FILTER_CATEGORY|default:''}
+                        <select class="thin" id="items_form_{$param|escape}" name="{$param|escape}" onchange="Start_PageRecordsFilter('items_form');">
+                            {$from_cid = $inputs[$param]|default:''}
+                            {if $from_cid == ''}
+                                <option value=""></option>
+                            {/if}
+
+                            {if !empty($items)}
+                                {function name = 'cats_filter_tree' level = 0}
+                                    {foreach $cats as $c}
+                                        {if !empty($c->filled)}
+                                            {$value = $c->category_id|default:''}
+                                            <option value="{$value|escape}" {if $from_cid == $value} selected{/if}>
+                                                {section name=spaces loop=$level}
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                {/section}
+                                                {$c->name|default:'Без названия!'}
+                                            </option>
+                                            {if !empty($c->subitems)}
+                                                {cats_filter_tree cats = $c->subitems level = $level + 1}
+                                            {/if}
+                                        {/if}
+                                    {/foreach}
+                                {/function}
+                                {cats_filter_tree cats = $items}
+                            {/if}
+
+                            <option value="0" style="color: #888" {if $from_cid != '' && $from_cid == 0} selected{/if}>
+                                [весь каталог]
+                            </option>
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- поле Процент надбавки к цене --> *}
+                    <td class="param_short">
+                        Надбавка:
+                    </td>
+                    <td class="value" width="10%" title="Надбавка к цене товаров">
+
+                        {$param = 'increment'}
+                        {$value = $inputs[$param]|default:0|string_format:'%d'}
+                        <select class="thin" name="{$param|escape}">
+                            {$param = $inputs[$param]|default:''}
+                            {section name=values start=0 loop=201}
+                                {$percent = $smarty.section.values.index - 100}
+                                <option value="{$percent}" {if $percent == $value} selected {/if}>
+                                    {$percent}%
+                                </option>
+                            {/section}
+                        </select>
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    {if !empty($items)}
+                        {if $is_selected}
+                            <td class="value_box">
+                                <input class="submit" style="width: auto;" type="submit" value="Применить" onclick="return Start_PageMassPost('items_form');" />
+
+
+
+                                {* <!-- аутентификатор операции --> *}
+                                {call hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                                     id = false
+                                                     value = $token}
+                            </td>
+                        {/if}
+                    {/if}
+
+
+
+                </tr>
+            </table>
+
+
+
+            {* <!-- кнопка сброса фильтра --> *}
+            <div class="toolkey">
+                &nbsp;
+            </div>
+
+
+
+            {* <!-- если получены записи о категориях --> *}
+            {if !empty($items)}
+
+                {* <!-- принцип работы подразумевает сначала выбрать категорию в фильтре --> *}
+                {if $is_selected}
+
+
+
+                    <table class="table-pricelist" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td class="cell-th" nowrap>категории</td>
+                        </tr>
+
+
+
+                        {* <!-- cats_tree(cats, level, enabled, selected) = генерация строк категорий --> *}
+                        {function name = 'cats_tree'
+                                  level = 1
+                                  enabled = true
+                                  selected = false}
+
+                            {* <!-- перебираем категории --> *}
+                            {foreach $cats as $c}
+                                {if !empty($c->filled)}
+                                    {if $selected || !empty($c->selected)}
+                                        {$real_selected = $selected || !empty($c->selected) &&  $c->selected === true}
+                                        {$enabled_category = $enabled && !empty($c->enabled)}
+                                        {row_category item = $c
+                                                      level = $level
+                                                      enabled = $enabled_category
+                                                      started = $real_selected}
+
+
+
+                                        {* <!-- обрабатываем вложенные категории --> *}
+                                        {if !empty($c->subitems)}
+                                            {cats_tree cats = $c->subitems
+                                                       level = $level + 1
+                                                       enabled = $enabled_category
+                                                       selected = $real_selected}
+                                        {/if}
+                                    {/if}
+                                {/if}
+                            {/foreach}
+
+                        {/function}
+
+
+
+                        {cats_tree cats = $items}
+                    </table>
+
+
+
+                    {* <!-- пустой указатель требуемой команды --> *}
+                    {call hidden_editbox param = 'REQUEST_PARAM_NAME_ACTION'
+                                         id = true
+                                         value = ''}
+
+
+
+                    {* <!-- признак отмены постинга --> *}
+                    {call hidden_editbox param = 'REQUEST_PARAM_NAME_IGNORE_POST'
+                                         id = true
+                                         value = '1'}
+
+
+
+                    {* <!-- признак мини постинга (без некоторых полей записи) --> *}
+                    {call hidden_editbox param = 'REQUEST_PARAM_NAME_POST_MINI'
+                                         id = false
+                                         value = '1'}
+
+
+
+                {* <!-- иначе не выбрана категория в фильтре --> *}
+                {else}
+                    <div class="noitems">
+                        Выберите необходимую категорию в фильтре.
+                    </div>
+                {/if}
+
+
+
+            {* <!-- иначе нет категорий --> *}
+            {else}
+                <div class="noitems">
+                    Каталог пустой.
+                </div>
+            {/if}
+
+        </form>
+        <br />
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                В списке представлены только категории, содержащие товары. Категории {**}
+                без товаров исключены из списка для упрощения работы с ним.
+            </div>
+        </div>
+
+    </div>
+
+{/strip}

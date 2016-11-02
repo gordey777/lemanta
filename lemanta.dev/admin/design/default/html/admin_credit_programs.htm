@@ -1,0 +1,443 @@
+<!-- {*
+  Impera CMS: шаблон админ модуля списка кредитных программ.
+  Copyright AIMatrix, 2011.
+  http://aimatrix.itak.info
+
+  Принимает во входных переменных:
+    $items = массив с записями о кредитных программах;
+    $inputs = индексированный именами некоторых элементов html-формы массив со значениями этих элементов;
+    $PagesNavigation = html-контент навигатора страниц;
+    $CurrentPageMaxsize = максимальное количество записей на странице;
+    $CurrentPage = индексный номер текущей страницы;
+    $total_items = количество записей на всех страницах;
+    $message = текст информационного сообщения, если есть;
+    $error = текст сообщения об ошибке, если была;
+    $settings = настройки сайта;
+    $admin_folder = имя папки админпанели;
+    $root_url = безпротокольный (то есть без http://) адрес корня сайта.
+
+  ============================================================================
+
+  Подключаем субшаблон кнопок субменю. В субшаблон передаем атрибуты:
+    select = какая кнопка будет выбранной
+    main = true - вывести эту кнопку
+    orders = true - вывести эту кнопку
+    orders_phases = true - вывести эту кнопку
+    payments_history = true - вывести эту кнопку
+    credit_programs = true - вывести эту кнопку *} -->
+
+  {include file = "../../common_parts/submenu.htm"
+           select = "credit_programs"
+           main = true
+           orders = true
+           orders_phases = true
+           payments_history = true
+           credit_programs = true}
+
+  <!-- {* В переменной $sort_as_is запоминаем значение дефолтного режима сортировки *} -->
+  {assign var="sort_as_is" value=$smarty.const.SORT_CREDITPROGRAMS_MODE_AS_IS}
+
+  <div class="box">
+
+    <!-- Выводим заголовок содержимого -->
+    <h1>
+      <div class="path">
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/" title="Перейти на главную страницу админпанели">Главная</a>
+        → Кредиты
+      </div>
+      Кредитные программы
+    </h1>
+
+    <!-- Выводим инструментальные ссылки -->
+    <div class="toolkey">
+      {strip}
+        <a class="left" href="#help" onclick="javascript: Show_PageElements('help_box');" title="Показать справочную информацию">
+          справка
+        </a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=CreditProgram&{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}={$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}" title="Добавить кредитную программу">
+          добавить
+        </a>
+      {/strip}
+    </div>
+
+    <!-- {* Если во входной переменной $message есть текст информационного сообщения, выводим это сообщение. *} -->
+    {if isset($message) && ($message != "")}
+      <div class="message">
+        {$message}
+      </div>
+    {/if}
+
+    <!-- {* Если во входной переменной $error есть текст сообщения об ошибке, выводим это сообщение. *} -->
+    {if isset($error) && ($error != "")}
+      <div class="error">
+        <b>Ошибка:</b> {$error}
+      </div>
+    {/if}
+
+    <!-- Форма со списком записей -->
+    <form action="http://{$root_url|escape}/{$admin_folder|escape}/index.php?{$smarty.const.REQUEST_PARAM_NAME_SECTION|escape}=CreditPrograms" id="items_form" method="post" onkeypress="javascript: return Ignore_KeypressSubmit(event);">
+
+      <!-- Фильтр -->
+
+      <!-- Сортировщик -->
+      <table align="center" cellpadding="0" cellspacing="8" class="gray" style="margin-top: 0px; margin-bottom: 0px;">
+        <tr>
+          <td class="param_short">
+            упорядочить&nbsp;
+          </td>
+
+          <!-- флажок Направление сортировки -->
+          <td class="param_short" title="Включить обратный порядок сортировки (игнорируется при упорядочении 'Как расставлены')">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="hidden" value="{$smarty.const.SORT_DIRECTION_ASCENDING|escape}">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION] == $smarty.const.SORT_DIRECTION_DESCENDING)} checked{/if} value="{$smarty.const.SORT_DIRECTION_DESCENDING|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_DIRECTION|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_descending_16x16.png">
+            </span>
+          </td>
+
+          <!-- флажок Лаконичный режим -->
+          <td class="param_short" title="Включить лаконичный режим сортировки (прятать нецелевые записи)">
+            <input name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="hidden" value="0">
+            <input class="checkbox" id="items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}" type="checkbox"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} checked{/if} value="1" onchange="javascript: Start_PageRecordsFilter('items_form');">
+            <span onclick="javascript: Toggle_PageCheckbox('items_form_{$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL|escape}');">
+              <img class="icon16x16" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_laconical_16x16.png">
+            </span>
+          </td>
+
+          <!-- поле Способ сортировки -->
+          <td class="value" width="60%" title="Способ сортировки кредитных программ в нижеследующем списке">
+
+            <!-- Создаем селектор способов сортировки и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_SORT|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.SORT_CREDITPROGRAMS_MODE_AS_IS|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CREDITPROGRAMS_MODE_AS_IS)} selected{/if}>как расставлены</option>
+              <option value="{$smarty.const.SORT_CREDITPROGRAMS_MODE_BY_NAME|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CREDITPROGRAMS_MODE_BY_NAME)} selected{/if}>по алфавиту</option>
+              <option value="{$smarty.const.SORT_CREDITPROGRAMS_MODE_BY_TERM|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CREDITPROGRAMS_MODE_BY_TERM)} selected{/if}>по сроку кредитования</option>
+              <option value="{$smarty.const.SORT_CREDITPROGRAMS_MODE_BY_PERCENT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CREDITPROGRAMS_MODE_BY_PERCENT)} selected{/if}>по процентной ставке</option>
+              <option value="{$smarty.const.SORT_CREDITPROGRAMS_MODE_BY_CREATED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CREDITPROGRAMS_MODE_BY_CREATED)} selected{/if}>по дате добавления</option>
+              <option value="{$smarty.const.SORT_CREDITPROGRAMS_MODE_BY_MODIFIED|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $smarty.const.SORT_CREDITPROGRAMS_MODE_BY_MODIFIED)} selected{/if}>по дате исправления</option>
+            </select>
+          </td>
+
+          <!-- поле Режим отображения -->
+          <td class="value" width="40%" title="Насколько полно выводить информацию о кредитных программах в списке">
+
+            <!-- Создаем селектор режимов отображения и перечисляем в нем нужные варианты -->
+            <select class="thin" name="{$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE|escape}" onchange="javascript: Start_PageRecordsFilter('items_form');">
+              <option value="{$smarty.const.VIEW_MODE_COMPACT|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_COMPACT)} selected{/if}>компактно</option>
+              <option value="{$smarty.const.VIEW_MODE_STANDARD|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD)} selected{/if}>стандартно</option>
+              <option value="{$smarty.const.VIEW_MODE_FULL|escape}"{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)} selected{/if}>подробно</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Кнопка сброса фильтра --> 
+      <div class="toolkey">
+        {strip}
+          <span>
+            найдено <span>
+                      {$total_items|default:0|string_format:"%d"} шт.
+                    </span>
+          </span>
+        {/strip}
+      </div>
+
+      {if isset($items) && !empty($items)}
+
+        <!-- Выводим контент навигатора страниц над списком, только если есть несколько листаемых страниц -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "") && isset($Pages) && ($Pages|@count > 1)}
+          {$PagesNavigation}
+        {/if}
+
+        <!-- {* Определяем переменную тега, закрывающего контейнер перетаскиваемых элементов *} -->
+        {assign var="items_container_close_tag" value=""}
+
+        <!-- {* Если выбрана сортировка "как расставлены" *} -->
+        {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+
+          <!-- Заключаем перетаскиваемые элементы списка в контейнер -->
+          <div id="items_container">
+
+          <!-- {* Назначаем тег, закрывающий контейнер перетаскиваемых элементов *} -->
+          {assign var="items_container_close_tag" value="</div>"}
+        {/if}
+
+        {foreach name=items item=c from=$items}
+          {strip}
+
+            <!-- {* В переменной $id запоминаем идентификатор текущей записи *} -->
+            {assign var="id" value=$c->credit_id}
+
+            <li class="flatlist">
+              <div class="onerow">
+
+                <!-- Микро кнопки справа от названия -->
+                <input name="deleted[{$id|escape}]" type="hidden" value="{$c->deleted|default:0|escape}">
+                <input class="checkbox" name="delete_items[]" title="Пометить на удаление" type="checkbox" value="{$id|escape}" onchange="javascript: Toggle_LiTransparency(this, !this.checked, 0.3); Check_DeleteSelected_Button();">
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->delete_get|escape}" title="Удалить" onclick="javascript: return confirm('Данная запись будет удалена с сайта. Вы подтверждаете такую операцию?');">
+                  <img class="microkey_right" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_delete_16x16.png">
+                </a>
+
+                {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+
+                  <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                  {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                    <div class="order_edit" title="Текущий вес">
+                      <input id="order_num" name="order_num[{$id|escape}]" type="text" value="{$c->order_num|escape}" onchange="javascript: Show_AcceptChanges_Button();">
+                    </div>
+
+                  {else}
+
+                    <!-- Добавляем скрытое поле порядкового номера текущей записи -->
+                    <input id="order_num" name="order_num[{$id|escape}]" type="hidden" value="{$c->order_num|escape}">
+
+                    <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                    <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+    
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+                  {/if}
+
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_first_get|escape}" title="Поставить первой (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_first_16x16.png">
+                  </a>
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_up_get|escape}" title="Поднять выше (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_up_16x16.png">
+                  </a>
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_down_get|escape}" title="Опустить ниже (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_down_16x16.png">
+                  </a>
+                  <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->move_last_get|escape}" title="Поставить последней (текущий вес {$c->order_num|escape})">
+                    <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_move_last_16x16.png">
+                  </a>
+                {/if}
+
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                  <input class="checkbox gray" name="enabled[{$id|escape}]"{if $c->enabled == 1} checked{/if} title="Пометить как разрешенную к показу на сайте" type="checkbox" value="1" onchange="javascript: Show_AcceptChanges_Button();">
+
+                {/if}
+
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->enable_get|escape}" title="Разрешить / запретить показ на сайте">
+                  <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/icon_enabled{if $c->enabled != 1}_off{/if}_16x16.png">
+                </a>
+
+                <img class="microkey_left" src="http://{$root_url|escape}/{$admin_folder|escape}/design/{$settings->admin_theme|escape}/images/placeholder.gif">
+
+                <!-- Нумерация -->
+                <span class="topic" style="display: inline;">
+                  {if isset($CurrentPage)}
+                    {$smarty.foreach.items.iteration+$CurrentPage*$CurrentPageMaxsize}.
+                  {else}
+                    {$smarty.foreach.items.iteration}.
+                  {/if}
+                </span>
+
+                <!-- Срок кредитования -->
+                <span class="count-wide" title="Срок кредитования">
+                  {$c->term|default:0|escape} мес.
+                </span>
+
+                <!-- Процентная ставка -->
+                <span class="rating" title="Процентная ставка">
+                  {$c->percent|string_format:"%1.2f"|replace:",":"."}%
+                </span>
+
+                <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+                {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                  <!-- Добавляем скрытое постинговое идентифицирующее поле текущей записи -->
+                  <input name="{$smarty.const.REQUEST_PARAM_NAME_POST|escape}[{$id|escape}]" type="hidden" value="">
+
+                {/if}
+
+                <!-- Название -->
+                <a href="http://{$root_url|escape}/{$admin_folder|escape}/index.php{$c->edit_get|escape}" title="{$c->name|strip_tags|escape}">
+                  {$c->name|strip_tags|escape}
+                </a>
+
+              </div>
+
+              <!-- Краткая информация -->
+
+              <!-- {* Если включен полный вывод информации о записях *} -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL)}
+
+                <!-- запрашиваемые поля -->
+                {assign var="temp_label" value="поля:"}
+                {foreach item=r from=$c->form_fields}
+                  {if is_array($r) && isset($r.field) && isset($r.type) && isset($r.required)}
+
+                    <div class="line">
+                      <span>
+                        {$temp_label}
+                        {assign var="temp_label" value="&nbsp;"}
+                      </span>
+                      {if isset($r.required) && $r.required}
+                        <span class="subinfo" title="Обязательно для заполнения">
+                          *
+                        </span>
+                      {/if}
+                      <span class="text" title="{$r.field|strip_tags|escape}">
+                        {$r.field|strip_tags|escape}
+                      </span>
+                      {if isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_TEXT)}
+                        <span class="label" title="Тип: текст" style="width: 50px;">
+                          текст
+                        </span>
+                      {elseif isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_DATE)}
+                        <span class="label" title="Тип: дата" style="width: 50px;">
+                          дата
+                        </span>
+                      {elseif isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_NUMBER)}
+                        <span class="label" title="Тип: число" style="width: 50px;">
+                          число
+                        </span>
+                      {elseif isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_PHONE)}
+                        <span class="label" title="Тип: телефон" style="width: 50px;">
+                          телефон
+                        </span>
+                      {elseif isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_EMAIL)}
+                        <span class="label" title="Тип: емейл" style="width: 50px;">
+                          емейл
+                        </span>
+                      {elseif isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_URL)}
+                        <span class="label" title="Тип: url" style="width: 50px;">
+                          url
+                        </span>
+                      {elseif isset($r.type) && ($r.type == $smarty.const.FIELDTYPE_CREDITPROGRAMS_FILE)}
+                        <span class="label" title="Тип: файл" style="width: 50px;">
+                          файл
+                        </span>
+                      {else}
+                        <span class="label" title="Тип: строка" style="width: 50px;">
+                          строка
+                        </span>
+                      {/if}
+                    </div>
+
+                  {elseif !is_array($r) && ($r|strip_tags|strip != "")}
+
+                    <div class="line" title="{$r|strip_tags|escape}">
+                      <span>
+                        {$temp_label}
+                        {assign var="temp_label" value="&nbsp;"}
+                      </span>
+                      <b>{$r|strip_tags|escape}</b>
+                    </div>
+
+                  {/if}
+                {/foreach}
+
+              {/if}
+
+              <!-- {* Если включен стандартный или полный вывод информации о записях *} -->
+              {if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE]) && (($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_STANDARD) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_VIEW_MODE] == $smarty.const.VIEW_MODE_FULL))}
+
+                <!-- минимальная / максимальная сумма -->
+                <div class="line" title="Минимальная / максимальная сумма заказа">
+                  <span>
+                    мини-макс:
+                  </span>
+                  при заказе
+                  &nbsp; &nbsp;
+                  {if $c->minimal_sum|string_format:'%1.2f'|replace:',':'.' > 0}
+                    от {($c->minimal_sum*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'}
+                  {else}
+                    от 0.00
+                  {/if} {$currency->sign|escape}
+                  &nbsp; &nbsp;
+                  {if $c->maximal_sum|string_format:'%1.2f'|replace:',':'.' > 0}
+                    до {($c->maximal_sum*$currency->rate_from/$currency->rate_to)|string_format:'%1.2f'|replace:',':'.'} {$currency->sign|escape}
+                  {else}
+                    до любой суммы
+                  {/if}
+                </div>
+
+                <!-- дата добавления -->
+                {if $c->created|truncate:10:"":true != "0000-00-00"}
+                  <div class="line">
+                    <span>
+                      добавлена:
+                    </span>
+                    {$c->created|escape}
+                  </div>
+                {/if}
+
+                <!-- дата исправления -->
+                {if ($c->modified|truncate:10:"":true != "0000-00-00") && ($c->created != $c->modified)}
+                  <div class="line">
+                    <span>
+                      исправлена:
+                    </span>
+                    {$c->modified|escape}
+                  </div>
+                {/if}
+
+                <!-- описание -->
+                {if isset($c->description) && ($c->description|strip_tags|replace:"&nbsp;":" "|strip != "")}
+                  <div class="line" title="{$c->description|strip_tags|replace:"&nbsp;":" "|escape}">
+                    <span>
+                      описание:
+                    </span>
+                    {$c->description|strip_tags|replace:"&nbsp;":" "|escape}
+                  </div>
+                {/if}
+
+              {/if}
+
+            </li>
+          {/strip}
+        {/foreach}
+
+        <!-- {* Если выбрана сортировка "как расставлены", делаем элементы перетаскиваемыми в пределах контейнера *} -->
+        {if !isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT]) || ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT] == $sort_as_is)}
+          {$items_container_close_tag}
+
+          <!-- Запускаем скрипт передвигания элементов -->
+          {literal}
+            <script language="JavaScript" type="text/javascript">
+              <!--
+              Make_FormItems_Sortable();
+              // -->
+            </script>
+          {/literal}
+        {/if}
+
+        <!-- Добавляем пустой указатель требуемой команды -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_ACTION|escape}" type="hidden" value="">
+
+        <!-- Добавляем признак отмены постинга -->
+        <input id="items_form_{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" name="{$smarty.const.REQUEST_PARAM_NAME_IGNORE_POST|escape}" type="hidden" value="1">
+
+        <!-- Добавляем признак мини постинга (без некоторых полей записи) -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_POST_MINI|escape}" type="hidden" value="1">
+
+        <!-- Добавляем аутентификатор операции -->
+        <input name="{$smarty.const.REQUEST_PARAM_NAME_TOKEN|escape}" type="hidden" value="{$inputs[$smarty.const.REQUEST_PARAM_NAME_TOKEN]|escape|default:''}">
+
+        <!-- Выводим контент навигатора страниц под списком -->
+        {if isset($PagesNavigation) && ($PagesNavigation != "")}
+          {$PagesNavigation}
+        {/if}
+
+      {else}
+        <div class="noitems">
+          Не найдено кредитных программ{if isset($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL]) && ($inputs[$smarty.const.REQUEST_PARAM_NAME_SORT_LACONICAL] == 1)} (режим: лаконичный){/if}.
+        </div>
+      {/if}
+    </form>
+
+    <!-- Блок справочной информации -->
+    <a name="help"></a>
+    <div class="help" id="help_box" style="display: none;">
+      <div class="title">
+        Справка
+      </div>
+    </div>
+
+  </div>

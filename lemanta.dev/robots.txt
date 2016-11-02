@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /cache/
+Disallow: /compiled/
+Disallow: /configs/
+Disallow: /js/
+Disallow: /objects/
+Disallow: /webstat/
+Disallow: /password.php
+Host: lemanta.com
+Sitemap: http://lemanta.com/sitemap.xml

@@ -1,0 +1,25 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница модуля SMS-шлюза BusinessLife.com.ua                           |
+                                                                                  |
+                                                                                  |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    $item = запись о шлюзе                                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {include file = 'sms_gates/gate_model.htm'
+
+             item = $item|default:false
+
+             title = 'SMS шлюз BusinessLife.com.ua (Украина)'
+             engine_info = 'работает по протоколу SMPP'
+             official_site = 'businesslife.com.ua'
+
+             balance_sign = 'грн'
+             balance_exists = false}
+
+{/strip}

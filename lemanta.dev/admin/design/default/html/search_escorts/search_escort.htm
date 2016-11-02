@@ -1,0 +1,326 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: страница поисковой фразы                                                |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $item = запись о поисковой фразе                                              |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.SEARCHESCORTS_MODULELINK_POINTER|default:''}
+    {$section_paramname = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$token_paramname = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             card = true
+             me = $smarty.const.SEARCHESCORTS_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.SEARCHESCORTS_MODULEMENU_PATH|default:''
+             select = 'card'}
+
+
+
+    {* <!-- адрес корня домена --> *}
+    {$domain = $site|default:''}
+    {$domain = preg_replace('!^([a-z]+://[^/]+/).*$!i', '$1', $domain)}
+    {$domain = $domain|escape}
+
+
+
+    {* <!-- адрес корня админпанели --> *}
+    {$site = ($site|default:'')|escape}
+    {$admin_site = $site|cat:(($admin_folder|default:'')|escape)|cat:'/'}
+    {$admin_script = $admin_site|cat:'index.php'}
+
+
+
+    {* <!-- адрес для перехода в админпанели (ожидает справа имя модуля) --> *}
+    {$param = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$param = $param|regex_replace:'/[=\?#]/':''}
+    {$admin_goto = $admin_script|cat:'?'|cat:($param|escape)|cat:'='}
+
+
+
+    {* <!-- запоминаем идентификатор текущей записи --> *}
+    {$id = $item->search_id|default:0}
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        <h1>
+            <div class="path">
+                <a href="{$admin_site}" title="Перейти на главную страницу админпанели">
+                    Главная
+                </a> → <a href="{$admin_goto}SearchEscorts" title="Перейти на страницу поискового сопровождения в админпанели">
+                           Поиски
+                       </a> → {(!empty($id)) ? 'Редактирование' : 'Новый'}
+            </div>
+
+            {$name = ($item->name|default:'Не указано!')|escape}
+            {(!empty($id)) ? $name : 'Новая поисковая фраза'}
+        </h1>
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        <div class="toolkey">
+            &nbsp;
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {if $message|default:'' != ''}
+            <div class="message">
+                {$message}
+            </div>
+        {/if}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {if $error|default:'' != ''}
+            <div class="error">
+                <b>Ошибка:</b> {$error}
+            </div>
+        {/if}
+
+
+
+        {* <!-- форма --> *}
+        <form action="{$admin_goto}SearchEscort" id="item_form" method="post">
+
+
+
+            <table align="center" cellpadding="0" cellspacing="10" class="white">
+
+                {$subclass = ($id != 0) ? '' : ' value_sheet'}
+                {$readonly = ($id != 0) ? 'readonly' : ''}
+
+
+
+                {* <!-- поле Поисковая фраза --> *}
+                <tr>
+                    <td class="param_short">
+                        Поисковая фраза:
+                    </td>
+                    <td class="value{$subclass}" colspan="2" width="100%" title="Поисковая фраза">
+                        <input class="edit" {$readonly} name="name[{$id}]" type="text" value="{($item->name|default:'')|escape}" format=".+" notice="Введите поисковую фразу" />
+                    </td>
+
+
+
+                    {* <!-- кнопка Сохранить --> *}
+                    <td class="value_box" title="Сохранить изменения и перейти в список" width="1%">
+                        <input class="submit" type="submit" value="Сохранить" />
+                    </td>
+                </tr>
+
+
+
+                {* <!-- поле Сопровождаемый URL --> *}
+                <tr>
+                    <td class="param_short">
+                        Сопровождаемый URL:
+                    </td>
+                    <td class="value value_sheet" colspan="2" width="100%" title="Сопровождаемый URL (относительно корня домена - {$domain})">
+                        <input class="edit" name="escort_url[{$id}]" type="text" value="{($item->escort_url|default:'')|escape}" />
+                    </td>
+
+
+
+                    {* <!-- флажок Разрешен --> *}
+                    <td class="param_short" title="Разрешена ли фраза к обработке" width="1%">
+                        <input class="checkbox" id="item_form_enabled" name="enabled[{$id}]" type="checkbox" {if $item->enabled|default:false} checked{/if} value="1" />
+
+                        <span onclick="Toggle_PageCheckbox('item_form_enabled');">
+                            &nbsp;
+                            Разрешена
+                        </span>
+                    </td>
+                </tr>
+
+
+
+                {* <!-- поле Предлагавшийся URL --> *}
+                <tr>
+                    <td class="param_short">
+                        Предлагавшийся URL:
+                    </td>
+                    <td class="value{$subclass}" colspan="2" width="100%" title="Предлагавшийся адрес (относительно корня домена - {$domain})">
+                        <input class="edit" {$readonly} name="target_url[{$id}]" type="text" value="{($item->target_url|default:'')|escape}" />
+                    </td>
+
+
+
+                    {* <!-- флажок Удален --> *}
+                    <td class="param_short" title="Удалена ли фраза" width="1%">
+                        <input class="checkbox" id="item_form_deleted" name="deleted[{$id}]" type="checkbox" {if $item->deleted|default:false} checked{/if} value="1" />
+
+                        <span onclick="Toggle_PageCheckbox('item_form_deleted');">
+                            &nbsp;
+                            Удалена
+                        </span>
+                    </td>
+                </tr>
+
+
+
+                {* <!-- поле Источник трафика --> *}
+                <tr>
+                    <td class="param_short">
+                        Источник трафика:
+                    </td>
+                    <td class="value{$subclass}" width="100%" title="Источник трафика">
+                        <input class="edit" {$readonly} name="referer[{$id}]" type="text" value="{($item->referer|default:'')|escape}" />
+                    </td>
+
+
+
+                    {* <!-- поле Число запросов --> *}
+                    <td class="param_short">
+                        Число запросов:
+                    </td>
+                    <td class="value{$subclass}" title="Число запросов, замеченных по такой фразе" width="1%">
+                        <input class="edit" {$readonly} name="browsed[{$id}]" type="text" value="{($item->browsed|default:0)|escape}" />
+                    </td>
+                </tr>
+            </table>
+
+
+
+            {* <!-- ссылка Разблокировать нередактируемые поля --> *}
+            {if $id != 0}
+                <table align="center" cellpadding="0" cellspacing="10" class="white">
+                    <tr>
+                        <td class="param_short">
+                            <a onclick="jQuery(this).closest('table').hide();
+                                        jQuery('input.edit[name^=name],
+                                                input.edit[name^=referer],
+                                                input.edit[name^=target_url],
+                                                input.edit[name^=browsed]').removeAttr('readonly')
+                                                                           .closest('td')
+                                                                           .addClass('value_sheet');" title="Разблокировать нередактируемые поля">
+                                разблокировать поля
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            {/if}
+
+
+
+            {* <!-- адрес страницы возврата после операции --> *}
+            {if $from_page|default:'' != ''}
+                {$param = $smarty.const.REQUEST_PARAM_NAME_FROM|default:''}
+                <input name="{$param|escape}" type="hidden" value="{$from_page|escape}" />
+            {/if}
+
+
+
+            {* <!-- признак наличия данных об изменениях --> *}
+            {$param = $smarty.const.REQUEST_PARAM_NAME_POST|default:''}
+            <input name="{$param|escape}[{$id}]" type="hidden" value="" />
+
+
+
+            {* <!-- идентификатор оперируемой записи --> *}
+            {$param = $smarty.const.REQUEST_PARAM_NAME_ITEMID|default:''}
+            <input name="{$param|escape}" type="hidden" value="{$id}" />
+
+
+
+            {* <!-- аутентификатор операции --> *}
+            {$param = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+            {$value = $Token|default:''}
+            <input name="{$param|escape}" type="hidden" value="{$value|escape}" />
+
+        </form>
+
+
+
+        {* <!-- блок справки --> *}
+        <div class="help">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                <b>Поисковая фраза</b>. Текст фразы, по которой посетитель пришел на {**}
+                ваш сайт.
+            </div>
+
+
+
+            <div>
+                <b>Сопровождаемый URL</b>. Здесь указывается адрес страницы (относительно {**}
+                корня домена - <i>{$domain}</i>), куда необходимо вести посетителя, пришедшего {**}
+                по такой поисковой фразе. Если в этом поле ввести символ минуса, это будет {**}
+                означать, что предлагавшийся URL правильный и посетителя уводить с этой {**}
+                страницы не нужно.
+            </div>
+
+
+
+            <div>
+                Предполагается, что это единственное поле, которое должно редактироваться {**}
+                вручную, остальные же поля автоматически заполняются сведениями из {**}
+                поискового запроса и потому заблокированы для изменения. Однако если {**}
+                потребуется откорректировать другие поля, предусмотрена ссылка {**}
+                "разблокировать поля". При ручном добавлении новой записи все поля {**}
+                разблокированы, так как сведения заполнять в автоматическом режиме неоткуда.
+            </div>
+
+
+
+            <div>
+                <b>Предлагавшийся  URL</b>. Адрес страницы (относительно корня домена - {**}
+                <i>{$domain}</i>), куда попадал посетитель при переходе из поисковой системы. {**}
+                То есть это тот адрес, что предложила поисковая система, посчитав его {**}
+                наиболее релевантным запросу.
+            </div>
+
+
+
+            <div>
+                <b>Источник трафика</b>. Имя направлявшего источника (обычно это сайт {**}
+                поискового сервера).
+            </div>
+
+
+
+            <div>
+                <b>Число запросов</b>. Сколько раз посетители приходили на сайт по {**}
+                такой поисковой фразе. Это поле автоматически увеличивается на 1 с {**}
+                каждым поисковым переходом.
+            </div>
+        </div>
+
+    </div>
+
+{/strip}

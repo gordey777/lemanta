@@ -1,0 +1,112 @@
+{* <!-- страница регистрации --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Устанавливаем глобальные переменные (для заголовков страницы в index.tpl). |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$meta = '<meta name="Robots" content="noindex, follow" />' scope=global}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Хлебные крошки.                                                            |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$mod = 'mod-breadcrumbs.htm'}
+    {if $emulator->existsModule($mod)}
+        {include "$mod"
+                  title = 'Регистрация'
+                  noCatalogLink = TRUE}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Левая колонка.                                                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {include 'common/left-column.htm'}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Если форма принята успешно.                                                |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="right">
+        {if !empty($registration_accepted)}
+            <p>
+                {echoVar from=registration_message}
+            </p>
+        {else}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Иначе может была ошибка?                                           |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {if !empty($registration_error)}
+                <div class="message_error">
+                    {$registration_error}
+                </div>
+            {/if}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Форма ввода.                                                       |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <form class="form register_form login_form" method="post">
+                <div>
+                    <label>Имя</label>
+                    <input type="text" name="registration_name" class="inputall" value="{inputValue from=registration_name}" maxlength="255" reguired />
+                </div>
+
+                <div>
+                    <label>Email</label>
+                    <input type="text" name="registration_email" class="inputall" value="{inputValue from=registration_email}" maxlength="255" required />
+                </div>
+
+                <div>
+                    <label>Пароль</label>
+                    <input type="password" name="registration_password" class="inputall" value="" required />
+                </div>
+
+                <div>
+                    <label>Повтор пароля</label>
+                    <input type="password" name="registration_password2" class="inputall" value="" required />
+                </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Капча, если не отключена.                                      |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if empty($settings->registration_captcha_disabled)}
+                    <div class="captcha">
+                        <img src="captcha.jpg?unique={randomId}" alt="" />
+                        <input class="input_captcha" id="comment_captcha" type="text" name="captcha" value="" required />
+                    </div>
+                {/if}
+
+                <div>
+                    <input type="submit" class="registr" name="register" value="Регистрация" />
+                </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Контрольный код репостинга формы.                              |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <input name="registration_copystop" type="hidden" value="{inputValue from=registration_copystop}" />
+            </form>
+        {/if}
+    </div>
+
+{/strip}

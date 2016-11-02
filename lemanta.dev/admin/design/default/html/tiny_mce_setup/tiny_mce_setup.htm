@@ -1,0 +1,875 @@
+{* <!-- ===========================================================================
+  Система: Impera CMS                                                             |
+  Шаблон: настройки визуального редактора Tiny MCE                                |
+                                                                                  |
+  Принимает во входных переменных:                                                |
+    нет                                                                           |
+                                                                                  |
+  Использует другие переменные:                                                   |
+    $title = текст заголовка страницы                                             |
+    $inputs = индексированный именами некоторых элементов html-формы массив       |
+              со значениями этих элементов                                        |
+    $message = текст информационного сообщения, если есть                         |
+    $error = текст сообщения об ошибке, если была                                 |
+    $settings = объект настроек сайта                                             |
+    $admin_folder = имя папки админпанели                                         |
+    $theme = полный url папки текущего шаблона клиентской стороны сайта           |
+    $site = полный url корня сайта (то есть http://домен.сайта/ например)         |
+    $from_page = адрес страницы возврата после операции                           |
+    $Token = аутентификатор операции                                              |
+    $smarty = объект шаблонизатора                                                |
+    $smarty.const = массив констант движка                                        |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+
+
+    {* <!-- запоминаем название модуля --> *}
+    {$module_pointer = $smarty.const.TINYMCESETUP_MODULELINK_POINTER|default:''}
+    {$section_paramname = $smarty.const.REQUEST_PARAM_NAME_SECTION|default:''}
+    {$token_paramname = $smarty.const.REQUEST_PARAM_NAME_TOKEN|default:''}
+
+
+
+    {* <!-- кнопки субменю --> *}
+    {include file = '../../../common_parts/submenu.htm'
+             main = true
+             me = $smarty.const.TINYMCESETUP_MODULETAB_TEXT|default:''
+             me_pointer = $module_pointer
+             me_menupath = $smarty.const.TINYMCESETUP_MODULEMENU_PATH|default:''
+             select = 'me'}
+
+
+
+    {* <!-- универсальные функции --> *}
+    {include file = 'common/functions.htm'}
+
+
+
+    <style>
+        .standard-ul {
+            line-height: normal !important;
+            margin: 10px 0 0 0 !important;
+            padding: 0 !important;
+        }
+
+        .standard-ul li {
+            color: inherit !important;
+            display: list-item !important;
+            list-style: disc !important;
+            font-size: inherit !important;
+            line-height: normal !important;
+            margin: 5px 0 5px 60px !important;
+            padding: 0 !important;
+        }
+    </style>
+
+
+
+    <div class="box">
+
+
+
+        {* <!-- заголовок --> *}
+        {call main_title alt = 'Настройки визуального редактора Tiny MCE'
+                         path = 'Редактор'}
+
+
+
+        {* <!-- инструментальные ссылки --> *}
+        {$param = ($smarty.const.REQUEST_PARAM_NAME_ITEMID|default:'')|escape}
+        <div class="toolkey">
+            <a class="left" href="#help" title="Показать справочную информацию">
+                справка
+            </a>
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <a href="{$admin_goto}{$module_pointer|escape}&{$param}=1&get_def=1" title="Взять начальные значения настроек редактора для аннотации" onclick="return confirm('Начальные значения просто подгрузятся в соответствующие поля страницы, условно заменив собой прежние настройки, а реально установлены будут только после нажатия кнопки Сохранить.\r\rПродолжить?');">
+                дефолтные для аннотации
+            </a>
+
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <a href="{$admin_goto}{$module_pointer|escape}&{$param}=2&get_def=1#settings2" title="Взять начальные значения настроек редактора для полного текста" onclick="return confirm('Начальные значения просто подгрузятся в соответствующие поля страницы, условно заменив собой прежние настройки, а реально установлены будут только после нажатия кнопки Сохранить.\r\rПродолжить?');">
+                для полного текста
+            </a>
+        </div>
+
+
+
+        {* <!-- информационное сообщение --> *}
+        {call info_message}
+
+
+
+        {* <!-- сообщение об ошибке --> *}
+        {call error_message}
+
+
+
+        {* <!-- tiny_mce_form(id, get_def) = функция отрисовки форм --> *}
+        {function name = 'tiny_mce_form'
+                  id = 1
+                  get_def = false}
+
+            {$id = $id|string_format:'%d'}
+            {$id = ($id < 1) ? 1 : $id}
+            {$id = ($id > 2) ? 2 : $id}
+
+            {$get_def = ($get_def) ? 'def_' : ''}
+
+
+
+            {* <!-- якорь формы настроек --> *}
+            {$hash = 'settings'|cat:$id}
+            <a name="{$hash}"></a>
+
+
+
+            {* <!-- форма настроек --> *}
+            {$hash = ($id == 1) ? '' : ('#'|cat:$hash)}
+            <form action="{$admin_goto}{$module_pointer|escape}{$hash}" method="post" onkeypress="return Ignore_KeypressSubmit(event);">
+
+                <h2>
+                    {($id == 1) ? 'Для полей аннотации и SEO-текста' : 'Для полей полного описания'}
+                </h2>
+                <br>
+
+
+
+                {$editor = $get_def|cat:'tinymce'|cat:$id}
+                <table align="center" cellpadding="0" cellspacing="10" class="white">
+                    <tr>
+
+
+
+                        {* <!-- поле Подключаемые плагины --> *}
+                        {$param = $editor|cat:'_plugins'}
+                        {call get_setting param = $param
+                                          def = ''
+                                          assign = 'value'}
+                        {$value = $value|regex_replace:'/,([^\s])/':', $1'}
+                        {call settings_editbox param = $param
+                                               text = 'Подключаемые плагины:'
+                                               title = 'Список плагинов редактора через запятую'
+                                               value = $value
+                                               width = '100%'
+                                               colspan = 4
+                                               rowspan = 1
+                                               size = 0
+                                               flat = true
+                                               short = true
+                                               text_width = ''
+                                               text_colspan = 1
+                                               text_rowspan = 1}
+
+
+
+                        {* <!-- кнопка Сохранить --> *}
+                        {call save_button width = '1%'}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Допустимые теги --> *}
+                        {$param = $editor|cat:'_valid_tags'}
+                        {call get_setting param = $param
+                                          def = ''
+                                          assign = 'value'}
+                        {$value = $value|regex_replace:'/([,@|:=\?\[<])([^\s])/':'$1 $2'|regex_replace:'/([^\s])([|:=\?\[\]<])/':'$1 $2'}
+                        {call settings_textarea param = $param
+                                                text = 'Список допустимых тегов и их опций:'
+                                                title = 'Список неудаляемых тегов через запятую'
+                                                value = $value
+                                                width = ''
+                                                colspan = 5
+                                                rowspan = 1
+                                                style = 'height: 96px;'
+                                                flat = true
+                                                text_width = ''
+                                                text_colspan = 1
+                                                text_rowspan = 1}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Допустимые теги (дополнительно) --> *}
+                        {$param = $editor|cat:'_extended_valid_tags'}
+                        {call get_setting param = $param
+                                          def = ''
+                                          assign = 'value'}
+                        {$value = $value|regex_replace:'/([,@|:=\?\[<])([^\s])/':'$1 $2'|regex_replace:'/([^\s])([|:=\?\[\]<])/':'$1 $2'}
+                        {call settings_textarea param = $param
+                                                text = 'Дополнительный список тегов и опций:'
+                                                title = 'Дополнительный список неудаляемых тегов через запятую'
+                                                value = $value
+                                                width = ''
+                                                colspan = 4
+                                                rowspan = 2
+                                                style = 'height: 48px;'
+                                                flat = true
+                                                text_width = ''
+                                                text_colspan = 1
+                                                text_rowspan = 2}
+
+
+
+                        {* <!-- флажок Использовать родной CSS редактора --> *}
+                        {call settings_checkbox param = $editor|cat:'_native_css'
+                                                image = ''
+                                                text = 'Свой CSS'
+                                                title = 'Использовать родные стили редактора, а не текущего клиентского шаблона'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- флажок Авто очистка при вставке --> *}
+                        {call settings_checkbox param = $editor|cat:'_cleanup_paste'
+                                                image = ''
+                                                text = 'Чистить Paste'
+                                                title = 'Авто очистка при вставке из буфера обмена (действует только для плагина Paste)'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- флажок Форматировать разметку --> *}
+                        {call settings_checkbox param = $editor|cat:'_source_formatting'
+                                                image = ''
+                                                text = 'Форматировать HTML'
+                                                title = 'Нужно ли форматировать html-разметку'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Конвертировать URL --> *}
+                        {call settings_checkbox param = $editor|cat:'_convert_urls'
+                                                image = ''
+                                                text = 'Конвертировать URL'
+                                                title = 'Нужно ли конвертировать адреса ссылок и фотографий'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Делать URL относительными --> *}
+                        {call settings_checkbox param = $editor|cat:'_relative_urls'
+                                                image = ''
+                                                text = 'URL относительные'
+                                                title = 'Нужно ли делать внутрисайтовые адреса относительными'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Валидация CSS --> *}
+                        {call settings_checkbox param = $editor|cat:'_verify_css_classes'
+                                                image = ''
+                                                text = 'Валидация CSS-классов'
+                                                title = 'Нужно ли сравнивать классы тегов с классами используемого в редакторе CSS'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Валидация HTML --> *}
+                        {call settings_checkbox param = $editor|cat:'_verify_html'
+                                                image = ''
+                                                text = 'Валидация HTML'
+                                                title = 'Нужно ли проверять разметку на допустимые теги'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Удалять скрипты --> *}
+                        {call settings_checkbox param = $editor|cat:'_remove_script_host'
+                                                image = ''
+                                                text = 'Без скриптов'
+                                                title = 'Удалять ли яваскрипты, если попали в разметку'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- флажок Исправлять списки --> *}
+                        {call settings_checkbox param = $editor|cat:'_fix_list_elements'
+                                                image = ''
+                                                text = 'Исправлять LI-списки'
+                                                title = 'Нужно ли исправлять ul-ol-li-списки'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Подавлять избыточные BR --> *}
+                        {call settings_checkbox param = $editor|cat:'_remove_redundant_brs'
+                                                image = ''
+                                                text = 'Давить лишние BR'
+                                                title = 'Нужно ли подавлять избыточные теги BR (переводы строк)'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Заменить переводы строк на BR --> *}
+                        {call settings_checkbox param = $editor|cat:'_convert_newlines_to_brs'
+                                                image = ''
+                                                text = 'Заменить CRLF на BR'
+                                                title = 'Нужно ли заменить переводы строк на тег BR'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Новые строки с помощью BR --> *}
+                        {call settings_checkbox param = $editor|cat:'_force_br_newlines'
+                                                image = ''
+                                                text = 'Новые строки - тегом BR'
+                                                title = 'Нужно ли делать новые строки с помощью тега BR'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Новые строки с помощью P --> *}
+                        {call settings_checkbox param = $editor|cat:'_force_p_newlines'
+                                                image = ''
+                                                text = 'Новые строки - P'
+                                                title = 'Нужно ли делать новые строки с помощью тега P'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                        {* <!-- флажок Удалять разрывы строк --> *}
+                        {call settings_checkbox param = $editor|cat:'_remove_linebreaks'
+                                                image = ''
+                                                text = 'Без разрывов'
+                                                title = 'Удалять ли разрывы строк'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Строка 1 кнопок --> *}
+                        {$param = $editor|cat:'_buttons1'}
+                        {call get_setting param = $param
+                                          def = ''
+                                          assign = 'value'}
+                        {$value = $value|regex_replace:'/,([^\s])/':', $1'}
+                        {call settings_textarea param = $param
+                                                text = 'Строка 1 кнопок:'
+                                                title = 'Строка 1 кнопок панели инструментов'
+                                                value = $value
+                                                width = ''
+                                                colspan = 5
+                                                rowspan = 1
+                                                style = 'height: 48px;'
+                                                flat = true
+                                                text_width = ''
+                                                text_colspan = 1
+                                                text_rowspan = 1}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Строка 2 кнопок --> *}
+                        {$param = $editor|cat:'_buttons2'}
+                        {call get_setting param = $param
+                                          def = ''
+                                          assign = 'value'}
+                        {$value = $value|regex_replace:'/,([^\s])/':', $1'}
+                        {call settings_editbox param = $param
+                                               text = 'Строка 2 кнопок:'
+                                               title = 'Строка 2 кнопок панели инструментов'
+                                               value = $value
+                                               width = ''
+                                               colspan = 4
+                                               rowspan = 1
+                                               size = 0
+                                               flat = true
+                                               short = true
+                                               text_width = ''
+                                               text_colspan = 1
+                                               text_rowspan = 1}
+
+
+
+                        {* <!-- флажок Кнопки снизу редактора --> *}
+                        {call settings_checkbox param = $editor|cat:'_buttons_bottom'
+                                                image = ''
+                                                text = 'Снизу'
+                                                title = 'Нужно ли выводить кнопки снизу редактора'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Строка 3 кнопок --> *}
+                        {$param = $editor|cat:'_buttons3'}
+                        {call get_setting param = $param
+                                          def = ''
+                                          assign = 'value'}
+                        {$value = $value|regex_replace:'/,([^\s])/':', $1'}
+                        {call settings_editbox param = $param
+                                               text = 'Строка 3 кнопок:'
+                                               title = 'Строка 3 кнопок панели инструментов'
+                                               value = $value
+                                               width = ''
+                                               colspan = 4
+                                               rowspan = 1
+                                               size = 0
+                                               flat = true
+                                               short = true
+                                               text_width = ''
+                                               text_colspan = 1
+                                               text_rowspan = 1}
+
+
+
+                        {* <!-- флажок Кнопки выровнять направо --> *}
+                        {call settings_checkbox param = $editor|cat:'_buttons_rightalign'
+                                                image = ''
+                                                text = 'Направо'
+                                                title = 'Выровнять ли кнопки по правому краю'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                    </tr>
+                    <tr>
+
+
+
+                        {* <!-- поле Строка 4 кнопок --> *}
+                        {$param = $editor|cat:'_buttons4'}
+                        {call get_setting param = $param
+                                          def = ''
+                                          assign = 'value'}
+                        {$value = $value|regex_replace:'/,([^\s])/':', $1'}
+                        {call settings_editbox param = $param
+                                               text = 'Строка 4 кнопок:'
+                                               title = 'Строка 4 кнопок панели инструментов'
+                                               value = $value
+                                               width = ''
+                                               colspan = 4
+                                               rowspan = 1
+                                               size = 0
+                                               flat = true
+                                               short = true
+                                               text_width = ''
+                                               text_colspan = 1
+                                               text_rowspan = 1}
+
+
+
+                        {* <!-- флажок Показывать строку состояния --> *}
+                        {call settings_checkbox param = $editor|cat:'_statusbar'
+                                                image = ''
+                                                text = 'Статус строка'
+                                                title = 'Показывать ли строку состояния'
+                                                width = ''
+                                                colspan = 1}
+
+
+
+                    </tr>
+                </table>
+
+
+
+                {* <!-- ИД настройки --> *}
+                {call hidden_editbox param = 'REQUEST_PARAM_NAME_ITEMID'
+                                     id = false
+                                     value = $id}
+
+
+
+                {* <!-- аутентификатор операции --> *}
+                {call hidden_editbox param = 'REQUEST_PARAM_NAME_TOKEN'
+                                     id = false
+                                     value = $token}
+            </form>
+
+
+
+            {* <!-- справка --> *}
+            <div class="help">
+                Ниже представлен текущий вид редактора, согласно последним сохраненным настройкам. {**}
+                Эти настройки действует для всех страниц админпанели, где используется редактор. {**}
+                Отключение редактора для конкретных страниц производится в настройках тех страниц.
+            </div>
+
+
+
+            <br />
+
+
+
+            {* <!-- внешний вид редактора --> *}
+            <form>
+                <table align="center" cellpadding="0" cellspacing="10" class="white">
+                    <tr>
+                        <td class="param_high">
+                            Текущий вид редактора:
+                            <br /><br /><br />
+
+                            согласно списку допустимых тегов и опций, редактор автоматически {**}
+                            изымает неподходящие теги, примите это к сведению
+                        </td>
+                        <td class="value_box">
+                            <textarea class="editor_{($id == 1) ? 'small' : 'big'}" style="{($id == 1) ? '' : 'height: 400px; '}width: 778px;">
+                                &lt;p&gt;
+                                    простой текст - p, &amp;nbsp; {**}
+                                    &lt;b&gt;полужирный&lt;/b&gt; - b, &amp;nbsp; {**}
+                                    &lt;i&gt;курсивом&lt;/i&gt; - i, &amp;nbsp; {**}
+                                    &lt;u&gt;подчеркнутый&lt;/u&gt; - u, &amp;nbsp; {**}
+                                    &lt;strike&gt;зачеркнутый&lt;/strike&gt; - strike, &amp;nbsp; {**}
+                                    sup-&lt;sup&gt;индекс&lt;/sup&gt;, &amp;nbsp; {**}
+                                    sub-&lt;sub&gt;индекс&lt;/sub&gt;
+                                &lt;/p&gt;
+
+                                &lt;ul&gt;
+                                    &lt;li&gt;li-элемент ul-списка&lt;/li&gt;
+                                    &lt;li&gt;еще такой же элемент&lt;/li&gt;
+                                &lt;/ul&gt;
+
+                                &lt;ol&gt;
+                                    &lt;li&gt;li-элемент ol-списка&lt;/li&gt;
+                                    &lt;li&gt;еще такой же элемент&lt;/li&gt;
+                                &lt;/ol&gt;
+
+                                &lt;p&gt;
+                                    &lt;a href="#"&gt;текстовая ссылка&lt;/a&gt; - a
+                                &lt;/p&gt;
+
+                                &lt;div&gt;
+                                    простой текст - div
+                                &lt;/div&gt;
+
+                                &lt;p&gt;
+                                    &lt;abbr&gt;аббревиатура&lt;/abbr&gt; - abbr, &amp;nbsp; {**}
+                                    &lt;acronym&gt;акроним&lt;/acronym&gt; - acronym, &amp;nbsp; {**}
+                                    &lt;cite&gt;цитата&lt;/cite&gt; - cite, &amp;nbsp; {**}
+                                    &lt;q&gt;цитата&lt;/q&gt; - q, &amp;nbsp; {**}
+                                    &lt;s&gt;зачеркнутый&lt;/s&gt; - s, &amp;nbsp; {**}
+                                    &lt;small&gt;маленький&lt;/small&gt; - small, &amp;nbsp; {**}
+                                    &lt;kbd&gt;печатный&lt;/kbd&gt; - kbd
+                                &lt;/p&gt;
+
+                                &lt;h1&gt;заголовок типа h1&lt;/h1&gt; &amp;nbsp; {**}
+
+                                &lt;h2&gt;заголовок типа h2&lt;/h2&gt; &amp;nbsp; {**}
+
+                                &lt;h3&gt;заголовок типа h3&lt;/h3&gt; &amp;nbsp; {**}
+
+                                &lt;h4&gt;заголовок типа h4&lt;/h4&gt; &amp;nbsp; {**}
+
+                                &lt;h5&gt;заголовок типа h5&lt;/h5&gt; &amp;nbsp; {**}
+
+                                &lt;h6&gt;заголовок типа h6&lt;/h6&gt;
+                            </textarea>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+
+
+
+        {/function}
+
+
+
+        {* <!-- форма настроек для аннотации --> *}
+        {$param = ($smarty.const.REQUEST_PARAM_NAME_ITEMID|default:'')|escape}
+        {call tiny_mce_form id = 1 
+                            get_def = ($smarty.get.get_def|default:false && ($smarty.get[$param]|default:0 == 1))}
+
+
+
+        {* <!-- форма настроек для полного текста --> *}
+        {call tiny_mce_form id = 2
+                            get_def = ($smarty.get.get_def|default:false && ($smarty.get[$param]|default:0 == 2))}
+
+
+
+        {* <!-- справка --> *}
+        <a name="help"></a>
+
+        <div class="help" id="help_box">
+            <div class="title">
+                Справка
+            </div>
+
+            <div>
+                Поскольку во время редактирования на страницах админпанели каких-либо {**}
+                записей, например товаров, возникает необходимость использовать визуальный {**}
+                редактор, то удобство редактирования текста очень зависит от настроек {**}
+                этого редактора. Данная страница позволяет настроить редактор согласно {**}
+                вашим требованиям.
+            </div>
+
+            <div>
+                Хотелось бы отметить один нюанс работы редактора. У редактора есть настройки {**}
+                фильтрации тех тегов, а также их атрибутов (опций), что считаются вами {**}
+                допустимыми в разметке сайта. Редактор производит фильтрацию всякий раз, {**}
+                когда: 1) текст впервые подгрузился в редактор, 2) вы что-то начали {**}
+                редактировать, будь то прямым вводом текста или через буфер обмена, 3) {**}
+                что-то изменили с помощью прямого редактирования HTML-разметки текста, {**}
+                4) финальный текст отправили на сохранение. Нежелательные теги изымаются {**}
+                очень эффективно, важно лишь настроить список правил, их синтаксис будет {**}
+                рассмотрен ниже.
+            </div>
+
+
+
+            <br />
+
+
+
+            <div>
+                <b>Подключаемые плагины</b>. Пишутся строчными буквами и перечисляются {**}
+                через запятую. Имена и назначение плагинов:
+
+                <ul class="standard-ul">
+                    <li>advimage - расширение работы с картинками (редактирование параметров)</li>
+                    <li>advlink - расширение работы со ссылками (редактирование параметров)</li>
+                    <li>advhr - расширение работы с горизонтальными линиями (редактирование параметров)</li>
+                    <li>emotions - смайлы</li>
+                    <li>fullscreen - переключение/возврат в полноэкранный режим</li>
+                    <li>fullpage - работа с параметрами страницы (осторожно! добавляет в разметку теги html, head, body)</li>
+                    <li>inlinepopups - замена модальных окон выпадающими DIV-аналогами</li>
+                    <li>insertdatetime - дата, время</li>
+                    <li>media - работа с медиа файлами (QuickTime, видео, swf и т.п.)</li>
+                    <li>pagebreak - вставка разрыва страницы (моделирование "читать далее" для CMS)</li>
+                    <li>paste - вставка из буфера обмена</li>
+                    <li>searchreplace - поиск, замена текста</li>
+                    <li>table - работа с таблицами</li>
+                    <li>style - работа с атрибутами стиля</li>
+                    <li>visualchars - вставка специальных символов</li>
+                    <li>xhtmlxtras - вставка журналистских тегов (цитирование и т.п.)</li>
+                    <li>layer - позиционируемые слои</li>
+                    <li>nonbreaking - неразрывный пробел</li>
+                    <li>wordcount - показывает в строке состояния число слов в тексте</li>
+                </ul>
+            </div>
+
+            <div>
+                Важно: в поставку редактора могут входить (или позже установлены вручную) {**}
+                и другие плагины, имена которых не перечислены здесь. Имена всех плагинов {**}
+                можно взять по списку имен папок, размещенных в папке <i>{$admin_site}js/tiny_mce/plugins</i>.
+            </div>
+
+
+
+            <div>
+                <b>Строки кнопок</b>. Здесь пишутся строчными буквами имена необходимых {**}
+                кнопок на панели инструментов редактора. Имена кнопок перечисляются {**}
+                через запятую. Между перечислением допустимо использовать символ вертикальной {**}
+                черты, чтобы визуально отделить блоки разноцелевых кнопок. Имена и назначение {**}
+                кнопок:
+
+                <ul class="standard-ul">
+                    <li>bold - полужирный</li>
+                    <li>italic - курсив</li>
+                    <li>underline - подчеркнутый</li>
+                    <li>strikethrough - перечеркнутый</li>
+                    <li>justifyleft - выравнивание влево</li>
+                    <li>justifycenter - выравнивание по центру</li>
+                    <li>justifyright - выравнивание вправо</li>
+                    <li>justifyfull - выравнивание по ширине</li>
+                    <li>bullist - маркированный список</li>
+                    <li>numlist - нумерованный список</li>
+                    <li>outdent - уменьшить отступ</li>
+                    <li>indent - увеличить отступ</li>
+                    <li>cut - вырезать в буфер обмена</li>
+                    <li>copy - скопировать в буфер обмена</li>
+                    <li>paste - вставить из буфера обмена</li>
+                    <li>pastetext - вставить как текст из буфера обмена (если подключен плагин paste)</li>
+                    <li>pasteword - вставить из буфера обмена MS Office Word (если подключен плагин paste)</li>
+                    <li>selectall - выделить все (если подключен плагин paste)</li>
+                    <li>undo - отменить изменение</li>
+                    <li>redo - вернуть изменение</li>
+                    <li>link - дать ссылку</li>
+                    <li>unlink - отменить ссылку</li>
+                    <li>image - вставить/редактировать изображение</li>
+                    <li>smimage - менеджер изображений (если подключен плагин smimage)</li>
+                    <li>cleanup - почистить кривой код</li>
+                    <li>help - справка</li>
+                    <li>code - редактировать html-код</li>
+                    <li>hr - горизонтальная линия</li>
+                    <li>advhr - горизонтальная линия (расширенные параметры)</li>
+                    <li>tablecontrols - редактирование таблиц (если подключен плагин table)</li>
+                    <li>removeformat - удалить форматирование</li>
+                    <li>sub - нижний индекс</li>
+                    <li>sup - верхний индекс</li>
+                    <li>formatselect - выбрать форматирование</li>
+                    <li>styleselect - выбрать стиль</li>
+                    <li>fontselect - выбрать шрифт</li>
+                    <li>fontsizeselect - размер шрифта</li>
+                    <li>forecolor - цвет текста</li>
+                    <li>forecolorpicker - выбор цвета текста</li>
+                    <li>backcolor - цвет фона</li>
+                    <li>backcolorpicker - выбор цвета фона</li>
+                    <li>charmap - таблица символов</li>
+                    <li>visualaid - показать невидимые элементы</li>
+                    <li>anchor - ссылочный якорь</li>
+                    <li>newdocument - новый документ</li>
+                    <li>blockquote - кавычки</li>
+                    <li>styleprops - редактировать атрибуты стиля (если подключен плагин style)</li>
+                    <li>visualchars - специальный символ (если подключен плагин visualchars)</li>
+                    <li>search - найти (если подключен плагин searchreplace)</li>
+                    <li>replace - заменить (если подключен плагин searchreplace)</li>
+                    <li>pagebreak - разрыв страницы (если подключен плагин pagebreak)</li>
+                    <li>media - медиа файл (если подключен плагин media)</li>
+                    <li>insertdate - дата (если подключен плагин insertdatetime)</li>
+                    <li>inserttime - время (если подключен плагин insertdatetime)</li>
+                    <li>fullscreen - редактировать в полноэкранном режиме (если подключен плагин fullscreen)</li>
+                    <li>fullpage - редактировать параметры страницы (если подключен плагин fullpage)</li>
+                    <li>emotions - смайлы (если подключен плагин emotions)</li>
+                    <li>cite - цитировать (если подключен плагин xhtmlxtras)</li>
+                    <li>ins - врезка (если подключен плагин xhtmlxtras)</li>
+                    <li>del - устаревшее (если подключен плагин xhtmlxtras)</li>
+                    <li>abbr - аббревиатура (если подключен плагин xhtmlxtras)</li>
+                    <li>acronym - инициалы, акроним (если подключен плагин xhtmlxtras)</li>
+                    <li>insertlayer - вставить слой (если подключен плагин layer)</li>
+                    <li>absolute - абсолютное / относительное позиционирование слоя (если подключен плагин layer)</li>
+                    <li>moveforward - поднять слой выше (если подключен плагин layer)</li>
+                    <li>movebackward - поднять слой выше (если подключен плагин layer)</li>
+                    <li>nonbreaking - неразрывный пробел (если подключен плагин nonbreaking)</li>
+                </ul>
+            </div>
+
+
+
+            <div>
+                <b>Список допустимых тегов</b>. Здесь указывается список допустимых тегов {**}
+                html-разметки и опций (атрибутов) этих тегов. Теги задаются в виде определенных {**}
+                правил и перечисляются через запятую. Удовлетворяющие этим правилам теги {**}
+                и их опции будут сохранены, остальные изымаются визуальным редактором из {**}
+                финальной html-разметки. При написании правил можно использовать следующие {**}
+                специальные символы:
+
+                <ul class="standard-ul">
+                    <li>@ - следуемое за этим символом правило применяется ко всем правилам после него, {**}
+                            например @[attr1|attr2] разрешит опции attr1 и attr2 для всех элементов, {**}
+                            а в этом примере element1, @[attr1|attr2], element2, element3 опции attr1 и {**}
+                            attr2 будут разрешены только для element2 и element3</li>
+                    <li>, - разделяет правила в списке, например p,div,a[href|name],-span,-strong</li>
+                    <li>/ - разделяет синонимы тега, например i/em, при этом все синонимичные теги будут заменены первым из списка синонимов</li>
+                    <li>| - разделяет перечисление позволенных опций тега, например [href|title|alt]</li>
+                    <li>[ - начало нового перечисления позволенных опций тега</li>
+                    <li>] - конец перечисления опций тега</li>
+                    <li>! - указывает на обязательную опцию, например [!href], если такая не существует в теге, он изымается</li>
+                    <li>= - устанавливает опцию и ее значение, если такая опция тега не существует, например [target=_blank]</li>
+                    <li>: - устанавливает опцию тега в конкретное значение независимо от ее текущего значения, например [border:0]</li>
+                    <li>&lt; - определяет список допустимых значений опции, например [target&lt;_blank?_self], при остальных значениях опция изымается</li>
+                    <li>? - разделяет допустимые значения опции, смотрите выше</li>
+                    <li>+ - делает тег незакрытым (убирает закрывающий тег), если тег не имеет вложенных тегов, например +a</li>
+                    <li>- - разрешает удаление тегов с пустым содержимым наподобие &lt;span&gt;&lt;/span&gt;, например -span</li>
+                    <li># - разрешает наполнение кодом неразрывного пробела &amp;nbsp; всех тегов с пустым содержимым, например #p</li>
+                    <li>{literal}{$uid} - генерирует уникальное значение, например установить уникальный идентификатор p[id:{$uid}]{/literal}</li>
+                    <li>подстановочные символы - такие как *+? - могут использоваться в именах тегов и опций, например h*[font:arial] для тегов с буквы h</li>
+                </ul>
+            </div>
+
+
+
+            <div>
+                <b>Дополнительный список тегов</b>. Аналогичное поле, как и поле выше. {**}
+                Существует для возможности задать еще один список правил, накладываемый {**}
+                своими условиями поверх основного списка.
+            </div>
+
+
+
+            <div>
+                <b>Валидация HTML</b>. Данным флажком полностью отключается проверка {**}
+                html-разметки на допустимые теги.
+            </div>
+
+
+
+            <div>
+                <b>Свой CSS</b>. При отключенном флажке визуальный редактор будет {**}
+                использовать стили из текущего шаблона клиентской стороны сайта (при {**}
+                этом предполагается, что в шаблоне есть следующий главный стилевой файл {**}
+                <i>{$theme}css/style.css</i>. Если такого файла нет в шаблоне или {**}
+                данный флажок включен, тогда редактор будет использовать свой собственный {**}
+                стилевой файл, имена классов которого скорее всего не будут совпадать {**}
+                с именами в стилях вашего шаблона.
+            </div>
+
+            <div>
+                Для шаблонов, общий стиль каких слагается из нескольких последовательно {**}
+                подключемых файлов или в каких общий стиль собран в одном файле, но он {**}
+                назван иначе, можно создать в стилевой папке шаблона требуемый файл {**}
+                <i>style.css</i> и в нем просто прописать подключения настоящих стилевых {**}
+                файлов шаблона. Например таким образом:
+
+                <ul class="standard-ul">
+                    <li>@import url('файл-часть-1.css');</li>
+                    <li>@import url('файл-часть-2.css');</li>
+                    <li>@import url('файл-часть-3.css');</li>
+                    <li>@import url('файл-часть-4.css');</li>
+                    <li>и так далее...</li>
+                </ul>
+            </div>
+
+            <div>
+                Это позволит видеть редактируемый текст в том стилевом исполнении, как {**}
+                он выглядит на клиентской стороне сайта.
+            </div>
+        </div>
+
+    </div>
+
+
+
+    {* <!-- модуль редактора TinyMCE --> *}
+    {include file = '../../../common_parts/tinymce.htm'
+             disabled_state = false}
+
+{/strip}
