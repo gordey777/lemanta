@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-02 15:45:01
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:48:51
          compiled from "design/lemanta/html\mod-google-tag-manager.htm" */ ?>
 <?php /*%%SmartyHeaderCode:55855819dfcd3f4af6-81880144%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'aec17535d6af16f7f82f5b525e2829b722bf4a0f' => 
     array (
       0 => 'design/lemanta/html\\mod-google-tag-manager.htm',
-      1 => 1478016490,
+      1 => 1478177328,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5819dfcd6b2492_13983569',
   'variables' => 
   array (
     'baseOnly' => 0,
@@ -60,8 +62,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'result' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfcd6b2492_13983569',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5819dfcd6b2492_13983569')) {function content_5819dfcd6b2492_13983569($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include 'D:\\Projects\\lemanta\\lemanta.dev\\Smarty\\libs\\plugins\\modifier.date_format.php';
 ?><?php $_smarty_tpl->_capture_stack[0][] = array('default', 'js', null); ob_start(); ?><script>if (typeof googleTagManagerMODjsCreateCookie != 'function') {function googleTagManagerMODjsCreateCookie ( name, value, days ) {try {if (days) {var date = new Date();date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));var expires = '; expires=' + date.toGMTString();} else {var expires = '';}document.cookie = name + '=' + value + expires + '; path=/';} catch (e) { }}}</script><?php list($_capture_buffer, $_capture_assign, $_capture_append) = array_pop($_smarty_tpl->_capture_stack[0]);

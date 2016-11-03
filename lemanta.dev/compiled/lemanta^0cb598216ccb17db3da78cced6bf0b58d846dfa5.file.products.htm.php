@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-02 19:37:47
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:48:52
          compiled from "design/lemanta/html\products.htm" */ ?>
 <?php /*%%SmartyHeaderCode:42605819dfd45e7bc8-97183043%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0cb598216ccb17db3da78cced6bf0b58d846dfa5' => 
     array (
       0 => 'design/lemanta/html\\products.htm',
-      1 => 1478104667,
+      1 => 1478177330,
       2 => 'file',
     ),
   ),
@@ -60,7 +60,7 @@ if (!empty($_capture_buffer)) {
  Smarty::$_smarty_vars['capture'][$_capture_buffer]=ob_get_clean();
 } else $_smarty_tpl->capture_error();?><?php $_smarty_tpl->tpl_vars['name'] = new Smarty_variable(trim($_smarty_tpl->tpl_vars['name']->value), null, 0);?><?php if ($_smarty_tpl->tpl_vars['name']->value=='Костюмы тройки'){?><?php if (!empty($_smarty_tpl->tpl_vars['category']->value->url)){?><?php if ($_smarty_tpl->tpl_vars['category']->value->url=='detskaya-odezhda/dlya-malchikov/kostyumy'||$_smarty_tpl->tpl_vars['category']->value->url=='detskaya-odezhda/dlya-devochek/kostyumy'){?><?php $_smarty_tpl->tpl_vars['name'] = new Smarty_variable('Костюмы', null, 0);?><?php }?><?php }?><?php }?><?php $_smarty_tpl->tpl_vars['mod'] = new Smarty_variable('mod-breadcrumbs.htm', null, 0);?><?php if ($_smarty_tpl->tpl_vars['emulator']->value->existsModule($_smarty_tpl->tpl_vars['mod']->value)){?><?php echo $_smarty_tpl->getSubTemplate (($_smarty_tpl->tpl_vars['mod']->value), $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('noCatalogLink'=>true), 0);?>
 <?php }?><?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-<div class="container"><div class="row"><div class="wp-right col-md-9 col-sm-12"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountProducts'][0][0]->discountProducts(array('count'=>20,'assign'=>'items'),$_smarty_tpl);?>
+<div class="right"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountProducts'][0][0]->discountProducts(array('count'=>20,'assign'=>'items'),$_smarty_tpl);?>
 <?php if (!empty($_smarty_tpl->tpl_vars['items']->value)){?><div class="title2">Горящие предложения</div><div class="popular0"><div class="popular"><ul><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['items']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
@@ -124,7 +124,6 @@ $_smarty_tpl->tpl_vars['item']->_loop = true;
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
 ?><li><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-</li><?php } ?></ul><div class="clr"></div></div></div><?php }?></div></div><!-- /.row --></div><!-- /.container --><?php if (!empty($_smarty_tpl->tpl_vars['brand']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'brand->meta_title','assign'=>'title','scope'=>'global'),$_smarty_tpl);?>
+</li><?php } ?></ul><div class="clr"></div></div></div><?php }?></div><?php if (!empty($_smarty_tpl->tpl_vars['brand']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'brand->meta_title','assign'=>'title','scope'=>'global'),$_smarty_tpl);?>
 <?php }elseif(!empty($_smarty_tpl->tpl_vars['category']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'category->meta_title','assign'=>'title','scope'=>'global'),$_smarty_tpl);?>
-<?php }?>
-<?php }} ?>
+<?php }?><?php }} ?>

@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-02 15:45:08
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:48:52
          compiled from "design/lemanta/html\navigation.htm" */ ?>
 <?php /*%%SmartyHeaderCode:172075819dfd42e1829-37205733%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '89cfd10fb6d426f0b940e961e675371d0b2e1928' => 
     array (
       0 => 'design/lemanta/html\\navigation.htm',
-      1 => 1478016491,
+      1 => 1478177330,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5819dfd43c9121_51187519',
   'variables' => 
   array (
     'Pages' => 0,
@@ -28,8 +30,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'NextPageUrl' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfd43c9121_51187519',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5819dfd43c9121_51187519')) {function content_5819dfd43c9121_51187519($_smarty_tpl) {?><?php if (!empty($_smarty_tpl->tpl_vars['Pages']->value)){?><?php $_smarty_tpl->tpl_vars['current'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['CurrentPage']->value)===null||$tmp==='' ? 0 : $tmp), null, 0);?><?php $_smarty_tpl->tpl_vars['CurrentPage'] = new Smarty_variable($_smarty_tpl->tpl_vars['current']->value, null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['CurrentPage'] = clone $_smarty_tpl->tpl_vars['CurrentPage']; $_ptr = $_ptr->parent; }

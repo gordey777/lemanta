@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-02 15:45:01
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:48:53
          compiled from "design/lemanta/html\common\cart-informer.htm" */ ?>
 <?php /*%%SmartyHeaderCode:102945819dfcdba9a08-27075278%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '4eba53e28d5c2ec4e777bdae9f82ba31f7a9e8f5' => 
     array (
       0 => 'design/lemanta/html\\common\\cart-informer.htm',
-      1 => 1478016493,
+      1 => 1478177332,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5819dfcdbcccf4_01932959',
   'variables' => 
   array (
     'cart_products_num' => 0,
@@ -23,8 +25,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'price' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfcdbcccf4_01932959',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5819dfcdbcccf4_01932959')) {function content_5819dfcdbcccf4_01932959($_smarty_tpl) {?><div class="cart-l"><?php if (!empty($_smarty_tpl->tpl_vars['cart_products_num']->value)){?><?php $_smarty_tpl->tpl_vars['price'] = new Smarty_variable($_smarty_tpl->tpl_vars['helper']->value->priceForScreen($_smarty_tpl->tpl_vars['cart_total_price']->value), null, 0);?><p>Товаров...........<span><?php echo $_smarty_tpl->tpl_vars['cart_products_num']->value;?>
 </span></p><p>на сумму..........<span><?php echo intval($_smarty_tpl->tpl_vars['price']->value);?>

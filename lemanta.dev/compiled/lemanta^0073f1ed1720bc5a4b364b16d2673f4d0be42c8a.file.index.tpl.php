@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-02 15:45:00
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:48:50
          compiled from "design/lemanta/html\index.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:326185819dfcc45fb91-21474403%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0073f1ed1720bc5a4b364b16d2673f4d0be42c8a' => 
     array (
       0 => 'design/lemanta/html\\index.tpl',
-      1 => 1478016490,
+      1 => 1478177329,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5819dfcc8b8fd0_44270972',
   'variables' => 
   array (
     'uri' => 0,
@@ -53,8 +55,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'config' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfcc8b8fd0_44270972',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5819dfcc8b8fd0_44270972')) {function content_5819dfcc8b8fd0_44270972($_smarty_tpl) {?><?php echo $_smarty_tpl->getSubTemplate ('common/check404.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['requestUri'][0][0]->requestUri(array('except'=>'*','nopages'=>true,'assign'=>'uri'),$_smarty_tpl);?>

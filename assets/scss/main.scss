@@ -1,8 +1,67 @@
 
+@charset 'UTF-8';
+
 @import 'grid/bootstrap';
 @import 'grid/bootstrap-theme';
 
 @import 'fonts/font_fontawesome';
 
 
+@font-face {
+  font-family: 'ISOCPEURRegular';
 
+  src: url(../fonts/isocpeur.eot);
+  src: url(../fonts/isocpeur.eot) format('embedded-opentype'), url(../fonts/isocpeur.woff) format('woff'), url(../fonts/isocpeur.ttf) format('truetype'), url(../fonts/isocpeur.svg#ISOCPEURRegular) format('svg');
+}
+
+@font-face {
+  font-family: 'HelveticaNeueHeavy';
+
+  src: url(../fonts/helvetica-neue-heavy-1361522102.eot);
+  src: url(../fonts/helvetica-neue-heavy-1361522102.eot) format('embedded-opentype'), url(../fonts/helvetica-neue-heavy-1361522102.woff) format('woff'), url(../fonts/helvetica-neue-heavy-1361522102.ttf) format('truetype'), url(../fonts/helvetica-neue-heavy-1361522102.svg#HelveticaNeueHeavy) format('svg');
+}
+
+body {
+  font-family: 'ISOCPEURRegular';
+  font-size: 16px;
+
+  min-width: 1136px;
+
+  color: #112;
+  background: #fff;
+  &#tinymce {
+    background: #fff;
+  }
+}
+
+input {
+  font-family: 'ISOCPEURRegular';
+}
+
+
+a {
+  cursor: pointer;
+  &:active,
+  &:link,
+  &:visited {
+    text-decoration: none;
+
+    color: #8be;
+    outline: none;
+  }
+  &:hover {
+    text-decoration: underline;
+
+    color: #8be;
+  }
+}
+
+.clr {
+  clear: both;
+}
+  img{
+    max-width: 100%;
+  }
+header{
+
+}
