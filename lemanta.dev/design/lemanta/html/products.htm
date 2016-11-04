@@ -50,7 +50,7 @@
     |                                                                             |
     ======================================================================== --> *}
 
-    <div class="right">
+  <article class="content col-md-9 col-sm-9 col-md-push-3 col-sm-push-3">
         {discountProducts count=20 assign=items}
         {if !empty($items)}
             <div class="title2">Горящие предложения</div>
@@ -176,16 +176,17 @@
             ================================================================ --> *}
 
             {$sorter}
-            <div class="row">
-            <div class="cat">
+          <div class="product-list col-md-12">
                 {foreach $products as $item}
                 <div class="col-md-3 col-sm-4 col-xs-6">
                   {include 'common/product-card.htm'}
                 </div>
                 {/foreach}
                 <div class="clr"></div>
-            </div>
-              </div><!-- /.row -->
+
+            <div class="clr"></div>
+          </div><!-- .product-list -->
+
             {$sorter}
 
         {* <!-- ===================================================================
@@ -262,9 +263,9 @@
                 <div class="clr"></div>
                 <div class="cat row">
 
-                    <ul class="col-md-12">
+                    <ul class="">
                         {foreach $recent_products as $item}
-                            <li class="col-md-3">
+                            <li class="">
                                 {include 'common/product-card.htm'}
                             </li>
                         {/foreach}
@@ -274,7 +275,7 @@
                 </div>
             </div>
         {/if}
-    </div>
+    </article><!-- .content -->
 
     {* <!-- =======================================================================
     |                                                                             |

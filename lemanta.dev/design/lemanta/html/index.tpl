@@ -254,20 +254,21 @@
                 |  Шапка.                                                         |
                 |                                                                 |
                 ============================================================ --> *}
+                <!-- wrapper -->
+                <div class="bg wrapper">
 
-                <div class="bg">
-                    <div class="line"></div>
-                    <div class="container">
-                        <div class="header">
+    <header role="banner">
 
+      <div class="top-menu-wrap">
+        <div class="container">
+          <div class="row">
+            <div class="top-menu col-md-12">
+              <div class="login col-md-2">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Ссылка на Аккаунт (если это авторизованный клиент).|
                             |                                                     |
                             ================================================ --> *}
-
-                            <div class="container">
-                                <div class="login">
                                     {if !empty($user)}
                                         <span id="username">
                                             <a href="account" rel="nofollow">
@@ -301,15 +302,13 @@
                                             Регистрация
                                         </a>
                                     {/if}
-                                </div>
-
+              </div>
+              <div class="socialnet col-md-2">
                                 {* <!-- ===========================================
                                 |                                                 |
                                 |  Социальные ссылки.                             |
                                 |                                                 |
                                 ============================================ --> *}
-
-                                <div class="soc">
                                     <a href="skype:lemanta2014?call" rel="nofollow">
                                         <img src="{theme}images/soc1.png" alt="Lemanta Skype" />
                                     </a>
@@ -323,16 +322,16 @@
                                   <a href="https://www.facebook.com/Lemanta-280572415630549/" target="_blank" rel="nofollow">
                                         <img src="{theme}images/FB-f-Logo__blue_29.png" alt="Lemanta в Facebook" />
                                     </a>
-                                </div>
+              </div>
+
+                                {if !empty($currencies) && count($currencies) > 1}
+              <div class="valuta col-md-2">
 
                                 {* <!-- ===========================================
                                 |                                                 |
                                 |  Выбор валюты (если их больше одной).           |
                                 |                                                 |
                                 ============================================ --> *}
-
-                                {if !empty($currencies) && count($currencies) > 1}
-                                    <div class="lang">
                                         {echoVar from='currency->currency_id' assign=sid}
                                         {foreach $currencies as $item}
                                             {echoVar from='item->currency_id' assign=id}
@@ -352,65 +351,60 @@
                                         <form id="currencyForm" method="post">
                                             <input id="currencyFormInput" name="currency_id" type="hidden" value="" />
                                         </form>
-                                    </div>
-                                {/if}
-                            </div>
 
+              </div><!-- /.valuta -->
+                                {/if}
+            </div>
+          </div><!-- /.row -->
+        </div><!-- /.container -->
+      </div><!-- /.top-menu-wrap -->
+
+      <div class="container">
+        <div class="row">
+
+          <div class="logo col-md-2 col-sm-2 col-xs-2">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Логотип.                                           |
                             |                                                     |
                             ================================================ --> *}
-
-                            <div class="logo">
                                 <a href="{site}">
                                     <img src="{theme}images/logo.png" alt="" />
                                 </a>
-                            </div>
+          </div>
 
+          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-8 col-sm-2 col-xs-2">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Корзина.                                           |
                             |                                                     |
                             ================================================ --> *}
-
-                            <div id="cart_informer" class="cart">
                                 {include 'common/cart-informer.htm'}
-                            </div>
-                            <div class="clr"></div>
+          </div>
 
+          <div class="search-bg col-md-2 col-sm-3 col-xs-4 col-md-push-10">
+            <div id="search" class="search">
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Поиск.                                             |
+                            |                                                     |
+                            ================================================ --> *}
+                                <form method="post" onsubmit="return false">
+                                    <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
+                                    <input name="search_type" type="hidden" value="a1" />
+                                    <input name="reset_old" type="hidden" value="1" />
+                                    <input class="button_search" type="submit" value="" />
+                                </form>
+            </div>
+          </div>
+
+          <nav class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation">
+            <ul class="headnav">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Верхнее меню.                                      |
                             |                                                     |
                             ================================================ --> *}
-
-                            <div class="menu">
-
-
- <a class="super-button" href="#">
-  <img src="{theme}images/menu.png" alt="Меню" class="menu-opened"/>
-  <img src="{theme}images/close.png" alt="Закрыть меню" class="menu-closed"/>
- </a>
-
-<script>
-$('.super-button').on('click', function(event){
-  event.preventDefault();
-  var $navMenu = $('.super-nav-menu');
-
-  if ( $(this).hasClass('super-button-opened') ) {
-    $navMenu.fadeOut('fast');
-    $('.super-button').removeClass('super-button-opened')
-  } else {
-    $navMenu.css('display', 'flex');
-    $('.super-button').addClass('super-button-opened')
-  }
-
-})
-</script>
-
-
-                                <ul class="super-nav-menu">
 
                                     {* <!-- читаем меню --> *}
 
@@ -457,7 +451,7 @@ $('.super-button').on('click', function(event){
                                                     {if $name == 'Главная'}
                                                         <li {$class}>
                                                             <a href="{site}" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу">
-                                                                <img src="{theme}images/home-icon.png" alt="" />
+                                                                <i class="fa fa-home"></i>
                                                             </a>
                                                         </li>
                                                     {else}
@@ -471,23 +465,16 @@ $('.super-button').on('click', function(event){
                                             {/foreach}
                                         {/if}
                                     {/if}
-                                </ul>
-                            </div>
+            </ul>
+          </nav><!-- /nav -->
 
-                            {* <!-- ===============================================
-                            |                                                     |
-                            |  Поиск.                                             |
-                            |                                                     |
-                            ================================================ --> *}
 
-                            <div id="search" class="search">
-                                <form method="post" onsubmit="return false">
-                                    <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
-                                    <input name="search_type" type="hidden" value="a1" />
-                                    <input name="reset_old" type="hidden" value="1" />
-                                    <input class="button_search" type="submit" value="" />
-                                </form>
-                            </div>
+
+        </div><!-- /.row -->
+      </div><!-- /.container -->
+    </header><!-- /header -->
+
+
                             <div class="clr"></div>
 
                             {* <!-- ===============================================
@@ -536,19 +523,23 @@ $('.super-button').on('click', function(event){
                                     </div>
                                 {/if}
                             {/if}
-                        </div>
 
+
+
+
+    <section role="main">
+      <div class="container">
+        <div class="row">
                         {* <!-- ===================================================
                         |                                                         |
                         |  Контент основного модуля страницы.                     |
                         |                                                         |
                         ==================================================== --> *}
-
-                        <div class="wrap other">
                             {content}
-                            <div class="clr"></div>
-                        </div>
-                    </div>
+
+          <div class="clr"></div>
+
+          <div class="seo-container col-md-12">
 
                     {* <!-- =======================================================
                     |                                                             |
@@ -620,8 +611,18 @@ $('.super-button').on('click', function(event){
                     |  частей SEO текста или наличию SEO ссылок в конфиге сайта.  |
                     |                                                             |
                     ======================================================== --> *}
+            </div><!-- /.seo-container col-md-12 -->
+          </div><!-- /.row -->
+        </div><!-- /.container -->
+      </section><!-- /section -->
+    </div><!-- /wrapper -->
 
-                    <div class="footer">
+    <footer class="footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+
+
                         {if $onFirstPage}
                             {if !empty($seo[1]['body']) && !empty($seo[2]['body'])}
                                 <a class="seo-link" href="{requestUri}" onclick="return toggleSeoDetails('#seo1', 800)">{$seo[1]['h1']}</a>
@@ -652,7 +653,10 @@ $('.super-button').on('click', function(event){
                         <div class="counters">
                             {counters}
                         </div>
-                    </div>
+          </div>
+        </div><!-- /.row -->
+      </div><!-- /.container -->
+    </footer>
 
                     {* <!-- =======================================================
                     |                                                             |
@@ -661,7 +665,7 @@ $('.super-button').on('click', function(event){
                     ======================================================== --> *}
 
                     <a id="back-top" title="К началу страницы">↑</a>
-                </div>
+
 
                 {* <!-- ===========================================================
                 |                                                                 |
@@ -687,8 +691,9 @@ $('.super-button').on('click', function(event){
                         return false;
                     };
                 </script>
-            </body>
-        </html>
+
+    </body>
+  </html>
 
         {* <!-- ===================================================================
         |                                                                         |

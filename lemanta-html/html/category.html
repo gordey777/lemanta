@@ -2,7 +2,7 @@
 <html lang="en" class="no-js">
 
 <head>
-  <!-- saved from url=(0014)about:internet -->
+
   <meta charset="UTF-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -62,38 +62,39 @@
       <div class="container">
         <div class="row">
 
-
-            <div class="logo col-md-2 col-sm-2 col-xs-2">
-              <a href="http://lemanta.dev/">
-                <img src="img/logo.png" alt="" />
-              </a>
-            </div>
-
-            <div id="cart_informer" class="head-cart col-md-2 col-md-offset-8 col-sm-2 col-xs-2">
-              <div class="cart-l">
-                <p>
-                  <span>Корзина пуста</span>
-                </p>
-              </div>
-              <a data-href="http://lemanta.dev/cart" class="cart-r" onclick="return gotoHref(this)">
-                <span>0</span>
-              </a>
-            </div>
-
-          <div id="search" class="search col-md-3 col-sm-3 col-xs-8 col-md-push-9">
-            <form method="post" onsubmit="return false">
-              <input class="input_search" name="keyword" maxlength="48" type="text" value="" placeholder="Поиск товара" />
-              <input name="search_type" type="hidden" value="a1" />
-              <input name="reset_old" type="hidden" value="1" />
-              <input class="button_search" type="submit" value="" />
-            </form>
+          <div class="logo col-md-2 col-sm-2 col-xs-2">
+            <a href="http://lemanta.dev/">
+              <img src="img/logo.png" alt="" />
+            </a>
           </div>
 
-          <nav class="nav__header col-md-9 col-sm-12 col-md-pull-3" role="navigation">
+          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-8 col-sm-2 col-xs-2">
+            <div class="cart-l">
+              <p>
+                <span>Корзина пуста</span>
+              </p>
+            </div>
+            <a data-href="http://lemanta.dev/cart" class="cart-r" onclick="return gotoHref(this)">
+              <span>0</span>
+            </a>
+          </div>
+
+          <div class="search-bg col-md-2 col-sm-3 col-xs-4 col-md-push-10">
+            <div id="search" class="search">
+              <form method="post" onsubmit="return false">
+                <input class="input_search" name="keyword" maxlength="48" type="text" value="" placeholder="Поиск товара" />
+                <input name="search_type" type="hidden" value="a1" />
+                <input name="reset_old" type="hidden" value="1" />
+                <input class="button_search" type="submit" value="" />
+              </form>
+            </div>
+          </div>
+
+          <nav class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation">
             <ul class="headnav">
               <li>
                 <a href="http://lemanta.dev/" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу">
-                  <img src="img/home-icon.png" alt="" />
+                  <i class="fa fa-home"></i>
                 </a>
               </li>
               <li>
@@ -131,6 +132,7 @@
     <section role="main">
       <div class="container">
         <div class="row">
+
           <div class="breadcrumbs col-md-12" itemscope itemtype="http://schema.org/BreadcrumbList">
             <span itemscope itemtype="http://schema.org/ListItem" itemprop="itemListElement">
           <a href="http://lemanta.dev/" itemprop="item"  title="Одежда в розницу от Lemanta">
@@ -147,7 +149,8 @@
             <div class="number">
             </div>
           </div>
-          <article class="content col-md-9 col-md-push-3">
+
+          <article class="content col-md-9 col-sm-9 col-md-push-3 col-sm-push-3">
             <h1>Женская одежда</h1>
             <div class="filters col-md-12">
               <form class="filter-l col-md-6" method="post">
@@ -156,9 +159,9 @@
                   <option value="0">как расставлены</option>
                   <option value="6">по названию</option>
                   <option value="1">по цене</option>
-                </select> <a class="active" onclick="this.nextSibling.value = 0; this.parentNode.submit();" title="По убыванию">↓</a>
+                </select> <a class="active" onclick="this.nextSibling.value = 0; this.parentNode.submit();" title="По убыванию"><i class="fa fa-sort-amount-desc"></i></a>
                 <input name="sort_descending" type="hidden" value="0" />
-                <a onclick="this.previousSibling.value = 1; this.parentNode.submit();" title="По возрастанию">↑</a>
+                <a onclick="this.previousSibling.value = 1; this.parentNode.submit();" title="По возрастанию"><i class="fa fa-sort-amount-asc"></i></a>
               </form>
               <div class="filter-r col-md-6">
                 <div class="pagination">
@@ -350,7 +353,7 @@
         </div>
         </article>
 
-        <aside class="sidebar col-md-3 col-md-pull-9" role="complementary">
+        <aside class="sidebar col-md-3 col-sm-3 col-md-pull-9 col-sm-pull-9" role="complementary">
           <div class="title">Категории</div>
           <div id="catalog_menu" class="left-menu">
             <ul>
