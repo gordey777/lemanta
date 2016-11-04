@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:25:59
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 16:28:45
          compiled from "design/lemanta/html\static_page.htm" */ ?>
 <?php /*%%SmartyHeaderCode:18191581b08da5bbcf8-14334110%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'b7304a85c05273b58d9e6e65d4b6a4dca877528e' => 
     array (
       0 => 'design/lemanta/html\\static_page.htm',
-      1 => 1478175826,
+      1 => 1478177328,
       2 => 'file',
     ),
   ),
@@ -30,7 +30,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
 <?php $_smarty_tpl->tpl_vars['mod'] = new Smarty_variable('mod-breadcrumbs.htm', null, 0);?><?php if ($_smarty_tpl->tpl_vars['emulator']->value->existsModule($_smarty_tpl->tpl_vars['mod']->value)){?><?php echo $_smarty_tpl->getSubTemplate (($_smarty_tpl->tpl_vars['mod']->value), $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('noCatalogLink'=>true), 0);?>
 <?php }?><?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 <div class="right"><h2><?php echo $_smarty_tpl->tpl_vars['title']->value;?>
-</h2><h2>STATIC</h2><div class="text"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['body'][0][0]->body(array('from'=>'page'),$_smarty_tpl);?>
+</h2><div class="text"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['body'][0][0]->body(array('from'=>'page'),$_smarty_tpl);?>
 </div></div><?php }else{ ?><?php echo $_smarty_tpl->getSubTemplate ('missing_template.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-<?php }?>
-<?php }} ?>
+<?php }?><?php }} ?>

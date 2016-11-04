@@ -176,12 +176,16 @@
             ================================================================ --> *}
 
             {$sorter}
+            <div class="row">
             <div class="cat">
                 {foreach $products as $item}
-                    {include 'common/product-card.htm'}
+                <div class="col-md-3 col-sm-4 col-xs-6">
+                  {include 'common/product-card.htm'}
+                </div>
                 {/foreach}
                 <div class="clr"></div>
             </div>
+              </div><!-- /.row -->
             {$sorter}
 
         {* <!-- ===================================================================
@@ -256,14 +260,16 @@
                     <a href="#" class="next nextt"></a>
                 </div>
                 <div class="clr"></div>
-                <div class="cat">
-                    <ul>
+                <div class="cat row">
+
+                    <ul class="col-md-12">
                         {foreach $recent_products as $item}
-                            <li>
+                            <li class="col-md-3">
                                 {include 'common/product-card.htm'}
                             </li>
                         {/foreach}
                     </ul>
+
                     <div class="clr"></div>
                 </div>
             </div>

@@ -2,6 +2,7 @@
 
     {if !empty($item)}
         <div class="cat-bl product">
+
             <div class="cat-img">
 
                 {* <!-- ===========================================================
@@ -93,7 +94,7 @@
 
                         <span class="cat-price">
                             {intval($price)} {sign}
-                        <span>
+                          </span>
                     </div>
 
                     {* <!-- =======================================================
@@ -108,8 +109,9 @@
 
                         <div class="zakaz" style="display: none">
                             {if empty($noQuickOrder)}
-                                <img src="{theme}images/buy2.png" alt="" />
                                 <a href="{url}" data-id="{$vid}">
+                                <img src="{theme}images/buy2.png" alt="" />
+
                                     Быстрый заказ
                                 </a>
                             {else}

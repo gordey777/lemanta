@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-02 17:02:58
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 16:35:58
          compiled from "design/lemanta/html\missing_template.htm" */ ?>
 <?php /*%%SmartyHeaderCode:117855819f2122c05e9-26239300%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '128c76fdab6e15c761b6d6fea9756b4493687ece' => 
     array (
       0 => 'design/lemanta/html\\missing_template.htm',
-      1 => 1478016490,
+      1 => 1478177329,
       2 => 'file',
     ),
   ),
@@ -15,9 +15,9 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
-  'has_nocache_code' => false,
   'version' => 'Smarty-3.1.8',
   'unifunc' => 'content_5819f21230a284_64722854',
+  'has_nocache_code' => false,
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5819f21230a284_64722854')) {function content_5819f21230a284_64722854($_smarty_tpl) {?><?php $_smarty_tpl->tpl_vars['title'] = new Smarty_variable('Страница не найдена!', null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['title'] = clone $_smarty_tpl->tpl_vars['title']; $_ptr = $_ptr->parent; }

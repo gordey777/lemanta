@@ -10,13 +10,19 @@
 @font-face {
   font-family: 'ISOCPEURRegular';
   src: url(../fonts/isocpeur.eot);
-  src: url(../fonts/isocpeur.eot) format("embedded-opentype"), url(../fonts/isocpeur.woff) format("woff"), url(../fonts/isocpeur.ttf) format("truetype"), url(../fonts/isocpeur.svg#ISOCPEURRegular) format("svg");
+  src: url(../fonts/isocpeur.eot) format("embedded-opentype"),
+  url(../fonts/isocpeur.woff) format("woff"),
+  url(../fonts/isocpeur.ttf) format("truetype"),
+  url(../fonts/isocpeur.svg#ISOCPEURRegular) format("svg");
 }
 
 @font-face {
   font-family: 'HelveticaNeueHeavy';
   src: url(../fonts/helvetica-neue-heavy-1361522102.eot);
-  src: url(../fonts/helvetica-neue-heavy-1361522102.eot) format("embedded-opentype"), url(../fonts/helvetica-neue-heavy-1361522102.woff) format("woff"), url(../fonts/helvetica-neue-heavy-1361522102.ttf) format("truetype"), url(../fonts/helvetica-neue-heavy-1361522102.svg#HelveticaNeueHeavy) format("svg");
+  src: url(../fonts/helvetica-neue-heavy-1361522102.eot) format("embedded-opentype"),
+  url(../fonts/helvetica-neue-heavy-1361522102.woff) format("woff"),
+  url(../fonts/helvetica-neue-heavy-1361522102.ttf) format("truetype"),
+  url(../fonts/helvetica-neue-heavy-1361522102.svg#HelveticaNeueHeavy) format("svg");
 }
 
 body {
@@ -223,9 +229,9 @@ hr.separator {
 }
 
 .container {
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
+  //width: 100%;
+  //margin: 0 auto;
+  //padding: 0;
 
   .header {
     position: relative;

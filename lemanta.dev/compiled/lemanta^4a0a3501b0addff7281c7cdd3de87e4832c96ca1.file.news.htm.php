@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:26:14
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 16:28:35
          compiled from "design/lemanta/html\news.htm" */ ?>
 <?php /*%%SmartyHeaderCode:2407581b2ce65d6813-97348228%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '4a0a3501b0addff7281c7cdd3de87e4832c96ca1' => 
     array (
       0 => 'design/lemanta/html\\news.htm',
-      1 => 1478016488,
+      1 => 1478177328,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_581b2ce6645f70_92249748',
   'variables' => 
   array (
     'mod' => 0,
@@ -23,8 +25,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'PagesNavigation' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_581b2ce6645f70_92249748',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_581b2ce6645f70_92249748')) {function content_581b2ce6645f70_92249748($_smarty_tpl) {?><?php $_smarty_tpl->tpl_vars['mod'] = new Smarty_variable('mod-breadcrumbs.htm', null, 0);?><?php if ($_smarty_tpl->tpl_vars['emulator']->value->existsModule($_smarty_tpl->tpl_vars['mod']->value)){?><?php echo $_smarty_tpl->getSubTemplate (($_smarty_tpl->tpl_vars['mod']->value), $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('noCatalogLink'=>true), 0);?>
 <?php }?><?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>

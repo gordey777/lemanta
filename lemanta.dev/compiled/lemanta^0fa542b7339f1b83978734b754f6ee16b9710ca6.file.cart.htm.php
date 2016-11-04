@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-02 17:02:40
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 16:38:23
          compiled from "design/lemanta/html\cart.htm" */ ?>
 <?php /*%%SmartyHeaderCode:48805819f200753858-54364135%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0fa542b7339f1b83978734b754f6ee16b9710ca6' => 
     array (
       0 => 'design/lemanta/html\\cart.htm',
-      1 => 1478016491,
+      1 => 1478180303,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5819f200871ad3_17419612',
   'variables' => 
   array (
     'ajax' => 0,
@@ -43,8 +45,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'recent_products' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819f200871ad3_17419612',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5819f200871ad3_17419612')) {function content_5819f200871ad3_17419612($_smarty_tpl) {?><?php if (!empty($_smarty_tpl->tpl_vars['ajax']->value)){?><?php echo $_smarty_tpl->getSubTemplate ('common/cart-informer.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 <?php }else{ ?><?php $_smarty_tpl->tpl_vars['meta'] = new Smarty_variable('<meta name="Robots" content="noindex, follow" />', null, 3);
@@ -64,7 +64,7 @@ if (!empty($_capture_buffer)) {
  if (isset($_capture_assign)) $_smarty_tpl->assign($_capture_assign, ob_get_contents());
  if (isset( $_capture_append)) $_smarty_tpl->append( $_capture_append, ob_get_contents());
  Smarty::$_smarty_vars['capture'][$_capture_buffer]=ob_get_clean();
-} else $_smarty_tpl->capture_error();?><form action="cart" method="post" name="cart"><div class="center cart_pad"><div class="cart-page"><div class="cart-title">ВАША корзина</div><table width="100%" cellpadding="0" cellspacing="0"><thead><tr><td>Информация о товаре</td><td>Количество</td><td>Цена за единицу</td><td>Итого</td></tr></thead><tbody><?php $_smarty_tpl->tpl_vars['total'] = new Smarty_variable(0, null, 0);?><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
+} else $_smarty_tpl->capture_error();?><form action="cart" method="post" name="cart"><div class="center cart_pad"><div class="cart-page"><h1>CART</h1><div class="cart-title">ВАША корзина</div><table width="100%" cellpadding="0" cellspacing="0"><thead><tr><td>Информация о товаре</td><td>Количество</td><td>Цена за единицу</td><td>Итого</td></tr></thead><tbody><?php $_smarty_tpl->tpl_vars['total'] = new Smarty_variable(0, null, 0);?><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['cart_products']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
@@ -111,7 +111,7 @@ images/delete.png" alt="" /><a href="<?php echo $_smarty_tpl->smarty->registered
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
 </div></td><td><div class="cart-price-all"><?php $_smarty_tpl->tpl_vars['price'] = new Smarty_variable($_smarty_tpl->tpl_vars['helper']->value->priceForScreen($_smarty_tpl->tpl_vars['sum']->value), null, 0);?><?php echo intval($_smarty_tpl->tpl_vars['price']->value);?>
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
-</div></td></tr><?php } ?></tbody></table><div class="cart-l"><div class="banner"><a href="catalog/boys"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
+</div></td></tr><?php } ?></tbody></table><div class="cart-l"><h1>CART</h1><div class="banner"><a href="catalog/boys"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
 images/foto.png" alt="" /></a></div><div class="title">Мы вКонтакте</div><div class="vk"><?php if (!empty($_smarty_tpl->tpl_vars['config']->value->vk_group)){?><script src="//vk.com/js/api/openapi.js?105"></script><div id="vk_groups"></div><script>VK.Widgets.Group('vk_groups', { mode: 0,width: '220',height: '260',color1: '111122',color2: 'b8c0c5',color3: '07073a' }, <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'config->vk_group'),$_smarty_tpl);?>
 );</script><?php }?></div></div><?php $_smarty_tpl->tpl_vars['cart_price'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['cart_total_price']->value)===null||$tmp==='' ? 0 : $tmp), null, 0);?><?php $_smarty_tpl->tpl_vars['discount'] = new Smarty_variable($_smarty_tpl->tpl_vars['helper']->value->priceForScreen($_smarty_tpl->tpl_vars['cart_price']->value-$_smarty_tpl->tpl_vars['total']->value), null, 0);?><div class="cart-r"><div class="itog-r"><?php if ($_smarty_tpl->tpl_vars['discount']->value!=0){?><div class="itog">Скидка: <?php echo intval($_smarty_tpl->tpl_vars['discount']->value);?>
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
@@ -137,4 +137,5 @@ $_smarty_tpl->tpl_vars['item']->_loop = true;
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
 ?><li><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('noQuickOrder'=>true), 0);?>
-</li><?php } ?></ul><div class="clr"></div></div></div><?php }?></div><?php }?><?php }?><?php }} ?>
+</li><?php } ?></ul><div class="clr"></div></div></div><?php }?></div><?php }?><?php }?>
+<?php }} ?>

@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:48:52
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 16:17:05
          compiled from "design/lemanta/html\navigation.htm" */ ?>
 <?php /*%%SmartyHeaderCode:172075819dfd42e1829-37205733%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '89cfd10fb6d426f0b940e961e675371d0b2e1928' => 
     array (
       0 => 'design/lemanta/html\\navigation.htm',
-      1 => 1478177330,
+      1 => 1478179025,
       2 => 'file',
     ),
   ),
@@ -33,7 +33,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5819dfd43c9121_51187519')) {function content_5819dfd43c9121_51187519($_smarty_tpl) {?><?php if (!empty($_smarty_tpl->tpl_vars['Pages']->value)){?><?php $_smarty_tpl->tpl_vars['current'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['CurrentPage']->value)===null||$tmp==='' ? 0 : $tmp), null, 0);?><?php $_smarty_tpl->tpl_vars['CurrentPage'] = new Smarty_variable($_smarty_tpl->tpl_vars['current']->value, null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['CurrentPage'] = clone $_smarty_tpl->tpl_vars['CurrentPage']; $_ptr = $_ptr->parent; }
-Smarty::$global_tpl_vars['CurrentPage'] = clone $_smarty_tpl->tpl_vars['CurrentPage'];?><div class="filter-r"><div class="pagination"><?php if (!empty($_smarty_tpl->tpl_vars['PrevPageUrl']->value)){?><?php $_smarty_tpl->tpl_vars['newPage'] = new Smarty_variable($_smarty_tpl->tpl_vars['current']->value, null, 0);?><?php $_smarty_tpl->tpl_vars['PrevPageUrl'] = new Smarty_variable(preg_replace('!/page[_\-][0-9]+!i',"/page-".($_smarty_tpl->tpl_vars['newPage']->value),$_smarty_tpl->tpl_vars['PrevPageUrl']->value), null, 0);?><a class="pag-prev" href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['site'][0][0]->site(array('root'=>true),$_smarty_tpl);?>
+Smarty::$global_tpl_vars['CurrentPage'] = clone $_smarty_tpl->tpl_vars['CurrentPage'];?><div class="filter-r"><div class="pagination"><h1>navigation</h1><?php if (!empty($_smarty_tpl->tpl_vars['PrevPageUrl']->value)){?><?php $_smarty_tpl->tpl_vars['newPage'] = new Smarty_variable($_smarty_tpl->tpl_vars['current']->value, null, 0);?><?php $_smarty_tpl->tpl_vars['PrevPageUrl'] = new Smarty_variable(preg_replace('!/page[_\-][0-9]+!i',"/page-".($_smarty_tpl->tpl_vars['newPage']->value),$_smarty_tpl->tpl_vars['PrevPageUrl']->value), null, 0);?><a class="pag-prev" href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['site'][0][0]->site(array('root'=>true),$_smarty_tpl);?>
 <?php echo htmlspecialchars($_smarty_tpl->tpl_vars['PrevPageUrl']->value, ENT_QUOTES, 'UTF-8');?>
 ">&lt;</a><?php $_smarty_tpl->tpl_vars['PrevPageUrl'] = new Smarty_variable($_smarty_tpl->tpl_vars['PrevPageUrl']->value, null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['PrevPageUrl'] = clone $_smarty_tpl->tpl_vars['PrevPageUrl']; $_ptr = $_ptr->parent; }
@@ -58,4 +58,5 @@ if (!empty($_capture_buffer)) {
 ">&gt;</a><?php $_smarty_tpl->tpl_vars['NextPageUrl'] = new Smarty_variable($_smarty_tpl->tpl_vars['NextPageUrl']->value, null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['NextPageUrl'] = clone $_smarty_tpl->tpl_vars['NextPageUrl']; $_ptr = $_ptr->parent; }
 Smarty::$global_tpl_vars['NextPageUrl'] = clone $_smarty_tpl->tpl_vars['NextPageUrl'];?><?php }?></div></div><?php if (!empty($_GET['ajax'])){?><?php if (!empty($_GET['getlastpage'])){?><?php $_smarty_tpl->tpl_vars['lastPageUrl'] = new Smarty_variable(preg_replace('/^(.*?)[\?\#].*$/u','$1',$_smarty_tpl->tpl_vars['lastPageUrl']->value), null, 0);?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['stopPage'][0][0]->stopPage(array('msg'=>$_smarty_tpl->tpl_vars['lastPageUrl']->value),$_smarty_tpl);?>
-<?php }?><?php }?><?php }?><?php }} ?>
+<?php }?><?php }?><?php }?>
+<?php }} ?>
