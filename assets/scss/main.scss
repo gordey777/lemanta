@@ -12,6 +12,7 @@
 @import 'grid/bootstrap-theme';
 
 @import 'fonts/font_fontawesome';
+@import 'jquery.mmenu.all';
 
 
 @font-face {
@@ -181,14 +182,14 @@ header {
   .product-block {
     display: inline-block;
     overflow: hidden;
-
-    height: 490px;
+    //height: 490px;
     .product-img {
+      height: 400px;
       a {
         img {
-          //width: 100%;
-          height: 400px;
-          margin: auto 0;
+          width: 100%;
+          //height: 100%;
+          //margin: auto 0;
         }
       }
     }
@@ -250,7 +251,8 @@ header {
         img {
           display: block;
 
-          height: 100%;
+          width: 100%;
+          //height: 100%;
           margin: 0 auto;
         }
       }
@@ -286,8 +288,7 @@ header {
     }
   }
 }
-
-
+/* menu button */
 
 
 /* .cat-bl {

@@ -37,8 +37,9 @@
                   'Свитера для мальчиков' => 'Свитера',
                   'Куртки для мальчиков' => 'Куртки' ]}
 
-    <div class="left {$class}">
-    <h1>left-colum</h1>
+
+      <aside class="sidebar {$class} col-md-3 col-sm-3 col-md-pull-9 col-sm-pull-9" role="complementary">
+
         <div class="title">Категории</div>
         <div id="catalog_menu" class="left-menu">
             {function showCategoriesTree needRename=0}
@@ -112,6 +113,6 @@
                 </script>
             {/if}
         </div>
-    </div>
+      </aside><!-- /sidebar -->
 
 {/strip}

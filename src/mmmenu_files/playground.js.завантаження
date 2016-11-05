@@ -1,0 +1,426 @@
+//	The options
+$(function() {
+	$("#playground-options").mmenu({
+		extensions 	: ['theme-black', 'multiline'],
+		navbar 		: false,
+		offCanvas 	: false
+	});
+});
+
+
+//	Playground logic
+$(function() {
+
+	var $wndw 		= $(window),
+
+		_iframe 	= $('#playground .phone iframe')[ 0 ].contentWindow,
+		$codejs		= $('#code-js');
+
+
+	var 
+		//	Options
+		$slidingSubmenus 		= $('input[name="slidingSubmenus"]'),
+		$navbar 				= $('input[name="navbar"]'),
+
+		//	Extensions
+		$borderstyle			= $('input[name="borderstyle"]'),
+		$effect_menu_zoom		= $('input[name="effect-menu-zoom"]'),
+		$effect_panels_zoom		= $('input[name="effect-panels-zoom"]'),
+		$effect_menu 			= $('input[name="effect-menu"]'),
+		$effect_panels 			= $('input[name="effect-panels"]'),
+		$effect_listitems		= $('input[name="effect-listitems"]'),
+		$fullscreen 			= $('input[name="fullscreen"]'),
+		$iconbar	 			= $('input[name="iconbar"]'),
+		$justified_listview		= $('input[name="justified-listview"]'),
+		$multiline				= $('input[name="multiline"]'),
+		$pagedim				= $('input[name="pagedim"]'),
+		$pagedim_black			= $('input[name="pagedim-black"]'),
+		$pageshadow				= $('input[name="pageshadow"]'),
+		$panelshadow			= $('input[name="panelshadow"]'),
+		$popup 					= $('input[name="popup"]'),
+		$position_right			= $('input[name="position-right"]'),
+		$position				= $('input[name="position"]'),
+		$z_position				= $('input[name="z-position"]'),
+		$theme_dark				= $('input[name="theme-dark"]'),
+		$theme 					= $('input[name="theme"]'),
+		$tileview				= $('input[name="tileview"]'),
+
+		//	Add-ons
+		$auto_height	 		= $('input[name="auto-height"]'),
+		$counters		 		= $('input[name="counters"]'),
+		$dividers_add	 		= $('input[name="dividers-add"]'),
+		$dividers_fixed	 		= $('input[name="dividers-fixed"]'),
+		$dropdown				= $('input[name="dropdown"]'),
+		$footer					= $('input[name="footer"]'),
+		$header					= $('input[name="header"]'),
+		$iconpanels				= $('input[name="iconpanels"]'),
+		$iconpanels_navbar		= $('input[name="iconpanels-navbar"]'),
+		$oncanvas				= $('input[name="oncanvas"]'),
+		$searchfield 			= $('input[name="searchfield"]'),
+		$searchfield_results	= $('input[name="searchfield-results"]'),
+		$searchfield_subpanels	= $('input[name="searchfield-subpanels"]'),
+		$searchfield_textitems 	= $('input[name="searchfield-textitems"]'),
+		$searchfield_clear 		= $('input[name="searchfield-clear"]'),
+		$section_indexer		= $('input[name="section-indexer"]'),
+		$selected_hover			= $('input[name="selected-hover"]'),
+		$selected_parent		= $('input[name="selected-parent"]');
+
+
+	$('#playground-options')
+		.find( 'input, .mm-next' )
+		.change( function() { setTimeout( rerender, 5 ) } );
+
+	function rerender()
+	{
+		var val;
+
+		var opts = {};
+		var conf = {};
+		var extr = {};
+
+		//	slidingSubmenus option
+		if ( $slidingSubmenus.length && !$slidingSubmenus.is( ':checked' ) )
+		{
+			opts.slidingSubmenus = false;
+		}
+
+		//	navbar option
+		if ( $navbar.length && !$navbar.is( ':checked' ) )
+		{
+			opts.navbar = {
+				add: false
+			};
+		}
+
+		//	Borderstyle extension
+		val = $borderstyle.filter( ':checked' ).val() || '';
+		if ( val.length )
+		{
+			opts.extensions = push( opts.extensions, 'border-' + val );
+		}
+
+		//	Effects extension (zoom)
+		if ( $effect_menu_zoom.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'effect-menu-zoom' );
+		}
+		if ( $effect_panels_zoom.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'effect-panels-zoom' );
+		}
+
+		//	Effects extension
+		val = $effect_menu.filter( ':checked' ).val() || '';
+		if ( val.length )
+		{
+			opts.extensions = push( opts.extensions, 'effect-menu-' + val );
+		}
+		val = $effect_panels.filter( ':checked' ).val() || '';
+		if ( val.length )
+		{
+			opts.extensions = push( opts.extensions, 'effect-panels-' + val );
+		}
+		val = $effect_listitems.filter( ':checked' ).val() || '';
+		if ( val.length )
+		{
+			opts.extensions = push( opts.extensions, 'effect-listitems-' + val );
+		}
+
+		//	Fullscreen extension
+		if ( $fullscreen.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'fullscreen' );
+		}
+
+		//	Iconbar extension
+		if ( $iconbar.length )
+		{
+			extr.icons = true;
+			if ( $iconbar.is( ':checked' ) )
+			{
+				opts.extensions = push( opts.extensions, 'iconbar' );
+				extr.iconbar = true;
+			}
+		}
+
+		//	Justified listview extension
+		if ( $justified_listview.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'justified-listview' );
+		}
+
+		//	Multiline extension
+		if ( $multiline.length )
+		{
+			extr.multiline = true;
+			if ( !$multiline.is( ':checked' ) )
+			{
+				opts.extensions = push( opts.extensions, 'multiline' );
+			}
+		}
+
+		//	Pagedim extension
+		if ( $pagedim_black.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'pagedim-black' );
+		}
+		val = $pagedim.filter( ':checked' ).val() || '';
+		if ( val.length )
+		{
+			opts.extensions = push( opts.extensions, 'pagedim-' + val );
+		}
+
+		//	Pageshadown extension
+		if ( $pageshadow.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'shadow-page' );
+		}
+		//	Panelshadow extension
+		if ( $panelshadow.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'shadow-panels' );
+		}
+
+		//	Popup extension
+		if ( $popup.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'popup' );
+		}
+
+		//	Positioning extension
+		if ( $position_right.is( ':checked' ) )
+		{
+			opts.offCanvas = value( opts.offCanvas, 'position', 'right' );
+		}
+		val = $position.filter( ':checked' ).val() || '';
+		if ( val.length )
+		{
+			opts.offCanvas = value( opts.offCanvas, 'position', val );
+		}
+		val = $z_position.filter( ':checked' ).val() || '';
+		if ( val.length )
+		{
+			opts.offCanvas = value( opts.offCanvas, 'zposition', val );
+		}
+		
+		//	Theme extension
+		if ( $theme_dark.is( ':checked' ) )
+		{
+			opts.extensions = push( opts.extensions, 'theme-dark' );
+		}
+		val = $theme.filter( ':checked' ).val() || '';
+		if ( val.length )
+		{
+			opts.extensions = push( opts.extensions, 'theme-' + val );
+		}
+
+		//	Tileview extension
+		if ( $tileview.length )
+		{
+			extr.icons = true;
+			if ( $tileview.is( ':checked' ) )
+			{
+				opts.extensions = push( opts.extensions, 'tileview' );
+				opts.navbar = false;
+			}
+		}
+
+		//	Autoheight add-on
+		if ( $auto_height.length )
+		{
+			if ( !$dropdown.length && !$popup.length )
+			{
+				opts.offCanvas = value( opts.offCanvas, 'position', 'bottom' );
+				opts.offCanvas = value( opts.offCanvas, 'zposition', 'front' );
+			}
+		
+			if ( $auto_height.is( ':checked' ) )
+			{
+				opts.autoHeight = true;
+			}
+		}
+
+		//	Counters add-on
+		if ( $counters.is( ':checked' ) )
+		{
+			opts.counters = true;
+		}
+
+		//	Dividers add-on
+		if ( $dividers_add.is( ':checked' ) )
+		{
+			opts.dividers = value( opts.dividers, 'add', true );
+		}
+		if ( $dividers_fixed.is( ':checked' ) )
+		{
+			opts.dividers = value( opts.dividers, 'fixed', true );;
+		}
+
+		//	Dropdown add-on
+		if ( $dropdown.is( ':checked' ) )
+		{
+			opts.dropdown = true;
+		}
+
+		//	IconPanels add-on
+		if ( $iconpanels.is( ':checked' ) )
+		{
+			opts.iconPanels = true;
+		}
+		if ( $iconpanels_navbar.length )
+		{
+			if ( $iconpanels_navbar.is( ':checked' ) )
+			{
+				opts.iconPanels = {
+					add 			: true,
+					hideNavbars		: true
+				};
+			}
+		}
+		
+		var navbars = [];
+
+		//	Navbars add-on
+		if ( $searchfield.is( ':checked' ) )
+		{
+			navbars.push({
+				position: 'top',
+				content: ['searchfield']
+			});
+		}
+		if ( $header.is( ':checked' ) )
+		{
+			navbars.push({
+				position: 'top'
+			});
+		}
+		if ( $footer.is( ':checked' ) )
+		{
+			var bar = {
+				position: 'bottom',
+				content: ['<a class=\'fa fa-envelope\' href=\'#/\'></a>', '<a class=\'fa fa-twitter\' href=\'#/\'></a>', '<a class=\'fa fa-facebook\' href=\'#/\'></a>']
+			};
+			navbars.push( bar );
+		}
+
+		//	Off-canvas add-on
+		if ( $oncanvas.is( ':checked' ) )
+		{
+			opts.offCanvas = false;
+		}
+
+		//	Searchfield add-on
+		if ( $searchfield.is( ':checked' ) )
+		{
+			if ( $searchfield_results.is( ':checked' ) )
+			{
+				opts.searchfield = value( opts.searchfield, 'resultsPanel', true );
+			}
+			if ( $searchfield_subpanels.length && !$searchfield_subpanels.is( ':checked' ) )
+			{
+				opts.searchfield = value( opts.searchfield, 'showSubPanels', false );
+			}
+			if ( $searchfield_textitems.is( ':checked' ) )
+			{
+				opts.searchfield = value( opts.searchfield, 'showTextItems', true );
+			}
+			if ( $searchfield_clear.is( ':checked' ) )
+			{
+				conf.searchfield = value( conf.searchfield, 'clear', true );
+			}
+		}
+
+		//	Section indexer add-on
+		if ( $section_indexer.length )
+		{
+			if ( $section_indexer.is( ':checked' ) )
+			{
+				opts.dividers = value( opts.dividers, 'add', true );
+				opts.sectionIndexer = true;
+			}
+		}
+
+		//	Set selected add-on
+		if ( $selected_hover.is( ':checked' ) )
+		{
+			opts.setSelected = value( opts.setSelected, 'hover', true );
+		}
+		if ( $selected_parent.is( ':checked' ) )
+		{
+			opts.setSelected = value( opts.setSelected, 'parent', true );
+		}
+
+
+
+		if ( navbars.length )
+		{
+			opts.navbars = navbars;
+		}
+
+
+		_iframe.updateMenu( opts, conf, extr );
+
+
+
+		if ( $codejs.length )
+		{
+			var tabs = $codejs.hasClass( 'code-in-html' ) ? 4 : 2;
+			var spaces = Array( ( tabs * 3 ) + 1 ).join( ' ' );
+
+			opts = stringify( opts, spaces );
+			conf = stringify( conf, spaces );
+			conf = conf ? ', ' + conf : '';
+
+			$codejs.html( spaces + '$("#menu").mmenu(' + opts + conf + ');' );
+		}
+	}
+
+	function stringify( obj, spaces )
+	{
+		obj = JSON.stringify( obj, null, 3 );
+		obj = obj.split( '\n' );
+		for ( var l = 1; l < obj.length; l++ )
+		{
+			obj[ l ] = spaces + obj[ l ];
+		}
+		obj = obj.join( '\n' );
+		obj = obj.split( '<' ).join( '&lt;' );
+		obj = obj.split( '>' ).join( '&gt;' );
+
+		if ( obj == '{}' )
+		{
+			obj = '';
+		}
+		return obj;
+	}
+
+	function value( o, k, v )
+	{
+		if ( !o )
+		{
+			o = {};
+		}
+		o[ k ] = v;
+		return o;
+	}
+	function push( o, v )
+	{
+		if ( !o )
+		{
+			o = [];
+		}
+		o.push( v );
+		return o;
+	}
+	
+	var intrv = setInterval(
+		function()
+		{
+			if ( typeof _iframe.updateMenu == 'function' )
+			{
+				rerender();
+				clearInterval( intrv );
+			}
+		}, 500
+	);
+});

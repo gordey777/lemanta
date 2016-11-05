@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<!-- saved from url=(0069)http://mmenu.frebsite.nl/demo/index.html?demo=playground&menu=default -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		
+		<meta name="author" content="www.frebsite.nl">
+		<meta name="viewport" content="width=device-width initial-scale=1.0 maximum-scale=1.0 user-scalable=yes">
+
+		<title>jQuery.mmenu playground demo</title>
+
+		<link type="text/css" rel="stylesheet" href="./font-awesome.min(1).css">
+
+		<link type="text/css" rel="stylesheet" href="./demo.css">
+		<link type="text/css" rel="stylesheet" href="./jquery.mmenu.all.css">
+		<link type="text/css" rel="stylesheet" data-href="../mmenu/extensions/iconbar/jquery.mmenu.iconbar.css?v=5.7.1">
+
+		<script src="./jquery-1.12.4.min.js.завантаження"></script>
+		<script type="text/javascript">
+			function debug( msg, cls )
+			{
+				msg = msg.split( 'MMENU: ' ).join( '' );
+				$('<div class="' + cls + '">' + msg + '</div>')
+					.appendTo( $errors )
+					.hide()
+					.fadeIn( 600 );
+			}
+			document.mmenu_console = {
+				log: function() {
+					debug( msg, 'error' );
+				},
+				warn: function() {
+					debug( msg, 'warn' );	
+				},
+				info: function() {}
+			};
+		</script>
+		<script type="text/javascript" src="./jquery.mmenu.all.min.js.завантаження"></script>
+		<script type="text/javascript" src="./jquery.mmenu.debugger.js.завантаження"></script>
+		<script type="text/javascript">
+			if ( window.self === window.top )
+			{
+				window.location.href = 'http://mmenu.frebsite.nl/examples.html';
+			}
+			else
+			{
+				var $html 		= $(),
+					$body 		= $(),
+					$icon 		= $(),
+					$errors 	= $(),
+					$orgMenu 	= $(),
+					$menu 		= false,
+					api			= false;
+
+				var updateMenu;
+
+				$(function() {
+					$html 		= $('html');
+					$body 		= $('body');
+					$icon 		= $('link[data-href*=".iconbar.css"]');
+					$errors 	= $('.messages');
+					$orgMenu 	= $('nav#menu').detach();
+				
+
+					updateMenu 	= function( opts, conf, extr )
+					{
+
+						var opened = false;
+
+						var createMenu = function()
+						{
+							$errors.children().each(function( i ) {
+								var that = this;
+								setTimeout(function() {
+									$(that).slideUp( 300, function() {
+										$(that).remove();
+									});
+								}, i * 150);
+							});
+							if ( extr.iconbar )
+							{
+								$icon.attr( 'href', $icon.data( 'href' ) );
+							}
+							else
+							{
+								$icon.attr( 'href', '' );
+							}
+
+							$html.removeAttr( 'class' );
+							if ( $menu )
+							{
+								$menu.remove();
+								if ( $.mmenu.glbl )
+								{
+									$.mmenu.glbl.$allMenus = $();
+								}
+							}
+							$menu = $orgMenu.clone().prependTo( 'body' );
+
+
+							if ( !extr.icons )
+							{
+								$menu.find( '.fa' ).remove();
+							}
+							if ( !extr.toggles )
+							{
+								$menu.find( '.Toggle' ).remove();
+							}
+							if ( !extr.multiline )
+							{
+								$menu.find( '.longtext' ).remove();
+							}
+
+							api = $menu.mmenu( opts, conf ).data( 'mmenu' );
+
+							$menu.on(
+								'click',
+								'a[href^="#/"]',
+								function( e ) {
+									alert(  'Thank you for clicking, but that\'s a demo link.' );
+									return false;
+								}
+							);
+
+							if ( opened )
+							{
+								api.open();
+							}
+						}
+
+						if ( $menu )
+						{
+							if ( $html.hasClass( 'mm-opened' ) )
+							{
+								opened = true;
+								api.bind( 'closed', createMenu );
+								api.close();
+							}
+							else
+							{
+								createMenu();
+							}
+						}
+						else
+						{
+							createMenu();
+						}
+					}
+				});
+			}
+		</script>
+	</head>
+	<body>
+		<div id="page">
+			<div class="header">
+				<a id="hamburger" href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#menu"></a>
+				Demo
+			</div>
+			<div class="content">
+				<div class="messages"></div>
+				<p><strong>This is a demo.</strong><br>
+					Click the menu icon to open the menu.</p>
+			</div>
+			<nav id="menu">
+
+
+				<ul>
+					<li><a href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#/"><i class="fa fa-home"></i> Home</a><input type="checkbox" class="Toggle" checked=""></li>
+					<li><span><i class="fa fa-user"></i> About us</span><input type="checkbox" class="Toggle">
+						<ul>
+							<li><a href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#/about/history">History</a></li>
+							<li><span>The team</span>
+								<ul>
+									<li><a href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#/about/team/management">Management</a></li>
+									<li><a href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#/about/team/sales">Sales</a></li>
+									<li><a href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#/about/team/development">Development</a></li>
+								</ul>
+							</li>
+							<li><a href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#/about/address">Our address</a></li>
+						</ul>
+					</li>
+					<li><a href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#/contact"><i class="fa fa-envelope"></i> Contact</a><input type="checkbox" class="Toggle"></li>
+					<li class="longtext"><a href="http://mmenu.frebsite.nl/demo/index.html?demo=playground&amp;menu=default#/test">A very long text on a menu item that could be truncated to fit on a single line.</a></li>
+				</ul>
+			</nav>
+		</div>
+	
+</body></html>

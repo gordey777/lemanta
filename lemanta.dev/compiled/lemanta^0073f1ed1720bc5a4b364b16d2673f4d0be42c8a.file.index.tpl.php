@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-04 23:06:26
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-05 17:41:22
          compiled from "design/lemanta/html\index.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:326185819dfcc45fb91-21474403%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0073f1ed1720bc5a4b364b16d2673f4d0be42c8a' => 
     array (
       0 => 'design/lemanta/html\\index.tpl',
-      1 => 1478289785,
+      1 => 1478356875,
       2 => 'file',
     ),
   ),
@@ -41,10 +41,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'sid' => 0,
     'id' => 0,
     'class' => 0,
-    'menuTop' => 0,
-    'helper' => 0,
-    'name' => 0,
-    'url' => 0,
     'enableHitProducts' => 0,
     'items' => 0,
     'PrevPageUrl' => 0,
@@ -103,7 +99,8 @@ $_smarty_tpl->tpl_vars['smarty']->value['section']['images']['last']       = ($_
 <?php if (empty($_smarty_tpl->tpl_vars['image']->value['found'])){?><?php break 1?><?php }?><li><img src="<?php echo $_smarty_tpl->tpl_vars['image']->value['url'];?>
 " alt="" /><?php if (!empty($_smarty_tpl->tpl_vars['image']->value['alt'])||!empty($_smarty_tpl->tpl_vars['image']->value['desc'])){?><div class="slide-desc"><?php if (!empty($_smarty_tpl->tpl_vars['image']->value['alt'])){?><h2><?php echo $_smarty_tpl->tpl_vars['image']->value['alt'];?>
 </h2><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['image']->value['desc'])){?><p><?php echo $_smarty_tpl->tpl_vars['image']->value['desc'];?>
-</p><?php }?></div><?php }?></li><?php endfor; endif; ?></ul></div><?php }?><!-- wrapper --><div class="bg wrapper"><header role="banner"><div class="top-menu-wrap"><div class="container"><div class="row"><div class="top-menu col-md-12"><div class="login col-md-2"><?php if (!empty($_smarty_tpl->tpl_vars['user']->value)){?><span id="username"><a href="account" rel="nofollow"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'user->compound_name'),$_smarty_tpl);?>
+</p><?php }?></div><?php }?></li><?php endfor; endif; ?></ul></div><?php }?><!-- wrapper --><div class="bg wrapper"><header role="banner"><a href="#menu" class="mob-menu right"><i class="fa fa-bars"></i></a><nav id="menu"><ul><?php echo $_smarty_tpl->getSubTemplate ('common/main-nav.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+</ul></nav><div class="top-menu-wrap"><div class="container"><div class="row"><div class="top-menu col-md-12"><div class="login col-md-2"><?php if (!empty($_smarty_tpl->tpl_vars['user']->value)){?><span id="username"><a href="account" rel="nofollow"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'user->compound_name'),$_smarty_tpl);?>
 </a><?php if (!empty($_smarty_tpl->tpl_vars['group']->value->discount)){?>, ваша скидка &mdash; <?php echo $_smarty_tpl->tpl_vars['group']->value->discount;?>
 %<?php }?></span>&nbsp;&nbsp;|&nbsp;&nbsp;<a id="logout" href="logout" rel="nofollow">Выйти</a><?php }else{ ?><a id="login" href="login" rel="nofollow">Вход</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a id="register" href="registration" rel="nofollow">Регистрация</a><?php }?></div><div class="socialnet col-md-2"><a href="skype:lemanta2014?call" rel="nofollow"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
 images/soc1.png" alt="Lemanta Skype" /></a><a href="http://vkontakte.ru/share.php?url=http://lemanta.com" target="_blank" rel="nofollow"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
@@ -122,31 +119,8 @@ $_smarty_tpl->tpl_vars['item']->_loop = true;
 "><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
 images/logo.png" alt="" /></a></div><div id="cart_informer" class="head-cart col-md-2 col-md-offset-8 col-sm-2 col-xs-2"><?php echo $_smarty_tpl->getSubTemplate ('common/cart-informer.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 </div><div class="search-bg col-md-2 col-sm-3 col-xs-4 col-md-push-10"><div id="search" class="search"><form method="post" onsubmit="return false"><input class="input_search" name="keyword" maxlength="48" type="text" value="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['inputValue'][0][0]->inputValue(array('from'=>'keyword'),$_smarty_tpl);?>
-" placeholder="Поиск товара" /><input name="search_type" type="hidden" value="a1" /><input name="reset_old" type="hidden" value="1" /><input class="button_search" type="submit" value="" /></form></div></div><nav class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation"><ul class="headnav"><?php if (empty($_smarty_tpl->tpl_vars['menuTop']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['menuByLangTechName'][0][0]->menuByLangTechName(array('name'=>'Верхнее меню','attach'=>'sections, categories','assign'=>'menuTop','scope'=>'global'),$_smarty_tpl);?>
-<?php }?><?php if (!empty($_smarty_tpl->tpl_vars['menuTop']->value)){?><?php if (!empty($_smarty_tpl->tpl_vars['menuTop']->value->categories)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'category->category_id','assign'=>'sid'),$_smarty_tpl);?>
-<?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
- $_from = $_smarty_tpl->tpl_vars['menuTop']->value->categories; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
-foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
-$_smarty_tpl->tpl_vars['item']->_loop = true;
-?><?php if (!empty($_smarty_tpl->tpl_vars['item']->value->enabled)&&(empty($_smarty_tpl->tpl_vars['item']->value->hidden)||$_smarty_tpl->tpl_vars['helper']->value->existsUser())){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'item->category_id','assign'=>'id'),$_smarty_tpl);?>
-<?php $_smarty_tpl->tpl_vars['class'] = new Smarty_variable($_smarty_tpl->tpl_vars['id']->value==$_smarty_tpl->tpl_vars['sid']->value ? 'class="selected"' : '', null, 0);?><?php $_smarty_tpl->tpl_vars['name'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['item']->value->name)===null||$tmp==='' ? '' : $tmp), null, 0);?><li <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
-><a href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['url'][0][0]->url(array(),$_smarty_tpl);?>
-" title="<?php echo htmlspecialchars($_smarty_tpl->tpl_vars['name']->value, ENT_QUOTES, 'UTF-8');?>
-"><?php echo $_smarty_tpl->tpl_vars['name']->value;?>
-</a></li><?php }?><?php } ?><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['menuTop']->value->sections)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'section->section_id','assign'=>'sid'),$_smarty_tpl);?>
-<?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
- $_from = $_smarty_tpl->tpl_vars['menuTop']->value->sections; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
-foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
-$_smarty_tpl->tpl_vars['item']->_loop = true;
-?><?php if (!empty($_smarty_tpl->tpl_vars['item']->value->enabled)&&(empty($_smarty_tpl->tpl_vars['item']->value->hidden)||$_smarty_tpl->tpl_vars['helper']->value->existsUser())){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'item->section_id','assign'=>'id'),$_smarty_tpl);?>
-<?php $_smarty_tpl->tpl_vars['class'] = new Smarty_variable($_smarty_tpl->tpl_vars['id']->value==$_smarty_tpl->tpl_vars['sid']->value ? 'class="selected"' : '', null, 0);?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['url'][0][0]->url(array('assign'=>'url'),$_smarty_tpl);?>
-<?php $_smarty_tpl->tpl_vars['url'] = new Smarty_variable(preg_replace('!/sections/mainpage$!i','/',$_smarty_tpl->tpl_vars['url']->value), null, 0);?><?php $_smarty_tpl->tpl_vars['url'] = new Smarty_variable(preg_replace('!/dummy/!i','/',$_smarty_tpl->tpl_vars['url']->value), null, 0);?><?php $_smarty_tpl->tpl_vars['name'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['item']->value->name)===null||$tmp==='' ? '' : $tmp), null, 0);?><?php if ($_smarty_tpl->tpl_vars['name']->value=='Главная'){?><li <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
-><a href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['site'][0][0]->site(array(),$_smarty_tpl);?>
-" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу"><i class="fa fa-home"></i></a></li><?php }else{ ?><li <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
-><a href="<?php echo $_smarty_tpl->tpl_vars['url']->value;?>
-" title="<?php echo htmlspecialchars($_smarty_tpl->tpl_vars['name']->value, ENT_QUOTES, 'UTF-8');?>
-"><?php echo $_smarty_tpl->tpl_vars['name']->value;?>
-</a></li><?php }?><?php }?><?php } ?><?php }?><?php }?></ul></nav><!-- /nav --></div><!-- /.row --></div><!-- /.container --></header><!-- /header --><div class="clr"></div><?php if (!empty($_smarty_tpl->tpl_vars['enableHitProducts']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountProducts'][0][0]->discountProducts(array('count'=>20,'assign'=>'items'),$_smarty_tpl);?>
+" placeholder="Поиск товара" /><input name="search_type" type="hidden" value="a1" /><input name="reset_old" type="hidden" value="1" /><input class="button_search" type="submit" value="" /></form></div></div><nav class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation"><ul class="headnav"><?php echo $_smarty_tpl->getSubTemplate ('common/main-nav.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+</ul></nav><!-- /nav --></div><!-- /.row --></div><!-- /.container --></header><!-- /header --><div class="clr"></div><?php if (!empty($_smarty_tpl->tpl_vars['enableHitProducts']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountProducts'][0][0]->discountProducts(array('count'=>20,'assign'=>'items'),$_smarty_tpl);?>
 <?php if (!empty($_smarty_tpl->tpl_vars['items']->value)){?><div class="popular0"><div class="popular"><ul><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['items']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
@@ -200,7 +174,8 @@ $_smarty_tpl->tpl_vars['seo']->value[$_smarty_tpl->tpl_vars['number']->value]['b
 "><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'config->seo_link2'),$_smarty_tpl);?>
 </a><?php }?><?php }?><?php }?><p>Copyright © <a href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['site'][0][0]->site(array(),$_smarty_tpl);?>
 ">Lemanta</a>. All rights reserved.</p><div class="counters"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['counters'][0][0]->counters(array(),$_smarty_tpl);?>
-</div></div></div><!-- /.row --></div><!-- /.container --></footer><a id="back-top" title="К началу страницы">↑</a><script>function gotoHref ( anchor ) {try {var href1 = anchor.getAttribute('data-href');if (typeof href1 == 'string' && href1 != '') {if (anchor.tagName == 'A') {var href2 = anchor.getAttribute('href');if (typeof href2 != 'string' || href2 != href1) {anchor.setAttribute('href', href1);}return true;} else {}}} catch (e) { }return false;};</script></body></html><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['headerLastModified'][0][0]->headerLastModified(array(),$_smarty_tpl);?>
+</div></div></div><!-- /.row --></div><!-- /.container --></footer><a id="back-top" title="К началу страницы">↑</a><script>function gotoHref ( anchor ) {try {var href1 = anchor.getAttribute('data-href');if (typeof href1 == 'string' && href1 != '') {if (anchor.tagName == 'A') {var href2 = anchor.getAttribute('href');if (typeof href2 != 'string' || href2 != href1) {anchor.setAttribute('href', href1);}return true;} else {}}} catch (e) { }return false;};</script><script type="text/javascript" src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
+js/jquery.mmenu.all.min.js"></script><script type="text/javascript">jQuery(document).ready(function($) {$("#menu").mmenu({"extensions": ["pagedim-black"],"offCanvas": {"position": "right"}});});</script></body></html><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['headerLastModified'][0][0]->headerLastModified(array(),$_smarty_tpl);?>
 <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['headerExpires'][0][0]->headerExpires(array(),$_smarty_tpl);?>
 <?php }?>
 <?php }} ?>

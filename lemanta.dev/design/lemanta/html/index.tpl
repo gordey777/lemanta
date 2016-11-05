@@ -258,7 +258,14 @@
                 <div class="bg wrapper">
 
     <header role="banner">
+<a href="#menu" class="mob-menu right"><i class="fa fa-bars"></i></a>
+<nav id="menu">
+<ul>
+                                    {include 'common/main-nav.htm'}
 
+</ul>
+
+</nav>
       <div class="top-menu-wrap">
         <div class="container">
           <div class="row">
@@ -406,65 +413,7 @@
                             |                                                     |
                             ================================================ --> *}
 
-                                    {* <!-- читаем меню --> *}
-
-                                    {if empty($menuTop)}
-                                        {menuByLangTechName name='Верхнее меню' attach='sections, categories' assign=menuTop scope=global}
-                                    {/if}
-                                    {if !empty($menuTop)}
-
-                                        {* <!-- прикрепленные категории --> *}
-
-                                        {if !empty($menuTop->categories)}
-                                            {echoVar from='category->category_id' assign=sid}
-                                            {foreach $menuTop->categories as $item}
-                                                {if !empty($item->enabled) && (empty($item->hidden) || $helper->existsUser())}
-                                                    {echoVar from='item->category_id' assign=id}
-                                                    {$class = ($id == $sid) ? 'class="selected"' : ''}
-
-                                                    {$name = $item->name|default:''}
-
-                                                    <li {$class}>
-                                                        <a href="{url}" title="{$name|escape}">
-                                                            {$name}
-                                                        </a>
-                                                    </li>
-                                                {/if}
-                                            {/foreach}
-                                        {/if}
-
-                                        {* <!-- прикрепленные страницы --> *}
-
-                                        {if !empty($menuTop->sections)}
-                                            {echoVar from='section->section_id' assign=sid}
-                                            {foreach $menuTop->sections as $item}
-                                                {if !empty($item->enabled) && (empty($item->hidden) || $helper->existsUser())}
-                                                    {echoVar from='item->section_id' assign=id}
-                                                    {$class = ($id == $sid) ? 'class="selected"' : ''}
-
-                                                    {url assign=url}
-                                                    {$url = preg_replace('!/sections/mainpage$!i', '/', $url)}
-                                                    {$url = preg_replace('!/dummy/!i', '/', $url)}
-
-                                                    {$name = $item->name|default:''}
-
-                                                    {if $name == 'Главная'}
-                                                        <li {$class}>
-                                                            <a href="{site}" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу">
-                                                                <i class="fa fa-home"></i>
-                                                            </a>
-                                                        </li>
-                                                    {else}
-                                                        <li {$class}>
-                                                            <a href="{$url}" title="{$name|escape}">
-                                                                {$name}
-                                                            </a>
-                                                        </li>
-                                                    {/if}
-                                                {/if}
-                                            {/foreach}
-                                        {/if}
-                                    {/if}
+                                    {include 'common/main-nav.htm'}
             </ul>
           </nav><!-- /nav -->
 
@@ -692,6 +641,19 @@
                     };
                 </script>
 
+  <script type="text/javascript" src="{theme}js/jquery.mmenu.all.min.js"></script>
+  <script type="text/javascript">
+  jQuery(document).ready(function($) {
+    $("#menu").mmenu({
+      "extensions": [
+        "pagedim-black"
+      ],
+      "offCanvas": {
+        "position": "right"
+      }
+    });
+  });
+  </script>
     </body>
   </html>
 
