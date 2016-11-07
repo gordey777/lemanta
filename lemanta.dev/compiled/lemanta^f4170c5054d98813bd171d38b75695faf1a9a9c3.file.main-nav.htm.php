@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-05 17:34:50
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-06 14:12:22
          compiled from "design/lemanta/html\common\main-nav.htm" */ ?>
 <?php /*%%SmartyHeaderCode:1145581dee0a5d2ca7-24122141%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'f4170c5054d98813bd171d38b75695faf1a9a9c3' => 
     array (
       0 => 'design/lemanta/html\\common\\main-nav.htm',
-      1 => 1478356149,
+      1 => 1478430741,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_581dee0a658ef6_69840112',
   'variables' => 
   array (
     'menuTop' => 0,
@@ -27,8 +29,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'url' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_581dee0a658ef6_69840112',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_581dee0a658ef6_69840112')) {function content_581dee0a658ef6_69840112($_smarty_tpl) {?><?php if (empty($_smarty_tpl->tpl_vars['menuTop']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['menuByLangTechName'][0][0]->menuByLangTechName(array('name'=>'Верхнее меню','attach'=>'sections, categories','assign'=>'menuTop','scope'=>'global'),$_smarty_tpl);?>
 <?php }?><?php if (!empty($_smarty_tpl->tpl_vars['menuTop']->value)){?><?php if (!empty($_smarty_tpl->tpl_vars['menuTop']->value->categories)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'category->category_id','assign'=>'sid'),$_smarty_tpl);?>

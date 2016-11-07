@@ -1,0 +1,264 @@
+
+/* =============================================================================
+  MENU TOGGLE SWITCHES
+============================================================================= */
+
+// vars
+
+$button-width: 54px;
+$button-height: 48px;
+$bar-thickness: 3px;
+$button-pad: 9px;
+$button-trans-delay: .5s;
+$humb-color: rgb(155,155,155);
+$humb-color-hov: darken($humb-color, 20%);
+$humb-bg-color: rgba(255,150,80, 0);
+/**
+ * Toggle Switch Globals
+ *
+ * All switches should take on the class `humb-toggle-switch` as well as their
+ * variant that will give them unique properties. This class is an overview
+ * class that acts as a reset for all versions of the icon.
+ */
+
+.humb-toggle-switch {
+  font-size: 0;
+
+  position: absolute;
+  z-index: 99;
+  top: 20px;
+  right: 20px;
+
+  display: block;
+  overflow: hidden;
+
+  width: $button-width;
+  height: $button-height;
+  margin: 0;
+  padding: 0;
+
+  cursor: pointer;
+  transition: background $button-trans-delay;
+  transition: transform $button-trans-delay;
+  text-indent: -9999px;
+
+  border: none;
+  border-radius: none;
+  box-shadow: none;
+
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  &:focus {
+    outline: none;
+  }
+  span {
+    position: absolute;
+    top: ($button-height / 2) - ($bar-thickness / 2);
+    right: $button-pad;
+    left: $button-pad;
+
+    display: block;
+
+    height: $bar-thickness;
+
+    background: $humb-color;
+    &:before,
+    &:after {
+      position: absolute;
+      left: 0;
+
+      display: block;
+
+      width: 100%;
+      height: $bar-thickness;
+
+      content: '';
+
+      background-color: $humb-color;
+    }
+    &:before {
+      top: -(($button-height / 2) - ($bar-thickness / 2) - $button-pad);
+    }
+    &:after {
+      bottom: -(($button-height / 2) - ($bar-thickness / 2) - $button-pad);
+    }
+  }
+  &:hover {
+    transform: rotate(180deg);
+    span {
+      background-color: $humb-color-hov;
+      &:before,
+      &:after {
+        background-color: $humb-color-hov;
+      }
+    }
+  }
+}
+
+
+/**
+ * Style 1
+ *
+ * Rotating hamburger icon (rot), that simply rotates 90 degrees when activated.
+ * Nothing too fancy, simple transition.
+ */
+
+.humb-toggle-switch__rot {
+  background-color: $humb-bg-color;
+  span {
+    transition: transform $button-trans-delay;
+  }
+}
+/* active state, i.e. menu open */
+
+.humb-toggle-switch__rot.active {
+  background-color: darken($humb-bg-color, 20%);
+  span {
+    transform: rotate(90deg);
+  }
+}
+/**
+ * Style 2
+ *
+ * Hamburger to "x" (htx). Takes on a hamburger shape, bars slide
+ * down to center and transform into an "x".
+ */
+
+.humb-toggle-switch__htx {
+  background-color: $humb-bg-color;
+  span {
+    transition: background 0 $button-trans-delay;
+    &:before,
+    &:after {
+      transition-delay: $button-trans-delay, 0;
+      transition-duration: $button-trans-delay, $button-trans-delay;
+    }
+    &:after {
+      transition-property: bottom, transform;
+    }
+    &:before {
+      transition-property: top, transform;
+    }
+  }
+}
+
+
+/* active state, i.e. menu open */
+.mm-opening {
+  .humb-toggle-switch__htx /* .active */ {
+    background-color: darken($humb-bg-color, 20%);
+    span {
+      background: none;
+      &:before {
+        top: 0;
+
+        transform: rotate(765deg);
+      }
+      &:after {
+        bottom: 0;
+
+        transform: rotate(-765deg);
+      }
+      &:before,
+      &:after {
+        transition-delay: 0, $button-trans-delay;
+      }
+    }
+  }
+}
+
+/**
+ * Style 3
+ *
+ * Hamburger to left-arrow (htla). Hamburger menu transforms to a left-pointing
+ * arrow. Usually indicates an off canvas menu sliding in from left that
+ * will be close on re-click of the icon.
+ */
+
+.humb-toggle-switch__htla {
+  background-color: $humb-bg-color;
+  span {
+    transition: transform $button-trans-delay;
+    &:before {
+      transition: transform $button-trans-delay, width $button-trans-delay, top $button-trans-delay;
+      transform-origin: top right;
+    }
+    &:after {
+      transition: transform $button-trans-delay, width $button-trans-delay, bottom $button-trans-delay;
+      transform-origin: bottom right;
+    }
+  }
+}
+
+
+
+/* active state, i.e. menu open */
+
+.humb-toggle-switch__htla.active {
+  background-color: darken($humb-bg-color, 20%);
+  span {
+    transform: rotate(180deg);
+    &:before,
+    &:after {
+      width: 50%;
+    }
+    &:before {
+      top: 0;
+
+      transform: translateX($button-width/2 - $button-pad + $bar-thickness) translateY($bar-thickness/2) rotate(45deg);
+    }
+    &:after {
+      bottom: 0;
+
+      transform: translateX($button-width/2 - $button-pad + $bar-thickness) translateY(-$bar-thickness/2) rotate(-45deg);
+    }
+  }
+}
+
+
+/**
+ * Style 4
+ *
+ * Hamburger to right-arrow (htra). Hamburger menu transforms to a
+ * right-pointing arrow. Usually indicates an off canvas menu sliding in from
+ * right that will be close on re-click of the icon.
+ */
+
+.humb-toggle-switch__htra {
+  background-color: $humb-bg-color;
+  span {
+    transition: transform $button-trans-delay;
+    &:before {
+      transition: transform $button-trans-delay, width $button-trans-delay, top $button-trans-delay;
+      transform-origin: top left;
+    }
+    .humb-toggle-switch__htra span::after {
+      transition: transform $button-trans-delay, width $button-trans-delay, bottom $button-trans-delay;
+      transform-origin: bottom left;
+    }
+  }
+}
+
+/* active state, i.e. menu open */
+
+.humb-toggle-switch__htra.active {
+  background-color: darken($humb-bg-color, 20%);
+  span {
+    transform: rotate(180deg);
+    &:before,
+    &:after {
+      width: 50%;
+    }
+    &:before {
+      top: 0;
+
+      transform: translateX(-$bar-thickness) translateY($bar-thickness/2) rotate(-45deg);
+    }
+    &:after {
+      bottom: 0;
+
+      transform: translateX(-$bar-thickness) translateY(-$bar-thickness/2) rotate(45deg);
+    }
+  }
+}

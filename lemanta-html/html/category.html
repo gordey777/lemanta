@@ -26,7 +26,9 @@
 
     <header role="banner">
 
-<a href="#menu" class="mob-menu right"><i class="fa fa-bars"></i></a>
+<a href="#menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx">
+  <span>toggle menu</span>
+</a>
 <nav id="menu">
     <ul>
       <li>
@@ -461,18 +463,98 @@
   </footer><!-- /footer -->
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script type="text/javascript" src="js/jquery.mmenu.all.min.js"></script>
-  <script type="text/javascript">
-  jQuery(document).ready(function($) {
-    $("#menu").mmenu({
-      "extensions": [
-        "pagedim-black"
-      ],
-      "offCanvas": {
-        "position": "right"
-      }
-    });
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+  $("#menu").mmenu({
+    "extensions": [
+      "pagedim-black"
+    ],
+    "offCanvas": {
+      "position": "right"
+    }
   });
-  </script>
+
+});
+
+
+
+</script>
+<!--   <script type="text/javascript">
+    //  The menu
+if ( $.fn.mmenu )
+{
+
+  var API = $('#menu')
+    .mmenu({
+      extensions    : [ 'widescreen', 'theme-white', 'effect-menu-slide', 'pagedim-black' ],
+      counters    : true,
+      dividers    : {
+        fixed       : true
+      },
+      navbar      : {
+        title     : 'mmenu'
+      },
+      navbars     : [
+        {
+          position  : 'top',
+          content   : ['searchfield']
+        }, {
+          position  : 'top'
+        }, {
+          position  : 'bottom',
+          content   : ['<div>Hosted by <a href="https://www.byte.nl/" target="_blank">Byte</a></div>']
+        }
+      ],
+      searchfield   : {
+        resultsPanel  : true
+      },
+      setSelected   : {
+        parent      : true
+      }
+
+    }, {
+      searchfield   : {
+        clear       : true
+      },
+          "offCanvas": {
+    "position": "right"
+  }
+
+    })
+    .data( 'mmenu' );
+
+  var $burger = $('#hamburger')
+    .on( 'click',
+      function( e )
+      {
+        e.preventDefault();
+        if ( $html.hasClass( 'mm-opened' ) )
+        {
+          API.close();
+        }
+        else
+        {
+          API.open();
+        }
+      }
+    )
+    .children( '.hamburger' );
+
+  API.bind( 'closed', function() {
+    setTimeout(function() {
+      $burger.removeClass( 'is-active' );
+    }, 100);
+  });
+  API.bind( 'opened', function() {
+    setTimeout(function() {
+      $burger.addClass( 'is-active' );
+    }, 100);
+  });
+}
+
+</script> -->
+
 </body>
 
 </html>

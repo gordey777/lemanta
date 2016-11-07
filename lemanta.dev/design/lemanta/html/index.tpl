@@ -258,14 +258,19 @@
                 <div class="bg wrapper">
 
     <header role="banner">
-<a href="#menu" class="mob-menu right"><i class="fa fa-bars"></i></a>
+<a href="#menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx">
+  <span>toggle menu</span>
+</a>
+
 <nav id="menu">
-<ul>
-                                    {include 'common/main-nav.htm'}
+  <ul>
+    {include 'common/main-nav.htm'}
 
-</ul>
+      {include 'common/menu-catalog.htm'}
 
+  </ul>
 </nav>
+
       <div class="top-menu-wrap">
         <div class="container">
           <div class="row">
@@ -405,7 +410,7 @@
             </div>
           </div>
 
-          <nav class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation">
+          <nav id="head-top-nav" class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation">
             <ul class="headnav">
                             {* <!-- ===============================================
                             |                                                     |

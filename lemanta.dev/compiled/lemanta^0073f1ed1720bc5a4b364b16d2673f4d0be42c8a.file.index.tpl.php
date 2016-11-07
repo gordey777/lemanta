@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-05 17:41:22
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-06 21:24:31
          compiled from "design/lemanta/html\index.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:326185819dfcc45fb91-21474403%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,13 +7,21 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0073f1ed1720bc5a4b364b16d2673f4d0be42c8a' => 
     array (
       0 => 'design/lemanta/html\\index.tpl',
-      1 => 1478356875,
+      1 => 1478456664,
       2 => 'file',
     ),
   ),
   'nocache_hash' => '326185819dfcc45fb91-21474403',
   'function' => 
   array (
+    'showCategoriesTree' => 
+    array (
+      'parameter' => 
+      array (
+        'needRename' => 0,
+      ),
+      'compiled' => '',
+    ),
   ),
   'version' => 'Smarty-3.1.8',
   'unifunc' => 'content_5819dfcc8b8fd0_44270972',
@@ -99,7 +107,8 @@ $_smarty_tpl->tpl_vars['smarty']->value['section']['images']['last']       = ($_
 <?php if (empty($_smarty_tpl->tpl_vars['image']->value['found'])){?><?php break 1?><?php }?><li><img src="<?php echo $_smarty_tpl->tpl_vars['image']->value['url'];?>
 " alt="" /><?php if (!empty($_smarty_tpl->tpl_vars['image']->value['alt'])||!empty($_smarty_tpl->tpl_vars['image']->value['desc'])){?><div class="slide-desc"><?php if (!empty($_smarty_tpl->tpl_vars['image']->value['alt'])){?><h2><?php echo $_smarty_tpl->tpl_vars['image']->value['alt'];?>
 </h2><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['image']->value['desc'])){?><p><?php echo $_smarty_tpl->tpl_vars['image']->value['desc'];?>
-</p><?php }?></div><?php }?></li><?php endfor; endif; ?></ul></div><?php }?><!-- wrapper --><div class="bg wrapper"><header role="banner"><a href="#menu" class="mob-menu right"><i class="fa fa-bars"></i></a><nav id="menu"><ul><?php echo $_smarty_tpl->getSubTemplate ('common/main-nav.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+</p><?php }?></div><?php }?></li><?php endfor; endif; ?></ul></div><?php }?><!-- wrapper --><div class="bg wrapper"><header role="banner"><a href="#menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx"><span>toggle menu</span></a><nav id="menu"><ul><?php echo $_smarty_tpl->getSubTemplate ('common/main-nav.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+<?php echo $_smarty_tpl->getSubTemplate ('common/menu-catalog.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 </ul></nav><div class="top-menu-wrap"><div class="container"><div class="row"><div class="top-menu col-md-12"><div class="login col-md-2"><?php if (!empty($_smarty_tpl->tpl_vars['user']->value)){?><span id="username"><a href="account" rel="nofollow"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'user->compound_name'),$_smarty_tpl);?>
 </a><?php if (!empty($_smarty_tpl->tpl_vars['group']->value->discount)){?>, ваша скидка &mdash; <?php echo $_smarty_tpl->tpl_vars['group']->value->discount;?>
 %<?php }?></span>&nbsp;&nbsp;|&nbsp;&nbsp;<a id="logout" href="logout" rel="nofollow">Выйти</a><?php }else{ ?><a id="login" href="login" rel="nofollow">Вход</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a id="register" href="registration" rel="nofollow">Регистрация</a><?php }?></div><div class="socialnet col-md-2"><a href="skype:lemanta2014?call" rel="nofollow"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
@@ -119,7 +128,7 @@ $_smarty_tpl->tpl_vars['item']->_loop = true;
 "><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
 images/logo.png" alt="" /></a></div><div id="cart_informer" class="head-cart col-md-2 col-md-offset-8 col-sm-2 col-xs-2"><?php echo $_smarty_tpl->getSubTemplate ('common/cart-informer.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 </div><div class="search-bg col-md-2 col-sm-3 col-xs-4 col-md-push-10"><div id="search" class="search"><form method="post" onsubmit="return false"><input class="input_search" name="keyword" maxlength="48" type="text" value="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['inputValue'][0][0]->inputValue(array('from'=>'keyword'),$_smarty_tpl);?>
-" placeholder="Поиск товара" /><input name="search_type" type="hidden" value="a1" /><input name="reset_old" type="hidden" value="1" /><input class="button_search" type="submit" value="" /></form></div></div><nav class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation"><ul class="headnav"><?php echo $_smarty_tpl->getSubTemplate ('common/main-nav.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+" placeholder="Поиск товара" /><input name="search_type" type="hidden" value="a1" /><input name="reset_old" type="hidden" value="1" /><input class="button_search" type="submit" value="" /></form></div></div><nav id="head-top-nav" class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation"><ul class="headnav"><?php echo $_smarty_tpl->getSubTemplate ('common/main-nav.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 </ul></nav><!-- /nav --></div><!-- /.row --></div><!-- /.container --></header><!-- /header --><div class="clr"></div><?php if (!empty($_smarty_tpl->tpl_vars['enableHitProducts']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountProducts'][0][0]->discountProducts(array('count'=>20,'assign'=>'items'),$_smarty_tpl);?>
 <?php if (!empty($_smarty_tpl->tpl_vars['items']->value)){?><div class="popular0"><div class="popular"><ul><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['items']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}

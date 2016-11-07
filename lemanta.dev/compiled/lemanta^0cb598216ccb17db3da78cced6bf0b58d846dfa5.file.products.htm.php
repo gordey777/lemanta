@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-05 11:38:46
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-06 21:32:19
          compiled from "design/lemanta/html\products.htm" */ ?>
 <?php /*%%SmartyHeaderCode:42605819dfd45e7bc8-97183043%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0cb598216ccb17db3da78cced6bf0b58d846dfa5' => 
     array (
       0 => 'design/lemanta/html\\products.htm',
-      1 => 1478335126,
+      1 => 1478457138,
       2 => 'file',
     ),
   ),
@@ -118,7 +118,7 @@ foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars
 $_smarty_tpl->tpl_vars['item']->_loop = true;
 ?><a class="category-button" href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['url'][0][0]->url(array(),$_smarty_tpl);?>
 "><span><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array(),$_smarty_tpl);?>
-</span></a><?php } ?></div><?php }else{ ?><p>Товары не найдены.</p><?php }?><?php }else{ ?><p>Товары не найдены.</p><?php }?><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['recent_products']->value)){?><hr class="separator" /><div class="product-rel"><div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat row"><ul class=""><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
+</span></a><?php } ?></div><?php }else{ ?><p>Товары не найдены.</p><?php }?><?php }else{ ?><p>Товары не найдены.</p><?php }?><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['recent_products']->value)){?><hr class="separator" /><div class="product-rel"><div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat"><ul class=""><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['recent_products']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
