@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-08 20:22:21
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-08 22:16:01
          compiled from "design/lemanta/html\common\left-column.htm" */ ?>
 <?php /*%%SmartyHeaderCode:45465819dfd5473f12-39870815%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'b390718d5763435710b12a0eee7be19e0b6da2aa' => 
     array (
       0 => 'design/lemanta/html\\common\\left-column.htm',
-      1 => 1478625740,
+      1 => 1478632560,
       2 => 'file',
     ),
   ),
@@ -69,16 +69,16 @@ foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars
 $_smarty_tpl->tpl_vars['item']->_loop = true;
 ?><?php if (!empty($_smarty_tpl->tpl_vars['item']->value->enabled)&&!empty($_smarty_tpl->tpl_vars['item']->value->products_count)){?><?php $_smarty_tpl->tpl_vars['id'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['item']->value->category_id)===null||$tmp==='' ? 0 : $tmp), null, 0);?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['flagClasses'][0][0]->flagClasses(array('flags'=>array('active'=>'selected'),'assign'=>'class'),$_smarty_tpl);?>
 <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array('assign'=>'name'),$_smarty_tpl);?>
-<?php if (!empty($_smarty_tpl->tpl_vars['needRename']->value)){?><?php if (isset($_smarty_tpl->tpl_vars['renames']->value[$_smarty_tpl->tpl_vars['name']->value])){?><?php $_smarty_tpl->tpl_vars['name'] = new Smarty_variable($_smarty_tpl->tpl_vars['renames']->value[$_smarty_tpl->tpl_vars['name']->value], null, 0);?><?php }?><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['item']->value->subcategories)){?><?php if ($_smarty_tpl->tpl_vars['id']->value==$_smarty_tpl->tpl_vars['selectedId']->value){?><li <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
-  class="has-sub"><a title="<?php echo $_smarty_tpl->tpl_vars['name']->value;?>
+<?php if (!empty($_smarty_tpl->tpl_vars['needRename']->value)){?><?php if (isset($_smarty_tpl->tpl_vars['renames']->value[$_smarty_tpl->tpl_vars['name']->value])){?><?php $_smarty_tpl->tpl_vars['name'] = new Smarty_variable($_smarty_tpl->tpl_vars['renames']->value[$_smarty_tpl->tpl_vars['name']->value], null, 0);?><?php }?><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['item']->value->subcategories)){?><?php if ($_smarty_tpl->tpl_vars['id']->value==$_smarty_tpl->tpl_vars['selectedId']->value){?><li class="has-sub"><a  <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
+ title="<?php echo $_smarty_tpl->tpl_vars['name']->value;?>
 "><span><?php echo $_smarty_tpl->tpl_vars['name']->value;?>
 </span></a><?php smarty_template_function_showCategoriesTreeCat($_smarty_tpl,array('categories'=>$_smarty_tpl->tpl_vars['item']->value->subcategories,'needRename'=>(mb_strtolower($_smarty_tpl->tpl_vars['name']->value, 'UTF-8')=='одежда для девочек'||mb_strtolower($_smarty_tpl->tpl_vars['name']->value, 'UTF-8')=='одежда для мальчиков')));?>
 </li><?php }else{ ?><li class="has-sub"><a href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['url'][0][0]->url(array(),$_smarty_tpl);?>
 " title="<?php echo $_smarty_tpl->tpl_vars['name']->value;?>
 "><span ><?php echo $_smarty_tpl->tpl_vars['name']->value;?>
 </span></a><?php smarty_template_function_showCategoriesTreeCat($_smarty_tpl,array('categories'=>$_smarty_tpl->tpl_vars['item']->value->subcategories,'needRename'=>(mb_strtolower($_smarty_tpl->tpl_vars['name']->value, 'UTF-8')=='одежда для девочек'||mb_strtolower($_smarty_tpl->tpl_vars['name']->value, 'UTF-8')=='одежда для мальчиков')));?>
-</li><?php }?><?php }else{ ?><?php if ($_smarty_tpl->tpl_vars['id']->value==$_smarty_tpl->tpl_vars['selectedId']->value){?><li <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
-><a title="<?php echo $_smarty_tpl->tpl_vars['name']->value;?>
+</li><?php }?><?php }else{ ?><?php if ($_smarty_tpl->tpl_vars['id']->value==$_smarty_tpl->tpl_vars['selectedId']->value){?><li class=""><a <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
+ title="<?php echo $_smarty_tpl->tpl_vars['name']->value;?>
 "><span><?php echo $_smarty_tpl->tpl_vars['name']->value;?>
 </span></a></li><?php }else{ ?><li><a href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['url'][0][0]->url(array(),$_smarty_tpl);?>
 " title="<?php echo $_smarty_tpl->tpl_vars['name']->value;?>

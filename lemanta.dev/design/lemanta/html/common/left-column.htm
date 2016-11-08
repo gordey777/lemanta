@@ -59,8 +59,8 @@
                             {if !empty($item->subcategories)}
 
                                     {if $id == $selectedId}
-                                      <li {$class}  class="has-sub">
-                                        <a title="{$name}">
+                                      <li class="has-sub">
+                                        <a  {$class} title="{$name}">
                                             <span>{$name}</span>
                                         </a>
 
@@ -82,8 +82,8 @@
                                     {/if}
                               {else}
                                     {if $id == $selectedId}
-                                      <li {$class}>
-                                        <a title="{$name}">
+                                      <li class="">
+                                        <a {$class} title="{$name}">
                                             <span>{$name}</span>
                                         </a>
 
