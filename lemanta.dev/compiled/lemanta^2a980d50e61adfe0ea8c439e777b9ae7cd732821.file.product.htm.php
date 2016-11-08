@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-08 12:13:09
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-08 16:52:34
          compiled from "design/lemanta/html\product.htm" */ ?>
 <?php /*%%SmartyHeaderCode:250995819f8f4c690a6-54178177%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '2a980d50e61adfe0ea8c439e777b9ae7cd732821' => 
     array (
       0 => 'design/lemanta/html\\product.htm',
-      1 => 1478596389,
+      1 => 1478613154,
       2 => 'file',
     ),
   ),
@@ -100,7 +100,7 @@ $_smarty_tpl->tpl_vars['smarty']->value['section']['images']['last']       = ($_
 " class="zoom cloud-zoom" id="zoom1" rel="adjustX: 15, adjustY: 0, softFocus: false, zoomWidth: 100, zoomHeight: 100"><img src="<?php echo $_smarty_tpl->tpl_vars['image']->value['url'];?>
 " alt="<?php echo htmlspecialchars($_smarty_tpl->tpl_vars['image']->value['alt'], ENT_QUOTES, 'UTF-8');?>
 " title="<?php echo htmlspecialchars($_smarty_tpl->tpl_vars['image']->value['desc'], ENT_QUOTES, 'UTF-8');?>
-" /></a><div class="video-box" style="display: none;"></div></div></div><!-- .product-image2 --></div><!-- .product-left --><div class="product-info col-md-7 col-sm-6"><div class="product-desc col-md-6"><div class="desc-menu"><a class="active" onclick="switchDescriptionTab(this, 'desc-info')">Описание</a><?php if (!empty($_smarty_tpl->tpl_vars['product']->value->video)){?><a onclick="switchDescriptionTab(this, 'desc-video')">Видео</a><?php }?></div><div class="desc-data"><div class="desc-info"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['body'][0][0]->body(array('from'=>'product'),$_smarty_tpl);?>
+" /></a><div class="video-box" style="display: none;"></div></div></div><!-- .product-image2 --></div><!-- .product-left --><div class="product-info col-md-7 col-sm-6"><div class="product-desc col-md-6"><div class="desc-menu"><a class="active" onclick="switchDescriptionTab(this, 'desc-info')">Описание</a><?php if (!empty($_smarty_tpl->tpl_vars['product']->value->video)){?><a onclick="switchDescriptionTab(this, 'desc-video')">Видео</a><?php }?></div><div class="desc-data1"><div class="desc-info"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['body'][0][0]->body(array('from'=>'product'),$_smarty_tpl);?>
 </div><?php if (!empty($_smarty_tpl->tpl_vars['product']->value->video)){?><div class="desc-video"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'product->video'),$_smarty_tpl);?>
 </div><?php }?></div></div><!-- .product-desc --><div class="product-right col-md-6"><h1><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array('from'=>'product'),$_smarty_tpl);?>
 </h1><div class="char"><?php if (!empty($_smarty_tpl->tpl_vars['product']->value->brand)){?>Производитель: <?php echo $_smarty_tpl->tpl_vars['product']->value->brand;?>

@@ -2340,8 +2340,7 @@ width: 354px; */
 .product-desc {
   //margin: 0 0 28px;
   .desc-menu {
-    display: none;
-
+    //display: none;
     height: 44px;
     a {
       font-size: 20px;
@@ -2366,7 +2365,8 @@ width: 354px; */
   .desc-info {
     font-size: 15px;
 
-    height: 230px;
+    width: 100%;
+    //height: 230px;
     padding: 0 18px 0 0;
 
     color: #9a9a9a;
@@ -2374,10 +2374,10 @@ width: 354px; */
   }
   .desc-video {
     font-size: 15px;
+    //display: none;
 
-    display: none;
-
-    height: 230px;
+    width: 100%;
+    //height: 230px;
     height: auto;
     min-height: 182px;
     padding: 0 18px 0 0;
@@ -2875,9 +2875,9 @@ width: 354px; */
   position: relative;
   z-index: 1;
 
-  overflow: hidden;
-
-  min-height: 231px;
+  display: inline-block;
+  overflow: visible;
+  //min-height: 231px;
 }
 
 .jScrollPaneTrack {

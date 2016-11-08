@@ -115,44 +115,15 @@
                 ============================================================ --> *}
 
                 <link href="{theme}css/style.css" rel="stylesheet" />
-
-                {* <!-- ===========================================================
-                |                                                                 |
-                |  Скрипты.                                                       |
-                |                                                                 |
-                ============================================================ --> *}
-
-                <script>
-                    var thisTemplateRootUrl = '{theme}';
-                </script>
-                <script src="{theme}js/script.js"></script>
-
-                {* <!-- ===========================================================
-                |                                                                 |
-                |  Основной модуль мог попросить добавить некоторые мета-теги.    |
-                |                                                                 |
-                ============================================================ --> *}
-
-                {echoVar from=meta}
-
-                {* <!-- ===========================================================
-                |                                                                 |
-                |  Микроразметка организации.                                     |
-                |                                                                 |
-                ============================================================ --> *}
-
-                <script type="application/ld+json">
-                    { {**}
-                        "@context" : "http://schema.org", {**}
-                        "@type" : "Organization", {**}
-                        "url" : "{site}", {**}
-                        "contactPoint" : [ {  {**}
-                                "@type" : "ContactPoint", {**}
-                                "telephone" : "+38-098-053-22-23", {**}
-                                "contactType" : "customer service" {**}
-                            } ] } {**}
-                </script>
             </head>
+
+                     {*<!-- ===========================================================
+                    |                                                                 |
+                    |  Основной модуль мог попросить добавить некоторые мета-теги.    |
+                    |                                                                 |
+                    ============================================================ -->*}
+
+                    {echoVar from=meta}
 
             {if $onFirstPage}
                 <body class="home-page">
@@ -641,64 +612,83 @@
                     |                                                             |
                     ======================================================== --> *}
 
-                    <a id="back-top" title="К началу страницы">↑</a>
+                    <a id="back-top" title="К началу страницы"><i class="fa fa-arrow-up"></i></a>
+
+                    <!-- ===========================================================
+                    |                                                                 |
+                    |  Скрипты.                                                       |
+                    |                                                                 |
+                    ============================================================ -->*}
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>
+    var thisTemplateRootUrl = '{theme}';
+    </script>
 
 
-                {* <!-- ===========================================================
-                |                                                                 |
-                |  Вспомогательные скрипты.                                       |
-                |                                                                 |
-                ============================================================ --> *}
+    <script src="{theme}js/script.js"></script>
 
-                <script>
-                    function gotoHref ( anchor ) {
-                        try {
-                            var href1 = anchor.getAttribute('data-href');
-                            if (typeof href1 == 'string' && href1 != '') {
-                                if (anchor.tagName == 'A') {
-                                    var href2 = anchor.getAttribute('href');
-                                    if (typeof href2 != 'string' || href2 != href1) {
-                                        anchor.setAttribute('href', href1);
-                                    }
-                                    return true;
-                                } else {
-                                }
-                            }
-                        } catch (e) { }
-                        return false;
-                    };
-                </script>
-
-  <script type="text/javascript" src="{theme}js/jquery.mmenu.all.min.js"></script>
-  <script type="text/javascript">
-  jQuery(document).ready(function($) {
-    $("#menu").mmenu({
-               "extensions": [
-                  "pagedim-black"
-               ],
-               "offCanvas": {
-                  "position": "right"
-               },
-                      navbar      : {
-          title     : 'LEMANTA'
+                    {*<!-- ===========================================================
+                    |                                                                 |
+                    |  Микроразметка организации.                                     |
+                    |                                                                 |
+                    ============================================================ -->*}
+    <script type="application/ld+json">
+      { {**} "@context" : "http://schema.org", {**} "@type" : "Organization", {**} "url" : "{site}", {**} "contactPoint" : [ { {**} "@type" : "ContactPoint", {**} "telephone" : "+38-098-053-22-23", {**} "contactType" : "customer service" {**} } ] } {**}
+    </script>
+    {*
+    <!-- ===========================================================
+                    |                                                                 |
+                    |  Вспомогательные скрипты.                                       |
+                    |                                                                 |
+                    ============================================================ -->*}
+    <script>
+    function gotoHref(anchor) {
+      try {
+        var href1 = anchor.getAttribute('data-href');
+        if (typeof href1 == 'string' && href1 != '') {
+          if (anchor.tagName == 'A') {
+            var href2 = anchor.getAttribute('href');
+            if (typeof href2 != 'string' || href2 != href1) {
+              anchor.setAttribute('href', href1);
+            }
+            return true;
+          } else {}
+        }
+      } catch (e) {}
+      return false;
+    };
+    </script>
+    <script type="text/javascript" src="{theme}js/jquery.mmenu.all.min.js"></script>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+      $("#menu").mmenu({
+        "extensions": [
+          "pagedim-black"
+        ],
+        "offCanvas": {
+          "position": "right"
         },
-               "navbars": [
+        navbar: {
+          title: 'LEMANTA'
+        },
+        "navbars": [
 
-                  {
-                     "position": "bottom",
-                     "content": [
+          {
+            "position": "bottom",
+            "content": [
 
-                        "<a class='fa fa-skype' href='skype:lemanta2014?call'></a>",
-                        "<a class='fa fa-vk' href='http://vkontakte.ru/share.php?url=http://lemanta.com'></a>",
-                        "<a class='fa fa-instagram' href='https://www.instagram.com/lemanta8465/'></a>",
-                        "<a class='fa fa-facebook' href='https://www.facebook.com/Lemanta-280572415630549//'></a>"
-                     ]
-                  }
-               ]
-            });
-         });
+              "<a class='fa fa-skype' href='skype:lemanta2014?call'></a>",
+              "<a class='fa fa-vk' href='http://vkontakte.ru/share.php?url=http://lemanta.com'></a>",
+              "<a class='fa fa-instagram' href='https://www.instagram.com/lemanta8465/'></a>",
+              "<a class='fa fa-facebook' href='https://www.facebook.com/Lemanta-280572415630549//'></a>"
+            ]
+          }
+        ]
+      });
+    });
+    </script>
 
-  </script>
     </body>
   </html>
 
