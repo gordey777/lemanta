@@ -6,7 +6,7 @@
 
 .category-page {
   aside {
-    display: none;
+    //display: none;
   }
 }
 
@@ -842,9 +842,9 @@ header {
 .breadcrumbs {
   font-size: 16px;
 
-  margin: 0 15px;
-  margin: 0;
-  padding: 5px 0;
+  //margin: 0 15px;
+  //margin: 0;
+  //padding: 5px 0;
 
   text-transform: uppercase;
 
@@ -1263,15 +1263,26 @@ header {
 
 .footer {
   height: 55px;
-  margin: 28px 0 43px;
+  margin-bottom: 0;
+  padding: 43px 0;
+
+  text-align: center;
 
   border-top: 1px solid #8be;
   border-bottom: 1px solid #8be;
   background: #112;
-  p {
+  .seo {
     font-size: 15px;
 
-    margin: 20px 0 0;
+    margin: -20px 100px 40px;
+    padding: 15px;
+
+    color: #777;
+    background: #112;
+  }
+  p {
+    font-size: 15px;
+    //margin: 20px 0 0;
 
     color: #737373;
     span {
@@ -1323,22 +1334,53 @@ header {
   }
 }
 
-.footer + .seo {
-  font-size: 15px;
 
-  margin: -20px 100px 40px;
-  padding: 15px;
+.seo {
+  h2 {
+    font-size: 1.5em;
+    font-weight: bold;
 
-  color: #777;
-  background: #112;
-  + .seo {
-    font-size: 15px;
+    display: block;
 
-    margin: -20px 100px 40px;
-    padding: 15px;
+    -webkit-margin-before: .83em;
+    -webkit-margin-after: .83em;
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+  }
+  p {
+    display: block;
 
-    color: #777;
-    background: #112;
+    -webkit-margin-before: 1em;
+    -webkit-margin-after: 1em;
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+  }
+  ul {
+    display: block;
+
+    list-style-type: disc;
+
+    -webkit-margin-before: 1em;
+    -webkit-margin-after: 1em;
+    -webkit-margin-start: 0;
+    -webkit-margin-end: 0;
+    -webkit-padding-start: 40px;
+    li {
+      display: list-item;
+
+      text-align: -webkit-match-parent;
+    }
+  }
+  ol ul,
+  ul ol,
+  ul ul,
+  ol ol {
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+  }
+  ul ul,
+  ol ul {
+    list-style-type: circle;
   }
 }
 

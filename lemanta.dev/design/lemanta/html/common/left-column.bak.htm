@@ -39,11 +39,12 @@
                   'Свитера для мальчиков' => 'Свитера',
                   'Куртки для мальчиков' => 'Куртки' ]}
 
-
-            {function showCategoriesTreeCat needRename=0}
+<!--  class="left-menu"
+-->
+        <div id="left_menu">
+            {function showCategoriesTree needRename=0}
                 {if !empty($categories)}
                     <ul>
-
                         {foreach $categories as $item}
                             {if !empty($item->enabled) && !empty($item->products_count)}
                                 {$id = $item->category_id|default:0}
@@ -55,63 +56,29 @@
                                         {$name = $renames[$name]}
                                     {/if}
                                 {/if}
-
-                            {if !empty($item->subcategories)}
-
+                                <li>
                                     {if $id == $selectedId}
-                                      <li {$class}  class="has-sub">
-                                        <a title="{$name}">
-                                            <span>{$name}</span>
+                                        <a {$class} title="{$name}">
+                                            {$name}
                                         </a>
-
-                                              {showCategoriesTreeCat categories=$item->subcategories
-                                                                  needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
-
-                                      </li>
                                     {else}
-                                      <li class="has-sub">
                                         <a href="{url}" title="{$name}">
-                                            <span >{$name}</span>
+                                            {$name}
                                         </a>
-
-                                              {showCategoriesTreeCat categories=$item->subcategories
-                                                                  needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
-
-                                      </li>
-
                                     {/if}
-                              {else}
-                                    {if $id == $selectedId}
-                                      <li {$class}>
-                                        <a title="{$name}">
-                                            <span>{$name}</span>
-                                        </a>
-
-                                      </li>
-                                    {else}
-                                      <li>
-                                        <a href="{url}" title="{$name}">
-                                            <span >{$name}</span>
-                                        </a>
-
-
-                                      </li>
-
+                                    {if !empty($item->subcategories) && (!empty($item->active) || $id == $selectedId)}
+                                        {showCategoriesTree categories=$item->subcategories
+                                                            needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
                                     {/if}
-                              {/if}
-
-
+                                </li>
                             {/if}
                         {/foreach}
                     </ul>
                 {/if}
             {/function}
+            {showCategoriesTree}
+        </div>
 
-
-  <div id="left_menu">
-
-            {showCategoriesTreeCat}
-  </div>
         {* <!-- ===================================================================
         |                                                                         |
         |  Баннер.                                                                |
