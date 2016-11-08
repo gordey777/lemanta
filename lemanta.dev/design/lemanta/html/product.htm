@@ -83,104 +83,143 @@
         |                                                                         |
         ==================================================================== --> *}
 
-        <div class="right no-flex">
+        <div class="right col-md-12">
             <div class="product-page">
-                <div class="product-info">
-                    <div class="product-left-wrapper">
-                        <div class="product-left">
-                            <div class="product-image2">
 
-                                {* <!-- ===========================================
-                                |                                                 |
-                                |  Первое фото товара (сначала пробуем второе).   |
-                                |                                                 |
-                                ============================================ --> *}
+                <div class="product-left col-md-5 col-sm-6">
+                       {* <!-- ===========================================
+                        |                                                 |
+                        |  Видео + все фотографии (если фоток более 1).   |
+                        |                                                 |
+                        ============================================ --> *}
 
-                                {findImage from=product type=product num=2 assign=image}
-                                {if empty($image.found)}
-                                    {findImage from=product type=product assign=image}
+                        {if !empty($video) || count($product->images) > 1}
+
+                            <div class="thumb col-xs-3">
+                            <div class="thumb-title">Все фотографии</div>
+                        {* <!-- ===========================================
+                        |                                                 |
+                        |  Видео файлы (собираем, но пока не выводим).    |
+                        |                                                 |
+                        ============================================ --> *}
+
+                        {$video = ''}
+                        {if !empty($product->files)}
+                            {capture assign=video}
+                                {$number = 1}
+                                {foreach $product->files as $file}
+                                    {if preg_match('/\.mp4$/iu', $file)}
+                                        <a href="files/products/{$file|escape}" onclick="return showMP4video(this)" onmouseenter="showMP4video(this)" data-id="{$number}">
+                                            <span>
+                                                <img src="{theme}images/video-icon.png" alt="" width="52" />
+                                            </span>
+                                        </a>
+                                        {$number = $number + 1}
+                                    {/if}
+                                {/foreach}
+                            {/capture}
+                        {/if}
+
+                                {* <!-- миниатюры видео --> *}
+
+                                {if !empty($video)}
+                                    {$video}
                                 {/if}
 
-                                <div class="image" id="image-video">
-                                    <a href="{$image.url}" class="zoom cloud-zoom" id="zoom1" rel="adjustX: 15, adjustY: 0, softFocus: false, zoomWidth: 100, zoomHeight: 100">
-                                        <img src="{$image.url}" alt="{$image.alt|escape}" title="{$image.desc|escape}" />
-                                    </a>
+                                {* <!-- и теперь миниатюры фоток --> *}
 
-                                    {* <!-- здесь будем показывать видео --> *}
-
-                                    <div class="video-box" style="display: none;"></div>
-                                </div>
-
-                                {* <!-- ===========================================
-                                |                                                 |
-                                |  Видео файлы (собираем, но пока не выводим).    |
-                                |                                                 |
-                                ============================================ --> *}
-
-                                {$video = ''}
-                                {if !empty($product->files)}
-                                    {capture assign=video}
-                                        {$number = 1}
-                                        {foreach $product->files as $file}
-                                            {if preg_match('/\.mp4$/iu', $file)}
-                                                <a href="files/products/{$file|escape}" onclick="return showMP4video(this)" onmouseenter="showMP4video(this)" data-id="{$number}">
-                                                    <span>
-                                                        <img src="{theme}images/video-icon.png" alt="" width="52" />
-                                                    </span>
-                                                </a>
-                                                {$number = $number + 1}
-                                            {/if}
-                                        {/foreach}
-                                    {/capture}
-                                {/if}
-
-                                {* <!-- ===========================================
-                                |                                                 |
-                                |  Видео + все фотографии (если фоток более 1).   |
-                                |                                                 |
-                                ============================================ --> *}
-
-                                {if !empty($video) || count($product->images) > 1}
-                                    <div class="thumb-title">Все фотографии</div>
-                                    <div class="thumb">
-
-                                        {* <!-- миниатюры видео --> *}
-
-                                        {if !empty($video)}
-                                            {$video}
+                                {if count($product->images) > 1}
+                                    {$number = 1}
+                                    {section name=images loop=1000}
+                                        {findImage from=product type=product num=$number assign=image}
+                                        {if empty($image.found)}
+                                            {break}
                                         {/if}
-
-                                        {* <!-- и теперь миниатюры фоток --> *}
-
-                                        {if count($product->images) > 1}
-                                            {$number = 1}
-                                            {section name=images loop=1000}
-                                                {findImage from=product type=product num=$number assign=image}
-                                                {if empty($image.found)}
-                                                    {break}
-                                                {/if}
-                                                <a href="{$image.url}" class="cloud-zoom-gallery active" onmouseenter="showZOOMimage(this)" rel="useZoom: 'zoom1', smallImage: '{$image.url}'">
-                                                    <span>
-                                                        <img src="{$image.thumb}" alt="{$image.alt|escape}" title="{$image.desc|escape}" width="52" />
-                                                    </span>
-                                                </a>
-                                                {$number = $number + 1}
-                                            {/section}
-                                        {/if}
-                                    </div>
+                                        <a href="{$image.url}" class="cloud-zoom-gallery active" onmouseenter="showZOOMimage(this)" rel="useZoom: 'zoom1', smallImage: '{$image.url}'">
+                                            <span>
+                                                <img src="{$image.thumb}" alt="{$image.alt|escape}" title="{$image.desc|escape}" width="52" />
+                                            </span>
+                                        </a>
+                                        {$number = $number + 1}
+                                    {/section}
                                 {/if}
                             </div>
-                        </div>
-                        <div class="clr"></div>
-                    </div>
+                        {/if}
+                    <div class="product-image2 col-xs-9">
 
+                        {* <!-- ===========================================
+                        |                                                 |
+                        |  Первое фото товара (сначала пробуем второе).   |
+                        |                                                 |
+                        ============================================ --> *}
+
+                        {findImage from=product type=product num=2 assign=image}
+                        {if empty($image.found)}
+                            {findImage from=product type=product assign=image}
+                        {/if}
+
+                        <div class="image" id="image-video">
+                            <a href="{$image.url}" class="zoom cloud-zoom" id="zoom1" rel="adjustX: 15, adjustY: 0, softFocus: false, zoomWidth: 100, zoomHeight: 100">
+                                <img src="{$image.url}" alt="{$image.alt|escape}" title="{$image.desc|escape}" />
+                            </a>
+
+                            {* <!-- здесь будем показывать видео --> *}
+
+                            <div class="video-box" style="display: none;"></div>
+                        </div>
+
+
+
+
+                    </div><!-- .product-image2 -->
+                </div><!-- .product-left -->
+
+                <div class="product-info col-md-7 col-sm-6">
+
+                    <div class="product-desc col-md-6">
+                        <div class="desc-menu">
+                            <a class="active" onclick="switchDescriptionTab(this, 'desc-info')">
+                                Описание
+                            </a>
+
+                            {if !empty($product->video)}
+                                <a onclick="switchDescriptionTab(this, 'desc-video')">
+                                    Видео
+                                </a>
+                            {/if}
+                        </div>
+                        <div class="desc-data">
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Полное описание товара.                            |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            <div class="desc-info">
+                                {body from=product}
+                            </div>
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Видео материалы о товаре (только если заполнено).  |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            {if !empty($product->video)}
+                                <div class="desc-video">
+                                    {echoVar from='product->video'}
+                                </div>
+                            {/if}
+                        </div>
+                    </div><!-- .product-desc -->
                     {* <!-- =======================================================
                     |                                                             |
                     |  Название товара.                                           |
                     |                                                             |
                     ======================================================== --> *}
 
-                    <div class="product-right">
+                    <div class="product-right col-md-6">
                         <h1>{name from=product}</h1>
 
                         {* <!-- ===================================================
@@ -329,7 +368,7 @@
                             <a id="i2"><img src="{theme}images/icon2.png" alt="" /></a> {**}
                             <a id="i3"><img src="{theme}images/icon3.png" alt="" /></a> {**}
                             <a id="i4"><img src="{theme}images/icon4.png" alt="" /></a>
-                        </div>
+                        </div><!-- .icons -->
                         <div class="clr"></div>
 
                         {* <!-- ===================================================
@@ -342,54 +381,11 @@
                             <br />
                             <p class="tags">{$product->tags}</p>
                         {/if}
-                    </div>
+                    </div><!-- .product-right -->
                     <div class="clr"></div>
-                </div>
 
-                {* <!-- ===========================================================
-                |                                                                 |
-                |  Панель закладок сведений о товаре.                             |
-                |                                                                 |
-                ============================================================ --> *}
 
-                <div class="product-more-info">
-                    <div class="product-desc">
-                        <div class="desc-menu">
-                            <a class="active" onclick="switchDescriptionTab(this, 'desc-info')">
-                                Описание
-                            </a>
 
-                            {if !empty($product->video)}
-                                <a onclick="switchDescriptionTab(this, 'desc-video')">
-                                    Видео
-                                </a>
-                            {/if}
-                        </div>
-                        <div class="desc-data">
-
-                            {* <!-- ===============================================
-                            |                                                     |
-                            |  Полное описание товара.                            |
-                            |                                                     |
-                            ================================================ --> *}
-
-                            <div class="desc-info">
-                                {body from=product}
-                            </div>
-
-                            {* <!-- ===============================================
-                            |                                                     |
-                            |  Видео материалы о товаре (только если заполнено).  |
-                            |                                                     |
-                            ================================================ --> *}
-
-                            {if !empty($product->video)}
-                                <div class="desc-video">
-                                    {echoVar from='product->video'}
-                                </div>
-                            {/if}
-                        </div>
-                    </div>
 
                     {* <!-- =======================================================
                     |                                                             |
@@ -400,7 +396,7 @@
                     {$items = $products->related_products|default:$mores|default:FALSE}
 
                     {if !empty($items)}
-                        <div class="product-rel">
+                        <div class="product-rel col-md-12">
                             <div class="product-rel-t">ПРЕДЛАГАЕМ ПОСМОТРЕТЬ</div>
                             <div class="product-rel-arr">
                                 <a href="#" class="prev prevv"></a>
@@ -419,9 +415,23 @@
                             </div>
                         </div>
                     {/if}
-                </div>
+
+
+                </div><!-- .product-info -->
 
                 {* <!-- ===========================================================
+                |                                                                 |
+                |  Панель закладок сведений о товаре.                             |
+                |                                                                 |
+                ============================================================ --> *}
+
+
+
+            </div><!-- .product-page -->
+
+
+
+                            {* <!-- ===========================================================
                 |                                                                 |
                 |  Список недавно просмотренных товаров.                          |
                 |                                                                 |
@@ -429,7 +439,7 @@
 
                 {if !empty($recent_products)}
                     <hr class="separator" />
-                    <div class="product-rel">
+                    <div class="product-rel recent col-md-12">
                         <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
                         <div class="product-rel-arr">
                             <a href="#" class="prev prevv"></a>
@@ -446,10 +456,10 @@
                             </ul>
                             <div class="clr"></div>
                         </div>
-                    </div>
+                    </div><!-- /.recent col-md-12 -->
                 {/if}
-            </div>
-        </div>
+
+        </div><!-- .right -->
 
         {* <!-- ===================================================================
         |                                                                         |

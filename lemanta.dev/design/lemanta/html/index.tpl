@@ -258,24 +258,47 @@
                 <div class="bg wrapper">
 
     <header role="banner">
-<a href="#menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx">
-  <span>toggle menu</span>
-</a>
+    <a href="#menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx">
+      <span>toggle menu</span>
+    </a>
 
-<nav id="menu">
-  <ul>
-    {include 'common/main-nav.htm'}
+    <nav id="menu">
+      <ul class="mob-menu">
 
-      {include 'common/menu-catalog.htm'}
 
-  </ul>
-</nav>
+        <li>
+            <a id="mob-search" class="search">
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Поиск.                                             |
+                            |                                                     |
+                            ================================================ --> *}
+                                <form method="post" onsubmit="return false">
+                                    <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
+                                    <input name="search_type" type="hidden" value="a1" />
+                                    <input name="reset_old" type="hidden" value="1" />
+                                    <input class="button_search" type="submit" value="" />
+                                </form>
+            </a>
+        </li>
+        {include 'common/main-nav.htm'}
+<!--         <li>
+    <a href="{site}" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу">
+        <i class="fa fa-home"></i>
+    </a>
+</li> -->
+        {include 'common/menu-catalog.htm'}
+
+
+      </ul>
+
+    </nav>
 
       <div class="top-menu-wrap">
         <div class="container">
           <div class="row">
             <div class="top-menu col-md-12">
-              <div class="login col-md-2">
+              <div class="login col-md-2 col-xs-4">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Ссылка на Аккаунт (если это авторизованный клиент).|
@@ -315,7 +338,7 @@
                                         </a>
                                     {/if}
               </div>
-              <div class="socialnet col-md-2">
+              <div class="socialnet col-md-2 col-xs-4">
                                 {* <!-- ===========================================
                                 |                                                 |
                                 |  Социальные ссылки.                             |
@@ -337,7 +360,7 @@
               </div>
 
                                 {if !empty($currencies) && count($currencies) > 1}
-              <div class="valuta col-md-2">
+              <div class="valuta col-md-2 col-xs-4">
 
                                 {* <!-- ===========================================
                                 |                                                 |
@@ -374,7 +397,7 @@
       <div class="container">
         <div class="row">
 
-          <div class="logo col-md-2 col-sm-2 col-xs-2">
+          <div class="logo col-md-2 col-sm-2 col-xs-6">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Логотип.                                           |
@@ -385,7 +408,7 @@
                                 </a>
           </div>
 
-          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-8 col-sm-2 col-xs-2">
+          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-8 col-sm-2 col-xs-5">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Корзина.                                           |
@@ -650,14 +673,31 @@
   <script type="text/javascript">
   jQuery(document).ready(function($) {
     $("#menu").mmenu({
-      "extensions": [
-        "pagedim-black"
-      ],
-      "offCanvas": {
-        "position": "right"
-      }
-    });
-  });
+               "extensions": [
+                  "pagedim-black"
+               ],
+               "offCanvas": {
+                  "position": "right"
+               },
+                      navbar      : {
+          title     : 'LEMANTA'
+        },
+               "navbars": [
+
+                  {
+                     "position": "bottom",
+                     "content": [
+
+                        "<a class='fa fa-skype' href='skype:lemanta2014?call'></a>",
+                        "<a class='fa fa-vk' href='http://vkontakte.ru/share.php?url=http://lemanta.com'></a>",
+                        "<a class='fa fa-instagram' href='https://www.instagram.com/lemanta8465/'></a>",
+                        "<a class='fa fa-facebook' href='https://www.facebook.com/Lemanta-280572415630549//'></a>"
+                     ]
+                  }
+               ]
+            });
+         });
+
   </script>
     </body>
   </html>

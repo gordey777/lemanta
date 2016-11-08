@@ -38,10 +38,41 @@
                   'Свитера для мальчиков' => 'Свитера',
                   'Куртки для мальчиков' => 'Куртки' ]}
 
+            {function showCategoriesTreeS needRename=0}
+                {if !empty($categories)}
+                    <ul>
+                        {foreach $categories as $item}
+                            {if !empty($item->enabled) && !empty($item->products_count)}
+                                {$id = $item->category_id|default:0}
+                                {flagClasses flags = [ 'active' => 'selected' ]
+                                             assign = class}
+                                {name assign=name}
+                                {if !empty($needRename)}
+                                    {if isset($renames[$name])}
+                                        {$name = $renames[$name]}
+                                    {/if}
+                                {/if}
+                                <li>
+
+                                        <a {$class} href="{url}" title="{$name}">
+                                            {$name}
+                                        </a>
+
+                                    {if !empty($item->subcategories) }
+                                        {showCategoriesTreeS categories=$item->subcategories
+                                                            needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
+                                    {/if}
+                                </li>
+                            {/if}
+                        {/foreach}
+                    </ul>
+                {/if}
+            {/function}
 
 
 
-            {function showCategoriesTree needRename=0}
+
+            {function showCategoriesTreeM needRename=0}
                 {if !empty($categories)}
 
                         {foreach $categories as $item}
@@ -56,17 +87,14 @@
                                     {/if}
                                 {/if}
                                 <li>
-                                    {if $id == $selectedId}
-                                        <a {$class} title="{$name}">
+
+                                        <a {$class} href="{url}" title="{$name}">
                                             {$name}
                                         </a>
-                                    {else}
-                                        <a href="{url}" title="{$name}">
-                                            {$name}
-                                        </a>
-                                    {/if}
-                                    {if !empty($item->subcategories) && (!empty($item->active) || $id == $selectedId)}
-                                        {showCategoriesTree categories=$item->subcategories
+
+
+                                    {if !empty($item->subcategories)}
+                                        {showCategoriesTreeS categories=$item->subcategories
                                                             needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
                                     {/if}
                                 </li>
@@ -75,7 +103,7 @@
 
                 {/if}
             {/function}
-            {showCategoriesTree}
+            {showCategoriesTreeM}
 
 
 {/strip}

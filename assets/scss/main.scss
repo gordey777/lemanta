@@ -290,12 +290,29 @@ header {
   }
 }
 
+.mob-menu {
+  li {
+    &:nth-child(3),
+    &:nth-child(4),
+    &:nth-child(5) {
+      display: none;
+    }
+  }
+}
 
 
-
+@media (max-width: 991px) {
+  //#catalog_menu,
+  //.socialnet,
+  #head-top-nav {
+    display: none;
+  }
+}
 @media (max-width: 767px) {
   #catalog_menu,
-  #head-top-nav {
+  //#head-top-nav,
+  #search,
+  .socialnet {
     display: none;
   }
 }

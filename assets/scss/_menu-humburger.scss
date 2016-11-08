@@ -9,7 +9,7 @@ $button-width: 54px;
 $button-height: 48px;
 $bar-thickness: 3px;
 $button-pad: 9px;
-$button-trans-delay: .5s;
+$button-trans-delay: .8s;
 $humb-color: rgb(155,155,155);
 $humb-color-hov: darken($humb-color, 20%);
 $humb-bg-color: rgba(255,150,80, 0);
@@ -62,6 +62,7 @@ $humb-bg-color: rgba(255,150,80, 0);
 
     height: $bar-thickness;
 
+    border-radius: 5px;
     background: $humb-color;
     &:before,
     &:after {
@@ -75,6 +76,7 @@ $humb-bg-color: rgba(255,150,80, 0);
 
       content: '';
 
+      border-radius: 5px;
       background-color: $humb-color;
     }
     &:before {
@@ -85,7 +87,7 @@ $humb-bg-color: rgba(255,150,80, 0);
     }
   }
   &:hover {
-    transform: rotate(180deg);
+    //transform: rotate(180deg);
     span {
       background-color: $humb-color-hov;
       &:before,
@@ -153,12 +155,12 @@ $humb-bg-color: rgba(255,150,80, 0);
       &:before {
         top: 0;
 
-        transform: rotate(765deg);
+        transform: rotate(315deg);
       }
       &:after {
         bottom: 0;
 
-        transform: rotate(-765deg);
+        transform: rotate(405deg);
       }
       &:before,
       &:after {
