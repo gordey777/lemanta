@@ -686,18 +686,27 @@
       });
     </script>
 
-
+      <!-- $(this).removeAttr('href'); -->
 
 <script type="text/javascript" >
   $(document).ready(function(){
 
+    $("#left_menu li a.selected").parents("li").addClass('open').children('ul').slideDown();
+    $("#left_menu li a.selected").parent("li").addClass('bg-selected');
 
+    if ($("#left_menu li").hasClass('open')) {
+      $("#left_menu li.open").children('.holder').addClass('holder-open');
+    }
 
-  $('#left_menu li.has-sub>a').on('click', function(){
-      $(this).removeAttr('href');
+    var holderelement = $('#left_menu li.has-sub>.holder');
+
+    holderelement.on('click', function(){
+
       var element = $(this).parent('li');
+
       if (element.hasClass('open')) {
         element.removeClass('open');
+        $(this).removeClass('holder-open');
         element.find('li').removeClass('open');
         element.find('ul').slideUp();
       }
@@ -708,16 +717,10 @@
         element.siblings('li').removeClass('open');
         element.siblings('li').find('li').removeClass('open');
         element.siblings('li').find('ul').slideUp();
+        $(this).addClass('holder-open');
+        element.siblings('li').find('.holder').removeClass('holder-open');
       }
     });
-
-    $('#left_menu>ul>li.has-sub>a').append('<span class="holder"></span>');
-
-
-
-      $("#left_menu li a.selected").parents("li").addClass('open').children('ul').slideDown();;
-
-
 
     });
     </script>

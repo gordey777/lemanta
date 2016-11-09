@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-08 16:52:34
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-09 11:21:13
          compiled from "design/lemanta/html\product.htm" */ ?>
 <?php /*%%SmartyHeaderCode:250995819f8f4c690a6-54178177%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '2a980d50e61adfe0ea8c439e777b9ae7cd732821' => 
     array (
       0 => 'design/lemanta/html\\product.htm',
-      1 => 1478613154,
+      1 => 1478679673,
       2 => 'file',
     ),
   ),
@@ -51,8 +51,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
 </span><span itemprop="offers" itemscope itemtype="http://schema.org/Offer"><meta itemprop="priceCurrency" content="<?php echo htmlspecialchars((($tmp = @$_smarty_tpl->tpl_vars['main_currency']->value->code)===null||$tmp==='' ? '' : $tmp), ENT_QUOTES, 'UTF-8');?>
 " /><span itemprop="price"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountPrice'][0][0]->discountPrice(array('from'=>'product','signed'=>false),$_smarty_tpl);?>
 </span><?php if ($_smarty_tpl->tpl_vars['helper']->value->maybeSale($_smarty_tpl->tpl_vars['product']->value)){?><link itemprop="availability" href="http://schema.org/InStock" /><?php }?></span></div><?php $_smarty_tpl->tpl_vars['title'] = new Smarty_variable((($tmp = @(($tmp = @$_smarty_tpl->tpl_vars['product']->value->meta_title)===null||$tmp==='' ? $_smarty_tpl->tpl_vars['product']->value->model : $tmp))===null||$tmp==='' ? '' : $tmp), null, 0);?><?php $_smarty_tpl->tpl_vars['mod'] = new Smarty_variable('mod-breadcrumbs.htm', null, 0);?><?php if ($_smarty_tpl->tpl_vars['emulator']->value->existsModule($_smarty_tpl->tpl_vars['mod']->value)){?><?php echo $_smarty_tpl->getSubTemplate (($_smarty_tpl->tpl_vars['mod']->value), $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('noCatalogLink'=>true), 0);?>
-<?php }?><?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('doHidden'=>true), 0);?>
-<div class="right col-md-12"><div class="product-page"><div class="product-left col-md-5 col-sm-6"><?php if (!empty($_smarty_tpl->tpl_vars['video']->value)||count($_smarty_tpl->tpl_vars['product']->value->images)>1){?><div class="thumb col-xs-3"><div class="thumb-title">Все фотографии</div><?php $_smarty_tpl->tpl_vars['video'] = new Smarty_variable('', null, 0);?><?php if (!empty($_smarty_tpl->tpl_vars['product']->value->files)){?><?php $_smarty_tpl->_capture_stack[0][] = array('default', 'video', null); ob_start(); ?><?php $_smarty_tpl->tpl_vars['number'] = new Smarty_variable(1, null, 0);?><?php  $_smarty_tpl->tpl_vars['file'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['file']->_loop = false;
+<?php }?><div class="right col-md-12"><div class="product-page"><div class="product-left col-md-5 col-sm-6"><?php if (!empty($_smarty_tpl->tpl_vars['video']->value)||count($_smarty_tpl->tpl_vars['product']->value->images)>1){?><div class="thumb col-xs-3"><div class="thumb-title">Все фотографии</div><?php $_smarty_tpl->tpl_vars['video'] = new Smarty_variable('', null, 0);?><?php if (!empty($_smarty_tpl->tpl_vars['product']->value->files)){?><?php $_smarty_tpl->_capture_stack[0][] = array('default', 'video', null); ob_start(); ?><?php $_smarty_tpl->tpl_vars['number'] = new Smarty_variable(1, null, 0);?><?php  $_smarty_tpl->tpl_vars['file'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['file']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['product']->value->files; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['file']->key => $_smarty_tpl->tpl_vars['file']->value){
 $_smarty_tpl->tpl_vars['file']->_loop = true;
@@ -137,7 +136,8 @@ $_smarty_tpl->tpl_vars['item']->_loop = true;
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
 ?><li><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-</li><?php } ?></ul><div class="clr"></div></div></div><!-- /.recent col-md-12 --><?php }?></div><!-- .right --><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountPrice'][0][0]->discountPrice(array('from'=>'product','signed'=>false,'assign'=>'price'),$_smarty_tpl);?>
+</li><?php } ?></ul><div class="clr"></div></div></div><!-- /.recent col-md-12 --><?php }?></div><!-- .right --><!--         <?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('doHidden'=>true), 0);?>
+ --><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountPrice'][0][0]->discountPrice(array('from'=>'product','signed'=>false,'assign'=>'price'),$_smarty_tpl);?>
 <?php $_smarty_tpl->_capture_stack[0][] = array('default', 'price', null); ob_start(); ?> за <?php echo intval($_smarty_tpl->tpl_vars['price']->value);?>
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
 <?php list($_capture_buffer, $_capture_assign, $_capture_append) = array_pop($_smarty_tpl->_capture_stack[0]);

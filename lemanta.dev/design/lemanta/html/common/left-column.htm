@@ -63,6 +63,7 @@
                                         <a  {$class} title="{$name}">
                                             <span>{$name}</span>
                                         </a>
+                                        <span class="holder"><i class="fa fa-chevron-down"></i></span>
 
                                               {showCategoriesTreeCat categories=$item->subcategories
                                                                   needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
@@ -73,6 +74,7 @@
                                         <a href="{url}" title="{$name}">
                                             <span >{$name}</span>
                                         </a>
+                                        <span class="holder"><i class="fa fa-chevron-down"></i></span>
 
                                               {showCategoriesTreeCat categories=$item->subcategories
                                                                   needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
@@ -82,7 +84,7 @@
                                     {/if}
                               {else}
                                     {if $id == $selectedId}
-                                      <li class="">
+                                      <li>
                                         <a {$class} title="{$name}">
                                             <span>{$name}</span>
                                         </a>
