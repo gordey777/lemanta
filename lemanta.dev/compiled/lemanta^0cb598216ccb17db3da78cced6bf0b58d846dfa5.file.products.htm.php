@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-06 21:32:19
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-09 17:28:59
          compiled from "design/lemanta/html\products.htm" */ ?>
 <?php /*%%SmartyHeaderCode:42605819dfd45e7bc8-97183043%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0cb598216ccb17db3da78cced6bf0b58d846dfa5' => 
     array (
       0 => 'design/lemanta/html\\products.htm',
-      1 => 1478457138,
+      1 => 1478701738,
       2 => 'file',
     ),
   ),
@@ -77,7 +77,7 @@ $_smarty_tpl->tpl_vars['v']->_loop = true;
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
 </a><?php $_smarty_tpl->tpl_vars['number'] = new Smarty_variable($_smarty_tpl->tpl_vars['number']->value+1, null, 0);?><?php } ?><?php }?><div class="lenta"><p>Топ продаж</p></div></div></li><?php } ?></ul></div><div class="clr"></div><a href="#" class="prev prev-navigation"></a><a href="#" class="next next-navigation"></a></div><div class="clr"></div><?php }?><?php $_smarty_tpl->tpl_vars['seoPagenum'] = new Smarty_variable('', null, 0);?><?php if (!empty($_smarty_tpl->tpl_vars['CurrentPage']->value)){?><?php $_smarty_tpl->tpl_vars['seoPagenum'] = new Smarty_variable($_smarty_tpl->tpl_vars['CurrentPage']->value+1, null, 0);?><?php $_smarty_tpl->tpl_vars['seoPagenum'] = new Smarty_variable(" - Страница ".($_smarty_tpl->tpl_vars['seoPagenum']->value), null, 0);?><?php }?><h1 ><?php echo (($tmp = @trim($_smarty_tpl->tpl_vars['name']->value))===null||$tmp==='' ? 'Каталог' : $tmp);?>
 <?php echo $_smarty_tpl->tpl_vars['seoPagenum']->value;?>
-</h1><?php if (!empty($_smarty_tpl->tpl_vars['products']->value)){?><?php $_smarty_tpl->_capture_stack[0][] = array('default', 'sorter', null); ob_start(); ?><?php if (count($_smarty_tpl->tpl_vars['products']->value)>1){?><div class="filters"><?php if (!empty($_smarty_tpl->tpl_vars['sort_modes']->value)){?><?php $_smarty_tpl->tpl_vars['my_modes'] = new Smarty_variable(array(0,1,6), null, 0);?><?php $_smarty_tpl->tpl_vars['value'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['sort_method']->value)===null||$tmp==='' ? 0 : $tmp), null, 0);?><form class="filter-l" method="post"><span>Сортировать по:</span> <select class="niceSelect" name="sort_method" onchange="this.parentNode.submit(); return true;"><?php  $_smarty_tpl->tpl_vars['name'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['name']->_loop = false;
+</h1><?php if (!empty($_smarty_tpl->tpl_vars['products']->value)){?><?php $_smarty_tpl->_capture_stack[0][] = array('default', 'sorter', null); ob_start(); ?><?php if (count($_smarty_tpl->tpl_vars['products']->value)>1){?><div class="filters"><?php if (!empty($_smarty_tpl->tpl_vars['sort_modes']->value)){?><div class="col-md-6"><?php $_smarty_tpl->tpl_vars['my_modes'] = new Smarty_variable(array(0,1,6), null, 0);?><?php $_smarty_tpl->tpl_vars['value'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['sort_method']->value)===null||$tmp==='' ? 0 : $tmp), null, 0);?><form class="filter-l" method="post"><span>Сортировать по:</span> <select class="niceSelect" name="sort_method" onchange="this.parentNode.submit(); return true;"><?php  $_smarty_tpl->tpl_vars['name'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['name']->_loop = false;
  $_smarty_tpl->tpl_vars['mode'] = new Smarty_Variable;
  $_from = $_smarty_tpl->tpl_vars['sort_modes']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['name']->key => $_smarty_tpl->tpl_vars['name']->value){
@@ -89,8 +89,8 @@ $_smarty_tpl->tpl_vars['name']->_loop = true;
 </option><?php }?><?php } ?></select> <?php if ($_smarty_tpl->tpl_vars['value']->value!=0){?><?php $_smarty_tpl->tpl_vars['dir'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['sort_descending']->value)===null||$tmp==='' ? 0 : $tmp), null, 0);?><a <?php echo $_smarty_tpl->tpl_vars['dir']->value ? '' : "class=\"active\"";?>
  onclick="this.nextSibling.value = 0; this.parentNode.submit();" title="По убыванию">↓</a><input name="sort_descending" type="hidden" value="<?php echo htmlspecialchars($_smarty_tpl->tpl_vars['dir']->value, ENT_QUOTES, 'UTF-8');?>
 " /><a <?php echo $_smarty_tpl->tpl_vars['dir']->value ? "class=\"active\"" : '';?>
- onclick="this.previousSibling.value = 1; this.parentNode.submit();" title="По возрастанию">↑</a><?php }?></form><?php }?><?php echo $_smarty_tpl->tpl_vars['PagesNavigation']->value;?>
-<div class="clr"></div></div><?php }?><?php list($_capture_buffer, $_capture_assign, $_capture_append) = array_pop($_smarty_tpl->_capture_stack[0]);
+ onclick="this.previousSibling.value = 1; this.parentNode.submit();" title="По возрастанию">↑</a><?php }?></form></div><?php }?><div class="col-md-6"><?php echo $_smarty_tpl->tpl_vars['PagesNavigation']->value;?>
+</div><div class="clr"></div></div><?php }?><?php list($_capture_buffer, $_capture_assign, $_capture_append) = array_pop($_smarty_tpl->_capture_stack[0]);
 if (!empty($_capture_buffer)) {
  if (isset($_capture_assign)) $_smarty_tpl->assign($_capture_assign, ob_get_contents());
  if (isset( $_capture_append)) $_smarty_tpl->append( $_capture_append, ob_get_contents());
@@ -118,13 +118,13 @@ foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars
 $_smarty_tpl->tpl_vars['item']->_loop = true;
 ?><a class="category-button" href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['url'][0][0]->url(array(),$_smarty_tpl);?>
 "><span><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array(),$_smarty_tpl);?>
-</span></a><?php } ?></div><?php }else{ ?><p>Товары не найдены.</p><?php }?><?php }else{ ?><p>Товары не найдены.</p><?php }?><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['recent_products']->value)){?><hr class="separator" /><div class="product-rel"><div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat"><ul class=""><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
+</span></a><?php } ?></div><?php }else{ ?><p>Товары не найдены.</p><?php }?><?php }else{ ?><p>Товары не найдены.</p><?php }?><?php }?></article><!-- .content --><?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+<?php if (!empty($_smarty_tpl->tpl_vars['recent_products']->value)){?><div class="col-md-12"><hr class="separator" /><div class="product-rel"><div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat"><ul class=""><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['recent_products']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
 ?><li class=""><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-</li><?php } ?></ul><div class="clr"></div></div></div><?php }?></article><!-- .content --><?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-<?php if (!empty($_smarty_tpl->tpl_vars['brand']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'brand->meta_title','assign'=>'title','scope'=>'global'),$_smarty_tpl);?>
+</li><?php } ?></ul><div class="clr"></div></div></div></div><?php }?><?php if (!empty($_smarty_tpl->tpl_vars['brand']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'brand->meta_title','assign'=>'title','scope'=>'global'),$_smarty_tpl);?>
 <?php }elseif(!empty($_smarty_tpl->tpl_vars['category']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'category->meta_title','assign'=>'title','scope'=>'global'),$_smarty_tpl);?>
 <?php }?>
 <?php }} ?>

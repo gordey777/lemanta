@@ -115,15 +115,17 @@
                 ============================================================ --> *}
 
                 <link href="{theme}css/style.css" rel="stylesheet" />
-            </head>
-
-                     {*<!-- ===========================================================
+                    {*<!-- ===========================================================
                     |                                                                 |
                     |  Основной модуль мог попросить добавить некоторые мета-теги.    |
                     |                                                                 |
                     ============================================================ -->*}
 
                     {echoVar from=meta}
+
+            </head>
+
+
 
             {if $onFirstPage}
                 <body class="home-page">
@@ -229,36 +231,38 @@
                 <div class="bg wrapper">
 
     <header role="banner">
-    <a href="#menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx">
+
+
+    <a href="#mob-menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx">
       <span>toggle menu</span>
     </a>
 
-    <nav id="menu">
+    <nav id="mob-menu">
       <ul class="mob-menu">
 
 
-        <li>
-            <a id="mob-search" class="search">
-                            {* <!-- ===============================================
-                            |                                                     |
-                            |  Поиск.                                             |
-                            |                                                     |
-                            ================================================ --> *}
-                                <form method="post" onsubmit="return false">
-                                    <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
-                                    <input name="search_type" type="hidden" value="a1" />
-                                    <input name="reset_old" type="hidden" value="1" />
-                                    <input class="button_search" type="submit" value="" />
-                                </form>
-            </a>
-        </li>
+<!--         <li>
+    <a id="mob-search" class="search">
+                    {* ===============================================
+                    |                                                     |
+                    |  Поиск.                                             |
+                    |                                                     |
+                    ================================================ *}
+                        <form method="post" onsubmit="return false">
+                            <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
+                            <input name="search_type" type="hidden" value="a1" />
+                            <input name="reset_old" type="hidden" value="1" />
+                            <input class="button_search" type="submit" value="" />
+                        </form>
+    </a>
+</li> -->
         {include 'common/main-nav.htm'}
 <!--         <li>
     <a href="{site}" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу">
         <i class="fa fa-home"></i>
     </a>
 </li> -->
-        {include 'common/menu-catalog.htm'}
+        {include 'common/mob-menu-catalog.htm'}
 
 
       </ul>
@@ -269,7 +273,7 @@
         <div class="container">
           <div class="row">
             <div class="top-menu col-md-12">
-              <div class="login col-md-2 col-xs-4">
+              <div class="login col-md-2 col-xs-5">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Ссылка на Аккаунт (если это авторизованный клиент).|
@@ -309,7 +313,7 @@
                                         </a>
                                     {/if}
               </div>
-              <div class="socialnet col-md-2 col-xs-4">
+              <div class="socialnet col-md-2 col-xs-6">
                                 {* <!-- ===========================================
                                 |                                                 |
                                 |  Социальные ссылки.                             |
@@ -331,7 +335,7 @@
               </div>
 
                                 {if !empty($currencies) && count($currencies) > 1}
-              <div class="valuta col-md-2 col-xs-4">
+              <div class="valuta col-md-4 col-xs-6">
 
                                 {* <!-- ===========================================
                                 |                                                 |
@@ -368,7 +372,7 @@
       <div class="container">
         <div class="row">
 
-          <div class="logo col-md-2 col-sm-2 col-xs-6">
+          <div class="logo col-md-2 col-sm-2 col-xs-4">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Логотип.                                           |
@@ -388,23 +392,9 @@
                                 {include 'common/cart-informer.htm'}
           </div>
 
-          <div class="search-bg col-md-2 col-sm-3 col-xs-4 col-md-push-10">
-            <div id="search" class="search">
-                            {* <!-- ===============================================
-                            |                                                     |
-                            |  Поиск.                                             |
-                            |                                                     |
-                            ================================================ --> *}
-                                <form method="post" onsubmit="return false">
-                                    <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
-                                    <input name="search_type" type="hidden" value="a1" />
-                                    <input name="reset_old" type="hidden" value="1" />
-                                    <input class="button_search" type="submit" value="" />
-                                </form>
-            </div>
-          </div>
 
-          <nav id="head-top-nav" class="nav__header col-md-10 col-sm-12 col-md-pull-2" role="navigation">
+
+          <nav id="head-top-nav" class="nav__header col-md-10 col-sm-12" role="navigation">
             <ul class="headnav">
                             {* <!-- ===============================================
                             |                                                     |
@@ -415,7 +405,21 @@
                                     {include 'common/main-nav.htm'}
             </ul>
           </nav><!-- /nav -->
-
+          <div class="search-bg col-md-2 col-sm-6 col-xs-12">
+            <div id="search" class="search">
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Поиск.                                             |
+                            |                                                     |
+                            ================================================ --> *}
+                                <form class="form_search" method="post" onsubmit="return false">
+                                    <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
+                                    <input name="search_type" type="hidden" value="a1" />
+                                    <input name="reset_old" type="hidden" value="1" />
+                                    <input class="button_search" type="submit" value="" />
+                                </form>
+            </div>
+          </div>
 
 
         </div><!-- /.row -->
@@ -432,6 +436,7 @@
                             ================================================ --> *}
 
                             {if !empty($enableHitProducts)}
+                              <div class="col-md-12">
                                 {discountProducts count=20 assign=items}
                                 {if !empty($items)}
                                     <div class="popular0">
@@ -470,6 +475,7 @@
                                         <a href="#" class="next next-navigation"></a>
                                     </div>
                                 {/if}
+                              </div>
                             {/if}
 
 
@@ -658,8 +664,9 @@
     <script type="text/javascript" src="{theme}js/jquery.mmenu.all.min.js"></script>
 
     <script type="text/javascript">
+    //if ($(document).width() < 460)
       jQuery(document).ready(function($) {
-        $("#menu").mmenu({
+        $("#mob-menu").mmenu({
           "extensions": [
             "pagedim-black"
           ],
@@ -685,8 +692,6 @@
         });
       });
     </script>
-
-      <!-- $(this).removeAttr('href'); -->
 
 <script type="text/javascript" >
   $(document).ready(function(){

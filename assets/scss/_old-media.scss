@@ -1,0 +1,437 @@
+/*
+
+
+@media only screen and (min-width: 1380px) {
+  .container {
+    width: 100%;
+  }
+  .wrap {
+    .right {
+      width: 74%;
+    }
+    .left.hidden + .right {
+      width: auto;
+    }
+  }
+}
+
+@media only screen and (max-width: 1920px) {
+  .product-left-wrapper {
+    overflow: visible !important;
+  }
+  .right .product-page .product-info {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 1800px) {
+  .header .menu .super-button {
+    display: none;
+  }
+}
+
+@media (max-width: 1130px) {
+  .section-page .right, .wrap .right {
+    width: 65%;
+  }
+  .vk {
+    background-color: #000;
+  }
+  #catalog_menu, .rasp, .vk {
+    width: 250px;
+  }
+  #catalog_menu ul li {
+    text-align: center;
+  }
+  .title {
+    text-align: center;
+    width: 200px;
+  }
+  body {
+    min-width: 100%;
+  }
+  .header {
+    .menu {
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -moz-box;
+      display: -ms-flexbox;
+      display: flex;
+      width: 100%;
+      opacity: .7;
+      -webkit-justify-content: space-around;
+      -ms-flex-pack: distribute;
+      justify-content: space-around;
+      .super-button {
+        display: none;
+      }
+    }
+    .search {
+      margin: 1px -10px 0;
+      opacity: .7;
+    }
+  }
+}
+
+@media (max-width: 1060px) {
+  .skdslider ul.slides li img {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 990px) {
+  .section-page .right {
+    width: 60%;
+  }
+  .wrap {
+    .right {
+      width: 60%;
+    }
+    .block-main {
+      width: 260px;
+      margin: 0 7px;
+      padding-left: 20px;
+    }
+  }
+  .seo {
+    h2, p, ul {
+      padding-left: 10px;
+    }
+  }
+}
+
+@media (max-width: 940px) {
+  .wrap .block-main {
+    width: 250px;
+    margin: 0 10px;
+    padding-left: 10px;
+  }
+}
+
+@media (max-width: 926px) {
+  .wrap .block-main {
+    width: 240px;
+    margin: 0 12px;
+    padding-left: 10px;
+  }
+  .header {
+    .menu ul li a {
+      font-size: 16px;
+    }
+    .search {
+      margin: 1px -10px 0;
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .wrap .block-main {
+    width: 220px;
+    margin: 0 14px;
+    padding-left: 10px;
+    .desc p {
+      font-size: 14px;
+    }
+  }
+}
+
+@media (max-width: 870px) {
+  .wrap .block-main {
+    width: 200px;
+    margin: 0 15px;
+    padding-left: 10px;
+    .desc p {
+      font-size: 13px;
+    }
+  }
+}
+
+@media (max-width: 851px) {
+  .section-page {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    .left {
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -moz-box;
+      display: -ms-flexbox;
+      display: flex;
+      flex-direction: column;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -webkit-flex-direction: column;
+      -moz-box-orient: vertical;
+      -moz-box-direction: normal;
+      -ms-flex-direction: column;
+      -webkit-box-align: center;
+      -webkit-align-items: center;
+      -moz-box-align: center;
+      -ms-flex-align: center;
+      align-items: center;
+    }
+  }
+  .wrap #main_page_bloks {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: column;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -moz-box-orient: vertical;
+    -moz-box-direction: normal;
+    -ms-flex-direction: column;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -moz-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    width: 100%;
+    .block-main {
+      width: 325px;
+      padding-left: 30px;
+      .desc p {
+        font-size: 15px;
+      }
+    }
+  }
+  .header .menu ul li a {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 777px) {
+  .header .menu ul li {
+    margin: 0 0 0 8px;
+    a {
+      font-size: 13px;
+    }
+  }
+}
+
+@media (max-width: 690px) {
+  .header .menu ul {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    li {
+      margin: 0 0 0 25px;
+      a {
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+@media (max-width: 650px) {
+  .header .menu ul {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -moz-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    li {
+      margin: 0 0 0 16px;
+      a {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+@media (max-width: 570px) {
+  .header {
+    .menu {
+      .super-button .menu-closed, .super-button-opened .menu-opened, ul {
+        display: none;
+      }
+    }
+    .search {
+      display: none;
+    }
+    .menu {
+      position: relative;
+      min-height: 40px;
+      .super-button, .super-button-opened .menu-closed {
+        display: block;
+      }
+    }
+    ul {
+      a, li {
+        display: block;
+      }
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -moz-box;
+      display: -ms-flexbox;
+      display: flex;
+      flex-direction: column;
+      opacity: .7;
+      background: $darck-col;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      -webkit-flex-direction: column;
+      -moz-box-orient: vertical;
+      -moz-box-direction: normal;
+      -ms-flex-direction: column;
+      -webkit-box-pack: center;
+      -webkit-justify-content: center;
+      -moz-box-pack: center;
+      -ms-flex-pack: center;
+      justify-content: center;
+      a {
+        font-size: 16px !important;
+        line-height: 100%;
+        padding: 5px 5px 5px 32px;
+        text-align: center;
+        opacity: 1;
+        color: #fff !important;
+      }
+    }
+  }
+}
+
+@media (max-width: 530px) {
+  .header {
+    .soc a img {
+      width: 20px;
+      height: 20px;
+    }
+    .lang a, .login a {
+      font-size: 12px;
+    }
+  }
+  .skdslider .slide-desc {
+    padding: 0;
+    h2 {
+      font-size: 20px;
+      height: auto;
+    }
+  }
+}
+
+@media (max-width: 475px) {
+  .header {
+    #cart_informer .cart-l p {
+      text-align: center;
+    }
+    .soc {
+      position: absolute;
+      z-index: 1;
+      bottom: 13px;
+      left: 24px;
+      a img {
+        width: 25px;
+        height: 25px;
+      }
+    }
+    .lang a, .login a {
+      font-size: 13px;
+    }
+  }
+  .skdslider .slide-desc h2 {
+    font-size: 20px;
+    height: auto;
+  }
+}
+
+@media (max-width: 440px) {
+  .header .soc {
+    position: absolute;
+    z-index: 1;
+    bottom: 13px;
+    left: 5%;
+    a img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+@media (max-width: 400px) {
+  .header {
+    .cart {
+      width: 100px;
+      .cart-l {
+        display: none;
+      }
+    }
+    .lang a, .login a {
+      font-size: 12px;
+    }
+  }
+}
+
+@media (max-width: 375px) {
+  .wrap .right {
+    width: 100%;
+    p {
+      padding-left: 15px;
+    }
+  }
+  .header .soc {
+    left: 1%;
+  }
+}
+
+@media (max-width: 360px) {
+  .header {
+    .soc {
+      display: none;
+    }
+    .login a {
+      font-size: 11px;
+    }
+    .lang a {
+      font-size: 11px;
+      margin: 0 0 0 10px;
+    }
+  }
+  .wrap #main_page_bloks {
+    .main-img-txt p {
+      font-size: 22px;
+      padding-right: 20px;
+    }
+    .block-main {
+      width: 315px;
+      padding-left: 30px;
+      .main-img img {
+        width: 280px;
+        height: 180px;
+      }
+      .desc p {
+        font-size: 13px;
+      }
+    }
+  }
+}
+ */

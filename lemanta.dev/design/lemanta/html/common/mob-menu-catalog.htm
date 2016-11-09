@@ -1,0 +1,109 @@
+{* <!-- категории --> *}{strip}
+
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Убеждаемся что у нас есть прочитанное дерево категорий.                    |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$selectedId = $category->category_id|default:0}
+    {if TRUE || !isset($categories)}
+        {categories active=$selectedId sort=FALSE counters=TRUE assign=categories scope=global}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Выводим дерево категорий.                                                  |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$class = (!empty($doHidden)) ? 'hidden' : ''}
+
+    {$renames = [ 'Комбинезоны для девочек' => 'Комбинезоны',
+                  'Брюки для девочек' => 'Брюки',
+                  'Бриджи для девочек' => 'Бриджи',
+                  'Джинсы для девочек' => 'Джинсы',
+                  'Костюмы тройки для девочек' => 'Костюмы тройки',
+                  'Свитера и толстовки для девочек' => 'Свитера',
+                  'Куртки для девочек' => 'Куртки',
+                  'Костюмы тройки' => 'Костюмы',
+                  'Детские платья' => 'Платья',
+                  'Детские юбки' => 'Юбки',
+                  'Комбинезоны для мальчиков' => 'Комбинезоны',
+                  'Брюки для мальчиков' => 'Брюки',
+                  'Бриджи для мальчиков' => 'Бриджи',
+                  'Джинсы для мальчиков' => 'Джинсы',
+                  'Костюмы тройки для мальчиков' => 'Костюмы тройки',
+                  'Свитера для мальчиков' => 'Свитера',
+                  'Куртки для мальчиков' => 'Куртки' ]}
+
+            {function showCategoriesTreeS needRename=0}
+                {if !empty($categories)}
+                    <ul>
+                        {foreach $categories as $item}
+                            {if !empty($item->enabled) && !empty($item->products_count)}
+                                {$id = $item->category_id|default:0}
+                                {flagClasses flags = [ 'active' => 'selected' ]
+                                             assign = class}
+                                {name assign=name}
+                                {if !empty($needRename)}
+                                    {if isset($renames[$name])}
+                                        {$name = $renames[$name]}
+                                    {/if}
+                                {/if}
+                                <li>
+
+                                        <a {$class} href="{url}" title="{$name}">
+                                            {$name}
+                                        </a>
+
+                                    {if !empty($item->subcategories) }
+                                        {showCategoriesTreeS categories=$item->subcategories
+                                                            needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
+                                    {/if}
+                                </li>
+                            {/if}
+                        {/foreach}
+                    </ul>
+                {/if}
+            {/function}
+
+
+
+
+            {function showCategoriesTreeM needRename=0}
+                {if !empty($categories)}
+
+                        {foreach $categories as $item}
+                            {if !empty($item->enabled) && !empty($item->products_count)}
+                                {$id = $item->category_id|default:0}
+                                {flagClasses flags = [ 'active' => 'selected' ]
+                                             assign = class}
+                                {name assign=name}
+                                {if !empty($needRename)}
+                                    {if isset($renames[$name])}
+                                        {$name = $renames[$name]}
+                                    {/if}
+                                {/if}
+                                <li>
+
+                                        <a {$class} href="{url}" title="{$name}">
+                                            {$name}
+                                        </a>
+
+
+                                    {if !empty($item->subcategories)}
+                                        {showCategoriesTreeS categories=$item->subcategories
+                                                            needRename = ($name|lower == 'одежда для девочек' || $name|lower == 'одежда для мальчиков')}
+                                    {/if}
+                                </li>
+                            {/if}
+                        {/foreach}
+
+                {/if}
+            {/function}
+            {showCategoriesTreeM}
+
+
+{/strip}
