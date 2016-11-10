@@ -7,7 +7,8 @@
         $content = html-контент страницы, сгенерированный основным модулем        |
         $emulator = объект хелпера шаблона                                        |
                                                                                   |
-============================================================================ --> *}{strip}
+============================================================================ --> *}
+{strip}
 
     {* <!-- =======================================================================
     |                                                                             |
@@ -231,43 +232,16 @@
                 <div class="bg wrapper">
 
     <header role="banner">
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |             MOBILE-MENU BUTTON                      |
+                            |                                                     |
+                            ================================================ --> *}
 
+      <a href="#mob-menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx">
+        <span>toggle menu</span>
+      </a>
 
-    <a href="#mob-menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx">
-      <span>toggle menu</span>
-    </a>
-
-    <nav id="mob-menu">
-      <ul class="mob-menu">
-
-
-<!--         <li>
-    <a id="mob-search" class="search">
-                    {* ===============================================
-                    |                                                     |
-                    |  Поиск.                                             |
-                    |                                                     |
-                    ================================================ *}
-                        <form method="post" onsubmit="return false">
-                            <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
-                            <input name="search_type" type="hidden" value="a1" />
-                            <input name="reset_old" type="hidden" value="1" />
-                            <input class="button_search" type="submit" value="" />
-                        </form>
-    </a>
-</li> -->
-        {include 'common/main-nav.htm'}
-<!--         <li>
-    <a href="{site}" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу">
-        <i class="fa fa-home"></i>
-    </a>
-</li> -->
-        {include 'common/mob-menu-catalog.htm'}
-
-
-      </ul>
-
-    </nav>
 
       <div class="top-menu-wrap">
         <div class="container">
@@ -571,6 +545,43 @@
       </section><!-- /section -->
     </div><!-- /wrapper -->
 
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |             MOBILE-MENU                             |
+                            |                                                     |
+                            ================================================ --> *}
+
+    <nav id="mob-menu">
+      <ul class="mob-menu">
+
+<!--         <li>
+    <a id="mob-search" class="search">
+                    {* ===============================================
+                    |                                                     |
+                    |  Поиск.                                             |
+                    |                                                     |
+                    ================================================ *}
+                        <form method="post" onsubmit="return false">
+                            <input class="input_search" name="keyword" maxlength="48" type="text" value="{inputValue from=keyword}" placeholder="Поиск товара" />
+                            <input name="search_type" type="hidden" value="a1" />
+                            <input name="reset_old" type="hidden" value="1" />
+                            <input class="button_search" type="submit" value="" />
+                        </form>
+    </a>
+</li> -->
+        {include 'common/main-nav.htm'}
+<!--         <li>
+    <a href="{site}" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу">
+        <i class="fa fa-home"></i>
+    </a>
+</li> -->
+        {include 'common/mob-menu-catalog.htm'}
+
+
+      </ul>
+    </nav><!-- #mob-menu -->
+
+
     <footer class="footer">
 
 
@@ -664,7 +675,7 @@
     <script type="text/javascript" src="{theme}js/jquery.mmenu.all.min.js"></script>
 
     <script type="text/javascript">
-    //if ($(document).width() < 460)
+
       jQuery(document).ready(function($) {
         $("#mob-menu").mmenu({
           "extensions": [
@@ -693,39 +704,53 @@
       });
     </script>
 
-<script type="text/javascript" >
-  $(document).ready(function(){
+    <script type="text/javascript" >
+    $(document).ready(function(){
 
-    $("#left_menu li a.selected").parents("li").addClass('open').children('ul').slideDown();
-    $("#left_menu li a.selected").parent("li").addClass('bg-selected');
+      $("#left_menu li a.selected").parents("li").addClass('open').children('ul').slideDown();
+      $("#left_menu li a.selected").parent("li").addClass('bg-selected');
 
-    if ($("#left_menu li").hasClass('open')) {
-      $("#left_menu li.open").children('.holder').addClass('holder-open');
-    }
-
-    var holderelement = $('#left_menu li.has-sub>.holder');
-
-    holderelement.on('click', function(){
-
-      var element = $(this).parent('li');
-
-      if (element.hasClass('open')) {
-        element.removeClass('open');
-        $(this).removeClass('holder-open');
-        element.find('li').removeClass('open');
-        element.find('ul').slideUp();
+      if ($("#left_menu li").hasClass('open')) {
+        $("#left_menu li.open").children('.holder').addClass('holder-open');
       }
-      else {
-        element.addClass('open');
-        element.children('ul').slideDown();
-        element.siblings('li').children('ul').slideUp();
-        element.siblings('li').removeClass('open');
-        element.siblings('li').find('li').removeClass('open');
-        element.siblings('li').find('ul').slideUp();
-        $(this).addClass('holder-open');
-        element.siblings('li').find('.holder').removeClass('holder-open');
-      }
+
+      var holderelement = $('#left_menu li.has-sub>.holder');
+
+      holderelement.on('click', function(){
+
+        var element = $(this).parent('li');
+
+        if (element.hasClass('open')) {
+          element.removeClass('open');
+          $(this).removeClass('holder-open');
+          element.find('li').removeClass('open');
+          element.find('ul').slideUp();
+        }
+        else {
+          element.addClass('open');
+          element.children('ul').slideDown();
+          element.siblings('li').children('ul').slideUp();
+          element.siblings('li').removeClass('open');
+          element.siblings('li').find('li').removeClass('open');
+          element.siblings('li').find('ul').slideUp();
+          $(this).addClass('holder-open');
+          element.siblings('li').find('.holder').removeClass('holder-open');
+        }
+      });
+
     });
+    </script>
+
+    <script type="text/javascript" >
+    $(document).ready(function(){
+
+      var $prodBlW = $(".content .product-block").width(),
+          $prodImgH = ($prodBlW * 1.95),
+          $prodBlH = ($prodBlW * 1.7);
+      $(".content .product-image").css('height',$prodImgH);
+      $(".content .product-img").css('height',$prodBlH);
+
+
 
     });
     </script>

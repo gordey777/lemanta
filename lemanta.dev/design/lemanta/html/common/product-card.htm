@@ -3,7 +3,7 @@
     {if !empty($item)}
 
 
-     <div class="cat-bl product-block">
+    <div class="product-block">
       <div class="product-img">
                     {* <!-- ===========================================================
                     |                                                                 |
@@ -14,7 +14,7 @@
                     {findImage type=product assign=image}
 
 
-                <a href="{url}" title="{itemTitle}">
+                <a  class="product-image" href="{url}" title="{itemTitle}">
                     <img src="{$image.url}" alt="{$image.alt|escape}" title="{$image.desc|escape}" />
                 </a>
 
@@ -105,7 +105,7 @@
                         {$v = reset($item->variants)}
                         {$vid = $v->variant_id|default:''|escape}
 
-                        <div class="prod-order">
+                        <div class="zakaz prod-order">
                             {if empty($noQuickOrder)}
                                 <a href="{url}" data-id="{$vid}">
                                 <img src="{theme}images/buy2.png" alt="" />
@@ -123,7 +123,7 @@
                             </a>
                         </div>
                     {else}
-                        <div class="prod-order">
+                        <div class="zakaz prod-order">
                             Нет в наличии
                         </div>
                     {/if}
