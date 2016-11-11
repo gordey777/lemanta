@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-10 20:11:00
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-11 18:28:16
          compiled from "design/lemanta/html\product.htm" */ ?>
 <?php /*%%SmartyHeaderCode:250995819f8f4c690a6-54178177%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '2a980d50e61adfe0ea8c439e777b9ae7cd732821' => 
     array (
       0 => 'design/lemanta/html\\product.htm',
-      1 => 1478797859,
+      1 => 1478878096,
       2 => 'file',
     ),
   ),
@@ -31,10 +31,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'price' => 0,
     'v' => 0,
     'vid' => 0,
-    'products' => 0,
-    'mores' => 0,
-    'items' => 0,
-    'recent_products' => 0,
     'title' => 0,
   ),
   'has_nocache_code' => false,
@@ -126,17 +122,9 @@ images/icon1.png" alt="" /></a> <a id="i2"><img src="<?php echo $_smarty_tpl->sm
 images/icon2.png" alt="" /></a> <a id="i3"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
 images/icon3.png" alt="" /></a> <a id="i4"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
 images/icon4.png" alt="" /></a></div><!-- .icons --><div class="clr"></div><?php if (!empty($_smarty_tpl->tpl_vars['product']->value->tags)){?><br /><p class="tags"><?php echo $_smarty_tpl->tpl_vars['product']->value->tags;?>
-</p><?php }?></div><!-- .product-right --></div><!-- .product-right-wrapp --><div class="col-md-12 col-xs-12"><?php $_smarty_tpl->tpl_vars['items'] = new Smarty_variable((($tmp = @(($tmp = @$_smarty_tpl->tpl_vars['products']->value->related_products)===null||$tmp==='' ? $_smarty_tpl->tpl_vars['mores']->value : $tmp))===null||$tmp==='' ? false : $tmp), null, 0);?><?php if (!empty($_smarty_tpl->tpl_vars['items']->value)){?><hr class="separator" /><div class="product-rel"><div class="product-rel-t">ПРЕДЛАГАЕМ ПОСМОТРЕТЬ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat"><ul class=""><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
- $_from = $_smarty_tpl->tpl_vars['items']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
-foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
-$_smarty_tpl->tpl_vars['item']->_loop = true;
-?><li class=""><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-</li><?php } ?></ul><div class="clr"></div></div></div><?php }?></div></div><!-- /.row --></div><!-- .product-info --></div><!-- .product-page --><?php if (!empty($_smarty_tpl->tpl_vars['recent_products']->value)){?><div class="col-md-12"><hr class="separator" /><div class="product-rel"><div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat"><ul class=""><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
- $_from = $_smarty_tpl->tpl_vars['recent_products']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
-foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
-$_smarty_tpl->tpl_vars['item']->_loop = true;
-?><li class=""><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-</li><?php } ?></ul><div class="clr"></div></div></div></div><?php }?></div><!-- .right --><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountPrice'][0][0]->discountPrice(array('from'=>'product','signed'=>false,'assign'=>'price'),$_smarty_tpl);?>
+</p><?php }?></div><!-- .product-right --></div><!-- .product-right-wrapp --><div class="col-md-12 col-xs-12"><?php echo $_smarty_tpl->getSubTemplate ('common/related_products.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+</div></div><!-- /.row --></div><!-- .product-info --></div><!-- .product-page --><div class="col-md-12 col-xs-12"><?php echo $_smarty_tpl->getSubTemplate ('common/recent_products.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+</div></div><!-- .right --><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountPrice'][0][0]->discountPrice(array('from'=>'product','signed'=>false,'assign'=>'price'),$_smarty_tpl);?>
 <?php $_smarty_tpl->_capture_stack[0][] = array('default', 'price', null); ob_start(); ?> за <?php echo intval($_smarty_tpl->tpl_vars['price']->value);?>
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
 <?php list($_capture_buffer, $_capture_assign, $_capture_append) = array_pop($_smarty_tpl->_capture_stack[0]);

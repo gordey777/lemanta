@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-10 15:36:05
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-11 19:05:09
          compiled from "design/lemanta/html\common\left-column.htm" */ ?>
 <?php /*%%SmartyHeaderCode:45465819dfd5473f12-39870815%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'b390718d5763435710b12a0eee7be19e0b6da2aa' => 
     array (
       0 => 'design/lemanta/html\\common\\left-column.htm',
-      1 => 1478781365,
+      1 => 1478879166,
       2 => 'file',
     ),
   ),
@@ -85,8 +85,7 @@ $_smarty_tpl->tpl_vars['item']->_loop = true;
 "><span ><?php echo $_smarty_tpl->tpl_vars['name']->value;?>
 </span></a></li><?php }?><?php }?><?php }?><?php } ?></ul><?php }?><?php $_smarty_tpl->tpl_vars = $saved_tpl_vars;}}?>
 <div id="left_menu"><div class="title">Категории</div><?php smarty_template_function_showCategoriesTreeCat($_smarty_tpl,array());?>
-</div><div class="banner col-md-12 col-sm-5 col-xs-6"><div class="rasp"><img class="rasp-img" src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
+</div><div class="banner col-md-12 col-sm-5 col-xs-12"><div class="rasp"><img class="rasp-img" src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
 images/rasp.png" alt="" /><span href="catalog/rasprodazha">Распродажа</span></div><span href="catalog/odezhda_dlja_malchikov"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
-images/foto.png" alt="" /></span></div><div class="vk col-md-12 col-sm-6 col-xs-6"><div class="title">Мы вКонтакте</div><?php if (!empty($_smarty_tpl->tpl_vars['config']->value->vk_group)){?><script src="//vk.com/js/api/openapi.js?105"></script><div id="vk_groups"></div><script>VK.Widgets.Group('vk_groups', { mode: 0,width: '220',height: '260',color1: 'FFFFFF',color2: 'BBBBBB',color3: '88BBEE' },'<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['inputValue'][0][0]->inputValue(array('from'=>'config->vk_group'),$_smarty_tpl);?>
-');</script><?php }?></div></aside><!-- /sidebar -->
+images/foto.png" alt="" /></span></div><div id="vk_groups_widjet" class="vk col-md-12 col-sm-6 col-xs-12"><div class="title">Мы вКонтакте</div><?php if (!empty($_smarty_tpl->tpl_vars['config']->value->vk_group)){?><div id="vk_groups"></div><?php }?></div></aside><!-- /sidebar -->
 <?php }} ?>

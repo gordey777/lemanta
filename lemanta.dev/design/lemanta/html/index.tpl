@@ -247,7 +247,7 @@
         <div class="container">
           <div class="row">
             <div class="top-menu col-md-12">
-              <div class="login col-md-2 col-xs-5">
+              <div class="login col-md-2 col-sm-3 col-xs-8">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Ссылка на Аккаунт (если это авторизованный клиент).|
@@ -287,7 +287,7 @@
                                         </a>
                                     {/if}
               </div>
-              <div class="socialnet col-md-2 col-xs-6">
+              <div class="socialnet col-md-3 col-sm-3 col-xs-6">
                                 {* <!-- ===========================================
                                 |                                                 |
                                 |  Социальные ссылки.                             |
@@ -309,7 +309,9 @@
               </div>
 
                                 {if !empty($currencies) && count($currencies) > 1}
-              <div class="valuta col-md-4 col-xs-6">
+              <div class="valuta col-md-3 col-md-offset-4 col-sm-4 col-xs-4">
+                  <ul class="valuta-list">
+
 
                                 {* <!-- ===========================================
                                 |                                                 |
@@ -321,9 +323,9 @@
                                             {echoVar from='item->currency_id' assign=id}
                                             {$class = ($sid === $id) ? 'class="selected"' : ''}
 
-                                            <a onclick="changeCurrency('{$id|escape}')" {$class}>
+                                            <li><a onclick="changeCurrency('{$id|escape}')" {$class}>
                                                 {name}
-                                            </a>
+                                            </a></li>
                                         {/foreach}
 
                                         {* <!-- ===================================
@@ -335,7 +337,7 @@
                                         <form id="currencyForm" method="post">
                                             <input id="currencyFormInput" name="currency_id" type="hidden" value="" />
                                         </form>
-
+                  </ul>
               </div><!-- /.valuta -->
                                 {/if}
             </div>
@@ -357,7 +359,7 @@
                                 </a>
           </div>
 
-          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-8 col-sm-2 col-xs-5">
+          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-6 col-sm-2 col-xs-5">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Корзина.                                           |
@@ -751,10 +753,28 @@
       $(".content .product-img").css('height',$prodBlH);
 
 
-
     });
     </script>
 
+    <script src="//vk.com/js/api/openapi.js?105"></script>
+    <script>
+
+      $(document).ready(function(){
+if($("#vk_groups_widjet").length>0) {
+
+
+        var $vkWidth = ($("#vk_groups_widjet").width())*0.9;
+
+        VK.Widgets.Group('vk_groups', { mode: 0,
+                                        width: $vkWidth,
+                                        height: '260',
+                                        color1: 'FFFFFF',
+                                        color2: 'BBBBBB',
+                                        color3: '88BBEE' },
+                                         '{inputValue from='config->vk_group'}');
+}
+      });
+    </script>
     </body>
   </html>
 

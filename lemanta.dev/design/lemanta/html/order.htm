@@ -19,7 +19,8 @@
         {header404}
 
         {$status = $order->status|default:0}
-        <div id="main_page_bloks">
+    <article  id="main_page_bloks" class="content col-md-12">
+
             <h1>
                 Ваш заказ №{$order->order_id}
                 {if $status == 0} принят
@@ -140,7 +141,8 @@
                     {/foreach}
                 {/if}
             {/if}
-        </div>
+
+    </article>
     {else}
         {include 'missing_template.htm'}
     {/if}

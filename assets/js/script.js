@@ -6557,14 +6557,14 @@ $(function() {
 |                                                                             |
 ============================================================================ */
 
-$(document).ready(function() {
+/*$(document).ready(function() {
   $('.niceSelect').selectbox();
   $('.desc-info').jScrollPane({
     showArrows: false,
     scrollbarWidth: 12
   });
 });
-
+*/
 $(document).ready(function() {
   $('.cat-bl').hover(function() {
     $(this).find('.cat-desc-l').hide();

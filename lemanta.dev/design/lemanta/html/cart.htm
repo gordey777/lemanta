@@ -31,6 +31,8 @@
                       noCatalogLink = TRUE}
         {/if}
 
+  <article class="content col-md-9 col-md-push-3">
+
         {* <!-- ===================================================================
         |                                                                         |
         |  Если корзина не пустая.                                                |
@@ -81,7 +83,7 @@
             <form action="cart" method="post" name="cart">
                 <div class="center cart_pad">
                     <div class="cart-page">
-                    <h1>CART</h1>
+
                         <div class="cart-title">ВАША корзина</div>
                         <table width="100%" cellpadding="0" cellspacing="0">
                             <thead>
@@ -160,35 +162,7 @@
                             </tbody>
                         </table>
 
-                        {* <!-- ===================================================
-                        |                                                         |
-                        |  Левая колонка.                                         |
-                        |                                                         |
-                        ==================================================== --> *}
 
-                        <div class="cart-l">
-                        <h1>CART</h1>
-                            <div class="banner">
-                                <a href="catalog/boys">
-                                    <img src="{theme}images/foto.png" alt="" />
-                                </a>
-                            </div>
-                            <div class="title">Мы вКонтакте</div>
-                            <div class="vk">
-                                {if !empty($config->vk_group)}
-                                    <script src="//vk.com/js/api/openapi.js?105"></script>
-                                    <div id="vk_groups"></div>
-                                    <script>
-                                        VK.Widgets.Group('vk_groups', { mode: 0,
-                                                                        width: '220',
-                                                                        height: '260',
-                                                                        color1: '111122',
-                                                                        color2: 'b8c0c5',
-                                                                        color3: '07073a' }, {echoVar from='config->vk_group'});
-                                    </script>
-                                {/if}
-                            </div>
-                        </div>
 
                         {* <!-- ===================================================
                         |                                                         |
@@ -274,36 +248,7 @@
                             <div class="clr"></div>
                         </div>
 
-                        {* <!-- ===================================================
-                        |                                                         |
-                        |  Список недавно просмотренных товаров.                  |
-                        |                                                         |
-                        ==================================================== --> *}
 
-                        {if !empty($recent_products)}
-                            <div class="right">
-                                <hr class="separator" />
-                                <div class="product-rel">
-                                    <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
-                                    <div class="product-rel-arr">
-                                        <a href="#" class="prev prevv"></a>
-                                        <a href="#" class="next nextt"></a>
-                                    </div>
-                                    <div class="clr"></div>
-                                    <div class="cat">
-                                        <ul>
-                                            {foreach $recent_products as $item}
-                                                <li>
-                                                    {include 'common/product-card.htm'
-                                                             noQuickOrder = TRUE}
-                                                </li>
-                                            {/foreach}
-                                        </ul>
-                                        <div class="clr"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        {/if}
                     </div>
                     <div class="clr"></div>
                 </div>
@@ -319,10 +264,24 @@
         ==================================================================== --> *}
 
         {else}
-            {include 'common/left-column.htm'}
+
 
             <div class="right">
                 <p>В корзине нет товаров.</p>
+
+            </div>
+        {/if}
+    {/if}
+
+  </article><!-- .content -->
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Левая колонка.                                                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {include 'common/left-column.htm'}
 
                 {* <!-- ===========================================================
                 |                                                                 |
@@ -330,30 +289,7 @@
                 |                                                                 |
                 ============================================================ --> *}
 
-                {if !empty($recent_products)}
-                    <hr class="separator" />
-                    <div class="product-rel">
-                        <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
-                        <div class="product-rel-arr">
-                            <a href="#" class="prev prevv"></a>
-                            <a href="#" class="next nextt"></a>
-                        </div>
-                        <div class="clr"></div>
-                        <div class="cat">
-                            <ul>
-                                {foreach $recent_products as $item}
-                                    <li>
-                                        {include 'common/product-card.htm'
-                                                 noQuickOrder = TRUE}
-                                    </li>
-                                {/foreach}
-                            </ul>
-                            <div class="clr"></div>
-                        </div>
-                    </div>
-                {/if}
-            </div>
-        {/if}
-    {/if}
+                {include 'common/recent_products.htm'}
+
 
 {/strip}

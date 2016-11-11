@@ -5,10 +5,10 @@
 
 // vars
 
-$button-width: 54px;
-$button-height: 48px;
+$button-width: 44px;
+$button-height: 39px;
 $bar-thickness: 3px;
-$button-pad: 9px;
+$button-pad: 10px;
 $button-trans-delay: .8s;
 $humb-color: rgb(155,155,155);
 $humb-color-hov: darken($humb-color, 20%);
@@ -26,7 +26,7 @@ $humb-bg-color: rgba(255,150,80, 0);
 
   position: absolute;
   z-index: 99;
-  top: 20px;
+  top: 30px;
   right: 20px;
 
   display: block;
@@ -62,7 +62,7 @@ $humb-bg-color: rgba(255,150,80, 0);
 
     height: $bar-thickness;
 
-    border-radius: 5px;
+    border-radius: 3px;
     background: $humb-color;
     &:before,
     &:after {
@@ -76,7 +76,7 @@ $humb-bg-color: rgba(255,150,80, 0);
 
       content: '';
 
-      border-radius: 5px;
+      border-radius: 3px;
       background-color: $humb-color;
     }
     &:before {

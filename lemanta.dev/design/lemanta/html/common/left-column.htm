@@ -122,7 +122,7 @@
 
 
 
-        <div class="banner col-md-12 col-sm-5 col-xs-6">
+        <div class="banner col-md-12 col-sm-5 col-xs-12">
           <div class="rasp">
             <img class="rasp-img" src="{theme}images/rasp.png" alt="" />
             <span href="catalog/rasprodazha">
@@ -135,20 +135,10 @@
         </div>
 
 
-        <div class="vk col-md-12 col-sm-6 col-xs-6">
+        <div id="vk_groups_widjet" class="vk col-md-12 col-sm-6 col-xs-12">
                <div class="title">Мы вКонтакте</div>
             {if !empty($config->vk_group)}
-                <script src="//vk.com/js/api/openapi.js?105"></script>
                 <div id="vk_groups"></div>
-                <script>
-                    VK.Widgets.Group('vk_groups', { mode: 0,
-                                                    width: '220',
-                                                    height: '260',
-                                                    color1: 'FFFFFF',
-                                                    color2: 'BBBBBB',
-                                                    color3: '88BBEE' },
-                                                     '{inputValue from='config->vk_group'}');
-                </script>
             {/if}
         </div>
       </aside><!-- /sidebar -->

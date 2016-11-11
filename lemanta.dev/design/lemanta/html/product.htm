@@ -396,71 +396,24 @@
                                 |                                                             |
                                 ======================================================== --> *}
 
-                     {$items = $products->related_products|default:$mores|default:FALSE}
 
-                     {if !empty($items)}
-
-            <hr class="separator" />
-                        <div class="product-rel">
-                            <div class="product-rel-t">ПРЕДЛАГАЕМ ПОСМОТРЕТЬ</div>
-                            <div class="product-rel-arr">
-                                <a href="#" class="prev prevv"></a>
-                                <a href="#" class="next nextt"></a>
-                            </div>
-                            <div class="clr"></div>
-                            <div class="cat">
-                                <ul class="">
-                                    {foreach $items as $item}
-                                        <li class="">
-                                            {include 'common/product-card.htm'}
-                                        </li>
-                                    {/foreach}
-                                </ul>
-                                <div class="clr"></div>
-                            </div>
-                      </div>
-                    {/if}
+                {include 'common/related_products.htm'}
                   </div>
                 </div><!-- /.row -->
                 </div><!-- .product-info -->
             </div><!-- .product-page -->
 
+            <div class="col-md-12 col-xs-12">
 
-
-
-                            {* <!-- ===========================================================
+                {* <!-- ===========================================================
                 |                                                                 |
                 |  Список недавно просмотренных товаров.                          |
                 |                                                                 |
                 ============================================================ --> *}
 
-        {if !empty($recent_products)}
-      <div class="col-md-12">
-<hr class="separator" />
-            <div class="product-rel">
-                <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
-                <div class="product-rel-arr">
-                    <a href="#" class="prev prevv"></a>
-                    <a href="#" class="next nextt"></a>
-                </div>
-                <div class="clr"></div>
-                <div class="cat">
+                {include 'common/recent_products.htm'}
 
-                    <ul class="">
-                        {foreach $recent_products as $item}
-                            <li class="">
-                                {include 'common/product-card.htm'}
-                            </li>
-                        {/foreach}
-                    </ul>
-
-                    <div class="clr"></div>
-
-                </div>
-          </div>
-      </div>
-
-        {/if}
+            </div>
 
         </div><!-- .right -->
 

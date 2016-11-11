@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 16:38:23
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-11 14:38:10
          compiled from "design/lemanta/html\cart.htm" */ ?>
 <?php /*%%SmartyHeaderCode:48805819f200753858-54364135%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0fa542b7339f1b83978734b754f6ee16b9710ca6' => 
     array (
       0 => 'design/lemanta/html\\cart.htm',
-      1 => 1478180303,
+      1 => 1478864289,
       2 => 'file',
     ),
   ),
@@ -35,7 +35,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'sum' => 0,
     'sku' => 0,
     'i' => 0,
-    'config' => 0,
     'cart_total_price' => 0,
     'cart_price' => 0,
     'discount' => 0,
@@ -50,7 +49,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
 <?php }else{ ?><?php $_smarty_tpl->tpl_vars['meta'] = new Smarty_variable('<meta name="Robots" content="noindex, follow" />', null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['meta'] = clone $_smarty_tpl->tpl_vars['meta']; $_ptr = $_ptr->parent; }
 Smarty::$global_tpl_vars['meta'] = clone $_smarty_tpl->tpl_vars['meta'];?><?php $_smarty_tpl->tpl_vars['mod'] = new Smarty_variable('mod-breadcrumbs.htm', null, 0);?><?php if ($_smarty_tpl->tpl_vars['emulator']->value->existsModule($_smarty_tpl->tpl_vars['mod']->value)){?><?php echo $_smarty_tpl->getSubTemplate (($_smarty_tpl->tpl_vars['mod']->value), $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('title'=>'Корзина','noCatalogLink'=>true), 0);?>
-<?php }?><?php if (!empty($_smarty_tpl->tpl_vars['cart_products']->value)){?><?php $_smarty_tpl->tpl_vars['dlv_sum'] = new Smarty_variable(0, null, 0);?><?php $_smarty_tpl->_capture_stack[0][] = array('deliveries', null, null); ob_start(); ?><?php if (!empty($_smarty_tpl->tpl_vars['delivery_methods']->value)){?><?php $_smarty_tpl->tpl_vars['sid'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['delivery_method_id']->value)===null||$tmp==='' ? false : $tmp), null, 0);?><div class="cart-val"><label>Вид доставки *</label><select class="niceSelect" name="delivery_method_id" onchange="document.cart.submit()"><option>--- Пожалуйста, выберите ---</option><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
+<?php }?><article class="content col-md-9 col-md-push-3"><?php if (!empty($_smarty_tpl->tpl_vars['cart_products']->value)){?><?php $_smarty_tpl->tpl_vars['dlv_sum'] = new Smarty_variable(0, null, 0);?><?php $_smarty_tpl->_capture_stack[0][] = array('deliveries', null, null); ob_start(); ?><?php if (!empty($_smarty_tpl->tpl_vars['delivery_methods']->value)){?><?php $_smarty_tpl->tpl_vars['sid'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['delivery_method_id']->value)===null||$tmp==='' ? false : $tmp), null, 0);?><div class="cart-val"><label>Вид доставки *</label><select class="niceSelect" name="delivery_method_id" onchange="document.cart.submit()"><option>--- Пожалуйста, выберите ---</option><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['delivery_methods']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
@@ -64,7 +63,7 @@ if (!empty($_capture_buffer)) {
  if (isset($_capture_assign)) $_smarty_tpl->assign($_capture_assign, ob_get_contents());
  if (isset( $_capture_append)) $_smarty_tpl->append( $_capture_append, ob_get_contents());
  Smarty::$_smarty_vars['capture'][$_capture_buffer]=ob_get_clean();
-} else $_smarty_tpl->capture_error();?><form action="cart" method="post" name="cart"><div class="center cart_pad"><div class="cart-page"><h1>CART</h1><div class="cart-title">ВАША корзина</div><table width="100%" cellpadding="0" cellspacing="0"><thead><tr><td>Информация о товаре</td><td>Количество</td><td>Цена за единицу</td><td>Итого</td></tr></thead><tbody><?php $_smarty_tpl->tpl_vars['total'] = new Smarty_variable(0, null, 0);?><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
+} else $_smarty_tpl->capture_error();?><form action="cart" method="post" name="cart"><div class="center cart_pad"><div class="cart-page"><div class="cart-title">ВАША корзина</div><table width="100%" cellpadding="0" cellspacing="0"><thead><tr><td>Информация о товаре</td><td>Количество</td><td>Цена за единицу</td><td>Итого</td></tr></thead><tbody><?php $_smarty_tpl->tpl_vars['total'] = new Smarty_variable(0, null, 0);?><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['cart_products']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
@@ -111,9 +110,7 @@ images/delete.png" alt="" /><a href="<?php echo $_smarty_tpl->smarty->registered
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
 </div></td><td><div class="cart-price-all"><?php $_smarty_tpl->tpl_vars['price'] = new Smarty_variable($_smarty_tpl->tpl_vars['helper']->value->priceForScreen($_smarty_tpl->tpl_vars['sum']->value), null, 0);?><?php echo intval($_smarty_tpl->tpl_vars['price']->value);?>
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
-</div></td></tr><?php } ?></tbody></table><div class="cart-l"><h1>CART</h1><div class="banner"><a href="catalog/boys"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
-images/foto.png" alt="" /></a></div><div class="title">Мы вКонтакте</div><div class="vk"><?php if (!empty($_smarty_tpl->tpl_vars['config']->value->vk_group)){?><script src="//vk.com/js/api/openapi.js?105"></script><div id="vk_groups"></div><script>VK.Widgets.Group('vk_groups', { mode: 0,width: '220',height: '260',color1: '111122',color2: 'b8c0c5',color3: '07073a' }, <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'config->vk_group'),$_smarty_tpl);?>
-);</script><?php }?></div></div><?php $_smarty_tpl->tpl_vars['cart_price'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['cart_total_price']->value)===null||$tmp==='' ? 0 : $tmp), null, 0);?><?php $_smarty_tpl->tpl_vars['discount'] = new Smarty_variable($_smarty_tpl->tpl_vars['helper']->value->priceForScreen($_smarty_tpl->tpl_vars['cart_price']->value-$_smarty_tpl->tpl_vars['total']->value), null, 0);?><div class="cart-r"><div class="itog-r"><?php if ($_smarty_tpl->tpl_vars['discount']->value!=0){?><div class="itog">Скидка: <?php echo intval($_smarty_tpl->tpl_vars['discount']->value);?>
+</div></td></tr><?php } ?></tbody></table><?php $_smarty_tpl->tpl_vars['cart_price'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['cart_total_price']->value)===null||$tmp==='' ? 0 : $tmp), null, 0);?><?php $_smarty_tpl->tpl_vars['discount'] = new Smarty_variable($_smarty_tpl->tpl_vars['helper']->value->priceForScreen($_smarty_tpl->tpl_vars['cart_price']->value-$_smarty_tpl->tpl_vars['total']->value), null, 0);?><div class="cart-r"><div class="itog-r"><?php if ($_smarty_tpl->tpl_vars['discount']->value!=0){?><div class="itog">Скидка: <?php echo intval($_smarty_tpl->tpl_vars['discount']->value);?>
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
 </div><?php }?><?php if ($_smarty_tpl->tpl_vars['dlv_sum']->value!=0){?><div class="itog"><?php $_smarty_tpl->tpl_vars['price'] = new Smarty_variable($_smarty_tpl->tpl_vars['helper']->value->priceForScreen($_smarty_tpl->tpl_vars['dlv_sum']->value), null, 0);?>Доставка: <?php echo intval($_smarty_tpl->tpl_vars['price']->value);?>
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
@@ -126,16 +123,11 @@ images/foto.png" alt="" /></a></div><div class="title">Мы вКонтакте</
 " required /><div class="clr"></div></div><div class="cart-val"><label>Адрес доставки</label><input name="address" type="text" value="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['inputValue'][0][0]->inputValue(array('from'=>'address'),$_smarty_tpl);?>
 " /><div class="clr"></div></div><?php echo Smarty::$_smarty_vars['capture']['deliveries'];?>
 <div class="cart-val"><label>Комментарий к заказу</label><textarea name="comment" id="order_comment"><?php echo htmlspecialchars((($tmp = @$_smarty_tpl->tpl_vars['comment']->value)===null||$tmp==='' ? '' : $tmp), ENT_QUOTES, 'UTF-8');?>
-</textarea><div class="clr"></div></div></div><div class="clr"></div></div><?php if (!empty($_smarty_tpl->tpl_vars['recent_products']->value)){?><div class="right"><hr class="separator" /><div class="product-rel"><div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat"><ul><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
+</textarea><div class="clr"></div></div></div><div class="clr"></div></div></div><div class="clr"></div></div><input name="captcha_code" type="hidden" value="" /><input name="submit_order" type="hidden" value="0" /></form><?php }else{ ?><div class="right"><p>В корзине нет товаров.</p></div><?php }?><?php }?></article><!-- .content --><?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+<div class="clr"></div><?php if (!empty($_smarty_tpl->tpl_vars['recent_products']->value)){?><hr class="separator" /><div class="col-md-12"><div class="product-rel"><div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat"><ul class=""><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['recent_products']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;
-?><li><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('noQuickOrder'=>true), 0);?>
-</li><?php } ?></ul><div class="clr"></div></div></div></div><?php }?></div><div class="clr"></div></div><input name="captcha_code" type="hidden" value="" /><input name="submit_order" type="hidden" value="0" /></form><?php }else{ ?><?php echo $_smarty_tpl->getSubTemplate ('common/left-column.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
-<div class="right"><p>В корзине нет товаров.</p><?php if (!empty($_smarty_tpl->tpl_vars['recent_products']->value)){?><hr class="separator" /><div class="product-rel"><div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div><div class="product-rel-arr"><a href="#" class="prev prevv"></a><a href="#" class="next nextt"></a></div><div class="clr"></div><div class="cat"><ul><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
- $_from = $_smarty_tpl->tpl_vars['recent_products']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
-foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
-$_smarty_tpl->tpl_vars['item']->_loop = true;
-?><li><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array('noQuickOrder'=>true), 0);?>
-</li><?php } ?></ul><div class="clr"></div></div></div><?php }?></div><?php }?><?php }?>
+?><li class=""><?php echo $_smarty_tpl->getSubTemplate ('common/product-card.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+</li><?php } ?></ul><div class="clr"></div></div></div></div><?php }?>
 <?php }} ?>

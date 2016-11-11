@@ -1,0 +1,29 @@
+{* <!-- Список дополнительных товаров --> *}{strip}
+
+
+                     {$items = $products->related_products|default:$mores|default:FALSE}
+
+                     {if !empty($items)}
+
+            <hr class="separator" />
+                        <div class="product-rel">
+                            <div class="product-rel-t">ПРЕДЛАГАЕМ ПОСМОТРЕТЬ</div>
+                            <div class="product-rel-arr">
+                                <a href="#" class="prev prevv"><i class="fa fa-chevron-left"></i></a>
+                                <a href="#" class="next nextt"><i class="fa fa-chevron-right"></i></a>
+                            </div>
+                            <div class="clr"></div>
+                            <div class="cat">
+                                <ul class="">
+                                    {foreach $items as $item}
+                                        <li class="">
+                                            {include 'common/product-card.htm'}
+                                        </li>
+                                    {/foreach}
+                                </ul>
+                                <div class="clr"></div>
+                            </div>
+                      </div>
+                    {/if}
+
+{/strip}

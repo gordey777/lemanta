@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-05 11:53:21
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-11 14:46:30
          compiled from "design/lemanta/html\common\cart-informer.htm" */ ?>
 <?php /*%%SmartyHeaderCode:102945819dfcdba9a08-27075278%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '4eba53e28d5c2ec4e777bdae9f82ba31f7a9e8f5' => 
     array (
       0 => 'design/lemanta/html\\common\\cart-informer.htm',
-      1 => 1478336000,
+      1 => 1478864789,
       2 => 'file',
     ),
   ),
@@ -30,6 +30,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
 </span></p><p>на сумму..........<span><?php echo intval($_smarty_tpl->tpl_vars['price']->value);?>
  <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['sign'][0][0]->sign(array(),$_smarty_tpl);?>
 </span></p><?php }else{ ?><p><span>Корзина пуста</span></p><?php }?></div><a data-href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['site'][0][0]->site(array(),$_smarty_tpl);?>
-cart" class="cart-r" onclick="return gotoHref(this)"><span><?php echo (($tmp = @$_smarty_tpl->tpl_vars['cart_products_num']->value)===null||$tmp==='' ? 0 : $tmp);?>
+cart" class="cart-r" onclick="return gotoHref(this)"><i class="fa fa-shopping-cart"></i><span class="cart-r-namb"><?php echo (($tmp = @$_smarty_tpl->tpl_vars['cart_products_num']->value)===null||$tmp==='' ? 0 : $tmp);?>
 </span></a>
 <?php }} ?>

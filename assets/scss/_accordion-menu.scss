@@ -28,8 +28,8 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
   list-style: none;
 
   color: $acc-color-white;
-  border: 0;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, .45);
+  //border: 0;
+  //box-shadow: 2px 2px 10px rgba(0, 0, 0, .45);
   ul {
     line-height: 1;
 
@@ -45,7 +45,7 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
 
     list-style: none;
 
-    border: 0;
+    //border: 0;
     li {
       line-height: 1;
 
@@ -61,7 +61,7 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
 
       list-style: none;
 
-      border: 0;
+      //border: 0;
       a {
         line-height: 1;
 
@@ -79,10 +79,15 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
 
         text-transform: uppercase;
 
-        border: 0;
+        //border: 0;
         &.selected {
           color: $acc-txt;
           background: $acc-bg-sel;
+        }
+      }
+      &.has-sub {
+        a {
+          //padding-right: 25px;
         }
       }
     }
@@ -106,11 +111,11 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
     text-decoration: none;
 
     color: $acc-color-white;
-    border-top: 1px solid $acc-border;
-    border-right: 1px solid $acc-border;
-    border-left: 1px solid $acc-border;
+    //border-top: 1px solid $acc-border;
+    //border-right: 1px solid $acc-border;
+    //border-left: 1px solid $acc-border;
     background: $acc-bg1;
-    box-shadow: inset 0 1px 0 $acc-bg-shad;
+    //box-shadow: inset 0 1px 0 $acc-bg-shad;
     &:hover {
       color: $acc-txt;
       background: $acc-bg2;
@@ -121,7 +126,7 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
   }
   &.open > a {
     color: $acc-txt;
-    border-bottom: 1px solid $acc-border;
+    //border-bottom: 1px solid $acc-border;
     background: $acc-bg2;
     &.selected {
       background: $acc-bg-sel;
@@ -129,7 +134,7 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
   }
   &:last-child > a,
   &.last > a {
-    border-bottom: 1px solid $acc-border;
+    //border-bottom: 1px solid $acc-border;
     &.selected {
       background: $acc-bg-sel;
     }
@@ -151,11 +156,11 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
         text-decoration: none;
 
         color: $acc-txt;
-        border-right: 1px solid $acc-border2;
-        border-bottom: 1px solid $acc-border2;
-        border-left: 1px solid $acc-border2;
+        //border-right: 1px solid $acc-border2;
+        //border-bottom: 1px solid $acc-border2;
+        //border-left: 1px solid $acc-border2;
         background: $acc-bg5;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+        //box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
         &.selected {
           background: $acc-bg-sel;
         }
@@ -176,7 +181,7 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
     }
     ul li {
       &:first-child > a {
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+        //box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
       }
       a {
         padding-left: 30px;
@@ -202,30 +207,42 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
 .holder {
   position: absolute;
   z-index: 2;
-  //float: right;
   top: 0;
   right: 0;
 
   display: block;
 
-  width: 20px;
+  width: 25px;
   height: 100%;
   margin-left: 10px;
 
   cursor: pointer;
 
-  color: #000;
+  color: #fff;
+  //border-left: 1px solid $acc-border;
   i {
+    position: relative;
+    top: 12px;
+    right: -2px;
+
     transition: all .4s ease;
+    &:before {
+      font-size: 18px;
+    }
   }
   &.holder-open {
+    color: #ccc;
     i {
       -webkit-transform: rotate(180deg);
           -ms-transform: rotate(180deg);
            -o-transform: rotate(180deg);
               transform: rotate(180deg);
-
-      color: #b63b4d;
     }
+    &:hover {
+      color: #333;
+    }
+  }
+  &:hover {
+    color: #333;
   }
 }
