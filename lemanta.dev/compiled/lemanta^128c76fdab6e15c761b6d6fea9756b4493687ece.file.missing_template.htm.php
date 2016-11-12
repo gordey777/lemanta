@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-11 18:44:19
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 15:03:18
          compiled from "design/lemanta/html\missing_template.htm" */ ?>
-<?php /*%%SmartyHeaderCode:117855819f2122c05e9-26239300%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:1613558270506a621e7-18869728%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,15 +11,15 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '117855819f2122c05e9-26239300',
+  'nocache_hash' => '1613558270506a621e7-18869728',
   'function' => 
   array (
   ),
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819f21230a284_64722854',
   'has_nocache_code' => false,
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_58270507016255_36637846',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_5819f21230a284_64722854')) {function content_5819f21230a284_64722854($_smarty_tpl) {?><?php $_smarty_tpl->tpl_vars['title'] = new Smarty_variable('Страница не найдена!', null, 3);
+<?php if ($_valid && !is_callable('content_58270507016255_36637846')) {function content_58270507016255_36637846($_smarty_tpl) {?><?php $_smarty_tpl->tpl_vars['title'] = new Smarty_variable('Страница не найдена!', null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['title'] = clone $_smarty_tpl->tpl_vars['title']; $_ptr = $_ptr->parent; }
 Smarty::$global_tpl_vars['title'] = clone $_smarty_tpl->tpl_vars['title'];?><?php $_smarty_tpl->tpl_vars['description'] = new Smarty_variable('', null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['description'] = clone $_smarty_tpl->tpl_vars['description']; $_ptr = $_ptr->parent; }

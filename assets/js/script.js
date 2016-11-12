@@ -6488,7 +6488,7 @@ function showZOOMimage(anchor) {
 $(function() {
   $('.zakaz a').click(function() {
     var pageUrl = $(this).attr('href');
-    $('body > div.bg').append('<div style="display: none;" class="for_vs" id="cl_overlay"></div>');
+    $('#wrapper').append('<div style="display: none;" class="for_vs" id="cl_overlay"></div>');
     $('body, html').animate({
       scrollTop: 0
     }, 2000);
@@ -6500,7 +6500,7 @@ $(function() {
           dynamic: 1
         },
         success: function(data) {
-          $('body > div.bg').append(data);
+          $('#wrapper').append(data);
           $('#cl_form').animate({
             top: '40px'
           }, 500);
@@ -7391,8 +7391,8 @@ if ($(window).width() < '992') {
 
 $(document).ready(function() {
   $('#slider').skdslider({
-    delay: 4000,
-    fadeSpeed: 5000,
+    delay: 5000,
+    fadeSpeed: 1000,
     animationType: 'fading',
     showNav: false,
     showNextPrev: false,

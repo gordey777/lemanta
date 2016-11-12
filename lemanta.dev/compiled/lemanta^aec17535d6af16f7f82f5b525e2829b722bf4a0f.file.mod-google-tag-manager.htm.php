@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:48:51
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 13:16:12
          compiled from "design/lemanta/html\mod-google-tag-manager.htm" */ ?>
-<?php /*%%SmartyHeaderCode:55855819dfcd3f4af6-81880144%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:150415826ebec57e455-50126124%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,12 +11,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '55855819dfcd3f4af6-81880144',
+  'nocache_hash' => '150415826ebec57e455-50126124',
   'function' => 
   array (
   ),
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfcd6b2492_13983569',
   'variables' => 
   array (
     'baseOnly' => 0,
@@ -62,8 +60,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'result' => 0,
   ),
   'has_nocache_code' => false,
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5826ebec743a76_31623988',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_5819dfcd6b2492_13983569')) {function content_5819dfcd6b2492_13983569($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include 'D:\\Projects\\lemanta\\lemanta.dev\\Smarty\\libs\\plugins\\modifier.date_format.php';
+<?php if ($_valid && !is_callable('content_5826ebec743a76_31623988')) {function content_5826ebec743a76_31623988($_smarty_tpl) {?><?php if (!is_callable('smarty_modifier_date_format')) include 'D:\\Projects\\lemanta\\lemanta.dev\\Smarty\\libs\\plugins\\modifier.date_format.php';
 ?><?php $_smarty_tpl->_capture_stack[0][] = array('default', 'js', null); ob_start(); ?><script>if (typeof googleTagManagerMODjsCreateCookie != 'function') {function googleTagManagerMODjsCreateCookie ( name, value, days ) {try {if (days) {var date = new Date();date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));var expires = '; expires=' + date.toGMTString();} else {var expires = '';}document.cookie = name + '=' + value + expires + '; path=/';} catch (e) { }}}</script><?php list($_capture_buffer, $_capture_assign, $_capture_append) = array_pop($_smarty_tpl->_capture_stack[0]);
 if (!empty($_capture_buffer)) {
  if (isset($_capture_assign)) $_smarty_tpl->assign($_capture_assign, ob_get_contents());

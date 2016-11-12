@@ -1,0 +1,300 @@
+{* <!-- список товаров категории --> *}{strip}
+
+    {capture assign=name}
+        {if !empty($seoH1)}
+            {$seoH1}
+        {else}
+            {name from=category def=''} {name from=brand def=''}
+        {/if}
+    {/capture}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Заскоки сеошников (NetPeak).                                               |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$name = trim($name)}
+    {if $name == 'Костюмы тройки'}
+        {if !empty($category->url)}
+            {if $category->url == 'detskaya-odezhda/dlya-malchikov/kostyumy'
+            || $category->url == 'detskaya-odezhda/dlya-devochek/kostyumy'}
+                {$name = 'Костюмы'}
+            {/if}
+        {/if}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Хлебные крошки.                                                            |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$mod = 'mod-breadcrumbs.htm'}
+    {if $emulator->existsModule($mod)}
+        {include "$mod"
+                  noCatalogLink = TRUE}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Левая колонка.                                                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {include 'common/left-column.htm'}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Горячие предложения (читаем не более 20 товаров со скидками).              |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="right">
+        {discountProducts count=20 assign=items}
+        {if !empty($items)}
+            <div class="title2">Горящие предложения</div>
+            <div class="popular0">
+                <div class="popular">
+                    <ul>
+                        {foreach $items as $item}
+                            <li>
+                                <div class="popular-bl">
+                                    <div class="popular-image">
+                                        <a href="{url}">
+                                            <img src="{image folder='files/products'}" alt="{name}"/>
+                                        </a>
+                                    </div>
+
+                                    {if !empty($item->variants)}
+                                        {$number = 1}
+                                        {foreach $item->variants as $v}
+                                            {discountPrice num=$number signed=FALSE assign=price}
+
+                                            <a href="{url}" class="popular-price">
+                                                {intval($price)} {sign}
+                                            </a>
+
+                                            {$number = $number + 1}
+                                        {/foreach}
+                                    {/if}
+
+                                    <div class="lenta"><p>Топ продаж</p></div>
+                                </div>
+                            </li>
+                        {/foreach}
+                    </ul>
+                </div>
+                <div class="clr"></div>
+
+                <a href="#" class="prev prev-navigation"></a>
+                <a href="#" class="next next-navigation"></a>
+            </div>
+            <div class="clr"></div>
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Заголовок.                                                             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {$seoPagenum = ''}
+        {if !empty($CurrentPage)}
+            {$seoPagenum = $CurrentPage + 1}
+            {$seoPagenum = " - Страница $seoPagenum"}
+        {/if}
+
+        <h1 {* <!-- class="hidden" --> *}>
+            {$name|trim|default:'Каталог'}
+            {$seoPagenum}
+        </h1>
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Сортировка (если товаров более 1).                                     |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($products)}
+            {capture assign=sorter}
+                {if count($products) > 1}
+                    <div class="filters">
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  В переменной $my_modes перечисляем номера режимов      |
+                        |  сортировки, какие хотим видеть в выпадающем списке:    |
+                        |      0 = как расставлены (по умолчанию)                 |
+                        |      1 = по цене                                        |
+                        |      2 = по количеству                                  |
+                        |      5 = по числу вариантов                             |
+                        |      6 = по имени                                       |
+                        |      7 = по категориям                                  |
+                        |      8 = по брендам                                     |
+                        |      9 = по дате добавления                             |
+                        |      13 = по числу отзывов                              |
+                        |      14 = по количеству просмотров                      |
+                        |      16 = по рейтингу                                   |
+                        |      20 = по коду производителя                         |
+                        |      27 = по дате начала акции                          |
+                        |      28 = по дате конца акции                           |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {if !empty($sort_modes)}
+                            {$my_modes = [0, 1, 2, 5, 6, 7, 8, 9, 13, 14, 16, 20, 27, 28]}
+                            {$value = $sort_method|default:0}
+                            <form class="filter-l" method="post">
+                                <span>Сортировать по:</span> {**}
+                                <select class="niceSelect" name="sort_method" onchange="this.parentNode.submit(); return true;">
+                                    {foreach $sort_modes as $mode => $name}
+                                        {if in_array($mode, $my_modes)}
+                                            {$selected = ($mode == $value) ? 'selected' : ''}
+                                            <option value="{$mode|escape}" {$selected}>{$name}</option>
+                                        {/if}
+                                    {/foreach}
+                                </select> {**}
+
+                                {* <!-- ===========================================
+                                |                                                 |
+                                |  Направление сортировки (кроме "по умолчанию"). |
+                                |                                                 |
+                                ============================================ --> *}
+
+                                {if $value != 0}
+                                    {$dir = $sort_descending|default:0}
+                                    <a {($dir) ? "" : "class=\"active\""} onclick="this.nextSibling.value = 0; this.parentNode.submit();" title="По убыванию">↓</a>
+                                    <input name="sort_descending" type="hidden" value="{$dir|escape}" />
+                                    <a {($dir) ? "class=\"active\"" : ""} onclick="this.previousSibling.value = 1; this.parentNode.submit();" title="По возрастанию">↑</a>
+                                {/if}
+                            </form>
+                        {/if}
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Пагинация.                                             |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {$PagesNavigation}
+                        <div class="clr"></div>
+                    </div>
+                {/if}
+            {/capture}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Список товаров.                                                    |
+            |                                                                     |
+            ================================================================ --> *}
+
+            {$sorter}
+            <div class="cat">
+                {foreach $products as $item}
+                    {include 'common/product-card.htm'}
+                {/foreach}
+                <div class="clr"></div>
+            </div>
+            {$sorter}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Иначе товаров нет, тогда может быть покажем карту подкатегорий.        |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {else}
+            {* <!-- requestUri except='*' nopages=TRUE assign=uri}
+            {getLastPageUrl from=$uri assign=uri --> *}
+
+            {if !empty($Pages)}
+                {$newPage = count($Pages)}
+                {$uri = array_pop($Pages)}
+                {$uri = preg_replace('!/page[_\-][0-9]+!i', "/page-$newPage", $uri)}
+                {capture assign=uri}
+                    {site root=TRUE}{$uri|escape}
+                {/capture}
+            {/if}
+            {header302 url=$uri}
+
+            {if !empty($category->category_id)}
+                {if !isset($categories)}
+                    {categories sort=FALSE counters=FALSE assign=categories scope=global}
+                {/if}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Именно подкатегории текущей ветки.                             |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {getBranch from=categories id=$category->category_id assign=branch}
+                {if !empty($branch->subcategories)}
+                    <br />
+                    <div class="title2">Выберите категорию</div>
+                    <div class="category-buttons">
+                        {foreach $branch->subcategories as $item}
+                            <a class="category-button" href="{url}">
+                                <span>{name}</span>
+                            </a>
+                        {/foreach}
+                    </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Иначе просто покажем сообщение "нет товаров".                  |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {else}
+                    <p>Товары не найдены.</p>
+                {/if}
+            {else}
+                <p>Товары не найдены.</p>
+            {/if}
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Список недавно просмотренных товаров.                                  |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($recent_products)}
+            <hr class="separator" />
+            <div class="product-rel">
+                <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
+                <div class="product-rel-arr">
+                    <a href="#" class="prev prevv"></a>
+                    <a href="#" class="next nextt"></a>
+                </div>
+                <div class="clr"></div>
+                <div class="cat">
+                    <ul>
+                        {foreach $recent_products as $item}
+                            <li>
+                                {include 'common/product-card.htm'}
+                            </li>
+                        {/foreach}
+                    </ul>
+                    <div class="clr"></div>
+                </div>
+            </div>
+        {/if}
+    </div>
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Обеспечиваем правильный meta title (на основе того, что смотрит в этот     |
+    |  момент пользователь - страницу бренда или категории).                      |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {if !empty($brand)}
+        {echoVar from='brand->meta_title' assign=title scope=global}
+    {elseif !empty($category)}
+        {echoVar from='category->meta_title' assign=title scope=global}
+    {/if}
+
+{/strip}

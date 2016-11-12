@@ -1,0 +1,582 @@
+{* <!-- ===========================================================================
+                                                                                  |
+    Модуль: Диспетчер тегов Google.                                               |
+    ----------------------------------------------------------------------------  |
+                                                                                  |
+    Входные переменные:                                                           |
+        $trackOrder = TRUE если наблюдать заказы (по умолчанию FALSE)             |
+            $baseOnly = TRUE если цены в базовой валюте (по умолчанию FALSE)      |
+        $trackCart = TRUE если наблюдать корзину (по умолчанию FALSE)             |
+        $trackDefer = TRUE если наблюдать отложенные (по умолчанию FALSE)         |
+        $startManager = TRUE если подключить скрипт GTM (по умолчанию FALSE)      |
+            $gtmID = идентификатор аккаунта Google Tag Manager (по умолчанию      |
+                     берется из параметра googleTM конфигурации сайта)            |
+        $final = TRUE если вывести результат на страницу (по умолчанию TRUE)      |
+                 FALSE если добавить в буфер, то есть если это не финальный вызов |
+                                                                                  |
+============================================================================ --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Нам может понадобиться вспомогательный скрипт.                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {capture assign=js}
+        <script>
+            if (typeof googleTagManagerMODjsCreateCookie != 'function') {
+                function googleTagManagerMODjsCreateCookie ( name, value, days ) {
+                    try {
+                        if (days) {
+                            var date = new Date();
+                            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                            var expires = '; expires=' + date.toGMTString();
+                        } else {
+                            var expires = '';
+                        }
+                        document.cookie = name + '=' + value + expires + '; path=/';
+                    } catch (e) { }
+                }
+            }
+        </script>
+    {/capture}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Модуль буферизирует вывод.                                                 |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {capture assign=result}
+        {echoVar from=googleTagManagerMODbuffer}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  В какой валюте просили цены?                                           |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {$doExchange = empty($baseOnly)}
+        {if $doExchange}
+            {inputValue from='currency->code' assign=googleTagManagerMODsign}
+        {else}
+            {inputValue from='main_currency->code' assign=googleTagManagerMODsign}
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Слой наблюдения за событиями в заказах (если наблюдение включено, есть |
+        |  запись о заказе и он еще не наблюдался).                               |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($trackOrder)}
+            {if !empty($order->order_id)}
+                {$id = $order->order_id}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  После даты оформления + полминуты заказ всегда признавать      |
+                |  наблюдавшимся (то есть если за это время его так и не открыли).|
+                |                                                                 |
+                ============================================================ --> *}
+
+                {$nowTimer1 = $smarty.now}
+                {$nowTimer2 = $nowTimer1 - 10}
+                {$nowTimer3 = $nowTimer2 - 10}
+                {$nowTimer4 = $nowTimer3 - 10}
+                    {$nowTimer1 = $nowTimer1|date_format:'%Y-%m-%d %H:%M:%S'}
+                    {$nowTimer2 = $nowTimer2|date_format:'%Y-%m-%d %H:%M:%S'}
+                    {$nowTimer3 = $nowTimer3|date_format:'%Y-%m-%d %H:%M:%S'}
+                    {$nowTimer4 = $nowTimer4|date_format:'%Y-%m-%d %H:%M:%S'}
+                {$timer = $order->date|default:$nowTimer1}
+                    {$timer = substr($timer, 0, 18)}
+                    {$nowTimer1 = substr($nowTimer1, 0, 18)}
+                    {$nowTimer2 = substr($nowTimer2, 0, 18)}
+                    {$nowTimer3 = substr($nowTimer3, 0, 18)}
+                    {$nowTimer4 = substr($nowTimer4, 0, 18)}
+                {$timer = $timer == $nowTimer1 || $timer == $nowTimer2 || $timer == $nowTimer3 || $timer == $nowTimer4}
+
+                {if !isset($googleTagManagerMODtrackOrders[$id]) && $timer}
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Запоминаем на будущее, что такой заказ уже наблюдался.     |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    {$dummy = $googleTagManagerMODtrackOrders}
+                    {$dummy[$id] = $id}
+                    {$googleTagManagerMODtrackOrders = $dummy scope=global}
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Добавление сведений в слой.                                |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <script>
+                        if (typeof dataLayer == 'undefined') dataLayer = [];
+                        dataLayer.push({
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Время события, номер заказа, название магазина.    |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            'transactionDate': '{$smarty.now|date_format:'%d-%m-%Y %H:%M:%S'}',
+                            'transactionId': '{inputValue from=id}',
+                            'transactionAffiliation': '{inputValue from='settings->site_name'}',
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Сумма заказа, налог, цена доставки, код текущей    |
+                            |  валюты.                                            |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            {$total = $order->total_amount|default:0}
+                            {$delivery = $order->delivery_price|default:0}
+
+                            'transactionTotal': {$helper->priceForScreen($total - $delivery, $doExchange, FALSE)},
+                            'transactionTax': 0,
+                            'transactionShipping': {$helper->priceForScreen($delivery, $doExchange, FALSE)},
+                            'transactionCurrency': '{$googleTagManagerMODsign}',
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Перебираем товары заказа.                          |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            'transactionProducts': [
+
+                                {if !empty($order->products)}
+                                    {foreach $order->products as $item}
+
+                                        {* <!-- ===================================
+                                        |                                         |
+                                        |  Категория. Пробуем извлечь из массива  |
+                                        |  категорий или строки товара (но там    |
+                                        |  она указана в единственном числе).     |
+                                        |                                         |
+                                        ==================================== --> *}
+
+                                        {$category = ''}
+
+                                        {$id = $item->category_id|default:0}
+                                        {if !empty($id)}
+                                            {$category = $categories_list[$id]->name|default:''}
+                                        {/if}
+
+                                        {if empty($category)}
+                                            {$category = $item->category|default:''}
+                                        {/if}
+
+                                        {* <!-- ===================================
+                                        |                                         |
+                                        |  Количество, цена.                      |
+                                        |                                         |
+                                        ==================================== --> *}
+
+                                        {$amount = $item->quantity|default:0}
+                                        {$amount = intval($amount)}
+                                        {$amount = ($amount < 0) ? $amount * -1 : $amount}
+
+                                        {$price = $item->price|default:0}
+
+                                        {* <!-- ===================================
+                                        |                                         |
+                                        |  Выводим в слой: категория, артикул,    |
+                                        |  название товара, имя варианта,         |
+                                        |  выбранные клиентом свойства,           |
+                                        |  количество, цена, сумма).              |
+                                        |                                         |
+                                        ==================================== --> *}
+
+                                        {
+                                            'category': '{inputValue from=category}',
+                                            'sku': '{inputValue from='item->sku'}',
+                                            'name': '{inputValue from='item->product_name'}',
+                                            'variant': '{inputValue from='item->variant_name'}',
+                                            'properties': '{inputValue from='item->name_properties'}',
+                                            'quantity': {$amount},
+                                            'price': {$helper->priceForScreen($price, $doExchange, FALSE)},
+                                            'total': {$helper->priceForScreen($price * $amount, $doExchange, FALSE)}
+                                        }
+
+                                        {* <!-- ===================================
+                                        |                                         |
+                                        |  Не забываем разделить запятой элементы |
+                                        |  списка.                                |
+                                        |                                         |
+                                        ==================================== --> *}
+
+                                        {if !$item@last}
+                                            ,
+                                        {/if}
+                                    {/foreach}
+                                {/if}
+                            ],
+
+                            {* <!-- ===============================================
+                            |                                                     |
+                            |  Имя отслеживаемого события.                        |
+                            |                                                     |
+                            ================================================ --> *}
+
+                            'event': 'trackTrans'
+                        });
+                    </script>
+                {/if}
+            {/if}
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Слой наблюдения за событиями в корзине (если такое наблюдение включено |
+        |  и набор товаров корзины изменился).                                    |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($trackCart)}
+            {$hash = ''}
+            {if !empty($cart_products)}
+                {$hash = []}
+                {foreach $cart_products as $item}
+                    {$variant = reset($item->variants)}
+                    {$variant = $variant->variant_id|default:0}
+
+                    {$amount = $item->amount|default:1}
+                    {$amount = max(1, intval($amount))}
+
+                    {$properties = $item->name_properties|default:''}
+
+                    {$hash[$variant] = [ $amount, $properties ]}
+                {/foreach}
+                {$dummy = ksort($hash)}
+                {$hash = serialize($hash)}
+                {$hash = md5($hash)}
+            {/if}
+
+            {if !isset($googleTagManagerMODtrackCarts)}
+                {$googleTagManagerMODtrackCarts = $smarty.cookies.gtmTrackCarts|default:''}
+            {/if}
+
+            {if isset($googleTagManagerMODtrackCarts) && $googleTagManagerMODtrackCarts != $hash
+            || !isset($googleTagManagerMODtrackCarts) && $hash != ''}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Запоминаем на будущее нынешний состав товаров корзины.         |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {$googleTagManagerMODtrackCarts = $hash scope=global}
+
+                {$js}
+                {$js = ''}
+                <script>
+                    googleTagManagerMODjsCreateCookie('gtmTrackCarts', '{$hash}', 1)
+                </script>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Добавление сведений в слой.                                    |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <script>
+                    if (typeof dataLayer == 'undefined') dataLayer = [];
+                    dataLayer.push({
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Время события, название магазина, общее количество     |
+                        |  товаров корзины, общая сумма, код текущей валюты.      |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {$amount = $cart_products_num|default:0}
+                        {$amount = intval($amount)}
+
+                        {$total = $cart_total_price|default:0}
+
+                        'cartDate': '{$smarty.now|date_format:'%d-%m-%Y %H:%M:%S'}',
+                        'cartShop': '{inputValue from='settings->site_name'}',
+                        'cartQuantity': {$amount},
+                        'cartTotal': {$helper->priceForScreen($total, $doExchange, FALSE)},
+                        'cartCurrency': '{$googleTagManagerMODsign}',
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Перебираем товары корзины.                             |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        'cartProducts': [
+
+                            {if !empty($cart_products)}
+                                {foreach $cart_products as $item}
+                                    {$variant = reset($item->variants)}
+
+                                    {* <!-- =======================================
+                                    |                                             |
+                                    |  Количество, цена.                          |
+                                    |                                             |
+                                    ======================================== --> *}
+
+                                    {$amount = $item->amount|default:1}
+                                    {$amount = max(1, intval($amount))}
+
+                                    {$price = $variant->discount_price|default:0}
+
+                                    {* <!-- =======================================
+                                    |                                             |
+                                    |  Выводим в слой: категория, артикул,        |
+                                    |  название товара, имя варианта,             |
+                                    |  выбранные клиентом свойства, количество,   |
+                                    |  цена, сумма).                              |
+                                    |                                             |
+                                    ======================================== --> *}
+
+                                    {
+                                        'category': '{inputValue from='item->category_plural'}',
+                                        'sku': '{inputValue from='variant->sku'}',
+                                        'name': '{name}',
+                                        'variant': '{inputValue from='variant->variant_name'}',
+                                        'properties': '{inputValue from='item->name_properties'}',
+                                        'quantity': {$amount},
+                                        'price': {$helper->priceForScreen($price, $doExchange, FALSE)},
+                                        'total': {$helper->priceForScreen($price * $amount, $doExchange, FALSE)}
+                                    }
+
+                                    {* <!-- =======================================
+                                    |                                             |
+                                    |  Не забываем разделить запятой элементы     |
+                                    |  списка.                                    |
+                                    |                                             |
+                                    ======================================== --> *}
+
+                                    {if !$item@last}
+                                        ,
+                                    {/if}
+                                {/foreach}
+                            {/if}
+                        ],
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Имя отслеживаемого события.                            |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        'event': 'trackCart'
+                    });
+                </script>
+            {/if}
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Слой наблюдения за событиями в отложенных товарах (если такое          |
+        |  наблюдение включено и набор отложенных товаров изменился).             |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($trackDefer)}
+            {$hash = ''}
+            {if !empty($defer_products)}
+                {$hash = []}
+                {foreach $defer_products as $item}
+                    {$variant = reset($item->variants)}
+                    {$variant = $variant->variant_id|default:0}
+
+                    {$amount = $item->amount|default:1}
+                    {$amount = max(1, intval($amount))}
+
+                    {$properties = $item->name_properties|default:''}
+
+                    {$hash[$variant] = [ $amount, $properties ]}
+                {/foreach}
+                {$dummy = ksort($hash)}
+                {$hash = serialize($hash)}
+                {$hash = md5($hash)}
+            {/if}
+
+            {if !isset($googleTagManagerMODtrackDefers)}
+                {$googleTagManagerMODtrackDefers = $smarty.cookies.gtmTrackDefers|default:''}
+            {/if}
+
+            {if isset($googleTagManagerMODtrackDefers) && $googleTagManagerMODtrackDefers != $hash
+            || !isset($googleTagManagerMODtrackDefers) && $hash != ''}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Запоминаем на будущее нынешний состав отложенных товаров.      |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {$googleTagManagerMODtrackDefers = $hash scope=global}
+
+                {$js}
+                {$js = ''}
+                <script>
+                    googleTagManagerMODjsCreateCookie('gtmTrackDefers', '{$hash}', 1)
+                </script>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Добавление сведений в слой.                                    |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <script>
+                    if (typeof dataLayer == 'undefined') dataLayer = [];
+                    dataLayer.push({
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Время события, название магазина, общее количество     |
+                        |  отложенных товаров, общая сумма, код текущей валюты.   |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        {$amount = $defer_products_num|default:0}
+                        {$amount = intval($amount)}
+
+                        {$total = $defer_total_price|default:0}
+
+                        'deferDate': '{$smarty.now|date_format:'%d-%m-%Y %H:%M:%S'}',
+                        'deferShop': '{inputValue from='settings->site_name'}',
+                        'deferQuantity': {$amount},
+                        'deferTotal': {$helper->priceForScreen($total, $doExchange, FALSE)},
+                        'deferCurrency': '{$googleTagManagerMODsign}',
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Перебираем отложенные товары.                          |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        'deferProducts': [
+
+                            {if !empty($defer_products)}
+                                {foreach $defer_products as $item}
+                                    {$variant = reset($item->variants)}
+
+                                    {* <!-- =======================================
+                                    |                                             |
+                                    |  Количество, цена.                          |
+                                    |                                             |
+                                    ======================================== --> *}
+
+                                    {$amount = $item->amount|default:1}
+                                    {$amount = max(1, intval($amount))}
+
+                                    {$price = $variant->discount_price|default:0}
+
+                                    {* <!-- =======================================
+                                    |                                             |
+                                    |  Выводим в слой: категория, артикул,        |
+                                    |  название товара, имя варианта,             |
+                                    |  выбранные клиентом свойства, количество,   |
+                                    |  цена, сумма).                              |
+                                    |                                             |
+                                    ======================================== --> *}
+
+                                    {
+                                        'category': '{inputValue from='item->category_plural'}',
+                                        'sku': '{inputValue from='variant->sku'}',
+                                        'name': '{name}',
+                                        'variant': '{inputValue from='variant->variant_name'}',
+                                        'properties': '{inputValue from='item->name_properties'}',
+                                        'quantity': {$amount},
+                                        'price': {$helper->priceForScreen($price, $doExchange, FALSE)},
+                                        'total': {$helper->priceForScreen($price * $amount, $doExchange, FALSE)}
+                                    }
+
+                                    {* <!-- =======================================
+                                    |                                             |
+                                    |  Не забываем разделить запятой элементы     |
+                                    |  списка.                                    |
+                                    |                                             |
+                                    ======================================== --> *}
+
+                                    {if !$item@last}
+                                        ,
+                                    {/if}
+                                {/foreach}
+                            {/if}
+                        ],
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Имя отслеживаемого события.                            |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        'event': 'trackDefer'
+                    });
+                </script>
+            {/if}
+        {/if}
+
+        {* <!-- ===================================================================
+        |                                                                         |
+        |  Скрипт диспетчера (если подключение разрешено, он еще не подключался и |
+        |  указан ИД аккаунта).                                                   |
+        |                                                                         |
+        ==================================================================== --> *}
+
+        {if !empty($startManager)}
+            {$gtmID = (!empty($gtmID) && is_string($gtmID)) ? $gtmID : ($config->googleTM|default:'')}
+            {if !empty($gtmID)}
+                {if empty($googleTagManagerMODscripted)}
+                    {$googleTagManagerMODscripted = TRUE scope=global}
+
+                    {$gtmID = $gtmID|escape}
+
+                    <noscript>
+                        <iframe src="//www.googletagmanager.com/ns.html?id={$gtmID}" height="0" width="0" style="display: none; visibility: hidden"></iframe>
+                    </noscript>
+
+                    <script>
+                        (function (w, d, s, l, i) {
+                            w[l] = w[l] || [];
+
+                            w[l].push({
+                                'gtm.start': new Date().getTime(),
+                                event: 'gtm.js'
+                            });
+
+                            var f = d.getElementsByTagName(s)[0],
+                                j = d.createElement(s),
+                                dl = l != 'dataLayer' ? '&l=' + l : '';
+
+                            j.async = true;
+                            j.src = '//www.googletagmanager.com/gtm.js?id=' + i + dl;
+                            f.parentNode.insertBefore(j, f);
+                        }) (window, document, 'script', 'dataLayer', '{$gtmID}');
+                    </script>
+                {/if}
+            {/if}
+        {/if}
+    {/capture}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Согласно указанному, добавляем в буфер или выводим на страницу с очисткой  |
+    |  буфера.                                                                    |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {if !isset($final) || !empty($final)}
+        {$result}
+        {$result = ''}
+    {/if}
+
+    {$googleTagManagerMODbuffer = $result scope=global}
+
+{/strip}

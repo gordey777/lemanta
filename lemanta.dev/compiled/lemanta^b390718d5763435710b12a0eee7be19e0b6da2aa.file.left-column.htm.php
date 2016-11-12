@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-11 19:05:09
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 13:16:11
          compiled from "design/lemanta/html\common\left-column.htm" */ ?>
-<?php /*%%SmartyHeaderCode:45465819dfd5473f12-39870815%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:255325826ebeb112c36-35841936%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,25 +11,9 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '45465819dfd5473f12-39870815',
+  'nocache_hash' => '255325826ebeb112c36-35841936',
   'function' => 
   array (
-    'showCategoriesTree' => 
-    array (
-      'parameter' => 
-      array (
-        'needRename' => 0,
-      ),
-      'compiled' => '',
-    ),
-    'showCategoriesTreeS' => 
-    array (
-      'parameter' => 
-      array (
-        'needRename' => 0,
-      ),
-      'compiled' => '',
-    ),
     'showCategoriesTreeCat' => 
     array (
       'parameter' => 
@@ -39,8 +23,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       'compiled' => '',
     ),
   ),
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfd55d5a58_84842899',
   'variables' => 
   array (
     'class' => 0,
@@ -56,8 +38,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'config' => 0,
   ),
   'has_nocache_code' => 0,
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5826ebeb190ef3_19273894',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_5819dfd55d5a58_84842899')) {function content_5819dfd55d5a58_84842899($_smarty_tpl) {?><aside class="sidebar <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
+<?php if ($_valid && !is_callable('content_5826ebeb190ef3_19273894')) {function content_5826ebeb190ef3_19273894($_smarty_tpl) {?><aside class="sidebar <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
  col-md-3 col-md-pull-9" role="complementary"><?php $_smarty_tpl->tpl_vars['selectedId'] = new Smarty_variable((($tmp = @$_smarty_tpl->tpl_vars['category']->value->category_id)===null||$tmp==='' ? 0 : $tmp), null, 0);?><?php if (true||!isset($_smarty_tpl->tpl_vars['categories']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['categories'][0][0]->categories(array('active'=>$_smarty_tpl->tpl_vars['selectedId']->value,'sort'=>false,'counters'=>true,'assign'=>'categories','scope'=>'global'),$_smarty_tpl);?>
 <?php }?><?php $_smarty_tpl->tpl_vars['class'] = new Smarty_variable(!empty($_smarty_tpl->tpl_vars['doHidden']->value) ? 'hidden' : '', null, 0);?><?php $_smarty_tpl->tpl_vars['renames'] = new Smarty_variable(array('Комбинезоны для девочек'=>'Комбинезоны','Брюки для девочек'=>'Брюки','Бриджи для девочек'=>'Бриджи','Джинсы для девочек'=>'Джинсы','Костюмы тройки для девочек'=>'Костюмы тройки','Свитера и толстовки для девочек'=>'Свитера','Куртки для девочек'=>'Куртки','Костюмы тройки'=>'Костюмы','Детские платья'=>'Платья','Детские юбки'=>'Юбки','Комбинезоны для мальчиков'=>'Комбинезоны','Брюки для мальчиков'=>'Брюки','Бриджи для мальчиков'=>'Бриджи','Джинсы для мальчиков'=>'Джинсы','Костюмы тройки для мальчиков'=>'Костюмы тройки','Свитера для мальчиков'=>'Свитера','Куртки для мальчиков'=>'Куртки'), null, 0);?><?php if (!function_exists('smarty_template_function_showCategoriesTreeCat')) {
     function smarty_template_function_showCategoriesTreeCat($_smarty_tpl,$params) {

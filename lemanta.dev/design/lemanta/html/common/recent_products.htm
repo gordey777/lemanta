@@ -3,7 +3,6 @@
 
         {if !empty($recent_products)}
 
-<hr class="separator" />
             <div class="product-rel">
                 <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
                 <div class="product-rec-arr">
@@ -15,7 +14,7 @@
 
                     <ul class="">
                         {foreach $recent_products as $item}
-                            <li class="">
+                            <li class="rel-list">
                                 {include 'common/product-card.htm'}
                             </li>
                         {/foreach}

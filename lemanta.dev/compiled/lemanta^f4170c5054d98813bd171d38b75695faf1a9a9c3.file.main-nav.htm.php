@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-07 18:37:23
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 13:16:12
          compiled from "design/lemanta/html\common\main-nav.htm" */ ?>
-<?php /*%%SmartyHeaderCode:1145581dee0a5d2ca7-24122141%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:188555826ebecbffd66-17604793%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,12 +11,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '1145581dee0a5d2ca7-24122141',
+  'nocache_hash' => '188555826ebecbffd66-17604793',
   'function' => 
   array (
   ),
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_581dee0a658ef6_69840112',
   'variables' => 
   array (
     'menuTop' => 0,
@@ -29,8 +27,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'url' => 0,
   ),
   'has_nocache_code' => false,
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5826ebecc69f88_35015317',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_581dee0a658ef6_69840112')) {function content_581dee0a658ef6_69840112($_smarty_tpl) {?><?php if (empty($_smarty_tpl->tpl_vars['menuTop']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['menuByLangTechName'][0][0]->menuByLangTechName(array('name'=>'Верхнее меню','attach'=>'sections, categories','assign'=>'menuTop','scope'=>'global'),$_smarty_tpl);?>
+<?php if ($_valid && !is_callable('content_5826ebecc69f88_35015317')) {function content_5826ebecc69f88_35015317($_smarty_tpl) {?><?php if (empty($_smarty_tpl->tpl_vars['menuTop']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['menuByLangTechName'][0][0]->menuByLangTechName(array('name'=>'Верхнее меню','attach'=>'sections, categories','assign'=>'menuTop','scope'=>'global'),$_smarty_tpl);?>
 <?php }?><?php if (!empty($_smarty_tpl->tpl_vars['menuTop']->value)){?><?php if (!empty($_smarty_tpl->tpl_vars['menuTop']->value->categories)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'category->category_id','assign'=>'sid'),$_smarty_tpl);?>
 <?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['menuTop']->value->categories; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}

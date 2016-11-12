@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-09 20:05:39
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 23:06:50
          compiled from "design/lemanta/html\catalog.htm" */ ?>
-<?php /*%%SmartyHeaderCode:146775819dfcc0bc940-29408945%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:321875827765ada47a2-24212530%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,15 +11,15 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '146775819dfcc0bc940-29408945',
+  'nocache_hash' => '321875827765ada47a2-24212530',
   'function' => 
   array (
   ),
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfcc3a6931_79150664',
   'has_nocache_code' => false,
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5827765ae88202_84626657',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_5819dfcc3a6931_79150664')) {function content_5819dfcc3a6931_79150664($_smarty_tpl) {?><?php $_smarty_tpl->tpl_vars['enableHitProducts'] = new Smarty_variable(true, null, 3);
+<?php if ($_valid && !is_callable('content_5827765ae88202_84626657')) {function content_5827765ae88202_84626657($_smarty_tpl) {?><?php $_smarty_tpl->tpl_vars['enableHitProducts'] = new Smarty_variable(true, null, 3);
 $_ptr = $_smarty_tpl->parent; while ($_ptr != null) {$_ptr->tpl_vars['enableHitProducts'] = clone $_smarty_tpl->tpl_vars['enableHitProducts']; $_ptr = $_ptr->parent; }
 Smarty::$global_tpl_vars['enableHitProducts'] = clone $_smarty_tpl->tpl_vars['enableHitProducts'];?><article  id="main_page_bloks" class="content col-md-12"><div class="block-main col-md-4"><div class="tel"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['echoVar'][0][0]->echoVar(array('from'=>'config->phone1'),$_smarty_tpl);?>
 </div><div class="main-img"><a href="dostavka"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>

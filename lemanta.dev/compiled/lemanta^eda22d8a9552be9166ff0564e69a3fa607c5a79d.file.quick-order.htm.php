@@ -1,17 +1,17 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 16:27:52
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 13:16:22
          compiled from "design/lemanta/html\common\quick-order.htm" */ ?>
-<?php /*%%SmartyHeaderCode:20225581b3b5894a791-04397337%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:99085826ebf60cbef5-76527167%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
     'eda22d8a9552be9166ff0564e69a3fa607c5a79d' => 
     array (
       0 => 'design/lemanta/html\\common\\quick-order.htm',
-      1 => 1478179338,
+      1 => 1478894983,
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '20225581b3b5894a791-04397337',
+  'nocache_hash' => '99085826ebf60cbef5-76527167',
   'function' => 
   array (
   ),
@@ -27,9 +27,9 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   ),
   'has_nocache_code' => false,
   'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_581b3b58a31e07_56352121',
+  'unifunc' => 'content_5826ebf6149e18_61128256',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_581b3b58a31e07_56352121')) {function content_581b3b58a31e07_56352121($_smarty_tpl) {?><div class="for_vs" id="cl_form" style="top: -1000px"><div style="opacity: 1" id="cl_form_inner"><div id="cl_form_title"><h1>Quick-order</h1><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array('from'=>'product'),$_smarty_tpl);?>
+<?php if ($_valid && !is_callable('content_5826ebf6149e18_61128256')) {function content_5826ebf6149e18_61128256($_smarty_tpl) {?><div class="for_vs" id="cl_form" style="top: -1000px"><div style="opacity: 1" id="cl_form_inner"><div id="cl_form_title"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array('from'=>'product'),$_smarty_tpl);?>
 <div title="Закрыть окно" id="cl_form_close"></div></div><div id="cl_form_body"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['findImage'][0][0]->findImage(array('from'=>'product','type'=>'product','assign'=>'image'),$_smarty_tpl);?>
 <div id="cl_form_img_wrap"><img src="<?php echo $_smarty_tpl->tpl_vars['image']->value['url'];?>
 " alt="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array('from'=>'product'),$_smarty_tpl);?>

@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="en" class="no-js">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title> </title>
+  <!-- icons -->
+  <link href="favicon.ico" rel="shortcut icon">
+  <!-- css + javascript -->
+  <link rel="stylesheet" href="css/style.css" media="all">
+
+  <!--[if lt IE 9]>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/selectivizr/1.0.2/selectivizr-min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+</head>
+
+  <!-- wrapper -->
+  <div id="mm-0" class="mm-page mm-slideout">
+    <div class="bg wrapper">
+      <header role="banner"><a href="http://lemanta.com/#mob-menu" id="hamburger" class="humb-toggle-switch humb-toggle-switch__htx"><span>toggle menu</span></a>
+        <div class="top-menu-wrap">
+          <div class="container">
+            <div class="row">
+              <div class="top-menu col-md-12">
+                <div class="login col-md-2 col-sm-3 col-xs-8"><a id="login" href="http://lemanta.com/login" rel="nofollow">Вход</a>&nbsp;&nbsp;|&nbsp;&nbsp;<a id="register" href="http://lemanta.com/registration" rel="nofollow">Регистрация</a></div>
+                <div class="socialnet col-md-3 col-sm-3 col-xs-6">
+                  <a href="skype:lemanta2014?call" rel="nofollow"><img src="images/soc1.png" alt="Lemanta Skype"></a>
+                  <a href="http://vkontakte.ru/share.php?url=http://lemanta.com" target="_blank" rel="nofollow"><img src="images/soc2.png" alt="Lemanta ВКонтакте"></a>
+                  <a href="https://www.instagram.com/lemanta8465/" target="_blank" rel="nofollow"><img src="images/instagram.png" alt="Lemanta в Instagram"></a>
+                  <a href="https://www.facebook.com/Lemanta-280572415630549/" target="_blank" rel="nofollow"><img src="images/FB-f-Logo__blue_29.png" alt="Lemanta в Facebook"></a>
+                </div>
+                <div class="valuta col-md-3 col-md-offset-4 col-sm-4 col-xs-4">
+                  <ul class="valuta-list">
+                    <li><a onclick="changeCurrency(&#39;1&#39;)">рубли</a></li>
+                    <li><a onclick="changeCurrency(&#39;2&#39;)">доллары</a></li>
+                    <li><a onclick="changeCurrency(&#39;3&#39;)" class="selected">гривны</a></li>
+                    <form id="currencyForm" method="post">
+                      <input id="currencyFormInput" name="currency_id" type="hidden" value="">
+                    </form>
+                  </ul>
+                </div>
+                <!-- /.valuta -->
+              </div>
+            </div>
+            <!-- /.row -->
+          </div>
+          <!-- /.container -->
+        </div>
+        <!-- /.top-menu-wrap -->
+        <div class="container">
+          <div class="row">
+            <div class="logo col-md-2 col-sm-2 col-xs-4">
+              <a href="http://lemanta.com/"><img src="images/logo.png" alt=""></a>
+            </div>
+            <div id="cart_informer" class="head-cart col-md-2 col-md-offset-6 col-sm-2 col-xs-5">
+              <div class="cart-l">
+                <p>Товаров...........<span>3</span></p>
+                <p>на сумму..........<span>486 грн</span></p>
+              </div><a data-href="http://lemanta.com/cart" class="cart-r" onclick="return gotoHref(this)"><i class="fa fa-shopping-cart"></i><span class="cart-r-namb">3</span></a>
+            </div>
+            <nav id="head-top-nav" class="nav__header col-md-10 col-sm-12" role="navigation">
+              <ul class="headnav">
+                <li><a href="http://lemanta.com/" title="Интернет-магазин одежды от производителя" alt="Интернет-магазин одежды в розницу"><i class="fa fa-home"></i></a></li>
+                <li><a href="http://lemanta.com/muzhskaya-odezhda" title="Мужская одежда">Мужская одежда</a></li>
+                <li><a href="http://lemanta.com/zhenskaya-odezhda" title="Женская одежда">Женская одежда</a></li>
+                <li><a href="http://lemanta.com/detskaya-odezhda" title="Детская одежда">Детская одежда</a></li>
+                <li><a href="http://lemanta.com/blog" title="Новости">Новости</a></li>
+                <li><a href="http://lemanta.com/dostavka" title="Доставка">Доставка</a></li>
+                <li><a href="http://lemanta.com/oplata" title="Оплата">Оплата</a></li>
+                <li><a href="http://lemanta.com/contact" title="Контакты">Контакты</a></li>
+              </ul>
+            </nav>
+            <!-- /nav -->
+            <div class="search-bg col-md-2 col-sm-6 col-xs-12">
+              <div id="search" class="search">
+                <form class="form_search" method="post" onsubmit="return false">
+                  <input class="input_search" name="keyword" maxlength="48" type="text" value="" placeholder="Поиск товара" autocomplete="off">
+                  <input name="search_type" type="hidden" value="a1">
+                  <input name="reset_old" type="hidden" value="1">
+                  <input class="button_search" type="submit" value="">
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- /.row -->
+        </div>
+        <!-- /.container -->
+      </header>
+      <!-- /header -->
+      <div class="clr"></div>
+      <section role="main">
+        <div class="container">
+          <div class="row">
+            <div class="breadcrumbs col-md-12" itemscope="" itemtype="http://schema.org/BreadcrumbList"><span itemscope="" itemtype="http://schema.org/ListItem" itemprop="itemListElement"><a href="http://lemanta.com/" itemprop="item" title="Одежда в розницу от Lemanta"><span itemprop="name">Lemanta</span></a>
+              <meta itemprop="position" content="1">
+              </span><span itemscope="" itemtype="http://schema.org/ListItem" itemprop="itemListElement"><span itemprop="item"><span itemprop="name">Корзина</span></span>
+              <meta itemprop="position" content="2">
+              </span>
+              <div class="number"></div>
+            </div>
+            <article class="content col-md-9 col-md-push-3">
+              <form action="http://lemanta.com/cart" method="post" name="cart">
+                <div class="center cart_pad">
+                  <div class="cart-page">
+                    <div class="cart-title">ВАША корзина</div>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <thead>
+                        <tr>
+                          <td>Информация о товаре</td>
+                          <td>Количество</td>
+                          <td>Цена за единицу</td>
+                          <td>Итого</td>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td style="width: 320px;">
+                            <div class="cart-img">
+                              <a href="http://lemanta.com/products/chernaya-muzhskaya-futbolka-4z-1161-9pa-7807"><img src="images/Futbolka-muzhskaya-4z-1161-9pa_new21902214_1_75649738.JPG" alt="Черная мужская футболка"></a>
+                            </div>
+                            <div class="cart-desc"><a href="http://lemanta.com/products/chernaya-muzhskaya-futbolka-4z-1161-9pa-7807">Черная мужская футболка</a>
+                              <p>Код: 7807-3</p>
+                            </div>
+                          </td>
+                          <td style="width: 320px;">
+                            <div class="count option"><span>Количество</span>
+                              <select name="amounts[1974]" onchange="document.cart.submit()">
+                                <option value="1" selected="">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                              </select>
+                            </div>
+                            <div class="remove"><img src="images/delete.png" alt=""><a href="http://lemanta.com/cart/delete/1974" rel="nofollow">Удалить</a></div>
+                          </td>
+                          <td>
+                            <div class="cart-price">162 грн</div>
+                          </td>
+                          <td>
+                            <div class="cart-price-all">162 грн</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="width: 320px;">
+                            <div class="cart-img">
+                              <a href="http://lemanta.com/products/muzhskaya-futbolka-zashchitnogo-cveta-2z-1161qw-0941"><img src="images/Futbolka-2z-1161qw_new61620213_1_9061056.JPG" alt="Мужская футболка защитного цвета"></a>
+                            </div>
+                            <div class="cart-desc"><a href="http://lemanta.com/products/muzhskaya-futbolka-zashchitnogo-cveta-2z-1161qw-0941">Мужская футболка защитного цвета</a>
+                              <p>Код: 0941-3</p>
+                            </div>
+                          </td>
+                          <td style="width: 320px;">
+                            <div class="count option"><span>Количество</span>
+                              <select name="amounts[1985]" onchange="document.cart.submit()">
+                                <option value="1" selected="">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                              </select>
+                            </div>
+                            <div class="remove"><img src="images/delete.png" alt=""><a href="http://lemanta.com/cart/delete/1985" rel="nofollow">Удалить</a></div>
+                          </td>
+                          <td>
+                            <div class="cart-price">162 грн</div>
+                          </td>
+                          <td>
+                            <div class="cart-price-all">162 грн</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="width: 320px;">
+                            <div class="cart-img">
+                              <a href="http://lemanta.com/products/originalnaya-muzhskaya-futbolka-1z-1161-23dl-8351"><img src="images/Futbolka-1z-1161dl_new16912436_1_85644451.JPG" alt="Оригинальная мужская футболка"></a>
+                            </div>
+                            <div class="cart-desc"><a href="http://lemanta.com/products/originalnaya-muzhskaya-futbolka-1z-1161-23dl-8351">Оригинальная мужская футболка</a>
+                              <p>Код: 8351-3</p>
+                            </div>
+                          </td>
+                          <td style="width: 320px;">
+                            <div class="count option"><span>Количество</span>
+                              <select name="amounts[1978]" onchange="document.cart.submit()">
+                                <option value="1" selected="">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                              </select>
+                            </div>
+                            <div class="remove"><img src="images/delete.png" alt=""><a href="http://lemanta.com/cart/delete/1978" rel="nofollow">Удалить</a></div>
+                          </td>
+                          <td>
+                            <div class="cart-price">162 грн</div>
+                          </td>
+                          <td>
+                            <div class="cart-price-all">162 грн</div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="cart-r">
+                      <div class="itog-r">
+                        <div class="itog">ИТОГО: 486 грн</div><a href="javascript:history.go(-1)" mce_href="javascript:history.go(-1)" class="back">назад в каталог</a>
+                        <input type="submit" name="checkout" class="button oform" value="Оформить заказ" onclick="return clickCartSubmitKey(this)">
+                      </div>
+                      <div class="clr"></div>
+                    </div>
+                    <div class="cart-form">
+                      <h3>Заполните, пожалуйста, все необходимые поля</h3>
+                      <div class="form cart_form">
+                        <div class="cart-val">
+                          <label>ФИО *</label>
+                          <input name="name" type="text" value="" required="">
+                          <div class="clr"></div>
+                        </div>
+                        <div class="cart-val">
+                          <label>Email *</label>
+                          <input name="email" type="text" value="" required="">
+                          <div class="clr"></div>
+                        </div>
+                        <div class="cart-val">
+                          <label>Телефон *</label>
+                          <input name="phone" type="text" value="" required="">
+                          <div class="clr"></div>
+                        </div>
+                        <div class="cart-val">
+                          <label>Адрес доставки</label>
+                          <input name="address" type="text" value="">
+                          <div class="clr"></div>
+                        </div>
+                        <div class="cart-val">
+                          <label>Вид доставки *</label><span class="selectbox" style="display:inline-block;position:relative"><div class="select" style="float:left;position:relative;z-index:10000"><div class="text">--- Пожалуйста, выберите ---</div><b class="trigger"><i class="arrow"></i></b></div><div class="dropdown" style="position: absolute; z-index: 9999; overflow-y: auto; overflow-x: hidden; list-style: none; display: none;"><div class="top_span"></div><ul><li class="selected sel">--- Пожалуйста, выберите ---</li><li>Новая почта</li><li>Автолюкс</li><li>Деливери</li><li>Доставка курьером</li></ul></div></span>
+                          <select class="niceSelect" name="delivery_method_id" onchange="document.cart.submit()" style="position: absolute; top: -9999px;">
+                            <option>--- Пожалуйста, выберите ---</option>
+                            <option value="3">Новая почта</option>
+                            <option value="5">Автолюкс</option>
+                            <option value="4">Деливери</option>
+                            <option value="2">Доставка курьером</option>
+                          </select>
+                          <div class="clr"></div>
+                        </div>
+                        <div class="cart-val">
+                          <label>Комментарий к заказу</label>
+                          <textarea name="comment" id="order_comment"></textarea>
+                          <div class="clr"></div>
+                        </div>
+                      </div>
+                      <div class="clr"></div>
+                    </div>
+                  </div>
+                  <div class="clr"></div>
+                </div>
+                <input name="captcha_code" type="hidden" value="">
+                <input name="submit_order" type="hidden" value="0">
+              </form>
+            </article>
+            <!-- .content -->
+            <aside class="sidebar  col-md-3 col-md-pull-9" role="complementary">
+              <div id="left_menu">
+                <div class="title">Категории</div>
+                <ul>
+                  <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda" title="Детская одежда"><span>Детская одежда</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                    <ul>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/sholnaya" title="Школьная одежда"><span>Школьная одежда</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sholnaya/zhilety" title="Школьные жилеты"><span>Школьные жилеты</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sholnaya/kofty" title="Школьные кофты"><span>Школьные кофты</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sholnaya/vodolazki" title="Школьные водолазки"><span>Школьные водолазки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sholnaya/svitera" title="Школьные свитера"><span>Школьные свитера</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sholnaya/bluzy" title="Школьные блузы"><span>Школьные блузы</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sholnaya/bryuki" title="Школьные брюки"><span>Школьные брюки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sholnaya/sarafany" title="Школьные сарафаны"><span>Школьные сарафаны</span></a></li>
+                        </ul>
+                      </li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/futbolki-mayki" title="Детские футболки и майки"><span>Детские футболки и майки</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/futbolki-mayki/futbolki" title="Детские футболки"><span>Детские футболки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/futbolki-mayki/mayki" title="Детские майки"><span>Детские майки</span></a></li>
+                        </ul>
+                      </li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/shorty-bridzhi" title="Детские шорты и бриджи"><span>Детские шорты и бриджи</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/shorty-bridzhy/shorty" title="Детские шорты"><span>Детские шорты</span></a></li>
+                          <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/shorty-bridzhy/bridzhi" title="Детские бриджи"><span>Детские бриджи</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                            <ul>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/bridzhi" title="Бриджи для девочек"><span>Бриджи для девочек</span></a></li>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/bridzhi" title="Бриджи для мальчиков"><span>Бриджи для мальчиков</span></a></li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a href="http://lemanta.com/detskaya-odezhda/kostyumy" title="Детские костюмы"><span>Детские костюмы</span></a></li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki" title="Детские свитера, кофты, толстовки"><span>Детские свитера, кофты, толстовки</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/zhiletki" title="Детские жилетки"><span>Детские жилетки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/pulovery" title="Детские пуловеры"><span>Детские пуловеры</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/svitshoty" title="Детские свитшоты"><span>Детские свитшоты</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/batniki" title="Детские батники"><span>Детские батники</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/dzhempera" title="Детские джемпера"><span>Детские джемпера</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/vodolazki" title="Детские водолазки"><span>Детские водолазки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/tolstovki" title="Детские толстовки"><span>Детские толстовки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/kofty" title="Детские кофточки"><span>Детские кофточки</span></a></li>
+                          <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/svitera-kofty-tolstovki/svitera" title="Детские свитера"><span>Детские свитера</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                            <ul>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/svitera" title="Свитера для девочек"><span>Свитера для девочек</span></a></li>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/svitera" title="Свитера для мальчиков"><span>Свитера для мальчиков</span></a></li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a href="http://lemanta.com/detskaya-odezhda/rubashki" title="Детские рубашки"><span>Детские рубашки</span></a></li>
+                      <li><a href="http://lemanta.com/detskaya-odezhda/bluzy" title="Детские блузы"><span>Детские блузы</span></a></li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/sportivnaya-odezhda" title="Детская спортивная одежда"><span>Детская спортивная одежда</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sportivnaya-odezhda/kurtki" title="Детские спортивные куртки"><span>Детские спортивные куртки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sportivnaya-odezhda/losiny" title="Детские спортивные лосины"><span>Детские спортивные лосины</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sportivnaya-odezhda/kofty" title="Детские спортивные кофты"><span>Детские спортивные кофты</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/sportivnaya-odezhda/kostyumy" title="Детские спортивные костюмы"><span>Детские спортивные костюмы</span></a></li>
+                          <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/sportivnaya-odezhda/kostyumy-troyki" title="Спортивные детские костюмы-тройки"><span>Спортивные детские костюмы-тройки</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                            <ul>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/kostyumy-troyki" title="Костюмы тройки для девочек"><span>Костюмы тройки для девочек</span></a></li>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/kostyumy-troyki" title="Костюмы тройки для мальчиков"><span>Костюмы тройки для мальчиков</span></a></li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/verhnaya-odezhda" title="Детская верхняя одежда"><span>Детская верхняя одежда</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/verhnaya-odezhda/vetrovki" title="Детские ветровки"><span>Детские ветровки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/verhnaya-odezhda/palto" title="Детские пальто"><span>Детские пальто</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/verhnaya-odezhda/parki" title="Детские парки"><span>Детские парки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/verhnaya-odezhda/puhoviki" title="Детские пуховики"><span>Детские пуховики</span></a></li>
+                          <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/verhnaya-odezhda/kurtki" title="Детские куртки"><span>Детские куртки</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                            <ul>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/kurtki" title="Куртки для девочек"><span>Куртки для девочек</span></a></li>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/kurtki" title="Куртки для мальчиков"><span>Куртки для мальчиков</span></a></li>
+                            </ul>
+                          </li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/verhnaya-odezhda/plashchi" title="Детские плащи"><span>Детские плащи</span></a></li>
+                          <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/verhnaya-odezhda/kombinezony" title="Детские комбинезоны"><span>Детские комбинезоны</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                            <ul>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/kombinezony" title="Комбинезоны для девочек"><span>Комбинезоны для девочек</span></a></li>
+                              <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/kombinezony" title="Комбинезоны для мальчиков"><span>Комбинезоны для мальчиков</span></a></li>
+                            </ul>
+                          </li>
+                        </ul>
+                      </li>
+                      <li><a href="http://lemanta.com/detskaya-odezhda/tuniki" title="Детские туники"><span>Детские туники</span></a></li>
+                      <li><a href="http://lemanta.com/detskaya-odezhda/sarafany" title="Детские сарафаны"><span>Детские сарафаны</span></a></li>
+                      <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/platya" title="Детские платья"><span>Детские платья</span></a></li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/dzhinsy" title="Детские джинсы"><span>Детские джинсы</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/dzhinsy" title="Джинсы для девочек"><span>Джинсы для девочек</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/dzhinsy" title="Джинсы для мальчиков"><span>Джинсы для мальчиков</span></a></li>
+                        </ul>
+                      </li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/bryuki" title="Детские брюки"><span>Детские брюки</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/bryuki" title="Брюки для девочек"><span>Брюки для девочек</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/bryuki" title="Брюки для мальчиков"><span>Брюки для мальчиков</span></a></li>
+                        </ul>
+                      </li>
+                      <li><a href="http://lemanta.com/detskaya-odezhda/yubki" title="Детские юбки"><span>Детские юбки</span></a></li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek" title="Одежда для девочек"><span>Одежда для девочек</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/losiny" title="Лосины и леггинсы для девочек"><span>Лосины и леггинсы для девочек</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/platya" title="Платья"><span>Платья</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/kombinezony" title="Комбинезоны"><span>Комбинезоны</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/bryuki" title="Брюки"><span>Брюки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/svitera" title="Свитера для девочек"><span>Свитера для девочек</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/kurtki" title="Куртки"><span>Куртки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/dzhinsy" title="Джинсы"><span>Джинсы</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/bridzhi" title="Бриджи"><span>Бриджи</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/kostyumy-troyki" title="Костюмы тройки"><span>Костюмы тройки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/tuniki" title="Туники, майки, кофточки"><span>Туники, майки, кофточки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/kostyumy" title="Костюмы для девочек"><span>Костюмы для девочек</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/yubki" title="Юбки"><span>Юбки</span></a></li>
+                        </ul>
+                      </li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov" title="Одежда для мальчиков"><span>Одежда для мальчиков</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/kombinezony" title="Комбинезоны"><span>Комбинезоны</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/mayki" title="Майки для мальчиков"><span>Майки для мальчиков</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/bryuki" title="Брюки"><span>Брюки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/bridzhi" title="Бриджи"><span>Бриджи</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/dzhinsy" title="Джинсы"><span>Джинсы</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/shorty" title="Шорты"><span>Шорты</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/kostyumy-troyki" title="Костюмы тройки"><span>Костюмы тройки</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/svitera" title="Свитера"><span>Свитера</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/rubashki" title="Рубашки для мальчиков"><span>Рубашки для мальчиков</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/kostyumy" title="Костюмы"><span>Костюмы</span></a></li>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-malchikov/kurtki" title="Куртки"><span>Куртки</span></a></li>
+                        </ul>
+                      </li>
+                      <li class="has-sub"><a href="http://lemanta.com/detskaya-odezhda/losiny" title="Детские лосины и леггинсы"><span>Детские лосины и леггинсы</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/detskaya-odezhda/dlya-devochek/losiny" title="Лосины и леггинсы для девочек"><span>Лосины и леггинсы для девочек</span></a></li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="has-sub"><a href="http://lemanta.com/fotoshtory" title="Фотошторы"><span>Фотошторы</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                    <ul>
+                      <li><a href="http://lemanta.com/fotoshtory/dlya-gostinoj-spalni" title="Фотошторы для гостиной, спальни"><span>Фотошторы для гостиной, спальни</span></a></li>
+                      <li><a href="http://lemanta.com/fotoshtory/dlya-detskoj" title="Фотошторы для детской"><span>Фотошторы для детской</span></a></li>
+                      <li><a href="http://lemanta.com/fotoshtory/dlya-kuhni" title="Фотошторы для кухни"><span>Фотошторы для кухни</span></a></li>
+                    </ul>
+                  </li>
+                  <li class="has-sub"><a href="http://lemanta.com/muzhskaya-odezhda" title="Мужская одежда"><span>Мужская одежда</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                    <ul>
+                      <li><a href="http://lemanta.com/muzhskaya-odezhda/futbolki" title="Мужские футболки"><span>Мужские футболки</span></a></li>
+                    </ul>
+                  </li>
+                  <li class="has-sub"><a href="http://lemanta.com/zhenskaya-odezhda" title="Женская одежда"><span>Женская одежда</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                    <ul>
+                      <li class="has-sub"><a href="http://lemanta.com/zhenskaya-odezhda/platya" title="Платья"><span>Платья</span></a><span class="holder"><i class="fa fa-chevron-down"></i></span>
+                        <ul>
+                          <li><a href="http://lemanta.com/zhenskaya-odezhda/platya/delovye" title="Деловые платья"><span>Деловые платья</span></a></li>
+                          <li><a href="http://lemanta.com/zhenskaya-odezhda/platya/povsednevnye" title="Повседневные платья"><span>Повседневные платья</span></a></li>
+                          <li><a href="http://lemanta.com/zhenskaya-odezhda/platya/kokteylnye" title="Kоктейльные платья"><span>Kоктейльные платья</span></a></li>
+                          <li><a href="http://lemanta.com/zhenskaya-odezhda/platya/vechernie" title="Вечерние платья"><span>Вечерние платья</span></a></li>
+                          <li><a href="http://lemanta.com/zhenskaya-odezhda/platya/letnie" title="Летние платья"><span>Летние платья</span></a></li>
+                          <li><a href="http://lemanta.com/zhenskaya-odezhda/platya/sarafany" title="Сарафаны"><span>Сарафаны</span></a></li>
+                        </ul>
+                      </li>
+                      <li><a href="http://lemanta.com/zhenskaya-odezhda/svitera" title="Женские свитера"><span>Женские свитера</span></a></li>
+                      <li><a href="http://lemanta.com/zhenskaya-odezhda/futbolki" title="Женские футболки"><span>Женские футболки</span></a></li>
+                      <li><a href="http://lemanta.com/zhenskaya-odezhda/kostyumy" title="Женские костюмы"><span>Женские костюмы</span></a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+              <div class="banner col-md-12 col-sm-5 col-xs-6">
+                <div class="rasp"><img class="rasp-img" src="images/rasp.png" alt=""><span href="catalog/rasprodazha">Распродажа</span></div><span href="catalog/odezhda_dlja_malchikov"><img src="images/foto.png" alt=""></span></div>
+              <div id="vk_groups_widjet" class="vk col-md-12 col-sm-6 col-xs-6">
+                <div class="title">Мы вКонтакте</div>
+                <div id="vk_groups" style="height: 260px; width: 190px; background: none;">
+                  <iframe name="fXD765d9" frameborder="0" src="images/widget_community.html" width="190" height="260" scrolling="no" id="vkwidget1" style="overflow: hidden; height: 260px;"></iframe>
+                </div>
+              </div>
+            </aside>
+            <!-- /sidebar -->
+            <div class="clr"></div>
+            <hr class="separator">
+            <div class="col-md-12">
+              <div class="product-rel">
+                <div class="product-rel-t">ВЫ НЕДАВНО СМОТРЕЛИ</div>
+                <div class="product-rel-arr">
+                  <a href="http://lemanta.com/#" class="prev prevv" data-jcarouselcontrol="true"></a>
+                  <a href="http://lemanta.com/#" class="next nextt" data-jcarouselcontrol="true"></a>
+                </div>
+                <div class="clr"></div>
+                <div class="cat" data-jcarousel="true" data-jcarouselautoscroll="true">
+                  <ul class="" style="left: -603px; top: 0px;">
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/molodezhnoe-letnee-plate-v-polosku-bez-rukavov-3081s" title="Молодежное летнее платье в полоску без рукавов"><img src="images/Molodezhnoe-letnee-plate-v-polosku-bez-rukavov_new53116365_1_47776372.jpg" alt="Молодежное летнее платье в полоску без рукавов" title="Молодежное летнее платье в полоску без рукавов  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/molodezhnoe-letnee-plate-v-polosku-bez-rukavov-3081s" class="cat-name" itemprop="name" title="Молодежное летнее платье в полоску без рукавов">Молодежное летнее платье в полоску без рукавов</a><span class="cat-price">320 грн</span></div>
+                          <div class="zakaz prod-order">
+                            <a href="http://lemanta.com/products/molodezhnoe-letnee-plate-v-polosku-bez-rukavov-3081s" data-id="4059"><img src="images/buy2.png" alt="">Быстрый заказ</a>
+                          </div>
+                          <div class="buy">
+                            <a data-href="http://lemanta.com/cart/add/4059" onclick="return gotoHref(this)"><img src="images/buy.png" alt=""></a>
+                          </div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/stilnaya-muzhskaya-futbolka-5x-1161-11pa-0027" title="Стильная мужская футболка"><img src="images/Futbolka-5x-1161-11pa_new82973793_1_42834407.JPG" alt="Стильная мужская футболка" title="Стильная мужская футболка  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/stilnaya-muzhskaya-futbolka-5x-1161-11pa-0027" class="cat-name" itemprop="name" title="Стильная мужская футболка">Стильная мужская футболка</a><span class="cat-price">162 грн</span></div>
+                          <div class="zakaz prod-order">
+                            <a href="http://lemanta.com/products/stilnaya-muzhskaya-futbolka-5x-1161-11pa-0027" data-id="1994"><img src="images/buy2.png" alt="">Быстрый заказ</a>
+                          </div>
+                          <div class="buy">
+                            <a data-href="http://lemanta.com/cart/add/1994" onclick="return gotoHref(this)"><img src="images/buy.png" alt=""></a>
+                          </div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/elegantnoe-ofisnoe-plate-temno-sinego-cveta-s-korotkim-rukavom-31105s" title="Элегантное офисное платье темно-синего цвета с коротким рукавом"><img src="images/Elegantnoe-ofisnoe-plate-temno-sinego-cveta-s-korotkim-rukavom_new78520057_1_62164883.jpg" alt="Элегантное офисное платье темно синего цвета с коротким рукавом" title="Элегантное офисное платье темно синего цвета с коротким рукавом  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/elegantnoe-ofisnoe-plate-temno-sinego-cveta-s-korotkim-rukavom-31105s" class="cat-name" itemprop="name" title="Элегантное офисное платье темно-синего цвета с коротким рукавом">Элегантное офисное платье темно-синего цвета с коротким рукавом</a><span class="cat-price">300 грн</span></div>
+                          <div class="zakaz prod-order">
+                            <a href="http://lemanta.com/products/elegantnoe-ofisnoe-plate-temno-sinego-cveta-s-korotkim-rukavom-31105s" data-id="3979"><img src="images/buy2.png" alt="">Быстрый заказ</a>
+                          </div>
+                          <div class="buy">
+                            <a data-href="http://lemanta.com/cart/add/3979" onclick="return gotoHref(this)"><img src="images/buy.png" alt=""></a>
+                          </div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/muzhskaya-futbolka-zashchitnogo-cveta-2z-1161qw-0941" title="Мужская футболка защитного цвета"><img src="images/Futbolka-2z-1161qw_new61620213_1_9061056.JPG" alt="Мужская футболка защитного цвета" title="Мужская футболка защитного цвета  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/muzhskaya-futbolka-zashchitnogo-cveta-2z-1161qw-0941" class="cat-name" itemprop="name" title="Мужская футболка защитного цвета">Мужская футболка защитного цвета</a><span class="cat-price">162 грн</span></div>
+                          <div class="zakaz prod-order">
+                            <a href="http://lemanta.com/products/muzhskaya-futbolka-zashchitnogo-cveta-2z-1161qw-0941" data-id="1982"><img src="images/buy2.png" alt="">Быстрый заказ</a>
+                          </div>
+                          <div class="buy">
+                            <a data-href="http://lemanta.com/cart/add/1982" onclick="return gotoHref(this)"><img src="images/buy.png" alt=""></a>
+                          </div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/effektnoe-ofisnoe-plate-krasnogo-cveta-s-dlinnym-rukavom-3000s" title="Эффектное офисное платье красного цвета с длинным рукавом"><img src="images/Effektnoe-ofisnoe-plate-krasnogo-cveta-s-dlinnym-rukavom_new96176740_1_93773923.jpg" alt="Эффектное офисное платье красного цвета с длинным рукавом" title="Эффектное офисное платье красного цвета с длинным рукавом  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/effektnoe-ofisnoe-plate-krasnogo-cveta-s-dlinnym-rukavom-3000s" class="cat-name" itemprop="name" title="Эффектное офисное платье красного цвета с длинным рукавом">Эффектное офисное платье красного цвета с длинным рукавом</a><span class="cat-price">350 грн</span></div>
+                          <div class="zakaz prod-order">
+                            <a href="http://lemanta.com/products/effektnoe-ofisnoe-plate-krasnogo-cveta-s-dlinnym-rukavom-3000s" data-id="3911"><img src="images/buy2.png" alt="">Быстрый заказ</a>
+                          </div>
+                          <div class="buy">
+                            <a data-href="http://lemanta.com/cart/add/3911" onclick="return gotoHref(this)"><img src="images/buy.png" alt=""></a>
+                          </div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/koketlivoe-vechernee-plate-chernogo-cveta-s-bolero-i-dlinnym-rukavom-317" title="Кокетливое вечернее платье черного цвета с болеро и длинным рукавом"><img src="images/Plate-9h-317ms_67_1_25748339.jpg" alt="Кокетливое вечернее платье черного цвета с болеро и длинным рукавом" title="Кокетливое вечернее платье черного цвета с болеро и длинным рукавом  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/koketlivoe-vechernee-plate-chernogo-cveta-s-bolero-i-dlinnym-rukavom-317" class="cat-name" itemprop="name" title="Кокетливое вечернее платье черного цвета с болеро и длинным рукавом">Кокетливое вечернее платье черного цвета с болеро и длинным рукавом</a><span class="cat-price">165 грн</span></div>
+                          <div class="zakaz prod-order">
+                            <a href="http://lemanta.com/products/koketlivoe-vechernee-plate-chernogo-cveta-s-bolero-i-dlinnym-rukavom-317" data-id="195"><img src="images/buy2.png" alt="">Быстрый заказ</a>
+                          </div>
+                          <div class="buy">
+                            <a data-href="http://lemanta.com/cart/add/195" onclick="return gotoHref(this)"><img src="images/buy.png" alt=""></a>
+                          </div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/stilnoe-ofisnoe-plate-olivkovogo-cveta-bez-rukavov-1312" title="Стильное офисное платье оливкового цвета без рукавов"><img src="images/Plate-7z-1312rx_new88296164_1_88330358.jpg" alt="Стильное офисное платье оливкового цвета без рукавов" title="Стильное офисное платье оливкового цвета без рукавов  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/stilnoe-ofisnoe-plate-olivkovogo-cveta-bez-rukavov-1312" class="cat-name" itemprop="name" title="Стильное офисное платье оливкового цвета без рукавов">Стильное офисное платье оливкового цвета без рукавов</a><span class="cat-price">325 грн</span></div>
+                          <div class="zakaz prod-order">Нет в наличии</div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/sine-seraya-muzhskaya-futbolka-5x-1161-14pa-6187" title="Сине-серая мужская футболка"><img src="images/Futbolka-5x-1161-14pa_new21917678_1_6166194.JPG" alt="Сине серая мужская футболка" title="Сине серая мужская футболка  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/sine-seraya-muzhskaya-futbolka-5x-1161-14pa-6187" class="cat-name" itemprop="name" title="Сине-серая мужская футболка">Сине-серая мужская футболка</a><span class="cat-price">162 грн</span></div>
+                          <div class="zakaz prod-order">
+                            <a href="http://lemanta.com/products/sine-seraya-muzhskaya-futbolka-5x-1161-14pa-6187" data-id="1990"><img src="images/buy2.png" alt="">Быстрый заказ</a>
+                          </div>
+                          <div class="buy">
+                            <a data-href="http://lemanta.com/cart/add/1990" onclick="return gotoHref(this)"><img src="images/buy.png" alt=""></a>
+                          </div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                    <li class="">
+                      <div class="product-block">
+                        <div class="product-img">
+                          <a class="product-image" href="http://lemanta.com/products/originalnoe-povsednevnoe-plate-sinego-cveta-s-dlinnym-rukavom-1150" title="Оригинальное повседневное платье синего цвета с длинным рукавом"><img src="images/Plate-1k-1150sv_15_4_94443059.jpg" alt="Оригинальное повседневное платье синего цвета с длинным рукавом" title="Оригинальное повседневное платье синего цвета с длинным рукавом  Lemanta"></a>
+                        </div>
+                        <!-- /.product-img -->
+                        <div class="cat-desc">
+                          <div class="cat-desc-l"><a href="http://lemanta.com/products/originalnoe-povsednevnoe-plate-sinego-cveta-s-dlinnym-rukavom-1150" class="cat-name" itemprop="name" title="Оригинальное повседневное платье синего цвета с длинным рукавом">Оригинальное повседневное платье синего цвета с длинным рукавом</a><span class="cat-price">235 грн</span></div>
+                          <div class="zakaz prod-order">Нет в наличии</div>
+                        </div>
+                        <!-- /.cat-desc -->
+                      </div>
+                      <!-- /.product-block -->
+                    </li>
+                  </ul>
+                  <div class="clr"></div>
+                </div>
+              </div>
+            </div>
+            <div class="clr"></div>
+            <div class="seo-container col-md-12"></div>
+            <!-- /.seo-container col-md-12 -->
+          </div>
+          <!-- /.row -->
+        </div>
+        <!-- /.container -->
+      </section>
+      <!-- /section -->
+    </div>
+    <div id="AutocompleteContainter_dede1" class="autocomplete-cont" style="top: 204.8px; left: 822.125px; z-index: 99990;">
+      <div class="autocomplete-w1">
+        <div class="autocomplete" id="Autocomplete_dede1" style="max-height: 300px; width: 450px;"></div>
+      </div>
+    </div>
+    <!-- #mob-menu -->
+    <footer class="footer">
+      <p>Copyright © <a href="http://lemanta.com/">Lemanta</a>. All rights reserved.</p>
+      <div class="counters"></div>
+    </footer><a id="back-top" title="К началу страницы" style="display: none;"><i class="fa fa-arrow-up"></i></a>
+  </div><!-- /wrapper -->
+
+  <script>
+  var thisTemplateRootUrl = 'http://lemanta.com/design/lemanta/';
+  </script>
+  <script src="js/script.js"></script>
+  <script type="application/ld+json">{ "@context" : "http://schema.org", "@type" : "Organization", "url" : "http://lemanta.com/", "contactPoint" : [ { "@type" : "ContactPoint", "telephone" : "+38-098-053-22-23", "contactType" : "customer service" } ] } </script>
+  <script>
+  function gotoHref(anchor) {
+    try {
+      var href1 = anchor.getAttribute('data-href');
+      if (typeof href1 == 'string' && href1 != '') {
+        if (anchor.tagName == 'A') {
+          var href2 = anchor.getAttribute('href');
+          if (typeof href2 != 'string' || href2 != href1) {
+            anchor.setAttribute('href', href1);
+          }
+          return true;
+        } else {}
+      }
+    } catch (e) {}
+    return false;
+  };
+  </script>
+  <script type="text/javascript" src="js/jquery.mmenu.all.min.js"></script>
+  <script type="text/javascript">
+  jQuery(document).ready(function($) {
+    $("#mob-menu").mmenu({
+      "extensions": ["pagedim-black"],
+      "offCanvas": {
+        "position": "right"
+      },
+      navbar: {
+        title: 'LEMANTA'
+      },
+      "navbars": [{
+        "position": "bottom",
+        "content": ["<a class='fa fa-skype' href='skype:lemanta2014?call'></a>", "<a class='fa fa-vk' href='http://vkontakte.ru/share.php?url=http://lemanta.com'></a>", "<a class='fa fa-instagram' href='https://www.instagram.com/lemanta8465/'></a>", "<a class='fa fa-facebook' href='https://www.facebook.com/Lemanta-280572415630549//'></a>"]
+      }]
+    });
+  });
+  </script>
+  <script type="text/javascript">
+  $(document).ready(function() {
+    $("#left_menu li a.selected").parents("li").addClass('open').children('ul').slideDown();
+    $("#left_menu li a.selected").parent("li").addClass('bg-selected');
+    if ($("#left_menu li").hasClass('open')) {
+      $("#left_menu li.open").children('.holder').addClass('holder-open');
+    }
+    var holderelement = $('#left_menu li.has-sub>.holder');
+    holderelement.on('click', function() {
+      var element = $(this).parent('li');
+      if (element.hasClass('open')) {
+        element.removeClass('open');
+        $(this).removeClass('holder-open');
+        element.find('li').removeClass('open');
+        element.find('ul').slideUp();
+      } else {
+        element.addClass('open');
+        element.children('ul').slideDown();
+        element.siblings('li').children('ul').slideUp();
+        element.siblings('li').removeClass('open');
+        element.siblings('li').find('li').removeClass('open');
+        element.siblings('li').find('ul').slideUp();
+        $(this).addClass('holder-open');
+        element.siblings('li').find('.holder').removeClass('holder-open');
+      }
+    });
+  });
+  </script>
+  <script type="text/javascript">
+  $(document).ready(function() {
+    var $prodBlW = $(".content .product-block").width(),
+      $prodImgH = ($prodBlW * 1.95),
+      $prodBlH = ($prodBlW * 1.7);
+    $(".content .product-image").css('height', $prodImgH);
+    $(".content .product-img").css('height', $prodBlH);
+  });
+  </script>
+  <div id="mm-blocker" class="mm-slideout"></div>
+</body>
+
+</html>

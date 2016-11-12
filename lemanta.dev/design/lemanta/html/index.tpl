@@ -116,15 +116,8 @@
                 ============================================================ --> *}
 
                 <link href="{theme}css/style.css" rel="stylesheet" />
-                    {*<!-- ===========================================================
-                    |                                                                 |
-                    |  Основной модуль мог попросить добавить некоторые мета-теги.    |
-                    |                                                                 |
-                    ============================================================ -->*}
 
-                    {echoVar from=meta}
-
-            </head>
+    </head>
 
 
 
@@ -229,9 +222,9 @@
                 |                                                                 |
                 ============================================================ --> *}
                 <!-- wrapper -->
-                <div class="bg wrapper">
+  <div id="wrapper" class="bg wrapper">
 
-    <header role="banner">
+    <header class="header" role="banner">
                             {* <!-- ===============================================
                             |                                                     |
                             |             MOBILE-MENU BUTTON                      |
@@ -545,7 +538,7 @@
           </div><!-- /.row -->
         </div><!-- /.container -->
       </section><!-- /section -->
-    </div><!-- /wrapper -->
+
 
                             {* <!-- ===============================================
                             |                                                     |
@@ -628,6 +621,8 @@
                     ======================================================== --> *}
 
                     <a id="back-top" title="К началу страницы"><i class="fa fa-arrow-up"></i></a>
+    </div><!-- /wrapper -->
+
 
                     {*<!-- ===========================================================
                     |                                                                 |
@@ -635,24 +630,37 @@
                     |                                                                 |
                     ============================================================ -->*}
 
-
     <script>
     var thisTemplateRootUrl = '{theme}';
     </script>
 
-
     <script src="{theme}js/script.js"></script>
+                        {*<!-- ===========================================================
+                    |                                                                 |
+                    |  Основной модуль мог попросить добавить некоторые мета-теги.    |
+                    |                                                                 |
+                    ============================================================ -->*}
+
+                    {echoVar from=meta}
+
 
                     {*<!-- ===========================================================
                     |                                                                 |
                     |  Микроразметка организации.                                     |
                     |                                                                 |
                     ============================================================ -->*}
-    <script type="application/ld+json">
-      { {**} "@context" : "http://schema.org", {**} "@type" : "Organization", {**} "url" : "{site}", {**} "contactPoint" : [ { {**} "@type" : "ContactPoint", {**} "telephone" : "+38-098-053-22-23", {**} "contactType" : "customer service" {**} } ] } {**}
-    </script>
-    {*
-    <!-- ===========================================================
+                <script type="application/ld+json">
+                    { {**}
+                        "@context" : "http://schema.org", {**}
+                        "@type" : "Organization", {**}
+                        "url" : "{site}", {**}
+                        "contactPoint" : [ {  {**}
+                                "@type" : "ContactPoint", {**}
+                                "telephone" : "+38-098-053-22-23", {**}
+                                "contactType" : "customer service" {**}
+                            } ] } {**}
+                </script>
+                     {*<!-- ===========================================================
                     |                                                                 |
                     |  Вспомогательные скрипты.                                       |
                     |                                                                 |
@@ -760,19 +768,19 @@
     <script>
 
       $(document).ready(function(){
-if($("#vk_groups_widjet").length>0) {
+        if($("#vk_groups_widjet").length>0) {
 
 
-        var $vkWidth = ($("#vk_groups_widjet").width())*0.9;
+                var $vkWidth = ($("#vk_groups_widjet").width())*0.9;
 
-        VK.Widgets.Group('vk_groups', { mode: 0,
-                                        width: $vkWidth,
-                                        height: '260',
-                                        color1: 'FFFFFF',
-                                        color2: 'BBBBBB',
-                                        color3: '88BBEE' },
-                                         '{inputValue from='config->vk_group'}');
-}
+                VK.Widgets.Group('vk_groups', { mode: 0,
+                                                width: $vkWidth,
+                                                height: '260',
+                                                color1: 'FFFFFF',
+                                                color2: 'BBBBBB',
+                                                color3: '88BBEE' },
+                                                 '{inputValue from='config->vk_group'}');
+        }
       });
     </script>
     </body>

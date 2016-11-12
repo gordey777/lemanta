@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-08 18:17:04
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 13:16:10
          compiled from "design/lemanta/html\mod-breadcrumbs.htm" */ ?>
-<?php /*%%SmartyHeaderCode:158855819dfd4aa9531-48346388%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:39825826ebea527df8-13271249%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,12 +11,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '158855819dfd4aa9531-48346388',
+  'nocache_hash' => '39825826ebea527df8-13271249',
   'function' => 
   array (
   ),
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfd4c865f6_72962353',
   'variables' => 
   array (
     'config' => 0,
@@ -41,8 +39,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'CurrentPage' => 0,
   ),
   'has_nocache_code' => false,
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5826ebea6907e1_04736195',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_5819dfd4c865f6_72962353')) {function content_5819dfd4c865f6_72962353($_smarty_tpl) {?><?php $_smarty_tpl->tpl_vars['noCatalogLink'] = new Smarty_variable(isset($_smarty_tpl->tpl_vars['config']->value->breadcrumbsNoCatalogLink) ? $_smarty_tpl->tpl_vars['config']->value->breadcrumbsNoCatalogLink : ((($tmp = @$_smarty_tpl->tpl_vars['noCatalogLink']->value)===null||$tmp==='' ? false : $tmp)), null, 0);?><?php $_smarty_tpl->tpl_vars['noCatalogLink'] = new Smarty_variable(!empty($_smarty_tpl->tpl_vars['noCatalogLink']->value), null, 0);?><?php $_smarty_tpl->tpl_vars['defTypes'] = new Smarty_variable(array('rdf'=>'rdfa','rdfa'=>'rdfa','schema.org'=>'microdata','microdata'=>'microdata','*'=>'*'), null, 0);?><?php $_smarty_tpl->tpl_vars['items'] = new Smarty_variable(isset($_smarty_tpl->tpl_vars['config']->value->breadcrumbsMarkupTypes) ? $_smarty_tpl->tpl_vars['config']->value->breadcrumbsMarkupTypes : ((($tmp = @$_smarty_tpl->tpl_vars['markupTypes']->value)===null||$tmp==='' ? '' : $tmp)), null, 0);?><?php $_smarty_tpl->tpl_vars['markupTypes'] = new Smarty_variable(array(), null, 0);?><?php $_smarty_tpl->tpl_vars['items'] = new Smarty_variable(explode(',',$_smarty_tpl->tpl_vars['items']->value), null, 0);?><?php if (!empty($_smarty_tpl->tpl_vars['items']->value)){?><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
+<?php if ($_valid && !is_callable('content_5826ebea6907e1_04736195')) {function content_5826ebea6907e1_04736195($_smarty_tpl) {?><?php $_smarty_tpl->tpl_vars['noCatalogLink'] = new Smarty_variable(isset($_smarty_tpl->tpl_vars['config']->value->breadcrumbsNoCatalogLink) ? $_smarty_tpl->tpl_vars['config']->value->breadcrumbsNoCatalogLink : ((($tmp = @$_smarty_tpl->tpl_vars['noCatalogLink']->value)===null||$tmp==='' ? false : $tmp)), null, 0);?><?php $_smarty_tpl->tpl_vars['noCatalogLink'] = new Smarty_variable(!empty($_smarty_tpl->tpl_vars['noCatalogLink']->value), null, 0);?><?php $_smarty_tpl->tpl_vars['defTypes'] = new Smarty_variable(array('rdf'=>'rdfa','rdfa'=>'rdfa','schema.org'=>'microdata','microdata'=>'microdata','*'=>'*'), null, 0);?><?php $_smarty_tpl->tpl_vars['items'] = new Smarty_variable(isset($_smarty_tpl->tpl_vars['config']->value->breadcrumbsMarkupTypes) ? $_smarty_tpl->tpl_vars['config']->value->breadcrumbsMarkupTypes : ((($tmp = @$_smarty_tpl->tpl_vars['markupTypes']->value)===null||$tmp==='' ? '' : $tmp)), null, 0);?><?php $_smarty_tpl->tpl_vars['markupTypes'] = new Smarty_variable(array(), null, 0);?><?php $_smarty_tpl->tpl_vars['items'] = new Smarty_variable(explode(',',$_smarty_tpl->tpl_vars['items']->value), null, 0);?><?php if (!empty($_smarty_tpl->tpl_vars['items']->value)){?><?php  $_smarty_tpl->tpl_vars['item'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['item']->_loop = false;
  $_from = $_smarty_tpl->tpl_vars['items']->value; if (!is_array($_from) && !is_object($_from)) { settype($_from, 'array');}
 foreach ($_from as $_smarty_tpl->tpl_vars['item']->key => $_smarty_tpl->tpl_vars['item']->value){
 $_smarty_tpl->tpl_vars['item']->_loop = true;

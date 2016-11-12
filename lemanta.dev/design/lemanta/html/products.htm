@@ -113,7 +113,10 @@
         {if !empty($products)}
             {capture assign=sorter}
                 {if count($products) > 1}
-                    <div class="filters">
+
+
+                    <div class="filters col-md-12">
+
 
                         {* <!-- ===================================================
                         |                                                         |
@@ -162,8 +165,9 @@
                     <div class="col-md-12">
                         {$PagesNavigation}
                     </div>
-                        <div class="clr"></div>
+
                     </div>
+
                 {/if}
             {/capture}
 
@@ -173,20 +177,29 @@
             |                                                                     |
             ================================================================ --> *}
 
+
+        <div class="row">
             {$sorter}
+        </div>
+        <hr class="separator" />
+        <div class="row">
+
           <div class="product-list col-md-12">
+
                 {foreach $products as $item}
                 <div class="col-md-3 col-sm-3 col-xs-6">
                   {include 'common/product-card.htm'}
                 </div>
                 {/foreach}
-                <div class="clr"></div>
 
-            <div class="clr"></div>
+
+
           </div><!-- .product-list -->
-
+        </div>
+        <hr class="separator" />
+        <div class="row">
             {$sorter}
-
+        </div>
         {* <!-- ===================================================================
         |                                                                         |
         |  Иначе товаров нет, тогда может быть покажем карту подкатегорий.        |

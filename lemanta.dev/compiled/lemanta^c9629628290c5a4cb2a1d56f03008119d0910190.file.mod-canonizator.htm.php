@@ -1,6 +1,6 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-03 15:48:51
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 13:16:12
          compiled from "design/lemanta/html\mod-canonizator.htm" */ ?>
-<?php /*%%SmartyHeaderCode:74165819dfcd153d18-69655709%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:326805826ebec397729-72145539%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
@@ -11,12 +11,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '74165819dfcd153d18-69655709',
+  'nocache_hash' => '326805826ebec397729-72145539',
   'function' => 
   array (
   ),
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfcd227c81_69831141',
   'variables' => 
   array (
     'noCanonical' => 0,
@@ -34,8 +32,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'noSyndication' => 0,
   ),
   'has_nocache_code' => false,
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5826ebec3f1c22_42243996',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_5819dfcd227c81_69831141')) {function content_5819dfcd227c81_69831141($_smarty_tpl) {?><?php if (empty($_smarty_tpl->tpl_vars['noCanonical']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['requestUri'][0][0]->requestUri(array('except'=>'*','nopages'=>true,'assign'=>'uri'),$_smarty_tpl);?>
+<?php if ($_valid && !is_callable('content_5826ebec3f1c22_42243996')) {function content_5826ebec3f1c22_42243996($_smarty_tpl) {?><?php if (empty($_smarty_tpl->tpl_vars['noCanonical']->value)){?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['requestUri'][0][0]->requestUri(array('except'=>'*','nopages'=>true,'assign'=>'uri'),$_smarty_tpl);?>
 <?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['requestUri'][0][0]->requestUri(array('except'=>'*','nopages'=>false,'assign'=>'uri2'),$_smarty_tpl);?>
 <?php $_smarty_tpl->tpl_vars['test'] = new Smarty_variable((($tmp = @$_SERVER['REQUEST_URI'])===null||$tmp==='' ? '' : $tmp), null, 0);?><?php $_smarty_tpl->tpl_vars['differ'] = new Smarty_variable($_smarty_tpl->tpl_vars['uri']->value!=$_smarty_tpl->tpl_vars['test']->value&&!empty($_smarty_tpl->tpl_vars['test']->value), null, 0);?><?php if ($_smarty_tpl->tpl_vars['differ']->value||!empty($_smarty_tpl->tpl_vars['unCivil']->value)){?><?php if (empty($_smarty_tpl->tpl_vars['unCivil']->value)){?><?php $_smarty_tpl->tpl_vars['uri'] = new Smarty_variable(preg_replace('!^[/\\\\]+!','',$_smarty_tpl->tpl_vars['uri']->value), null, 0);?><link rel="canonical" href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['site'][0][0]->site(array('root'=>true),$_smarty_tpl);?>
 <?php echo $_smarty_tpl->tpl_vars['uri']->value;?>

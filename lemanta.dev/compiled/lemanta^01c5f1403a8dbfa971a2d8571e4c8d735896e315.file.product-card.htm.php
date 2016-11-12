@@ -1,22 +1,20 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-10 19:04:36
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 13:16:10
          compiled from "design/lemanta/html\common\product-card.htm" */ ?>
-<?php /*%%SmartyHeaderCode:235075819dfd588b244-01642289%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
+<?php /*%%SmartyHeaderCode:50395826ebeae176f5-89369755%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
   'file_dependency' => 
   array (
     '01c5f1403a8dbfa971a2d8571e4c8d735896e315' => 
     array (
       0 => 'design/lemanta/html\\common\\product-card.htm',
-      1 => 1478793876,
+      1 => 1478940282,
       2 => 'file',
     ),
   ),
-  'nocache_hash' => '235075819dfd588b244-01642289',
+  'nocache_hash' => '50395826ebeae176f5-89369755',
   'function' => 
   array (
   ),
-  'version' => 'Smarty-3.1.8',
-  'unifunc' => 'content_5819dfd58fa701_34283616',
   'variables' => 
   array (
     'item' => 0,
@@ -30,8 +28,10 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'vid' => 0,
   ),
   'has_nocache_code' => false,
+  'version' => 'Smarty-3.1.8',
+  'unifunc' => 'content_5826ebeae663c1_93069926',
 ),false); /*/%%SmartyHeaderCode%%*/?>
-<?php if ($_valid && !is_callable('content_5819dfd58fa701_34283616')) {function content_5819dfd58fa701_34283616($_smarty_tpl) {?><?php if (!empty($_smarty_tpl->tpl_vars['item']->value)){?><div class="product-block"><div class="product-img"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['findImage'][0][0]->findImage(array('type'=>'product','assign'=>'image'),$_smarty_tpl);?>
+<?php if ($_valid && !is_callable('content_5826ebeae663c1_93069926')) {function content_5826ebeae663c1_93069926($_smarty_tpl) {?><?php if (!empty($_smarty_tpl->tpl_vars['item']->value)){?><div class="cat-bl product-block"><div class="product-img"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['findImage'][0][0]->findImage(array('type'=>'product','assign'=>'image'),$_smarty_tpl);?>
 <a  class="product-image" href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['url'][0][0]->url(array(),$_smarty_tpl);?>
 " title="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['itemTitle'][0][0]->itemTitle(array(),$_smarty_tpl);?>
 "><img src="<?php echo $_smarty_tpl->tpl_vars['image']->value['url'];?>
@@ -57,5 +57,5 @@ $_valid = $_smarty_tpl->decodeProperties(array (
 images/buy2.png" alt="" />Быстрый заказ</a><?php }else{ ?><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array(),$_smarty_tpl);?>
 <?php }?></div><div class="buy"><a data-href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['cartUrl'][0][0]->cartUrl(array(),$_smarty_tpl);?>
 " onclick="return gotoHref(this)"><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
-images/buy.png" alt="" /></a></div><?php }else{ ?><div class="zakaz prod-order">Нет в наличии</div><?php }?></div><!-- /.cat-desc --><?php }?></div><!-- /.product-block --><?php }?>
+images/buy.png" alt="" /></a></div><?php }else{ ?><div class="prod-order">Нет в наличии</div><?php }?></div><!-- /.cat-desc --><?php }?></div><!-- /.product-block --><?php }?>
 <?php }} ?>
