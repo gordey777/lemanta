@@ -1,7 +1,11 @@
 {* <!-- быстрый заказ --> *}{strip}
 
     <div class="for_vs" id="cl_form" style="top: -1000px">
-        <div style="opacity: 1" id="cl_form_inner">
+
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+      <div style="opacity: 1" id="cl_form_inner">
 
             {* <!-- ===============================================================
             |                                                                     |
@@ -11,9 +15,14 @@
 
             <div id="cl_form_title">
 
-                {name from=product}
+                <h4>{name from=product}</h4>
                 <div title="Закрыть окно" id="cl_form_close"></div>
             </div>
+
+
+            <div id="cl_form_body">
+      <div class="row">
+        <div class="col-sm-7">
 
             {* <!-- ===============================================================
             |                                                                     |
@@ -21,13 +30,13 @@
             |                                                                     |
             ================================================================ --> *}
 
-            <div id="cl_form_body">
                 {findImage from=product type=product assign=image}
-
+<div class="col-xs-9">
                 <div id="cl_form_img_wrap">
                     <img src="{$image.url}" alt="{name from=product}" width="262" />
                 </div>
-
+</div>
+<div class="col-xs-3">
                 {* <!-- ===========================================================
                 |                                                                 |
                 |  Все фотографии, если их более 1.                               |
@@ -49,6 +58,9 @@
                         {/section}
                     </div>
                 {/if}
+</div>
+        </div>
+        <div class="col-sm-5">
 
                 {* <!-- ===========================================================
                 |                                                                 |
@@ -220,8 +232,18 @@
                         </a --> *}
                     </div>
                 </div>
-            </div>
+
         </div>
+      </div><!-- /.row -->
+
+            </div>
+        </div><!-- #cl_form_inner -->
+
+
+      </div>
+    </div><!-- /.row -->
+  </div><!-- /.container -->
+
     </div>
 
     {* <!-- =======================================================================
