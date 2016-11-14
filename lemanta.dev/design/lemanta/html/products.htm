@@ -130,7 +130,7 @@
                             {$my_modes = [0, 1, 6]}
                             {$value = $sort_method|default:0}
                             <form class="filter-l" method="post">
-                                <span>Сортировать по:</span> {**}
+                                <span class="sort-title">Сортировать по:</span> {**}
                                 <select class="niceSelect" name="sort_method" onchange="this.parentNode.submit(); return true;">
                                     {foreach $sort_modes as $mode => $name}
                                         {if in_array($mode, $my_modes)}
@@ -148,9 +148,11 @@
 
                                 {if $value != 0}
                                     {$dir = $sort_descending|default:0}
+                                  <div class="sort-button">
                                     <a {($dir) ? "" : "class=\"active\""} onclick="this.nextSibling.value = 0; this.parentNode.submit();" title="По убыванию">↓</a>
                                     <input name="sort_descending" type="hidden" value="{$dir|escape}" />
                                     <a {($dir) ? "class=\"active\"" : ""} onclick="this.previousSibling.value = 1; this.parentNode.submit();" title="По возрастанию">↑</a>
+                                  </div>
                                 {/if}
                             </form>
                             </div>

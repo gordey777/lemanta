@@ -6,6 +6,7 @@ $acc-bg2: #d05;
 $acc-bg5: #112 + #222;
 $acc-bg4: #112+#111;
 $acc-border2: #32373e;
+$acc-sel: #8be ;
 $acc-bg-sel: #d05 ;
 $acc-bg-shad: rgba(255, 255, 255, .15);
 
@@ -28,8 +29,6 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
   list-style: none;
 
   color: $acc-color-white;
-  //border: 0;
-  //box-shadow: 2px 2px 10px rgba(0, 0, 0, .45);
   ul {
     line-height: 1;
 
@@ -44,8 +43,6 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
     padding: 0;
 
     list-style: none;
-
-    //border: 0;
     li {
       line-height: 1;
 
@@ -60,9 +57,8 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
       padding: 0;
 
       list-style: none;
-
-      //border: 0;
       a {
+        font-size: 15px;
         line-height: 1;
 
         position: relative;
@@ -76,31 +72,33 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
         padding: 0;
 
         list-style: none;
-
-        text-transform: uppercase;
-
-        //border: 0;
-        &.selected {
-          color: $acc-txt;
-          background: $acc-bg-sel;
-        }
-      }
-      &.has-sub {
-        a {
-          //padding-right: 25px;
-        }
       }
     }
     ul {
       display: none;
     }
   }
+  .open > a {
+    color: $acc-sel;
+  }
+  .open a,
+  a {
+    &.selected {
+      color: $acc-sel;
+    }
+    &:hover {
+      color: $acc-txt;
+      background: $acc-bg2;
+    }
+  }
 }
 
 
+#left_menu > ul > li > a {
+  text-transform: uppercase;
+}
 #left_menu > ul > li {
-  > a {
-    font-size: 14px;
+  a {
     font-weight: 400;
 
     z-index: 2;
@@ -111,33 +109,7 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
     text-decoration: none;
 
     color: $acc-color-white;
-    //border-top: 1px solid $acc-border;
-    //border-right: 1px solid $acc-border;
-    //border-left: 1px solid $acc-border;
     background: $acc-bg1;
-    //box-shadow: inset 0 1px 0 $acc-bg-shad;
-    &:hover {
-      color: $acc-txt;
-      background: $acc-bg2;
-    }
-    &.selected {
-      background: $acc-bg-sel;
-    }
-  }
-  &.open > a {
-    color: $acc-txt;
-    //border-bottom: 1px solid $acc-border;
-    background: $acc-bg2;
-    &.selected {
-      background: $acc-bg-sel;
-    }
-  }
-  &:last-child > a,
-  &.last > a {
-    //border-bottom: 1px solid $acc-border;
-    &.selected {
-      background: $acc-bg-sel;
-    }
   }
 }
 
@@ -146,8 +118,6 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
   ul ul {
     li {
       a {
-        font-size: 13px;
-
         z-index: 1;
 
         padding: 10px 20px;
@@ -156,49 +126,18 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
         text-decoration: none;
 
         color: $acc-txt;
-        //border-right: 1px solid $acc-border2;
-        //border-bottom: 1px solid $acc-border2;
-        //border-left: 1px solid $acc-border2;
         background: $acc-bg5;
-        //box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
-        &.selected {
-          background: $acc-bg-sel;
-        }
       }
-      &:hover,
       &.open {
         a {
-          color: $acc-color-white;
           background: $acc-bg4;
-          &.selected {
-            background: $acc-bg-sel;
-          }
         }
-      }
-      &:first-child > a {
-        box-shadow: none;
       }
     }
     ul li {
-      &:first-child > a {
-        //box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
-      }
       a {
         padding-left: 30px;
       }
-    }
-  }
-  > ul > li > ul > li {
-    &:last-child > a,
-    &.last > a {
-      border-bottom: 0;
-    }
-    &.open:last-child > a,
-    &.last.open > a {
-      border-bottom: 1px solid $acc-border2;
-    }
-    &.open:last-child > ul > li:last-child > a {
-      border-bottom: 0;
     }
   }
 }
@@ -219,7 +158,6 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
   cursor: pointer;
 
   color: #fff;
-  //border-left: 1px solid $acc-border;
   i {
     position: relative;
     top: 12px;
@@ -239,10 +177,10 @@ $acc-bg-shad: rgba(255, 255, 255, .15);
               transform: rotate(180deg);
     }
     &:hover {
-      color: #333;
+      color: $acc-sel;
     }
   }
   &:hover {
-    color: #333;
+    color: $acc-sel;
   }
 }

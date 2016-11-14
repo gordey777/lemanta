@@ -341,7 +341,7 @@
       <div class="container">
         <div class="row">
 
-          <div class="logo col-md-2 col-sm-2 col-xs-4">
+          <div class="logo col-md-2 col-sm-3 col-xs-5">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Логотип.                                           |
@@ -352,7 +352,7 @@
                                 </a>
           </div>
 
-          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-6 col-sm-2 col-xs-5">
+          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-6 col-sm-3 col-xs-5">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Корзина.                                           |

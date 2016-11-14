@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.8, created on 2016-11-12 15:04:55
+<?php /* Smarty version Smarty-3.1.8, created on 2016-11-14 16:05:36
          compiled from "design/lemanta/html\index.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:57865826ebeb3fd889-39675387%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '0073f1ed1720bc5a4b364b16d2673f4d0be42c8a' => 
     array (
       0 => 'design/lemanta/html\\index.tpl',
-      1 => 1478952239,
+      1 => 1479128717,
       2 => 'file',
     ),
   ),
@@ -111,9 +111,9 @@ $_smarty_tpl->tpl_vars['item']->_loop = true;
 <?php $_smarty_tpl->tpl_vars['class'] = new Smarty_variable($_smarty_tpl->tpl_vars['sid']->value===$_smarty_tpl->tpl_vars['id']->value ? 'class="selected"' : '', null, 0);?><li><a onclick="changeCurrency('<?php echo htmlspecialchars($_smarty_tpl->tpl_vars['id']->value, ENT_QUOTES, 'UTF-8');?>
 ')" <?php echo $_smarty_tpl->tpl_vars['class']->value;?>
 ><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['name'][0][0]->name(array(),$_smarty_tpl);?>
-</a></li><?php } ?><form id="currencyForm" method="post"><input id="currencyFormInput" name="currency_id" type="hidden" value="" /></form></ul></div><!-- /.valuta --><?php }?></div></div><!-- /.row --></div><!-- /.container --></div><!-- /.top-menu-wrap --><div class="container"><div class="row"><div class="logo col-md-2 col-sm-2 col-xs-4"><a href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['site'][0][0]->site(array(),$_smarty_tpl);?>
+</a></li><?php } ?><form id="currencyForm" method="post"><input id="currencyFormInput" name="currency_id" type="hidden" value="" /></form></ul></div><!-- /.valuta --><?php }?></div></div><!-- /.row --></div><!-- /.container --></div><!-- /.top-menu-wrap --><div class="container"><div class="row"><div class="logo col-md-2 col-sm-3 col-xs-5"><a href="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['site'][0][0]->site(array(),$_smarty_tpl);?>
 "><img src="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['theme'][0][0]->theme(array(),$_smarty_tpl);?>
-images/logo.png" alt="" /></a></div><div id="cart_informer" class="head-cart col-md-2 col-md-offset-6 col-sm-2 col-xs-5"><?php echo $_smarty_tpl->getSubTemplate ('common/cart-informer.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
+images/logo.png" alt="" /></a></div><div id="cart_informer" class="head-cart col-md-2 col-md-offset-6 col-sm-3 col-xs-5"><?php echo $_smarty_tpl->getSubTemplate ('common/cart-informer.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 </div><nav id="head-top-nav" class="nav__header col-md-10 col-sm-12" role="navigation"><ul class="headnav"><?php echo $_smarty_tpl->getSubTemplate ('common/main-nav.htm', $_smarty_tpl->cache_id, $_smarty_tpl->compile_id, null, null, array(), 0);?>
 </ul></nav><!-- /nav --><div class="search-bg col-md-2 col-sm-6 col-xs-12"><div id="search" class="search"><form class="form_search" method="post" onsubmit="return false"><input class="input_search" name="keyword" maxlength="48" type="text" value="<?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['inputValue'][0][0]->inputValue(array('from'=>'keyword'),$_smarty_tpl);?>
 " placeholder="Поиск товара" /><input name="search_type" type="hidden" value="a1" /><input name="reset_old" type="hidden" value="1" /><input class="button_search" type="submit" value="" /></form></div></div></div><!-- /.row --></div><!-- /.container --></header><!-- /header --><div class="clr"></div><?php if (!empty($_smarty_tpl->tpl_vars['enableHitProducts']->value)){?><div class="col-md-12"><?php echo $_smarty_tpl->smarty->registered_plugins[Smarty::PLUGIN_FUNCTION]['discountProducts'][0][0]->discountProducts(array('count'=>20,'assign'=>'items'),$_smarty_tpl);?>

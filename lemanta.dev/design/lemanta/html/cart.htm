@@ -83,9 +83,9 @@
             <form action="cart" method="post" name="cart">
                 <div class="center cart_pad">
                     <div class="cart-page">
-
+                      <div class="row">
                         <div class="cart-title">ВАША корзина</div>
-                        <table width="100%" cellpadding="0" cellspacing="0">
+                        <table cellpadding="0" cellspacing="0">
                             <thead>
                                 <tr>
                                     <td>Информация о товаре</td>
@@ -111,7 +111,7 @@
                                     {$total = $total + $sum}
 
                                     <tr>
-                                        <td style="width: 320px;">
+                                        <td >
                                             <div class="cart-img">
                                                 <a href="{url}">
                                                     <img src="{image folder='files/products'}" alt="{name}" />
@@ -128,7 +128,7 @@
                                                 {/if}
                                             </div>
                                         </td>
-                                        <td style="width: 320px;">
+                                        <td >
                                             <div class="count option">
                                                 <span>Количество</span> {**}
                                                 <select name="amounts[{$item->variant_id}]" onchange="document.cart.submit()">
@@ -173,8 +173,8 @@
                         {$cart_price = $cart_total_price|default:0}
                         {$discount = $helper->priceForScreen($cart_price - $total)}
 
-                        <div class="cart-r">
-                            <div class="itog-r">
+
+                            <div class="itog-r col-sm-6 col-sm-offset-6">
                                 {if $discount != 0}
                                     <div class="itog">
                                         Скидка: {intval($discount)} {sign}
@@ -196,15 +196,16 @@
                                 <input type="submit" name="checkout" class="button oform" value="Оформить заказ" onclick="return clickCartSubmitKey(this)" />
                             </div>
                             <div class="clr"></div>
-                        </div>
 
+
+                      </div><!-- /.row -->
                         {* <!-- ===================================================
                         |                                                         |
                         |  Сведения о покупателе.                                 |
                         |                                                         |
                         ==================================================== --> *}
-
-                        <div class="cart-form">
+                      <div class="row">
+                        <div class="cart-form  col-md-8 col-md-offset-4">
                             <h3>Заполните, пожалуйста, все необходимые поля</h3>
                             <div class="form cart_form">
                                 {if !empty($error)}
@@ -247,7 +248,7 @@
                             </div>
                             <div class="clr"></div>
                         </div>
-
+                      </div><!-- /.row -->
 
                     </div>
                     <div class="clr"></div>
