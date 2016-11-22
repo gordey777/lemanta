@@ -352,7 +352,7 @@
                                 </a>
           </div>
 
-          <div id="cart_informer" class="head-cart col-md-2 col-md-offset-6 col-sm-3 col-xs-5">
+          <div id="cart_informer" class="head-cart col-md-3 col-md-offset-5 col-sm-4 col-xs-5">
                             {* <!-- ===============================================
                             |                                                     |
                             |  Корзина.                                           |
@@ -374,7 +374,7 @@
                                     {include 'common/main-nav.htm'}
             </ul>
           </nav><!-- /nav -->
-          <div class="search-bg col-md-2 col-sm-6 col-xs-12">
+          <div class="search-bg col-md-2 col-sm-5 col-xs-12">
             <div id="search" class="search">
                             {* <!-- ===============================================
                             |                                                     |

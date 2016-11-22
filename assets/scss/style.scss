@@ -3643,21 +3643,20 @@ a.jScrollArrowDown {
   position: relative;
 
   display: block;
+  //white-space: nowrap;
+
+  height: auto;
   //width: 100%;
-
   margin: 0 -15px;
-  padding: 8px 70px 9px 61px;
+  padding: 8px 20px 9px 61px;
 
-  white-space: nowrap;
-height: auto;
   color: #fff !important;
   background: #02021e !important;
   h4 {
     font-size: 26px;
     line-height: 30px;
 
-    display: inline;
-
+    display: inline-block;
     //width: 100%;
   }
 }
@@ -3678,8 +3677,8 @@ height: auto;
 
 #cl_form_body {
   position: relative;
+  //width: 706px;
 
-  width: 706px;
   margin: 0 auto;
   padding-top: 14px;
   padding-bottom: 20px;
@@ -4229,6 +4228,13 @@ height: auto;
           font-size: 14px;
         }
       }
+    }
+  }
+  .popular,
+  .recent,
+  .product-rel {
+    .cat li .product-block .cat-desc .prod-order a {
+      font-size: 0;
     }
   }
 }
