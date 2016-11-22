@@ -2635,7 +2635,7 @@ width: 354px; */
 
 .inputall,
 .register_form .input_captcha {
-  font-size: 11px;
+  //font-size: 11px;
   font-style: italic;
 
   float: right;
@@ -4236,5 +4236,10 @@ a.jScrollArrowDown {
     .cat li .product-block .cat-desc .prod-order a {
       font-size: 0;
     }
+  }
+
+  .inputall,
+  .register_form .input_captcha {
+    font-size: 11px;
   }
 }

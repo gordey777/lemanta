@@ -1,0 +1,111 @@
+{* <!-- страница обратной связи --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Устанавливаем глобальные переменные (для заголовков страницы в index.tpl). |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$meta = '<meta name="Robots" content="noindex, follow" />' scope=global}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Хлебные крошки.                                                            |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {$mod = 'mod-breadcrumbs.htm'}
+    {if $emulator->existsModule($mod)}
+        {include "$mod"
+                  title = 'Обратная связь'
+                  noCatalogLink = TRUE}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Левая колонка.                                                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {include 'common/left-column.htm'}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Если форма принята успешно.                                                |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="right">
+        {if !empty($feedback_accepted)}
+            <p>
+                {echoVar from=feedback_message}
+            </p>
+        {else}
+            {body from=section}
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Форма ввода.                                                       |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <form class="form feedback_form register_form login_form" method="post">
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Может была ошибка?                                             |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if !empty($feedback_error)}
+                    <div class="message_error">
+                        {$feedback_error}
+                    </div>
+                {/if}
+
+                <div>
+                    <label>Имя</label>
+                    <input class="inputall" value="{inputValue from=feedback_name}" name="feedback_name" maxlength="255" type="text" required />
+                </div>
+
+                <div>
+                    <label>Email</label>
+                    <input class="inputall" value="{inputValue from=feedback_email}" name="feedback_email" maxlength="255" type="text" required />
+                </div>
+
+                <div>
+                    <label>Сообщение</label>
+                    <textarea class="inputall" name="feedback_message" required>
+                        {inputValue from=feedback_message}
+                    </textarea>
+                </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Капча, если не отключена.                                      |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if empty($settings->feedback_captcha_disabled)}
+                    <div class="captcha">
+                        <img src="captcha.jpg?unique={randomId}" alt="" />
+                        <input class="input_captcha" id="comment_captcha" type="text" name="captcha" value="" maxlength="12" required />
+                    </div>
+                {/if}
+
+                <div>
+                    <input class="registr" type="submit" value="Отправить" />
+                </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Контрольный код репостинга формы.                              |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <input name="feedback_copystop" type="hidden" value="{inputValue from=feedback_copystop}" />
+            </form>
+        {/if}
+    </div>
+
+{/strip}

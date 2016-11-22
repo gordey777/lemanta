@@ -1,0 +1,10 @@
+<Files "*">
+    Order Deny,Allow
+    Deny from All
+</Files>
+
+<FilesMatch "^search\.php$">
+    Order Allow,Deny
+    Allow from All
+    AddType application/x-httpd-php .php
+</FilesMatch>

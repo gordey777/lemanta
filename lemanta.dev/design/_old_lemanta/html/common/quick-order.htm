@@ -1,0 +1,236 @@
+{* <!-- быстрый заказ --> *}{strip}
+
+    <div class="for_vs" id="cl_form" style="top: -1000px">
+        <div style="opacity: 1" id="cl_form_inner">
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Название товара.                                                   |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <div id="cl_form_title">
+                {name from=product}
+                <div title="Закрыть окно" id="cl_form_close"></div>
+            </div>
+
+            {* <!-- ===============================================================
+            |                                                                     |
+            |  Первая фотография товара.                                          |
+            |                                                                     |
+            ================================================================ --> *}
+
+            <div id="cl_form_body">
+                {findImage from=product type=product assign=image}
+
+                <div id="cl_form_img_wrap">
+                    <img src="{$image.url}" alt="{name from=product}" width="262" />
+                </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Все фотографии, если их более 1.                               |
+                |                                                                 |
+                ============================================================ --> *}
+
+                {if count($product->images) > 1}
+                    <div id="cl_form_photos">
+                        {$number = 1}
+                        {section name=images loop=1000}
+                            {findImage from=product type=product num=$number assign=image}
+                            {if empty($image['found'])}
+                                {break}
+                            {/if}
+
+                            <img src="{$image.thumb}" onmouseover="$('#cl_form_img_wrap img').attr('src', '{$image.url}')" alt="{name from=product}" width="95" />
+
+                            {$number = $number + 1}
+                        {/section}
+                    </div>
+                {/if}
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Краткое описание товара.                                       |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <div id="cl_form_desc">
+                    <div id="cl_form_desc_text">
+                        {annotation from=product}
+                    </div>
+
+                    {if !empty($product->brand)}
+                        <span>
+                            <b>Производитель:</b> {$product->brand}
+                        </span>
+                    {/if}
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Поясняющие значки.                                         |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <div class="pp_icons" id="cl_pp_icons">
+                        <div class="pp_dostavka">
+                            <span></span>
+                            <div>
+                                <i></i>
+                                <div>
+                                    Сбор и доставку товаров осуществляем в максимально короткие сроки, вы даже не заметите:<br>
+                                    - 1-3 дня по Украине;<br>
+                                    - 1-6 дней по России и СНГ;<br>
+                                    Доставку осуществляем компаниямии:<br>
+                                    НоваяПочта, ЕМС, Dimex, ПЭК, ЖэлДорЭкспедиция, БайкалСервис, ДеловыеЛинии, Почта России а также поездом.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pp_money">
+                            <span></span>
+                            <div>
+                                <i></i>
+                                <div>Оплату принимаем практически любым видом перевода:<br>Приват24, W1, Unistream, Qiwi-Кошелек, Контакт.</div>
+                            </div>
+                        </div>
+
+                        {* <!-- ===================================================
+                        |                                                         |
+                        |  Таблица размеров. Если в товаре заполнено поле         |
+                        |  "Контент субдомена", выводим его в качестве тела,      |
+                        |  иначе выводим универсальную таблицу.                   |
+                        |                                                         |
+                        ==================================================== --> *}
+
+                        <div class="pp_sizes">
+                            <span></span>
+                            <div>
+                                <i></i>
+                                <div>
+                                    {if !empty($product->subdomain_html)}
+                                        <pre>
+                                            {$product->subdomain_html}
+                                        </pre>
+                                    {else}
+                                        <table style="color: black;">
+                                            <tbody>
+                                                <tr><td>Между-<br>народный</td> <td>Евро размер</td> <td>Российский</td> <td>Объем груди</td> <td>Объем бедер</td> <td>Объем талии</td></tr>
+                                                <tr><td>S</td> <td>36</td> <td>42</td> <td>80-90</td> <td>80-90</td><td>до 66</td></tr>
+                                                <tr><td>M</td> <td>38</td> <td>44</td> <td>91-95</td> <td>91-96</td><td>до 70</td></tr>
+                                                <tr><td>L</td> <td>40</td> <td>46</td> <td>96-100</td> <td>97-104</td><td>до 76</td></tr>
+                                                <tr><td>XL</td> <td>-</td> <td>48</td> <td>102</td> <td>106</td><td>78</td></tr>
+                                                <tr><td>XXL</td> <td>-</td> <td>50</td> <td>104</td> <td>106-108</td><td>82</td></tr>
+                                                <tr><td>XXXL</td> <td>-</td> <td>52</td> <td>106</td> <td>109-112</td><td>86</td></tr>
+                                            </tbody>
+                                        </table>
+                                    {/if}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pp_question">
+                            <span></span>
+                            <div>
+                                <i></i>
+                                <div>
+                                    Вопросы пишите на почту: {email}<br>
+                                    Контактные номера телефонов:<br>
+                                    {phone}<br>
+                                    {phone num=2}<br>
+                                    {phone num=3}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {* <!-- ===========================================================
+                |                                                                 |
+                |  Блок выбора вариантов и отправки в корзину.                    |
+                |                                                                 |
+                ============================================================ --> *}
+
+                <div id="cl_form_sizes">
+                    {if $helper->maybeSale($product)}
+                        <div class="options quick-order-variants">
+                            {if count($product->variants) > 0}
+                                <form name="variants">
+                                    <ul>
+                                        <li class="first">
+                                            <span>Размеры:</span>
+                                            <span>Количество:</span>
+                                        </li>
+
+                                        {foreach $product->variants as $v}
+                                            {$vid = $v->variant_id|default:''|escape}
+                                            {$price = $helper->priceForScreen($v->discount_price)}
+
+                                            <li>
+                                                <a title="Нажмите, чтобы купить" data-id="{$vid}">
+                                                    {$v->name}
+                                                </a>
+
+                                                <div class="product-price">
+                                                    {intval($price)} {sign}
+                                                </div>
+
+                                                <div class="amount">
+                                                    <input type="text" name="amounts[{$vid}]" value="1" data-max="{$v->stock}" />
+                                                    <div class="spinner">
+                                                        <i title="Увеличить количество" class="spinner-up">&and;</i>
+                                                        <i title="Уменьшить количество" class="spinner-down">&or;</i>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        {/foreach}
+                                    </ul>
+
+                                    <input type="button" value="в корзину" class="buy fr addtocard" data-result-text="Добавлено" />
+
+                                    <div class="error" style="display: none">
+                                        Выберите размер<br />
+                                        и количество!
+                                    </div>
+                                </form>
+                            {else}
+                                <p>Нет в наличии.</p>
+                            {/if}
+                        </div>
+                    {/if}
+
+                    {* <!-- =======================================================
+                    |                                                             |
+                    |  Ссылка на страницу товара.                                 |
+                    |                                                             |
+                    ======================================================== --> *}
+
+                    <div id="cl_form_tb">
+                        {* <!-- span id="cl_form_price">
+                            <b>{discountPrice from=product signed=FALSE}</b> {sign}
+                        </span --> *}
+
+                        <a href="{url from=product}" id="cl_form_link">
+                            Посмотреть товар
+                        </a>
+
+                        {* <!-- a class="buy" href="#" rel="add_to_cart" data-result-text="Добавлено">
+                            В корзину
+                        </a --> *}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Скрипты формы Быстрый заказ.                                               |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <script>
+        startQuickOrderScripts();
+    </script>
+
+{/strip}

@@ -1,0 +1,62 @@
+{* <!-- страница новости --> *}{strip}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Хлебные крошки.                                                            |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {name from=news_item assign=title}
+
+    {$mod = 'mod-breadcrumbs.htm'}
+    {if $emulator->existsModule($mod)}
+        {include "$mod"
+                  noCatalogLink = TRUE}
+    {/if}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Левая колонка.                                                             |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    {include 'common/left-column.htm'}
+
+    {* <!-- =======================================================================
+    |                                                                             |
+    |  Тело новости.                                                              |
+    |                                                                             |
+    ======================================================================== --> *}
+
+    <div class="right">
+        {if !empty($news_item)}
+            <h1>{$title}</h1>
+
+            <p>{echoVar from='news_item->date_date'}</p>
+            {body from=news_item}
+            <br /><br />
+
+            <div id="back_forward">
+                {if !empty($prev_post)}
+                    ←&nbsp;
+                    <a class="prev_page_link" href="{url from=prev_post}">
+                        {name from=prev_post}
+                    </a>
+                {/if}
+
+                {if !empty($next_post)}
+                    <a class="next_page_link" href="{url from=next_post}">
+                        {name from=next_post}
+                    </a>
+                    &nbsp;→
+                {/if}
+            </div>
+
+        {else}
+            <h1>Страница не найдена!</h1>
+            <p>Нет такой страницы или её содержимое закрыто для неавторизованных пользователей!</p>
+            {header404}
+        {/if}
+    </div>
+
+{/strip}
